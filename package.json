@@ -1,0 +1,17 @@
+{
+  "name": "tic-tac-stick-quote-engine",
+  "version": "1.0.0",
+  "description": "Professional quoting tool for 925 Pressure Glass - Window & Pressure Cleaning",
+  "scripts": {
+    "test": "playwright test",
+    "test:headed": "playwright test --headed",
+    "test:ui": "playwright test --ui",
+    "test:debug": "playwright test --debug"
+  },
+  "keywords": ["quote", "pricing", "window-cleaning", "pressure-cleaning"],
+  "author": "925 Pressure Glass",
+  "license": "MIT",
+  "devDependencies": {
+    "@playwright/test": "^1.40.0"
+  }
+}

@@ -5,6 +5,18 @@
 	<meta charset="UTF-8" />
 	<title>Tic-Tac-Stick Quote Engine</title>
 	<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+	<meta name="description" content="Professional quoting tool for 925 Pressure Glass - Window & Pressure Cleaning" />
+	<meta name="theme-color" content="#6c63ff" />
+
+	<!-- PWA Manifest -->
+	<link rel="manifest" href="manifest.json" />
+
+	<!-- Apple Touch Icon -->
+	<link rel="apple-touch-icon" href="icon-192.png" />
+	<meta name="apple-mobile-web-app-capable" content="yes" />
+	<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
+	<meta name="apple-mobile-web-app-title" content="Quote Engine" />
+
 	<!-- CSS -->
 	<link rel="stylesheet" href="app.css" />
 </head>
@@ -201,31 +213,22 @@
 						<button class="card-toggle" type="button" data-target="summaryBody">▾</button>
 					</header>
 					<div class="sec-b" id="summaryBody">
-					<div class="summary-main">
-  <div class="summary-block">
-    <div class="summary-label">Subtotal (excl. GST)</div>
-    <div class="summary-value" id="subtotalDisplay">$0</div>
-  </div>
-  <div class="summary-block">
-    <div class="summary-label">High Reach Adjustments</div>
-    <div class="summary-value" id="highReachDisplay">$0</div>
-  </div>
-  <div class="summary-block">
-    <div class="summary-label">GST (10%)</div>
-    <div class="summary-value" id="gstDisplay">$0</div>
-  </div>
-  <div class="summary-block summary-block-total">
-    <div class="summary-label">Final Total (incl. GST, inc. min job)</div>
-    <div class="summary-value" id="totalIncGstDisplay">$0</div>
-  </div>
-</div>
+						<div class="summary-main">
+							<div class="summary-block">
+								<div class="summary-label">Subtotal (excl. GST)</div>
+								<div class="summary-value" id="subtotalDisplay">$0</div>
+							</div>
 							<div class="summary-block">
 								<div class="summary-label">High Reach Adjustments</div>
 								<div class="summary-value" id="highReachDisplay">$0</div>
 							</div>
+							<div class="summary-block">
+								<div class="summary-label">GST (10%)</div>
+								<div class="summary-value" id="gstDisplay">$0</div>
+							</div>
 							<div class="summary-block summary-block-total">
-								<div class="summary-label">Final Total (inc. min job)</div>
-								<div class="summary-value" id="totalDisplay">$0</div>
+								<div class="summary-label">Final Total (incl. GST, inc. min job)</div>
+								<div class="summary-value" id="totalIncGstDisplay">$0</div>
 							</div>
 						</div>
 
@@ -336,6 +339,22 @@
 	<script src="wizard.js" defer></script>
 	<script src="app.js" defer></script>
 	<script src="ui.js" defer></script>
+
+	<!-- Service Worker Registration -->
+	<script>
+		// Register service worker for PWA offline support
+		if ('serviceWorker' in navigator) {
+			window.addEventListener('load', function() {
+				navigator.serviceWorker.register('/sw.js')
+					.then(function(registration) {
+						console.log('ServiceWorker registered: ', registration.scope);
+					})
+					.catch(function(error) {
+						console.log('ServiceWorker registration failed: ', error);
+					});
+			});
+		}
+	</script>
 </body>
 
 </html>

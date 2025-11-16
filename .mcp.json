@@ -1,0 +1,32 @@
+{
+  "mcpServers": {
+    "github": {
+      "transport": "http",
+      "url": "https://github-mcp.fly.dev/mcp"
+    },
+    "filesystem": {
+      "transport": "stdio",
+      "command": "npx",
+      "args": ["-y", "@modelcontextprotocol/server-filesystem", "/Users/gerardvarone/Documents/GitHub/webapp"],
+      "env": {}
+    },
+    "git": {
+      "transport": "stdio",
+      "command": "npx",
+      "args": ["-y", "@modelcontextprotocol/server-git"],
+      "env": {}
+    },
+    "playwright": {
+      "transport": "stdio",
+      "command": "npx",
+      "args": ["-y", "playwright-mcp"],
+      "env": {}
+    },
+    "fetch": {
+      "transport": "stdio",
+      "command": "npx",
+      "args": ["-y", "@modelcontextprotocol/server-fetch"],
+      "env": {}
+    }
+  }
+}
