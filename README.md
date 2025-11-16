@@ -9,8 +9,9 @@ Professional quoting tool for **925 Pressure Glass** - Window & Pressure Cleanin
 - **Pressure Cleaning Quotes** - 5 surface types with area-based calculations
 - **Smart Pricing Engine** - GST calculations, high-reach premiums, minimum job enforcement
 - **Quote Management** - Autosave, save/load multiple quotes, presets
-- **Export Options** - PDF generation, copy to clipboard for SMS/email
+- **Export Options** - PDF, CSV/Excel, copy to clipboard for SMS/email
 - **Visual Analytics** - Real-time cost breakdown with Chart.js visualizations
+- **Quote Templates** - 5 built-in templates + save custom templates
 
 ### Progressive Web App (PWA)
 - **Offline Capability** - Works without internet connection via Service Worker
@@ -23,6 +24,8 @@ Professional quoting tool for **925 Pressure Glass** - Window & Pressure Cleanin
 - **Toast Notifications** - Visual feedback for actions
 - **Professional Print Layout** - Optimized PDF export with clean formatting
 - **Quick Help** - Press `?` to see available shortcuts
+- **Error Handling** - LocalStorage quota warnings, validation, offline detection
+- **Form Validation** - Real-time validation with helpful error messages
 
 ### Technology
 - Pure Vanilla JavaScript (ES5-compatible for iOS Safari)
@@ -156,9 +159,46 @@ Press `?` in the app to see all available shortcuts, or check [KEYBOARD_SHORTCUT
 3. Save the files to the root directory
 4. Icons will be automatically used by the PWA
 
+## Quote Templates
+
+5 built-in templates to get started quickly:
+
+1. **Standard House Package** - 3-bedroom house with standard windows
+2. **Apartment Balcony Special** - Balcony glass and sliding doors
+3. **Commercial Storefront** - Retail shop front windows
+4. **Driveway & Paths Package** - Residential pressure cleaning
+5. **Full Service Package** - Windows + pressure cleaning combo
+
+**To use templates:**
+- Select from "Choose Template..." dropdown in Job Settings
+- Or save your own custom templates with "Save as Template"
+
+## Export Options
+
+### CSV/Excel Export
+Click "Export to CSV/Excel" to download a spreadsheet-compatible file containing:
+- Quote metadata (client, location, date)
+- Job settings and pricing
+- All line items (windows and pressure cleaning)
+- Cost summary and time estimates
+- Notes
+
+Perfect for:
+- Importing into accounting software
+- Quote comparisons in Excel
+- Business analytics and reporting
+
 ## Recent Improvements
 
-### v1.2 (Latest)
+### v1.3 (Latest)
+- ✅ CSV/Excel export functionality
+- ✅ Quote templates system (5 built-in + custom)
+- ✅ Enhanced error handling and validation
+- ✅ LocalStorage quota monitoring
+- ✅ Offline status detection
+- ✅ Real-time form validation
+
+### v1.2
 - ✅ Added keyboard shortcuts for power users
 - ✅ Created professional print stylesheet for PDFs
 - ✅ Added toast notifications for user feedback

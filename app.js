@@ -44,7 +44,10 @@
     addPressureLine: addPressureLine,
     recalculate: recalculate,
     duplicateWindowLine: duplicateWindowLine,
-    duplicatePressureLine: duplicatePressureLine
+    duplicatePressureLine: duplicatePressureLine,
+    getState: function() {
+      return buildStateFromUI(true);
+    }
   };
 
   window.APP = APP;
