@@ -24,6 +24,9 @@
 	<!-- CSS -->
 	<link rel="stylesheet" href="app.css" />
 	<link rel="stylesheet" href="toast.css" />
+	<link rel="stylesheet" href="theme-light.css" />
+	<link rel="stylesheet" href="analytics.css" />
+	<link rel="stylesheet" href="photos.css" />
 	<link rel="stylesheet" href="print.css" media="print" />
 </head>
 
@@ -276,6 +279,19 @@
 					</div>
 				</section>
 
+				<!-- PHOTOS PANEL -->
+				<section class="section" id="photosSection">
+					<header class="sec-h">
+						<h2 class="sec-title">📷 Photos</h2>
+						<button class="card-toggle" type="button" data-target="photosBody">▾</button>
+					</header>
+					<div class="sec-b" id="photosBody">
+						<div id="photoGallery">
+							<p class="photo-gallery-empty">No photos attached</p>
+						</div>
+					</div>
+				</section>
+
 				<!-- NOTES PANEL -->
 				<section class="section" id="notesPanel">
 					<header class="sec-h">
@@ -300,6 +316,27 @@
 							<button id="copySummaryBtn" type="button" class="btn btn-secondary">
 								Copy Summary for SMS / Email
 							</button>
+						</div>
+					</div>
+				</section>
+
+				<!-- ANALYTICS PANEL -->
+				<section class="section" id="analyticsPanel">
+					<header class="sec-h">
+						<h2 class="sec-title">📊 Quote History & Analytics</h2>
+						<button class="card-toggle" type="button" data-target="analyticsBody">▾</button>
+					</header>
+					<div class="sec-b" id="analyticsBody">
+						<div class="config-footer-row" style="margin-bottom: 15px;">
+							<button type="button" class="btn btn-small" onclick="window.QuoteAnalytics && window.QuoteAnalytics.renderDashboard('all')">
+								View Analytics
+							</button>
+							<button type="button" class="btn btn-small btn-secondary" onclick="window.QuoteAnalytics && window.QuoteAnalytics.exportHistory()">
+								Export History
+							</button>
+						</div>
+						<div id="analyticsContainer">
+							<p style="color: #94a3b8; font-style: italic;">Click "View Analytics" to see your quote history and business stats.</p>
 						</div>
 					</div>
 				</section>
@@ -353,10 +390,13 @@
 	<script src="wizard.js" defer></script>
 	<script src="app.js" defer></script>
 	<script src="ui.js" defer></script>
+	<script src="theme.js" defer></script>
 	<script src="shortcuts.js" defer></script>
 	<script src="error-handler.js" defer></script>
 	<script src="export.js" defer></script>
 	<script src="templates.js" defer></script>
+	<script src="analytics.js" defer></script>
+	<script src="photos.js" defer></script>
 
 	<!-- Service Worker Registration -->
 	<script>

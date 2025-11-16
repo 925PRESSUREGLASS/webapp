@@ -1,0 +1,293 @@
+/* Light Theme - Professional daytime color scheme */
+
+[data-theme="light"] {
+  /* Light theme color variables */
+  --bg-primary: #ffffff;
+  --bg-secondary: #f8fafc;
+  --bg-tertiary: #f1f5f9;
+  --bg-card: #ffffff;
+  --bg-card-hover: #f8fafc;
+
+  --text-primary: #0f172a;
+  --text-secondary: #475569;
+  --text-tertiary: #64748b;
+  --text-muted: #94a3b8;
+
+  --border-color: #e2e8f0;
+  --border-hover: #cbd5e1;
+
+  --accent-primary: #0ea5e9;
+  --accent-secondary: #38bdf8;
+  --accent-hover: #0284c7;
+
+  --success: #10b981;
+  --warning: #f59e0b;
+  --error: #ef4444;
+  --info: #3b82f6;
+
+  --shadow-sm: 0 1px 2px 0 rgba(0, 0, 0, 0.05);
+  --shadow-md: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+  --shadow-lg: 0 10px 15px -3px rgba(0, 0, 0, 0.1);
+}
+
+/* Body */
+[data-theme="light"] body {
+  background: var(--bg-secondary);
+  color: var(--text-primary);
+}
+
+/* Header */
+[data-theme="light"] .hdr {
+  background: linear-gradient(135deg, #ffffff, #f8fafc);
+  border: 1px solid var(--border-color);
+  box-shadow: var(--shadow-md);
+}
+
+[data-theme="light"] .hdr-title {
+  color: var(--text-primary);
+}
+
+[data-theme="light"] .hdr-subtitle {
+  color: var(--text-secondary);
+}
+
+[data-theme="light"] .hdr-ic {
+  background: linear-gradient(135deg, var(--accent-primary), var(--accent-secondary));
+}
+
+/* Inputs */
+[data-theme="light"] input,
+[data-theme="light"] select,
+[data-theme="light"] textarea {
+  background: var(--bg-primary);
+  color: var(--text-primary);
+  border-color: var(--border-color);
+}
+
+[data-theme="light"] input:focus,
+[data-theme="light"] select:focus,
+[data-theme="light"] textarea:focus {
+  border-color: var(--accent-primary);
+  background: var(--bg-primary);
+}
+
+[data-theme="light"] input::placeholder,
+[data-theme="light"] textarea::placeholder {
+  color: var(--text-muted);
+}
+
+/* Buttons */
+[data-theme="light"] .btn {
+  background: var(--accent-primary);
+  color: white;
+  border: none;
+}
+
+[data-theme="light"] .btn:hover {
+  background: var(--accent-hover);
+}
+
+[data-theme="light"] .btn-secondary {
+  background: var(--bg-tertiary);
+  color: var(--text-primary);
+  border: 1px solid var(--border-color);
+}
+
+[data-theme="light"] .btn-secondary:hover {
+  background: var(--bg-secondary);
+  border-color: var(--border-hover);
+}
+
+[data-theme="light"] .btn-ghost {
+  background: transparent;
+  color: var(--text-secondary);
+  border: 1px solid var(--border-color);
+}
+
+[data-theme="light"] .btn-ghost:hover {
+  background: var(--bg-tertiary);
+  color: var(--text-primary);
+}
+
+/* Sections/Cards */
+[data-theme="light"] .section {
+  background: var(--bg-card);
+  border: 1px solid var(--border-color);
+  box-shadow: var(--shadow-sm);
+}
+
+[data-theme="light"] .sec-h {
+  background: var(--bg-tertiary);
+  border-bottom: 1px solid var(--border-color);
+}
+
+[data-theme="light"] .sec-title {
+  color: var(--text-primary);
+}
+
+[data-theme="light"] .sec-b {
+  background: var(--bg-card);
+}
+
+/* Card toggle buttons */
+[data-theme="light"] .card-toggle {
+  color: var(--text-secondary);
+}
+
+[data-theme="light"] .card-toggle:hover {
+  color: var(--text-primary);
+  background: var(--bg-tertiary);
+}
+
+/* Summary panel */
+[data-theme="light"] .card-summary {
+  border: 2px solid var(--accent-primary);
+  background: linear-gradient(135deg, var(--bg-card), #f0f9ff);
+}
+
+[data-theme="light"] .summary-value {
+  color: var(--text-primary);
+}
+
+[data-theme="light"] .summary-block-total .summary-value {
+  color: var(--accent-primary);
+}
+
+/* Line items */
+[data-theme="light"] .line-item {
+  background: var(--bg-secondary);
+  border: 1px solid var(--border-color);
+}
+
+[data-theme="light"] .line-item:hover {
+  background: var(--bg-tertiary);
+  border-color: var(--border-hover);
+}
+
+[data-theme="light"] .line-remove-btn {
+  background: var(--error);
+  color: white;
+}
+
+[data-theme="light"] .line-duplicate-btn {
+  background: var(--bg-tertiary);
+  color: var(--text-primary);
+  border: 1px solid var(--border-color);
+}
+
+/* Field labels and help text */
+[data-theme="light"] .field-label {
+  color: var(--text-primary);
+}
+
+[data-theme="light"] .field-help,
+[data-theme="light"] small {
+  color: var(--text-tertiary);
+}
+
+/* Wizard/Modal */
+[data-theme="light"] .wizard-overlay {
+  background: rgba(15, 23, 42, 0.5);
+}
+
+[data-theme="light"] .wizard-dialog {
+  background: var(--bg-card);
+  border: 1px solid var(--border-color);
+  box-shadow: var(--shadow-lg);
+}
+
+[data-theme="light"] .wizard-header {
+  background: var(--bg-tertiary);
+  border-bottom: 1px solid var(--border-color);
+  color: var(--text-primary);
+}
+
+[data-theme="light"] .wizard-close {
+  color: var(--text-secondary);
+}
+
+[data-theme="light"] .wizard-close:hover {
+  color: var(--text-primary);
+  background: var(--bg-secondary);
+}
+
+/* Toast notifications - light theme adjustments */
+[data-theme="light"] .toast {
+  background: rgba(255, 255, 255, 0.98);
+  color: var(--text-primary);
+  border: 1px solid var(--border-color);
+  box-shadow: var(--shadow-lg);
+}
+
+/* Scrollbars */
+[data-theme="light"] ::-webkit-scrollbar {
+  width: 10px;
+  height: 10px;
+}
+
+[data-theme="light"] ::-webkit-scrollbar-track {
+  background: var(--bg-secondary);
+}
+
+[data-theme="light"] ::-webkit-scrollbar-thumb {
+  background: var(--border-hover);
+  border-radius: 5px;
+}
+
+[data-theme="light"] ::-webkit-scrollbar-thumb:hover {
+  background: var(--text-muted);
+}
+
+/* Links */
+[data-theme="light"] a {
+  color: var(--accent-primary);
+}
+
+[data-theme="light"] a:hover {
+  color: var(--accent-hover);
+}
+
+/* Config grid */
+[data-theme="light"] .config-grid {
+  gap: 12px;
+}
+
+/* Theme toggle button styling */
+.theme-toggle-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 14px;
+  padding: 8px 12px;
+  transition: all 0.2s ease;
+}
+
+/* Smooth theme transition */
+body,
+.hdr,
+.section,
+.btn,
+input,
+select,
+textarea,
+.line-item {
+  transition: background-color 0.3s ease, color 0.3s ease, border-color 0.3s ease;
+}
+
+/* High contrast for accessibility */
+@media (prefers-contrast: high) {
+  [data-theme="light"] {
+    --border-color: #94a3b8;
+    --text-secondary: #334155;
+  }
+}
+
+/* Print - always use light theme */
+@media print {
+  [data-theme="dark"] body,
+  [data-theme="dark"] .hdr,
+  [data-theme="dark"] .section {
+    background: white !important;
+    color: #1f2937 !important;
+  }
+}

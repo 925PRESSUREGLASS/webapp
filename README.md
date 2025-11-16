@@ -26,6 +26,9 @@ Professional quoting tool for **925 Pressure Glass** - Window & Pressure Cleanin
 - **Quick Help** - Press `?` to see available shortcuts
 - **Error Handling** - LocalStorage quota warnings, validation, offline detection
 - **Form Validation** - Real-time validation with helpful error messages
+- **Dark/Light Theme** - Toggle themes with ☀️/🌙 button, respects system preference
+- **Quote History & Analytics** - Track all quotes, view business statistics
+- **Photo Upload** - Attach before/after photos with automatic compression
 
 ### Technology
 - Pure Vanilla JavaScript (ES5-compatible for iOS Safari)
@@ -188,9 +191,62 @@ Perfect for:
 - Quote comparisons in Excel
 - Business analytics and reporting
 
+## Theme Support
+
+Switch between dark and light themes:
+- Click the ☀️/🌙 button in the header
+- Automatically detects system preference
+- Saves your preference
+- Smooth animated transitions
+
+Perfect for:
+- Daytime use (light theme)
+- Nighttime use (dark theme)
+- Reducing eye strain
+- Matching your device settings
+
+## Quote History & Analytics
+
+Track your business performance:
+- Automatic quote history (last 100 quotes)
+- Total revenue and quote count
+- Average quote value
+- Total hours estimated
+- Quote breakdown (windows/pressure/mixed)
+- Top clients by revenue
+- Export history to CSV
+
+**To use:**
+1. Click "Save to History" after creating a quote
+2. View analytics in the Analytics panel
+3. Export history for accounting/reporting
+
+## Photo Attachments
+
+Document jobs with before/after photos:
+- Click "📷 Add Photos" to upload
+- Automatic image compression (max 1920px)
+- Base64 storage for offline capability
+- Photos included in quotes
+- Thumbnail gallery view
+- Remove individual photos or clear all
+
+**Supported:**
+- All image formats (JPEG, PNG, etc.)
+- Multiple photos per quote
+- Up to 5MB per image (before compression)
+
 ## Recent Improvements
 
-### v1.3 (Latest)
+### v1.4 (Latest)
+- ✅ Dark/Light theme toggle with system preference
+- ✅ Quote history tracking (last 100 quotes)
+- ✅ Business analytics dashboard
+- ✅ Photo upload with automatic compression
+- ✅ Base64 photo storage for offline use
+- ✅ Enhanced UI with new panels
+
+### v1.3
 - ✅ CSV/Excel export functionality
 - ✅ Quote templates system (5 built-in + custom)
 - ✅ Enhanced error handling and validation
