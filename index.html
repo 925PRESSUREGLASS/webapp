@@ -1,0 +1,341 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+	<meta charset="UTF-8" />
+	<title>Tic-Tac-Stick Quote Engine</title>
+	<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+	<!-- CSS -->
+	<link rel="stylesheet" href="app.css" />
+</head>
+
+<body class="accordion-mode">
+	<div class="app">
+		<!-- HEADER -->
+		<header class="hdr">
+			<div class="hdr-row">
+				<div class="hdr-ic">🧽</div>
+				<div class="hdr-info">
+					<div class="hdr-title">Tic-Tac-Stick Quote Engine</div>
+					<div class="hdr-subtitle">925 Pressure Glass · Window & Pressure Cleaning</div>
+				</div>
+			</div>
+			<div class="hdr-row hdr-row-meta">
+				<div class="hdr-meta">
+					<label class="hdr-meta-field">
+						<span>Quote Title</span>
+						<input id="quoteTitleInput" type="text" placeholder="e.g. Zoe Williams – Balcony Glass & External Doors" />
+					</label>
+					<label class="hdr-meta-field">
+						<span>Client Name</span>
+						<input id="clientNameInput" type="text" placeholder="Client name" />
+					</label>
+					<label class="hdr-meta-field">
+						<span>Client Location / Area</span>
+						<input id="clientLocationInput" type="text" placeholder="Suburb / area" />
+					</label>
+					<label class="hdr-meta-field">
+						<span>Job Type</span>
+						<select id="jobTypeInput">
+							<option value="">Select...</option>
+							<option value="residential">Residential Windows</option>
+							<option value="commercial">Commercial Windows</option>
+							<option value="pressure">Pressure Cleaning</option>
+							<option value="mixed">Mixed Windows & Pressure</option>
+						</select>
+					</label>
+				</div>
+				<div class="hdr-actions">
+					<button id="toggleModeBtn" type="button" class="btn btn-secondary">
+						Switch to Wizard Mode
+					</button>
+					<button id="clearAllBtn" type="button" class="btn btn-ghost">
+						Clear All
+					</button>
+				</div>
+			</div>
+		</header>
+
+		<!-- MAIN -->
+		<main class="main">
+			<!-- LEFT COLUMN -->
+			<section class="col col-left">
+				<!-- CONFIG PANEL -->
+				<section class="section" id="configPanel">
+					<header class="sec-h">
+						<h2 class="sec-title">Job Settings</h2>
+						<button class="card-toggle" type="button" data-target="configBody">▾</button>
+					</header>
+					<div class="sec-b" id="configBody">
+						<div class="config-grid">
+							<!-- BASE FEE -->
+							<label class="field">
+								<span class="field-label">Base Callout Fee ($)</span>
+								<input id="baseFeeInput" type="number" min="0" step="1" value="120" inputmode="decimal" />
+								<small class="field-help">
+									Covers travel & setup; always charged once per job.
+								</small>
+							</label>
+
+							<!-- HOURLY RATE -->
+							<label class="field">
+								<span class="field-label">Hourly Rate ($/hr)</span>
+								<input id="hourlyRateInput" type="number" min="0" step="1" value="95" inputmode="decimal" />
+								<small class="field-help">
+									Used to convert time to labour cost.
+								</small>
+							</label>
+
+							<!-- MINIMUM JOB -->
+							<label class="field">
+								<span class="field-label">Minimum Job Charge ($)</span>
+								<input id="minimumJobInput" type="number" min="0" step="1" value="180" inputmode="decimal" />
+								<small class="field-help">
+									Final total will never drop below this amount.
+								</small>
+							</label>
+
+							<!-- HIGH REACH MODIFIER -->
+							<label class="field">
+								<span class="field-label">High Reach Modifier (%)</span>
+								<input id="highReachModifierInput" type="number" min="0" step="5" value="60" inputmode="decimal" />
+								<small class="field-help">
+									Added as a % of exterior pane cost for high reach work.
+								</small>
+							</label>
+
+							<!-- INSIDE / OUTSIDE MULTIPLIERS -->
+							<label class="field">
+								<span class="field-label">Inside Time Multiplier</span>
+								<input id="insideMultiplierInput" type="number" min="0.5" step="0.1" value="1.0" inputmode="decimal" />
+								<small class="field-help">Fine-tune inside pane timings.</small>
+							</label>
+
+							<label class="field">
+								<span class="field-label">Outside Time Multiplier</span>
+								<input id="outsideMultiplierInput" type="number" min="0.5" step="0.1" value="1.0" inputmode="decimal" />
+								<small class="field-help">Fine-tune outside pane timings.</small>
+							</label>
+
+							<!-- PRESSURE CLEAN SETTINGS -->
+							<label class="field">
+								<span class="field-label">Pressure Clean Base Rate ($/hr)</span>
+								<input id="pressureHourlyRateInput" type="number" min="0" step="1" value="120" inputmode="decimal" />
+								<small class="field-help">
+									Used for all surface time calculations.
+								</small>
+							</label>
+
+							<label class="field">
+								<span class="field-label">Travel / Setup Buffer (mins)</span>
+								<input id="setupBufferMinutesInput" type="number" min="0" step="5" value="15" inputmode="numeric" />
+								<small class="field-help">
+									Added once per job to cover hose run, machine setup, etc.
+								</small>
+							</label>
+						</div>
+
+						<!-- AUTOSAVE & PRESETS -->
+						<div class="config-footer">
+							<label class="toggle">
+								<input id="autosaveToggle" type="checkbox" checked />
+								<span>Autosave this quote in browser</span>
+							</label>
+							<div class="config-footer-row">
+								<button id="savePresetBtn" type="button" class="btn btn-small">
+									Save as Preset
+								</button>
+								<select id="presetSelect" class="preset-select">
+									<option value="">Load Preset...</option>
+								</select>
+							</div>
+						</div>
+					</div>
+				</section>
+
+				<!-- WINDOWS PANEL -->
+				<section class="section" id="windowsPanel">
+					<header class="sec-h">
+						<h2 class="sec-title">Windows</h2>
+						<div class="card-hdr-actions">
+							<button id="addWindowLineBtn" type="button" class="btn btn-small">
+								+ Add Manual Line
+							</button>
+							<button id="openWindowWizardBtn" type="button" class="btn btn-secondary btn-small">
+								Open Window Wizard
+							</button>
+							<button class="card-toggle" type="button" data-target="windowsBody">▾</button>
+						</div>
+					</header>
+					<div class="sec-b" id="windowsBody">
+						<div class="lines-list" id="windowLinesContainer"></div>
+					</div>
+				</section>
+
+				<!-- PRESSURE PANEL -->
+				<section class="section" id="pressurePanel">
+					<header class="sec-h">
+						<h2 class="sec-title">Pressure Cleaning</h2>
+						<div class="card-hdr-actions">
+							<button id="addPressureLineBtn" type="button" class="btn btn-small">
+								+ Add Manual Line
+							</button>
+							<button id="openPressureWizardBtn" type="button" class="btn btn-secondary btn-small">
+								Open Pressure Wizard
+							</button>
+							<button class="card-toggle" type="button" data-target="pressureBody">▾</button>
+						</div>
+					</header>
+					<div class="sec-b" id="pressureBody">
+						<div class="lines-list" id="pressureLinesContainer"></div>
+					</div>
+				</section>
+			</section>
+
+			<!-- RIGHT COLUMN -->
+			<section class="col col-right">
+				<!-- SUMMARY PANEL -->
+				<section class="section card-summary" id="summaryPanel">
+					<header class="sec-h">
+						<h2 class="sec-title">Quote Summary</h2>
+						<button class="card-toggle" type="button" data-target="summaryBody">▾</button>
+					</header>
+					<div class="sec-b" id="summaryBody">
+					<div class="summary-main">
+  <div class="summary-block">
+    <div class="summary-label">Subtotal (excl. GST)</div>
+    <div class="summary-value" id="subtotalDisplay">$0</div>
+  </div>
+  <div class="summary-block">
+    <div class="summary-label">High Reach Adjustments</div>
+    <div class="summary-value" id="highReachDisplay">$0</div>
+  </div>
+  <div class="summary-block">
+    <div class="summary-label">GST (10%)</div>
+    <div class="summary-value" id="gstDisplay">$0</div>
+  </div>
+  <div class="summary-block summary-block-total">
+    <div class="summary-label">Final Total (incl. GST, inc. min job)</div>
+    <div class="summary-value" id="totalIncGstDisplay">$0</div>
+  </div>
+</div>
+							<div class="summary-block">
+								<div class="summary-label">High Reach Adjustments</div>
+								<div class="summary-value" id="highReachDisplay">$0</div>
+							</div>
+							<div class="summary-block summary-block-total">
+								<div class="summary-label">Final Total (inc. min job)</div>
+								<div class="summary-value" id="totalDisplay">$0</div>
+							</div>
+						</div>
+
+						<div class="summary-sub">
+							<div class="summary-sub-col">
+								<h3>Time Estimate</h3>
+								<p id="timeEstimateDisplay">0.00 hrs total</p>
+								<ul class="summary-list">
+									<li><span>Windows Time:</span> <span id="windowsTimeDisplay">0.00 hrs</span></li>
+									<li><span>Pressure Time:</span> <span id="pressureTimeDisplay">0.00 hrs</span></li>
+									<li><span>Setup / Travel:</span> <span id="setupTimeDisplay">0.00 hrs</span></li>
+									<li><span>High Reach Extra:</span> <span id="highReachTimeDisplay">0.00 hrs</span></li>
+								</ul>
+							</div>
+							<div class="summary-sub-col">
+								<h3>Cost Breakdown</h3>
+								<ul class="summary-list">
+									<li><span>Base Callout:</span> <span id="baseFeeDisplay">$0</span></li>
+									<li><span>Windows Labour:</span> <span id="windowsCostDisplay">$0</span></li>
+									<li><span>Pressure Labour:</span> <span id="pressureCostDisplay">$0</span></li>
+									<li><span>High Reach Premium:</span> <span id="highReachCostDisplay">$0</span></li>
+									<li><span>Other Adjustments:</span> <span id="otherAdjustmentsDisplay">$0</span></li>
+								</ul>
+							</div>
+						</div>
+
+						<div class="summary-chart-wrap">
+							<h3>Time Distribution</h3>
+							<canvas id="timeChart" width="400" height="200"></canvas>
+						</div>
+					</div>
+				</section>
+
+				<!-- NOTES PANEL -->
+				<section class="section" id="notesPanel">
+					<header class="sec-h">
+						<h2 class="sec-title">Notes & Extras</h2>
+						<button class="card-toggle" type="button" data-target="notesBody">▾</button>
+					</header>
+					<div class="sec-b" id="notesBody">
+						<label class="field">
+							<span class="field-label">Internal Notes (for you)</span>
+							<textarea id="internalNotesInput" rows="4" placeholder="E.g. ladder access required, tight balcony, recurring customer"></textarea>
+						</label>
+
+						<label class="field">
+							<span class="field-label">Client-Facing Notes</span>
+							<textarea id="clientNotesInput" rows="4" placeholder="E.g. Quote excludes flyscreen removal, valid for 14 days."></textarea>
+						</label>
+
+						<div class="notes-footer">
+							<button id="generatePdfBtn" type="button" class="btn">
+								Export Quote Breakdown (PDF)
+							</button>
+							<button id="copySummaryBtn" type="button" class="btn btn-secondary">
+								Copy Summary for SMS / Email
+							</button>
+						</div>
+					</div>
+				</section>
+
+				<!-- SAVED QUOTES PANEL -->
+				<section class="section" id="savedQuotesPanel">
+					<header class="sec-h">
+						<h2 class="sec-title">Saved Quotes</h2>
+						<button class="card-toggle" type="button" data-target="savedQuotesBody">▾</button>
+					</header>
+					<div class="sec-b" id="savedQuotesBody">
+						<div class="saved-quotes-row">
+							<select id="savedQuotesSelect" class="saved-quotes-select">
+								<option value="">Select Saved Quote...</option>
+							</select>
+							<button id="loadSavedQuoteBtn" type="button" class="btn btn-small">
+								Load
+							</button>
+							<button id="deleteSavedQuoteBtn" type="button" class="btn btn-small btn-ghost">
+								Delete
+							</button>
+						</div>
+						<p class="saved-quotes-help">
+							Quotes are stored in your browser only. Use this section to quickly reload regular
+							jobs or typical setups.
+						</p>
+					</div>
+				</section>
+			</section>
+		</main>
+	</div> <!-- /.app -->
+
+	<!-- WIZARD OVERLAY -->
+	<div id="wizardOverlay" class="wizard-overlay">
+		<div class="wizard-dialog">
+			<div class="wizard-header">
+				<h2 id="wizardTitle">Wizard</h2>
+				<button id="wizardCloseBtn" type="button" class="wizard-close">×</button>
+			</div>
+			<div id="wizardContent" class="wizard-content">
+				<!-- Filled dynamically by wizard.js -->
+			</div>
+		</div>
+	</div>
+
+	<!-- SCRIPTS -->
+	<script src="https://cdn.jsdelivr.net/npm/chart.js" defer></script>
+	<script src="data.js" defer></script>
+	<script src="storage.js" defer></script>
+	<script src="calc.js" defer></script>
+	<script src="wizard.js" defer></script>
+	<script src="app.js" defer></script>
+	<script src="ui.js" defer></script>
+</body>
+
+</html>
