@@ -2,12 +2,17 @@
 // Tests user interface functionality, wizards, and data persistence
 
 const { test, expect } = require('@playwright/test');
+const path = require('path');
+
+const APP_URL = 'file://' + path.resolve(__dirname, '../index.html');
 
 test.describe('UI Interactions', () => {
   test.beforeEach(async ({ page }) => {
-    await page.goto('/');
+    await page.goto(APP_URL);
+    await page.waitForLoadState('networkidle');
     await page.evaluate(() => localStorage.clear());
     await page.reload();
+    await page.waitForLoadState('networkidle');
   });
 
   test('should toggle accordion sections', async ({ page }) => {

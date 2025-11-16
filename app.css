@@ -644,3 +644,18 @@ body.accordion-mode .card-body.card-body-open {
 #totalIncGstDisplay {
   font-size: 1.4rem;
 }
+/* Fix for canvas blocking clicks on other elements */
+#timeChart {
+  pointer-events: none;
+}
+
+/* Re-enable pointer events when hovering specifically over the canvas area */
+.summary-chart-wrap:hover #timeChart {
+  pointer-events: auto;
+}
+
+/* Ensure invoice button and other footer buttons are clickable */
+.notes-footer button {
+  position: relative;
+  z-index: 1;
+}

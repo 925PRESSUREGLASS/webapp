@@ -412,6 +412,7 @@
         '<div class="invoice-modal-body">' +
           '<div class="invoice-toolbar">' +
             '<button type="button" class="btn btn-primary" id="createInvoiceBtn">Create Invoice from Quote</button>' +
+            '<button type="button" class="btn btn-secondary" id="showAgingReportBtn">📊 Aging Report</button>' +
             '<button type="button" class="btn btn-secondary" id="invoiceSettingsBtn">⚙ Settings</button>' +
           '</div>' +
           '<div id="invoiceListContainer"></div>' +
@@ -436,6 +437,10 @@
       if (invoice) {
         renderInvoiceList();
       }
+    };
+
+    modal.querySelector('#showAgingReportBtn').onclick = function() {
+      showAgingReport();
     };
 
     modal.querySelector('#invoiceSettingsBtn').onclick = function() {
@@ -515,26 +520,802 @@
 
   // Show settings modal
   function showSettingsModal() {
-    // Implementation to be added
-    if (window.ErrorHandler) {
-      window.ErrorHandler.showInfo('Settings modal coming soon');
+    var modal = createSettingsModal();
+    document.body.appendChild(modal);
+    modal.classList.add('active');
+  }
+
+  // Create settings modal
+  function createSettingsModal() {
+    var existing = document.getElementById('invoiceSettingsModal');
+    if (existing) {
+      existing.remove();
     }
+
+    var modal = document.createElement('div');
+    modal.id = 'invoiceSettingsModal';
+    modal.className = 'invoice-modal';
+    modal.innerHTML =
+      '<div class="invoice-modal-content invoice-modal-small">' +
+        '<div class="invoice-modal-header">' +
+          '<h2>Invoice Settings</h2>' +
+          '<button type="button" class="invoice-modal-close" aria-label="Close">&times;</button>' +
+        '</div>' +
+        '<div class="invoice-modal-body">' +
+          '<form id="invoiceSettingsForm" class="settings-form">' +
+            '<div class="form-group">' +
+              '<label for="invoicePrefix">Invoice Prefix</label>' +
+              '<input type="text" id="invoicePrefix" value="' + escapeHtml(settings.invoicePrefix) + '" placeholder="INV-" />' +
+            '</div>' +
+            '<div class="form-group">' +
+              '<label for="nextInvoiceNumber">Next Invoice Number</label>' +
+              '<input type="number" id="nextInvoiceNumber" value="' + settings.nextInvoiceNumber + '" min="1" />' +
+            '</div>' +
+            '<div class="form-group">' +
+              '<label for="paymentTermsDays">Payment Terms (days)</label>' +
+              '<input type="number" id="paymentTermsDays" value="' + settings.paymentTermsDays + '" min="0" />' +
+            '</div>' +
+            '<div class="form-group">' +
+              '<label for="bankName">Bank Name</label>' +
+              '<input type="text" id="bankName" value="' + escapeHtml(settings.bankName) + '" placeholder="e.g. Commonwealth Bank" />' +
+            '</div>' +
+            '<div class="form-group">' +
+              '<label for="accountName">Account Name</label>' +
+              '<input type="text" id="accountName" value="' + escapeHtml(settings.accountName) + '" placeholder="e.g. 925 Pressure Glass" />' +
+            '</div>' +
+            '<div class="form-group">' +
+              '<label for="bsb">BSB</label>' +
+              '<input type="text" id="bsb" value="' + escapeHtml(settings.bsb) + '" placeholder="123-456" maxlength="7" />' +
+            '</div>' +
+            '<div class="form-group">' +
+              '<label for="accountNumber">Account Number</label>' +
+              '<input type="text" id="accountNumber" value="' + escapeHtml(settings.accountNumber) + '" placeholder="12345678" />' +
+            '</div>' +
+            '<div class="form-group">' +
+              '<label for="abn">ABN</label>' +
+              '<input type="text" id="abn" value="' + escapeHtml(settings.abn) + '" placeholder="12 345 678 901" />' +
+            '</div>' +
+            '<div class="form-actions">' +
+              '<button type="button" class="btn btn-secondary" id="cancelSettingsBtn">Cancel</button>' +
+              '<button type="submit" class="btn btn-primary">Save Settings</button>' +
+            '</div>' +
+          '</form>' +
+        '</div>' +
+      '</div>';
+
+    // Event listeners
+    modal.querySelector('.invoice-modal-close').onclick = function() {
+      modal.classList.remove('active');
+      setTimeout(function() { modal.remove(); }, 300);
+    };
+
+    modal.querySelector('#cancelSettingsBtn').onclick = function() {
+      modal.classList.remove('active');
+      setTimeout(function() { modal.remove(); }, 300);
+    };
+
+    modal.querySelector('#invoiceSettingsForm').onsubmit = function(e) {
+      e.preventDefault();
+
+      settings.invoicePrefix = document.getElementById('invoicePrefix').value;
+      settings.nextInvoiceNumber = parseInt(document.getElementById('nextInvoiceNumber').value) || 1001;
+      settings.paymentTermsDays = parseInt(document.getElementById('paymentTermsDays').value) || 7;
+      settings.bankName = document.getElementById('bankName').value;
+      settings.accountName = document.getElementById('accountName').value;
+      settings.bsb = document.getElementById('bsb').value;
+      settings.accountNumber = document.getElementById('accountNumber').value;
+      settings.abn = document.getElementById('abn').value;
+
+      saveSettings();
+
+      if (window.ErrorHandler) {
+        window.ErrorHandler.showSuccess('Settings saved');
+      }
+
+      modal.classList.remove('active');
+      setTimeout(function() { modal.remove(); }, 300);
+    };
+
+    return modal;
   }
 
   // View invoice details
   function viewInvoice(invoiceId) {
-    // Implementation to be added - will open invoice detail view
-    if (window.ErrorHandler) {
-      window.ErrorHandler.showInfo('Invoice detail view coming soon');
+    var invoice = getInvoice(invoiceId);
+    if (!invoice) {
+      if (window.ErrorHandler) {
+        window.ErrorHandler.showError('Invoice not found');
+      }
+      return;
+    }
+
+    var modal = createInvoiceDetailModal(invoice);
+    document.body.appendChild(modal);
+    modal.classList.add('active');
+  }
+
+  // Create invoice detail modal
+  function createInvoiceDetailModal(invoice) {
+    var existing = document.getElementById('invoiceDetailModal');
+    if (existing) {
+      existing.remove();
+    }
+
+    var statusData = INVOICE_STATUSES[invoice.status];
+    var dueDate = new Date(invoice.dueDate);
+    var invoiceDate = new Date(invoice.invoiceDate);
+
+    var modal = document.createElement('div');
+    modal.id = 'invoiceDetailModal';
+    modal.className = 'invoice-modal';
+
+    var html = '<div class="invoice-modal-content">';
+    html += '<div class="invoice-modal-header">';
+    html += '<h2>Invoice ' + invoice.invoiceNumber + '</h2>';
+    html += '<button type="button" class="invoice-modal-close" aria-label="Close">&times;</button>';
+    html += '</div>';
+    html += '<div class="invoice-modal-body">';
+
+    // Status and key info
+    html += '<div class="invoice-detail-header">';
+    html += '<div class="invoice-status" style="background-color: ' + statusData.color + ';">';
+    html += statusData.icon + ' ' + statusData.label;
+    html += '</div>';
+    html += '<div class="invoice-detail-dates">';
+    html += '<div><strong>Invoice Date:</strong> ' + invoiceDate.toLocaleDateString() + '</div>';
+    html += '<div><strong>Due Date:</strong> ' + dueDate.toLocaleDateString() + '</div>';
+    html += '</div>';
+    html += '</div>';
+
+    // Client info
+    html += '<div class="invoice-section">';
+    html += '<h3>Client Details</h3>';
+    html += '<div class="invoice-detail-row"><strong>' + escapeHtml(invoice.clientName || 'No client name') + '</strong></div>';
+    if (invoice.clientLocation) {
+      html += '<div class="invoice-detail-row">' + escapeHtml(invoice.clientLocation) + '</div>';
+    }
+    if (invoice.clientEmail) {
+      html += '<div class="invoice-detail-row">Email: ' + escapeHtml(invoice.clientEmail) + '</div>';
+    }
+    if (invoice.clientPhone) {
+      html += '<div class="invoice-detail-row">Phone: ' + escapeHtml(invoice.clientPhone) + '</div>';
+    }
+    html += '</div>';
+
+    // Financial summary
+    html += '<div class="invoice-section">';
+    html += '<h3>Financial Summary</h3>';
+    html += '<div class="invoice-summary-grid">';
+    html += '<div class="invoice-summary-row"><span>Subtotal:</span> <strong>$' + invoice.subtotal.toFixed(2) + '</strong></div>';
+    html += '<div class="invoice-summary-row"><span>GST (10%):</span> <strong>$' + invoice.gst.toFixed(2) + '</strong></div>';
+    html += '<div class="invoice-summary-row invoice-total-row"><span>Total:</span> <strong>$' + invoice.total.toFixed(2) + '</strong></div>';
+    html += '<div class="invoice-summary-row invoice-paid-row"><span>Paid:</span> <strong>$' + invoice.amountPaid.toFixed(2) + '</strong></div>';
+    html += '<div class="invoice-summary-row invoice-balance-row"><span>Balance Due:</span> <strong>$' + invoice.balance.toFixed(2) + '</strong></div>';
+    html += '</div>';
+    html += '</div>';
+
+    // Payment history
+    if (invoice.payments && invoice.payments.length > 0) {
+      html += '<div class="invoice-section">';
+      html += '<h3>Payment History</h3>';
+      invoice.payments.forEach(function(payment) {
+        var paymentDate = new Date(payment.date);
+        html += '<div class="payment-record">';
+        html += '<div class="payment-record-row">';
+        html += '<span>' + paymentDate.toLocaleDateString() + '</span>';
+        html += '<strong>$' + payment.amount.toFixed(2) + '</strong>';
+        html += '</div>';
+        html += '<div class="payment-record-details">';
+        html += 'Method: ' + payment.method;
+        if (payment.reference) {
+          html += ' | Ref: ' + escapeHtml(payment.reference);
+        }
+        html += '</div>';
+        if (payment.notes) {
+          html += '<div class="payment-record-notes">' + escapeHtml(payment.notes) + '</div>';
+        }
+        html += '</div>';
+      });
+      html += '</div>';
+    }
+
+    // Actions
+    html += '<div class="invoice-detail-actions">';
+    if (invoice.balance > 0 && invoice.status !== 'cancelled') {
+      html += '<button type="button" class="btn btn-primary" onclick="window.InvoiceManager.showPaymentModal(\'' + invoice.id + '\')">Record Payment</button>';
+    }
+    html += '<button type="button" class="btn btn-secondary" onclick="window.InvoiceManager.changeStatus(\'' + invoice.id + '\')">Change Status</button>';
+    html += '<button type="button" class="btn btn-ghost" onclick="window.InvoiceManager.printInvoice(\'' + invoice.id + '\')">Print Invoice</button>';
+    html += '</div>';
+
+    html += '</div>';
+    html += '</div>';
+
+    modal.innerHTML = html;
+
+    // Event listener
+    modal.querySelector('.invoice-modal-close').onclick = function() {
+      modal.classList.remove('active');
+      setTimeout(function() { modal.remove(); }, 300);
+    };
+
+    modal.onclick = function(e) {
+      if (e.target === modal) {
+        modal.classList.remove('active');
+        setTimeout(function() { modal.remove(); }, 300);
+      }
+    };
+
+    return modal;
+  }
+
+  // Show record payment modal
+  function showRecordPaymentModal(invoiceId) {
+    var invoice = getInvoice(invoiceId);
+    if (!invoice) {
+      if (window.ErrorHandler) {
+        window.ErrorHandler.showError('Invoice not found');
+      }
+      return;
+    }
+
+    if (invoice.balance <= 0) {
+      if (window.ErrorHandler) {
+        window.ErrorHandler.showInfo('Invoice is already paid in full');
+      }
+      return;
+    }
+
+    var modal = createPaymentModal(invoice);
+    document.body.appendChild(modal);
+    modal.classList.add('active');
+  }
+
+  // Create payment modal
+  function createPaymentModal(invoice) {
+    var existing = document.getElementById('paymentModal');
+    if (existing) {
+      existing.remove();
+    }
+
+    var modal = document.createElement('div');
+    modal.id = 'paymentModal';
+    modal.className = 'invoice-modal';
+    modal.innerHTML =
+      '<div class="invoice-modal-content invoice-modal-small">' +
+        '<div class="invoice-modal-header">' +
+          '<h2>Record Payment</h2>' +
+          '<button type="button" class="invoice-modal-close" aria-label="Close">&times;</button>' +
+        '</div>' +
+        '<div class="invoice-modal-body">' +
+          '<div class="payment-summary">' +
+            '<div>Invoice: <strong>' + invoice.invoiceNumber + '</strong></div>' +
+            '<div>Balance Due: <strong>$' + invoice.balance.toFixed(2) + '</strong></div>' +
+          '</div>' +
+          '<form id="paymentForm" class="payment-form">' +
+            '<div class="form-group">' +
+              '<label for="paymentAmount">Amount *</label>' +
+              '<input type="number" id="paymentAmount" step="0.01" min="0.01" max="' + invoice.balance + '" value="' + invoice.balance.toFixed(2) + '" required />' +
+            '</div>' +
+            '<div class="form-group">' +
+              '<label for="paymentMethod">Payment Method *</label>' +
+              '<select id="paymentMethod" required>' +
+                '<option value="cash">Cash</option>' +
+                '<option value="eft">EFT/Bank Transfer</option>' +
+                '<option value="card">Credit/Debit Card</option>' +
+                '<option value="cheque">Cheque</option>' +
+                '<option value="other">Other</option>' +
+              '</select>' +
+            '</div>' +
+            '<div class="form-group">' +
+              '<label for="paymentDate">Payment Date *</label>' +
+              '<input type="date" id="paymentDate" value="' + new Date().toISOString().split('T')[0] + '" required />' +
+            '</div>' +
+            '<div class="form-group">' +
+              '<label for="paymentReference">Reference/Transaction ID</label>' +
+              '<input type="text" id="paymentReference" placeholder="Optional" />' +
+            '</div>' +
+            '<div class="form-group">' +
+              '<label for="paymentNotes">Notes</label>' +
+              '<textarea id="paymentNotes" rows="2" placeholder="Optional"></textarea>' +
+            '</div>' +
+            '<div class="form-actions">' +
+              '<button type="button" class="btn btn-secondary" id="cancelPaymentBtn">Cancel</button>' +
+              '<button type="submit" class="btn btn-primary">Record Payment</button>' +
+            '</div>' +
+          '</form>' +
+        '</div>' +
+      '</div>';
+
+    // Event listeners
+    modal.querySelector('.invoice-modal-close').onclick = function() {
+      modal.classList.remove('active');
+      setTimeout(function() { modal.remove(); }, 300);
+    };
+
+    modal.querySelector('#cancelPaymentBtn').onclick = function() {
+      modal.classList.remove('active');
+      setTimeout(function() { modal.remove(); }, 300);
+    };
+
+    modal.querySelector('#paymentForm').onsubmit = function(e) {
+      e.preventDefault();
+
+      var paymentData = {
+        amount: document.getElementById('paymentAmount').value,
+        method: document.getElementById('paymentMethod').value,
+        date: new Date(document.getElementById('paymentDate').value).getTime(),
+        reference: document.getElementById('paymentReference').value,
+        notes: document.getElementById('paymentNotes').value
+      };
+
+      var success = recordPayment(invoice.id, paymentData);
+      if (success) {
+        modal.classList.remove('active');
+        setTimeout(function() { modal.remove(); }, 300);
+
+        // Refresh invoice list if visible
+        renderInvoiceList();
+
+        // Close detail modal and reopen with updated data
+        var detailModal = document.getElementById('invoiceDetailModal');
+        if (detailModal) {
+          detailModal.classList.remove('active');
+          setTimeout(function() {
+            detailModal.remove();
+            viewInvoice(invoice.id);
+          }, 300);
+        }
+      }
+    };
+
+    return modal;
+  }
+
+  // Change invoice status
+  function changeInvoiceStatus(invoiceId) {
+    // Simple prompt for now - can be enhanced with a modal
+    var invoice = getInvoice(invoiceId);
+    if (!invoice) return;
+
+    var statusOptions = Object.keys(INVOICE_STATUSES).map(function(key) {
+      return key + ': ' + INVOICE_STATUSES[key].label;
+    }).join('\n');
+
+    var newStatus = prompt('Select new status:\n\n' + statusOptions + '\n\nEnter status:');
+    if (newStatus && INVOICE_STATUSES[newStatus]) {
+      updateInvoiceStatus(invoiceId, newStatus);
+      renderInvoiceList();
+
+      // Refresh detail view
+      var detailModal = document.getElementById('invoiceDetailModal');
+      if (detailModal) {
+        detailModal.classList.remove('active');
+        setTimeout(function() {
+          detailModal.remove();
+          viewInvoice(invoiceId);
+        }, 300);
+      }
     }
   }
 
-  // Record payment (show modal)
-  function showRecordPaymentModal(invoiceId) {
-    // Implementation to be added
-    if (window.ErrorHandler) {
-      window.ErrorHandler.showInfo('Payment modal coming soon');
+  // Print invoice
+  function printInvoiceView(invoiceId) {
+    var invoice = getInvoice(invoiceId);
+    if (!invoice) {
+      if (window.ErrorHandler) {
+        window.ErrorHandler.showError('Invoice not found');
+      }
+      return;
     }
+
+    // Create print container
+    var printContainer = document.createElement('div');
+    printContainer.id = 'invoicePrintContainer';
+    printContainer.className = 'invoice-print-view';
+
+    // Format dates
+    var invoiceDate = new Date(invoice.invoiceDate).toLocaleDateString();
+    var dueDate = new Date(invoice.dueDate).toLocaleDateString();
+
+    // Build print HTML
+    var html = '<div class="invoice-print-page">';
+
+    // Header
+    html += '<div class="invoice-print-header">';
+    html += '<div class="invoice-print-logo">';
+    html += '<h1>Tic-Tac-Stick</h1>';
+    html += '<p>Window Cleaning & Pressure Cleaning</p>';
+    html += '</div>';
+    html += '<div class="invoice-print-title">';
+    html += '<h2>INVOICE</h2>';
+    html += '<div class="invoice-print-number">' + escapeHtml(invoice.invoiceNumber) + '</div>';
+    html += '</div>';
+    html += '</div>';
+
+    // Invoice details and client info
+    html += '<div class="invoice-print-details">';
+    html += '<div class="invoice-print-info-section">';
+    html += '<div class="invoice-print-info-row"><strong>Invoice Date:</strong> <span>' + invoiceDate + '</span></div>';
+    html += '<div class="invoice-print-info-row"><strong>Due Date:</strong> <span>' + dueDate + '</span></div>';
+    if (invoice.quoteTitle) {
+      html += '<div class="invoice-print-info-row"><strong>Job:</strong> <span>' + escapeHtml(invoice.quoteTitle) + '</span></div>';
+    }
+    html += '</div>';
+    html += '<div class="invoice-print-client">';
+    html += '<h3>Bill To:</h3>';
+    html += '<p><strong>' + escapeHtml(invoice.clientName) + '</strong></p>';
+    if (invoice.clientLocation) html += '<p>' + escapeHtml(invoice.clientLocation) + '</p>';
+    if (invoice.clientEmail) html += '<p>' + escapeHtml(invoice.clientEmail) + '</p>';
+    if (invoice.clientPhone) html += '<p>' + escapeHtml(invoice.clientPhone) + '</p>';
+    html += '</div>';
+    html += '</div>';
+
+    // Line items
+    html += '<table class="invoice-print-table">';
+    html += '<thead>';
+    html += '<tr>';
+    html += '<th>Description</th>';
+    html += '<th class="invoice-print-align-right">Amount</th>';
+    html += '</tr>';
+    html += '</thead>';
+    html += '<tbody>';
+
+    // Add window cleaning lines
+    if (invoice.windowLines && invoice.windowLines.length > 0) {
+      invoice.windowLines.forEach(function(line) {
+        html += '<tr>';
+        html += '<td>' + escapeHtml(line.description) + '</td>';
+        html += '<td class="invoice-print-align-right">$' + parseFloat(line.price).toFixed(2) + '</td>';
+        html += '</tr>';
+      });
+    }
+
+    // Add pressure cleaning lines
+    if (invoice.pressureLines && invoice.pressureLines.length > 0) {
+      invoice.pressureLines.forEach(function(line) {
+        html += '<tr>';
+        html += '<td>' + escapeHtml(line.description) + '</td>';
+        html += '<td class="invoice-print-align-right">$' + parseFloat(line.price).toFixed(2) + '</td>';
+        html += '</tr>';
+      });
+    }
+
+    html += '</tbody>';
+    html += '</table>';
+
+    // Totals
+    html += '<div class="invoice-print-totals">';
+    html += '<div class="invoice-print-totals-row">';
+    html += '<span>Subtotal:</span>';
+    html += '<span>$' + parseFloat(invoice.subtotal).toFixed(2) + '</span>';
+    html += '</div>';
+    if (invoice.gst > 0) {
+      html += '<div class="invoice-print-totals-row">';
+      html += '<span>GST (10%):</span>';
+      html += '<span>$' + parseFloat(invoice.gst).toFixed(2) + '</span>';
+      html += '</div>';
+    }
+    html += '<div class="invoice-print-totals-row invoice-print-total">';
+    html += '<span>Total:</span>';
+    html += '<span>$' + parseFloat(invoice.total).toFixed(2) + '</span>';
+    html += '</div>';
+
+    // Payment info if partially paid
+    if (invoice.amountPaid > 0) {
+      html += '<div class="invoice-print-totals-row invoice-print-paid">';
+      html += '<span>Amount Paid:</span>';
+      html += '<span>-$' + parseFloat(invoice.amountPaid).toFixed(2) + '</span>';
+      html += '</div>';
+      html += '<div class="invoice-print-totals-row invoice-print-balance">';
+      html += '<span>Balance Due:</span>';
+      html += '<span>$' + parseFloat(invoice.balance).toFixed(2) + '</span>';
+      html += '</div>';
+    }
+    html += '</div>';
+
+    // Payment terms and bank details
+    html += '<div class="invoice-print-footer">';
+    if (invoice.balance > 0) {
+      html += '<div class="invoice-print-payment-terms">';
+      html += '<h4>Payment Terms</h4>';
+      html += '<p>Payment due within ' + settings.paymentTermsDays + ' days of invoice date.</p>';
+      html += '</div>';
+    }
+
+    if (settings.bankName || settings.accountName) {
+      html += '<div class="invoice-print-bank-details">';
+      html += '<h4>Bank Details</h4>';
+      if (settings.bankName) html += '<p><strong>Bank:</strong> ' + escapeHtml(settings.bankName) + '</p>';
+      if (settings.accountName) html += '<p><strong>Account Name:</strong> ' + escapeHtml(settings.accountName) + '</p>';
+      if (settings.bsb) html += '<p><strong>BSB:</strong> ' + escapeHtml(settings.bsb) + '</p>';
+      if (settings.accountNumber) html += '<p><strong>Account Number:</strong> ' + escapeHtml(settings.accountNumber) + '</p>';
+      html += '</div>';
+    }
+
+    if (settings.abn) {
+      html += '<div class="invoice-print-abn">';
+      html += '<p><strong>ABN:</strong> ' + escapeHtml(settings.abn) + '</p>';
+      html += '</div>';
+    }
+
+    if (invoice.clientNotes) {
+      html += '<div class="invoice-print-notes">';
+      html += '<h4>Notes</h4>';
+      html += '<p>' + escapeHtml(invoice.clientNotes).replace(/\n/g, '<br>') + '</p>';
+      html += '</div>';
+    }
+
+    html += '<div class="invoice-print-thank-you">';
+    html += '<p>Thank you for your business!</p>';
+    html += '</div>';
+
+    html += '</div>'; // Close footer
+    html += '</div>'; // Close page
+
+    printContainer.innerHTML = html;
+    document.body.appendChild(printContainer);
+
+    // Trigger print
+    setTimeout(function() {
+      window.print();
+
+      // Clean up after print
+      setTimeout(function() {
+        document.body.removeChild(printContainer);
+      }, 500);
+    }, 100);
+  }
+
+  // Get aging report - outstanding balances by age
+  function getAgingReport() {
+    var now = Date.now();
+    var report = {
+      current: { count: 0, total: 0, invoices: [] },         // 0-30 days
+      days30: { count: 0, total: 0, invoices: [] },          // 31-60 days
+      days60: { count: 0, total: 0, invoices: [] },          // 61-90 days
+      days90Plus: { count: 0, total: 0, invoices: [] },      // 90+ days
+      totalOutstanding: 0,
+      totalCount: 0
+    };
+
+    invoices.forEach(function(invoice) {
+      // Only include invoices with outstanding balance
+      if (invoice.balance <= 0 || invoice.status === 'cancelled') {
+        return;
+      }
+
+      var daysOverdue = Math.floor((now - invoice.dueDate) / (1000 * 60 * 60 * 24));
+      var balance = parseFloat(invoice.balance);
+
+      var invoiceData = {
+        id: invoice.id,
+        invoiceNumber: invoice.invoiceNumber,
+        clientName: invoice.clientName,
+        dueDate: invoice.dueDate,
+        balance: balance,
+        daysOverdue: daysOverdue
+      };
+
+      // Categorize by age
+      if (daysOverdue <= 0) {
+        // Current (not yet due)
+        report.current.count++;
+        report.current.total += balance;
+        report.current.invoices.push(invoiceData);
+      } else if (daysOverdue <= 30) {
+        // 1-30 days overdue
+        report.current.count++;
+        report.current.total += balance;
+        report.current.invoices.push(invoiceData);
+      } else if (daysOverdue <= 60) {
+        // 31-60 days overdue
+        report.days30.count++;
+        report.days30.total += balance;
+        report.days30.invoices.push(invoiceData);
+      } else if (daysOverdue <= 90) {
+        // 61-90 days overdue
+        report.days60.count++;
+        report.days60.total += balance;
+        report.days60.invoices.push(invoiceData);
+      } else {
+        // 90+ days overdue
+        report.days90Plus.count++;
+        report.days90Plus.total += balance;
+        report.days90Plus.invoices.push(invoiceData);
+      }
+
+      report.totalCount++;
+      report.totalOutstanding += balance;
+    });
+
+    return report;
+  }
+
+  // Show aging report modal
+  function showAgingReport() {
+    var modal = createAgingReportModal();
+    document.body.appendChild(modal);
+    setTimeout(function() {
+      modal.classList.add('active');
+    }, 10);
+  }
+
+  // Create aging report modal
+  function createAgingReportModal() {
+    var existing = document.getElementById('agingReportModal');
+    if (existing) {
+      existing.remove();
+    }
+
+    var modal = document.createElement('div');
+    modal.id = 'agingReportModal';
+    modal.className = 'invoice-modal';
+
+    var report = getAgingReport();
+
+    var html = '<div class="invoice-modal-content">';
+    html += '<div class="invoice-modal-header">';
+    html += '<h2>Accounts Receivable Aging Report</h2>';
+    html += '<button type="button" class="invoice-modal-close" aria-label="Close">&times;</button>';
+    html += '</div>';
+    html += '<div class="invoice-modal-body">';
+
+    // Summary stats
+    html += '<div class="aging-summary">';
+    html += '<div class="aging-stat aging-stat-total">';
+    html += '<span>Total Outstanding</span>';
+    html += '<strong>$' + report.totalOutstanding.toFixed(2) + '</strong>';
+    html += '<small>' + report.totalCount + ' invoice' + (report.totalCount !== 1 ? 's' : '') + '</small>';
+    html += '</div>';
+    html += '</div>';
+
+    // Aging buckets
+    html += '<div class="aging-buckets">';
+
+    // Current (0-30 days)
+    html += '<div class="aging-bucket aging-bucket-current">';
+    html += '<div class="aging-bucket-header">';
+    html += '<h3>Current (0-30 days)</h3>';
+    html += '<div class="aging-bucket-total">$' + report.current.total.toFixed(2) + '</div>';
+    html += '</div>';
+    if (report.current.count > 0) {
+      html += '<div class="aging-bucket-list">';
+      report.current.invoices.forEach(function(inv) {
+        var dayText = inv.daysOverdue <= 0 ?
+          'Due in ' + Math.abs(inv.daysOverdue) + ' days' :
+          inv.daysOverdue + ' days overdue';
+        html += '<div class="aging-invoice-item" data-invoice-id="' + inv.id + '">';
+        html += '<div class="aging-invoice-info">';
+        html += '<strong>' + escapeHtml(inv.invoiceNumber) + '</strong>';
+        html += '<span>' + escapeHtml(inv.clientName) + '</span>';
+        html += '<small>' + dayText + '</small>';
+        html += '</div>';
+        html += '<div class="aging-invoice-amount">$' + inv.balance.toFixed(2) + '</div>';
+        html += '</div>';
+      });
+      html += '</div>';
+    } else {
+      html += '<p class="aging-bucket-empty">No invoices in this category</p>';
+    }
+    html += '</div>';
+
+    // 31-60 days
+    html += '<div class="aging-bucket aging-bucket-30">';
+    html += '<div class="aging-bucket-header">';
+    html += '<h3>31-60 Days Overdue</h3>';
+    html += '<div class="aging-bucket-total">$' + report.days30.total.toFixed(2) + '</div>';
+    html += '</div>';
+    if (report.days30.count > 0) {
+      html += '<div class="aging-bucket-list">';
+      report.days30.invoices.forEach(function(inv) {
+        html += '<div class="aging-invoice-item" data-invoice-id="' + inv.id + '">';
+        html += '<div class="aging-invoice-info">';
+        html += '<strong>' + escapeHtml(inv.invoiceNumber) + '</strong>';
+        html += '<span>' + escapeHtml(inv.clientName) + '</span>';
+        html += '<small>' + inv.daysOverdue + ' days overdue</small>';
+        html += '</div>';
+        html += '<div class="aging-invoice-amount">$' + inv.balance.toFixed(2) + '</div>';
+        html += '</div>';
+      });
+      html += '</div>';
+    } else {
+      html += '<p class="aging-bucket-empty">No invoices in this category</p>';
+    }
+    html += '</div>';
+
+    // 61-90 days
+    html += '<div class="aging-bucket aging-bucket-60">';
+    html += '<div class="aging-bucket-header">';
+    html += '<h3>61-90 Days Overdue</h3>';
+    html += '<div class="aging-bucket-total">$' + report.days60.total.toFixed(2) + '</div>';
+    html += '</div>';
+    if (report.days60.count > 0) {
+      html += '<div class="aging-bucket-list">';
+      report.days60.invoices.forEach(function(inv) {
+        html += '<div class="aging-invoice-item" data-invoice-id="' + inv.id + '">';
+        html += '<div class="aging-invoice-info">';
+        html += '<strong>' + escapeHtml(inv.invoiceNumber) + '</strong>';
+        html += '<span>' + escapeHtml(inv.clientName) + '</span>';
+        html += '<small>' + inv.daysOverdue + ' days overdue</small>';
+        html += '</div>';
+        html += '<div class="aging-invoice-amount">$' + inv.balance.toFixed(2) + '</div>';
+        html += '</div>';
+      });
+      html += '</div>';
+    } else {
+      html += '<p class="aging-bucket-empty">No invoices in this category</p>';
+    }
+    html += '</div>';
+
+    // 90+ days
+    html += '<div class="aging-bucket aging-bucket-90">';
+    html += '<div class="aging-bucket-header">';
+    html += '<h3>90+ Days Overdue</h3>';
+    html += '<div class="aging-bucket-total">$' + report.days90Plus.total.toFixed(2) + '</div>';
+    html += '</div>';
+    if (report.days90Plus.count > 0) {
+      html += '<div class="aging-bucket-list">';
+      report.days90Plus.invoices.forEach(function(inv) {
+        html += '<div class="aging-invoice-item" data-invoice-id="' + inv.id + '">';
+        html += '<div class="aging-invoice-info">';
+        html += '<strong>' + escapeHtml(inv.invoiceNumber) + '</strong>';
+        html += '<span>' + escapeHtml(inv.clientName) + '</span>';
+        html += '<small>' + inv.daysOverdue + ' days overdue</small>';
+        html += '</div>';
+        html += '<div class="aging-invoice-amount">$' + inv.balance.toFixed(2) + '</div>';
+        html += '</div>';
+      });
+      html += '</div>';
+    } else {
+      html += '<p class="aging-bucket-empty">No invoices in this category</p>';
+    }
+    html += '</div>';
+
+    html += '</div>'; // Close aging-buckets
+
+    html += '</div>'; // Close modal body
+    html += '</div>'; // Close modal content
+
+    modal.innerHTML = html;
+
+    // Event listeners
+    modal.querySelector('.invoice-modal-close').onclick = function() {
+      modal.classList.remove('active');
+      setTimeout(function() {
+        if (modal.parentNode) {
+          modal.parentNode.removeChild(modal);
+        }
+      }, 300);
+    };
+
+    modal.onclick = function(e) {
+      if (e.target === modal) {
+        modal.classList.remove('active');
+        setTimeout(function() {
+          if (modal.parentNode) {
+            modal.parentNode.removeChild(modal);
+          }
+        }, 300);
+      }
+    };
+
+    // Click on invoice items to view details
+    var invoiceItems = modal.querySelectorAll('.aging-invoice-item');
+    for (var i = 0; i < invoiceItems.length; i++) {
+      invoiceItems[i].onclick = function() {
+        var invoiceId = this.getAttribute('data-invoice-id');
+        modal.classList.remove('active');
+        setTimeout(function() {
+          if (modal.parentNode) {
+            modal.parentNode.removeChild(modal);
+          }
+          viewInvoice(invoiceId);
+        }, 300);
+      };
+    }
+
+    return modal;
   }
 
   // HTML escape helper
@@ -547,6 +1328,11 @@
 
   // Add "Invoices" button to UI
   function addInvoiceButton() {
+    // Check if button already exists to prevent duplicates
+    if (document.getElementById('manageInvoicesBtn')) {
+      return;
+    }
+
     var notesFooter = document.querySelector('.notes-footer');
     if (!notesFooter) return;
 

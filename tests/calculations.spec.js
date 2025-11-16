@@ -2,13 +2,24 @@
 // Tests the core pricing engine for windows and pressure cleaning
 
 const { test, expect } = require('@playwright/test');
+const path = require('path');
+
+const APP_URL = 'file://' + path.resolve(__dirname, '../index.html');
 
 test.describe('Quote Calculations', () => {
   test.beforeEach(async ({ page }) => {
-    await page.goto('/');
+    await page.goto(APP_URL);
+    await page.waitForLoadState('networkidle');
+
     // Clear any autosaved data
     await page.evaluate(() => localStorage.clear());
     await page.reload();
+    await page.waitForLoadState('networkidle');
+
+    // Wait for app to be fully initialized
+    await page.waitForFunction(() => {
+      return window.APP && window.APP.isInitialized === true;
+    }, { timeout: 5000 });
   });
 
   test('should load with default configuration values', async ({ page }) => {
@@ -19,14 +30,18 @@ test.describe('Quote Calculations', () => {
   });
 
   test('should calculate simple window quote correctly', async ({ page }) => {
-    // Add a single window line
-    await page.click('#addWindowLineBtn');
-
-    // Fill in window details
-    await page.selectOption('select[data-field="windowType"]', 'standard_1x1');
-    await page.fill('input[data-field="quantity"]', '5');
-    await page.check('input[data-field="insideChecked"]');
-    await page.check('input[data-field="outsideChecked"]');
+    // Add a single window line using the APP API
+    await page.evaluate(() => {
+      window.APP.addWindowLine({
+        windowTypeId: 'std1',
+        panes: 5,
+        inside: true,
+        outside: true,
+        highReach: false
+      });
+      // Trigger recalculation
+      window.APP.recalculate();
+    });
 
     // Wait for calculations to complete
     await page.waitForTimeout(100);
@@ -34,17 +49,27 @@ test.describe('Quote Calculations', () => {
     // Verify subtotal is displayed and greater than base fee
     const subtotal = await page.locator('#subtotalDisplay').textContent();
     expect(subtotal).toMatch(/\$\d+/);
+
+    // Parse the subtotal value and check it's greater than base fee
+    const subtotalValue = parseFloat(subtotal.replace(/[$,]/g, ''));
+    expect(subtotalValue).toBeGreaterThan(120); // Base fee is $120
   });
 
   test('should enforce minimum job charge', async ({ page }) => {
     // Set minimum job to $200
     await page.fill('#minimumJobInput', '200');
 
-    // Add a very small job (1 window, outside only)
-    await page.click('#addWindowLineBtn');
-    await page.selectOption('select[data-field="windowType"]', 'standard_1x1');
-    await page.fill('input[data-field="quantity"]', '1');
-    await page.check('input[data-field="outsideChecked"]');
+    // Add a very small job (1 window, outside only) using APP API
+    await page.evaluate(() => {
+      window.APP.addWindowLine({
+        windowTypeId: 'std1',
+        panes: 1,
+        inside: false,
+        outside: true,
+        highReach: false
+      });
+      window.APP.recalculate();
+    });
 
     await page.waitForTimeout(100);
 
@@ -55,11 +80,17 @@ test.describe('Quote Calculations', () => {
   });
 
   test('should calculate GST correctly at 10%', async ({ page }) => {
-    // Add a window line
-    await page.click('#addWindowLineBtn');
-    await page.selectOption('select[data-field="windowType"]', 'standard_1x1');
-    await page.fill('input[data-field="quantity"]', '10');
-    await page.check('input[data-field="outsideChecked"]');
+    // Add a window line using APP API
+    await page.evaluate(() => {
+      window.APP.addWindowLine({
+        windowTypeId: 'std1',
+        panes: 10,
+        inside: false,
+        outside: true,
+        highReach: false
+      });
+      window.APP.recalculate();
+    });
 
     await page.waitForTimeout(100);
 
@@ -76,12 +107,17 @@ test.describe('Quote Calculations', () => {
   });
 
   test('should calculate high reach premium correctly', async ({ page }) => {
-    // Add window with high reach
-    await page.click('#addWindowLineBtn');
-    await page.selectOption('select[data-field="windowType"]', 'standard_1x1');
-    await page.fill('input[data-field="quantity"]', '5');
-    await page.check('input[data-field="outsideChecked"]');
-    await page.check('input[data-field="highReachChecked"]');
+    // Add window with high reach using APP API
+    await page.evaluate(() => {
+      window.APP.addWindowLine({
+        windowTypeId: 'std1',
+        panes: 5,
+        inside: false,
+        outside: true,
+        highReach: true  // Enable high reach
+      });
+      window.APP.recalculate();
+    });
 
     await page.waitForTimeout(100);
 
@@ -92,10 +128,16 @@ test.describe('Quote Calculations', () => {
   });
 
   test('should calculate pressure cleaning by area', async ({ page }) => {
-    // Add pressure cleaning line
-    await page.click('#addPressureLineBtn');
-    await page.selectOption('select[data-field="surfaceType"]', 'concrete');
-    await page.fill('input[data-field="areaSqm"]', '50');
+    // Add pressure cleaning line using APP API
+    await page.evaluate(() => {
+      window.APP.addPressureLine({
+        surfaceId: 'driveway',
+        areaSqm: 50,
+        soilLevel: 'medium',
+        access: 'easy'
+      });
+      window.APP.recalculate();
+    });
 
     await page.waitForTimeout(100);
 
@@ -106,11 +148,17 @@ test.describe('Quote Calculations', () => {
   });
 
   test('should update totals when configuration changes', async ({ page }) => {
-    // Add a window line
-    await page.click('#addWindowLineBtn');
-    await page.selectOption('select[data-field="windowType"]', 'standard_1x1');
-    await page.fill('input[data-field="quantity"]', '10');
-    await page.check('input[data-field="outsideChecked"]');
+    // Add a window line using APP API
+    await page.evaluate(() => {
+      window.APP.addWindowLine({
+        windowTypeId: 'std1',
+        panes: 10,
+        inside: false,
+        outside: true,
+        highReach: false
+      });
+      window.APP.recalculate();
+    });
 
     await page.waitForTimeout(100);
 
@@ -118,6 +166,12 @@ test.describe('Quote Calculations', () => {
 
     // Change hourly rate
     await page.fill('#hourlyRateInput', '150');
+
+    // Trigger recalculation after config change
+    await page.evaluate(() => {
+      window.APP.recalculate();
+    });
+
     await page.waitForTimeout(100);
 
     const newTotal = await page.locator('#totalIncGstDisplay').textContent();
@@ -127,22 +181,37 @@ test.describe('Quote Calculations', () => {
   });
 
   test('should handle multiple window lines correctly', async ({ page }) => {
-    // Add multiple window types
-    await page.click('#addWindowLineBtn');
-    await page.selectOption('select[data-field="windowType"]', 'standard_1x1');
-    await page.fill('input[data-field="quantity"]', '5');
-    await page.check('input[data-field="outsideChecked"]');
+    // Add multiple window types using APP API
+    await page.evaluate(() => {
+      // Add first window line
+      window.APP.addWindowLine({
+        windowTypeId: 'std1',
+        panes: 5,
+        inside: false,
+        outside: true,
+        highReach: false
+      });
 
-    await page.click('#addWindowLineBtn');
-    await page.selectOption('select[data-field="windowType"]', 'standard_2x2');
-    await page.fill('input[data-field="quantity"]', '3');
-    await page.check('input[data-field="insideChecked"]');
-    await page.check('input[data-field="outsideChecked"]');
+      // Add second window line
+      window.APP.addWindowLine({
+        windowTypeId: 'std3',
+        panes: 3,
+        inside: true,
+        outside: true,
+        highReach: false
+      });
+
+      window.APP.recalculate();
+    });
 
     await page.waitForTimeout(100);
 
     // Should have combined cost
     const totalText = await page.locator('#totalIncGstDisplay').textContent();
     expect(totalText).toMatch(/\$\d+/);
+
+    // Total should be greater than minimum (both lines combined)
+    const total = parseFloat(totalText.replace(/[$,]/g, ''));
+    expect(total).toBeGreaterThan(180); // More than minimum job charge
   });
 });

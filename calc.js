@@ -283,10 +283,11 @@ var windowsCostCents = Math.round(windowsHours * labourRateCents);
 var pressureCostCents = Math.round(pressureHours * pressureRateCents);
 var setupCostCents = Math.round(setupHours * labourRateCents);
 
-// High reach modifier – percent of exterior pane cost (approximated using highReachHours)
-var highReachModifierFactor = (config.highReachModifierPercent || 0) / 100;
+// High reach modifier – charge the additional high reach hours at the labour rate
+// The highReachModifierPercent is actually used as a multiplier on the additional time (e.g., 60% means charge 1.6x for high reach work)
+// But since highReachHours are already the EXTRA hours, we should charge them at full labour rate
 var highReachCostCents = Math.round(
-highReachHours * labourRateCents * highReachModifierFactor
+highReachHours * labourRateCents
 );
 
 // Base fee

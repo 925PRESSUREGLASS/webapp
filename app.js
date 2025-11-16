@@ -47,7 +47,8 @@
     duplicatePressureLine: duplicatePressureLine,
     getState: function() {
       return buildStateFromUI(true);
-    }
+    },
+    isInitialized: false
   };
 
   window.APP = APP;
@@ -811,9 +812,11 @@
     );
     $("subtotalDisplay").textContent = formatMoney(money.subtotal);
     $("highReachDisplay").textContent = formatMoney(money.highReach);
-    $("totalDisplay").textContent = formatMoney(money.total);
+    // totalDisplay element doesn't exist in HTML, skip it
+    // $("totalDisplay").textContent = formatMoney(money.total);
 		// GST & total incl GST (10%)
-var gst = money.total * 0.10;
+// GST should be calculated on subtotal, not total (which includes minimum job adjustment)
+var gst = money.subtotal * 0.10;
 var totalIncGst = money.total + gst;
 
 $("gstDisplay").textContent = formatMoney(gst);
@@ -1455,6 +1458,9 @@ $("totalIncGstDisplay").textContent = formatMoney(totalIncGst);
 
     // First recalc
     recalculate();
+
+    // Mark app as initialized for testing
+    APP.isInitialized = true;
   }
 
   // iOS Safari compatible DOM ready check

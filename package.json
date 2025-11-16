@@ -8,10 +8,15 @@
     "test:ui": "playwright test --ui",
     "test:debug": "playwright test --debug"
   },
-  "keywords": ["quote", "pricing", "window-cleaning", "pressure-cleaning"],
+  "keywords": [
+    "quote",
+    "pricing",
+    "window-cleaning",
+    "pressure-cleaning"
+  ],
   "author": "925 Pressure Glass",
   "license": "MIT",
   "devDependencies": {
-    "@playwright/test": "^1.40.0"
+    "@playwright/test": "^1.56.1"
   }
 }

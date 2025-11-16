@@ -2,12 +2,17 @@
 // Tests the quick-entry wizard dialogs for windows and pressure cleaning
 
 const { test, expect } = require('@playwright/test');
+const path = require('path');
+
+const APP_URL = 'file://' + path.resolve(__dirname, '../index.html');
 
 test.describe('Window Wizard', () => {
   test.beforeEach(async ({ page }) => {
-    await page.goto('/');
+    await page.goto(APP_URL);
+    await page.waitForLoadState('networkidle');
     await page.evaluate(() => localStorage.clear());
     await page.reload();
+    await page.waitForLoadState('networkidle');
 
     // Open window wizard
     await page.click('#openWindowWizardBtn');
@@ -41,9 +46,11 @@ test.describe('Window Wizard', () => {
 
 test.describe('Pressure Wizard', () => {
   test.beforeEach(async ({ page }) => {
-    await page.goto('/');
+    await page.goto(APP_URL);
+    await page.waitForLoadState('networkidle');
     await page.evaluate(() => localStorage.clear());
     await page.reload();
+    await page.waitForLoadState('networkidle');
 
     // Open pressure wizard
     await page.click('#openPressureWizardBtn');
@@ -69,7 +76,8 @@ test.describe('Pressure Wizard', () => {
 
 test.describe('Data Validation', () => {
   test('should validate numeric inputs', async ({ page }) => {
-    await page.goto('/');
+    await page.goto(APP_URL);
+    await page.waitForLoadState('networkidle');
 
     // Try to enter invalid data
     await page.fill('#baseFeeInput', '-100');
@@ -84,7 +92,8 @@ test.describe('Data Validation', () => {
   });
 
   test('should handle decimal precision in currency', async ({ page }) => {
-    await page.goto('/');
+    await page.goto(APP_URL);
+    await page.waitForLoadState('networkidle');
 
     // Add window line
     await page.click('#addWindowLineBtn');
