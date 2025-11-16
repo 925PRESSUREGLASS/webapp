@@ -7,8 +7,16 @@
   // Export to CSV
   function exportToCSV() {
     try {
+      // Show loading state
+      if (window.LoadingState) {
+        window.LoadingState.setButtonLoading('exportCsvBtn', true);
+      }
+
       var state = window.APP ? window.APP.getState() : null;
       if (!state) {
+        if (window.LoadingState) {
+          window.LoadingState.setButtonLoading('exportCsvBtn', false);
+        }
         showError('Unable to access quote data');
         return;
       }
@@ -17,11 +25,20 @@
       var filename = generateFilename('csv');
       downloadFile(csvContent, filename, 'text/csv;charset=utf-8;');
 
+      // Hide loading state
+      if (window.LoadingState) {
+        window.LoadingState.setButtonLoading('exportCsvBtn', false);
+      }
+
       if (window.KeyboardShortcuts) {
         window.KeyboardShortcuts.showToast('Quote exported to CSV', 'success');
       }
     } catch (error) {
       console.error('CSV export error:', error);
+      // Hide loading state on error
+      if (window.LoadingState) {
+        window.LoadingState.setButtonLoading('exportCsvBtn', false);
+      }
       showError('Failed to export CSV: ' + error.message);
     }
   }

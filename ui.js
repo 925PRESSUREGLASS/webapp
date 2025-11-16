@@ -5,6 +5,19 @@
     return document.getElementById(id);
   }
 
+  // Debounce utility for performance optimization
+  function debounce(func, wait) {
+    var timeout;
+    return function() {
+      var context = this;
+      var args = arguments;
+      clearTimeout(timeout);
+      timeout = setTimeout(function() {
+        func.apply(context, args);
+      }, wait);
+    };
+  }
+
   function toggleCardBody(e) {
     var targetId = e.currentTarget.getAttribute("data-target");
     var body = document.getElementById(targetId);
@@ -62,15 +75,23 @@
       "setupBufferMinutesInput"
     ];
 
-    function handler() {
+    // Immediate handler for change events
+    function changeHandler() {
       APP.recalculate();
     }
+
+    // Debounced handler for input events (300ms delay)
+    var debouncedHandler = debounce(function() {
+      APP.recalculate();
+    }, 300);
 
     for (var i = 0; i < inputs.length; i++) {
       var el = $(inputs[i]);
       if (!el) continue;
-      el.addEventListener("change", handler);
-      el.addEventListener("input", handler);
+      // Use debounced handler for input events (while typing)
+      el.addEventListener("input", debouncedHandler);
+      // Use immediate handler for change events (blur, enter key)
+      el.addEventListener("change", changeHandler);
     }
   }
 

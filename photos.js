@@ -34,7 +34,12 @@
       return;
     }
 
-    showInfo('Processing image...');
+    // Show loading state
+    if (window.LoadingState) {
+      window.LoadingState.show('Processing image...');
+    } else {
+      showInfo('Processing image...');
+    }
 
     var reader = new FileReader();
 
@@ -46,6 +51,9 @@
       };
 
       img.onerror = function() {
+        if (window.LoadingState) {
+          window.LoadingState.hide();
+        }
         showError('Failed to load image');
       };
 
@@ -53,6 +61,9 @@
     };
 
     reader.onerror = function() {
+      if (window.LoadingState) {
+        window.LoadingState.hide();
+      }
       showError('Failed to read file');
     };
 
@@ -105,10 +116,18 @@
       // Render photo gallery
       renderPhotoGallery();
 
+      // Hide loading state
+      if (window.LoadingState) {
+        window.LoadingState.hide();
+      }
+
       showSuccess('Photo added (' + formatFileSize(photo.size) + ')');
 
     } catch (error) {
       console.error('Compression error:', error);
+      if (window.LoadingState) {
+        window.LoadingState.hide();
+      }
       showError('Failed to process image');
     }
   }
@@ -125,9 +144,9 @@
 
     var html = '<div class="photo-grid">';
 
-    currentPhotos.forEach(function(photo) {
+    currentPhotos.forEach(function(photo, index) {
       html += '<div class="photo-item" data-photo-id="' + photo.id + '">';
-      html += '<img src="' + photo.base64 + '" alt="' + photo.filename + '" class="photo-thumbnail" />';
+      html += '<img src="' + photo.base64 + '" alt="' + photo.filename + '" class="photo-thumbnail" onclick="window.PhotoModal.show(' + index + ')" style="cursor: pointer;" />';
       html += '<div class="photo-info">';
       html += '<div class="photo-filename">' + truncateFilename(photo.filename) + '</div>';
       html += '<div class="photo-size">' + formatFileSize(photo.size) + '</div>';

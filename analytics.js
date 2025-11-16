@@ -202,7 +202,20 @@
     var container = document.getElementById('analyticsContainer');
     if (!container) return;
 
-    var analytics = getAnalytics(timeframe || 'all');
+    // Show loading state
+    if (window.LoadingState) {
+      window.LoadingState.showElement('analyticsContainer', 'Loading analytics...');
+    }
+
+    // Small delay to allow loading UI to render
+    setTimeout(function() {
+      var analytics = getAnalytics(timeframe || 'all');
+      renderAnalyticsContent(container, analytics);
+    }, 10);
+  }
+
+  // Render analytics content
+  function renderAnalyticsContent(container, analytics) {
 
     var html = '<div class="analytics-dashboard">';
 
@@ -229,6 +242,33 @@
     html += '</div>';
     html += '</div>';
 
+    // Revenue trend chart
+    if (Object.keys(analytics.revenueByMonth).length > 0) {
+      html += '<div class="analytics-chart">';
+      html += '<h3>Revenue Trend</h3>';
+      html += '<canvas id="revenueTrendChart" style="max-height: 250px;"></canvas>';
+      html += '</div>';
+    }
+
+    // Quote type chart
+    if (analytics.totalQuotes > 0) {
+      html += '<div class="analytics-chart-row">';
+      html += '<div class="analytics-chart analytics-chart-half">';
+      html += '<h3>Quote Types</h3>';
+      html += '<canvas id="quoteTypeChart" style="max-height: 220px;"></canvas>';
+      html += '</div>';
+
+      // Top clients chart
+      if (analytics.topClients.length > 0) {
+        html += '<div class="analytics-chart analytics-chart-half">';
+        html += '<h3>Top 5 Clients</h3>';
+        html += '<canvas id="topClientsChart" style="max-height: 220px;"></canvas>';
+        html += '</div>';
+      }
+
+      html += '</div>';
+    }
+
     // Quote breakdown
     html += '<div class="analytics-breakdown">';
     html += '<h3>Quote Breakdown</h3>';
@@ -254,6 +294,18 @@
     html += '</div>';
 
     container.innerHTML = html;
+
+    // Render charts
+    if (window.AnalyticsCharts) {
+      setTimeout(function() {
+        window.AnalyticsCharts.renderAll(analytics);
+      }, 50);
+    }
+
+    // Hide loading state
+    if (window.LoadingState) {
+      window.LoadingState.hideElement('analyticsContainer');
+    }
   }
 
   // Clear history (with confirmation)

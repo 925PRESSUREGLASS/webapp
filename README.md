@@ -2,6 +2,8 @@
 
 Professional quoting tool for **925 Pressure Glass** - Window & Pressure Cleaning services.
 
+**Current Version:** v1.5 | [See What's New](IMPROVEMENTS_V1.5.md)
+
 ## Features
 
 ### Core Functionality
@@ -27,8 +29,11 @@ Professional quoting tool for **925 Pressure Glass** - Window & Pressure Cleanin
 - **Error Handling** - LocalStorage quota warnings, validation, offline detection
 - **Form Validation** - Real-time validation with helpful error messages
 - **Dark/Light Theme** - Toggle themes with ☀️/🌙 button, respects system preference
-- **Quote History & Analytics** - Track all quotes, view business statistics
-- **Photo Upload** - Attach before/after photos with automatic compression
+- **Quote History & Analytics** - Track all quotes, view business statistics, visual charts
+- **Photo Upload** - Attach before/after photos with automatic compression and full-screen preview
+- **Loading States** - Clear feedback for async operations (photo processing, analytics, exports)
+- **Enhanced Accessibility** - ARIA labels, keyboard navigation, screen reader support
+- **Performance Optimization** - Input debouncing for smooth calculation updates
 
 ### Technology
 - Pure Vanilla JavaScript (ES5-compatible for iOS Safari)
