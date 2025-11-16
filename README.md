@@ -16,6 +16,13 @@ Professional quoting tool for **925 Pressure Glass** - Window & Pressure Cleanin
 - **Offline Capability** - Works without internet connection via Service Worker
 - **Install as App** - Add to home screen on mobile devices
 - **Fast Loading** - Cached assets for instant startup
+- **App Icons** - Professional branding with custom icons
+
+### Productivity Features
+- **Keyboard Shortcuts** - Power-user shortcuts for common actions (see [KEYBOARD_SHORTCUTS.md](KEYBOARD_SHORTCUTS.md))
+- **Toast Notifications** - Visual feedback for actions
+- **Professional Print Layout** - Optimized PDF export with clean formatting
+- **Quick Help** - Press `?` to see available shortcuts
 
 ### Technology
 - Pure Vanilla JavaScript (ES5-compatible for iOS Safari)
@@ -102,24 +109,63 @@ git push origin main
 ```
 ├── index.html              # Main application
 ├── app.css                 # Styling
+├── toast.css               # Toast notification styles
+├── print.css               # Print/PDF stylesheet
 ├── app.js                  # Core logic & state
 ├── calc.js                 # Precision calculation engine
 ├── data.js                 # Pricing data & lookup tables
 ├── storage.js              # LocalStorage wrapper
 ├── ui.js                   # UI interactions
 ├── wizard.js               # Modal wizard dialogs
+├── shortcuts.js            # Keyboard shortcuts
 ├── manifest.json           # PWA manifest
 ├── sw.js                   # Service worker
+├── icon.svg                # App icon (SVG source)
+├── icon-192.png            # PWA icon 192x192
+├── icon-512.png            # PWA icon 512x512
+├── favicon.png             # Browser favicon
+├── generate-icons.html     # Icon generator utility
 ├── playwright.config.js    # Test configuration
+├── package.json            # Dependencies & scripts
+├── README.md               # This file
+├── KEYBOARD_SHORTCUTS.md   # Shortcuts reference
 └── tests/                  # Automated tests
     ├── calculations.spec.js
     ├── ui-interactions.spec.js
     └── wizards.spec.js
 ```
 
+## Keyboard Shortcuts
+
+Press `?` in the app to see all available shortcuts, or check [KEYBOARD_SHORTCUTS.md](KEYBOARD_SHORTCUTS.md) for the full reference.
+
+**Quick shortcuts:**
+- `Cmd/Ctrl + S` - Save preset
+- `Cmd/Ctrl + W` - Add window line
+- `Cmd/Ctrl + P` - Add pressure line
+- `Cmd/Ctrl + E` - Export to PDF
+- `ESC` - Close modals
+
+## Generating App Icons
+
+1. Open `generate-icons.html` in your browser
+2. Click the download buttons to get:
+   - `icon-192.png` (192x192)
+   - `icon-512.png` (512x512)
+   - `favicon.png` (32x32)
+3. Save the files to the root directory
+4. Icons will be automatically used by the PWA
+
 ## Recent Improvements
 
-### v1.1 (Latest)
+### v1.2 (Latest)
+- ✅ Added keyboard shortcuts for power users
+- ✅ Created professional print stylesheet for PDFs
+- ✅ Added toast notifications for user feedback
+- ✅ Generated PWA app icons and favicon
+- ✅ Icon generator utility for easy customization
+
+### v1.1
 - ✅ Fixed duplicate HTML in summary section
 - ✅ Added PWA support for offline capability
 - ✅ Implemented Service Worker caching

@@ -11,6 +11,10 @@
 	<!-- PWA Manifest -->
 	<link rel="manifest" href="manifest.json" />
 
+	<!-- Favicon -->
+	<link rel="icon" type="image/png" sizes="32x32" href="favicon.png" />
+	<link rel="icon" type="image/svg+xml" href="icon.svg" />
+
 	<!-- Apple Touch Icon -->
 	<link rel="apple-touch-icon" href="icon-192.png" />
 	<meta name="apple-mobile-web-app-capable" content="yes" />
@@ -19,6 +23,8 @@
 
 	<!-- CSS -->
 	<link rel="stylesheet" href="app.css" />
+	<link rel="stylesheet" href="toast.css" />
+	<link rel="stylesheet" href="print.css" media="print" />
 </head>
 
 <body class="accordion-mode">
@@ -339,6 +345,7 @@
 	<script src="wizard.js" defer></script>
 	<script src="app.js" defer></script>
 	<script src="ui.js" defer></script>
+	<script src="shortcuts.js" defer></script>
 
 	<!-- Service Worker Registration -->
 	<script>

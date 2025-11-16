@@ -1,0 +1,53 @@
+<svg width="512" height="512" viewBox="0 0 512 512" xmlns="http://www.w3.org/2000/svg">
+  <!-- Background gradient -->
+  <defs>
+    <linearGradient id="bgGradient" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" style="stop-color:#38bdf8;stop-opacity:1" />
+      <stop offset="50%" style="stop-color:#0ea5e9;stop-opacity:1" />
+      <stop offset="100%" style="stop-color:#0f172a;stop-opacity:1" />
+    </linearGradient>
+    <linearGradient id="iconGradient" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" style="stop-color:#ffffff;stop-opacity:1" />
+      <stop offset="100%" style="stop-color:#e0f2fe;stop-opacity:1" />
+    </linearGradient>
+  </defs>
+
+  <!-- Background -->
+  <rect width="512" height="512" rx="115" fill="url(#bgGradient)"/>
+
+  <!-- Window cleaning icon - stylized window with sparkles -->
+  <g transform="translate(256, 256)">
+    <!-- Window frame -->
+    <rect x="-120" y="-120" width="240" height="240" rx="20" fill="none" stroke="url(#iconGradient)" stroke-width="12"/>
+
+    <!-- Window panes (cross) -->
+    <line x1="0" y1="-120" x2="0" y2="120" stroke="url(#iconGradient)" stroke-width="12"/>
+    <line x1="-120" y1="0" x2="120" y2="0" stroke="url(#iconGradient)" stroke-width="12"/>
+
+    <!-- Sparkle/clean effects -->
+    <g fill="url(#iconGradient)">
+      <!-- Top left sparkle -->
+      <circle cx="-60" cy="-60" r="8">
+        <animate attributeName="opacity" values="1;0.3;1" dur="2s" repeatCount="indefinite"/>
+      </circle>
+
+      <!-- Top right sparkle -->
+      <circle cx="60" cy="-60" r="6">
+        <animate attributeName="opacity" values="0.3;1;0.3" dur="2s" repeatCount="indefinite" begin="0.5s"/>
+      </circle>
+
+      <!-- Bottom left sparkle -->
+      <circle cx="-60" cy="60" r="6">
+        <animate attributeName="opacity" values="0.5;1;0.5" dur="2s" repeatCount="indefinite" begin="1s"/>
+      </circle>
+
+      <!-- Bottom right sparkle -->
+      <circle cx="60" cy="60" r="8">
+        <animate attributeName="opacity" values="1;0.4;1" dur="2s" repeatCount="indefinite" begin="1.5s"/>
+      </circle>
+    </g>
+
+    <!-- Dollar sign overlay (subtle) -->
+    <text x="0" y="15" font-family="system-ui, sans-serif" font-size="80" font-weight="bold" fill="rgba(255,255,255,0.3)" text-anchor="middle">$</text>
+  </g>
+</svg>

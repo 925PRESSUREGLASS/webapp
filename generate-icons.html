@@ -1,0 +1,203 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Icon Generator - Tic-Tac-Stick</title>
+    <style>
+        body {
+            font-family: system-ui, sans-serif;
+            padding: 20px;
+            background: #0f172a;
+            color: #e5e7eb;
+        }
+        .container {
+            max-width: 800px;
+            margin: 0 auto;
+        }
+        canvas {
+            border: 2px solid #38bdf8;
+            margin: 10px 0;
+            border-radius: 8px;
+        }
+        button {
+            background: #38bdf8;
+            color: #0f172a;
+            border: none;
+            padding: 12px 24px;
+            font-size: 16px;
+            border-radius: 8px;
+            cursor: pointer;
+            margin: 5px;
+            font-weight: 600;
+        }
+        button:hover {
+            background: #0ea5e9;
+        }
+        .preview {
+            display: flex;
+            gap: 20px;
+            flex-wrap: wrap;
+            margin: 20px 0;
+        }
+        h1 {
+            color: #38bdf8;
+        }
+        .info {
+            background: rgba(56, 189, 248, 0.1);
+            padding: 15px;
+            border-radius: 8px;
+            margin: 20px 0;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>🧽 Tic-Tac-Stick Icon Generator</h1>
+
+        <div class="info">
+            <p><strong>Instructions:</strong></p>
+            <ol>
+                <li>Click the buttons below to generate and download icons</li>
+                <li>Save the downloaded files to your webapp directory</li>
+                <li>Icons will be properly sized for PWA requirements</li>
+            </ol>
+        </div>
+
+        <div class="preview">
+            <div>
+                <h3>192x192 Icon</h3>
+                <canvas id="canvas192" width="192" height="192"></canvas>
+                <br>
+                <button onclick="downloadIcon(192)">Download icon-192.png</button>
+            </div>
+            <div>
+                <h3>512x512 Icon</h3>
+                <canvas id="canvas512" width="512" height="512"></canvas>
+                <br>
+                <button onclick="downloadIcon(512)">Download icon-512.png</button>
+            </div>
+        </div>
+
+        <div>
+            <h3>Favicon (32x32)</h3>
+            <canvas id="canvas32" width="32" height="32"></canvas>
+            <br>
+            <button onclick="downloadFavicon()">Download favicon.ico (as PNG)</button>
+        </div>
+    </div>
+
+    <script>
+        function drawIcon(canvas, size) {
+            const ctx = canvas.getContext('2d');
+            const centerX = size / 2;
+            const centerY = size / 2;
+
+            // Background gradient
+            const gradient = ctx.createLinearGradient(0, 0, size, size);
+            gradient.addColorStop(0, '#38bdf8');
+            gradient.addColorStop(0.5, '#0ea5e9');
+            gradient.addColorStop(1, '#0f172a');
+
+            // Draw rounded rectangle background
+            const cornerRadius = size * 0.22;
+            ctx.fillStyle = gradient;
+            roundRect(ctx, 0, 0, size, size, cornerRadius);
+            ctx.fill();
+
+            // Calculate proportions
+            const windowSize = size * 0.47;
+            const halfWindow = windowSize / 2;
+            const strokeWidth = size * 0.024;
+            const sparkleRadius = size * 0.016;
+
+            // Window frame
+            ctx.strokeStyle = '#ffffff';
+            ctx.lineWidth = strokeWidth;
+            ctx.lineCap = 'round';
+            ctx.lineJoin = 'round';
+
+            // Outer window
+            roundRect(ctx, centerX - halfWindow, centerY - halfWindow, windowSize, windowSize, size * 0.04);
+            ctx.stroke();
+
+            // Window cross
+            ctx.beginPath();
+            ctx.moveTo(centerX, centerY - halfWindow);
+            ctx.lineTo(centerX, centerY + halfWindow);
+            ctx.moveTo(centerX - halfWindow, centerY);
+            ctx.lineTo(centerX + halfWindow, centerY);
+            ctx.stroke();
+
+            // Sparkles
+            ctx.fillStyle = '#ffffff';
+            const sparkleOffset = halfWindow * 0.5;
+
+            // Top-left sparkle
+            drawSparkle(ctx, centerX - sparkleOffset, centerY - sparkleOffset, sparkleRadius * 1.2);
+
+            // Top-right sparkle
+            drawSparkle(ctx, centerX + sparkleOffset, centerY - sparkleOffset, sparkleRadius);
+
+            // Bottom-left sparkle
+            drawSparkle(ctx, centerX - sparkleOffset, centerY + sparkleOffset, sparkleRadius);
+
+            // Bottom-right sparkle
+            drawSparkle(ctx, centerX + sparkleOffset, centerY + sparkleOffset, sparkleRadius * 1.2);
+
+            // Subtle dollar sign
+            if (size >= 192) {
+                ctx.font = 'bold ' + (size * 0.16) + 'px system-ui, sans-serif';
+                ctx.fillStyle = 'rgba(255, 255, 255, 0.25)';
+                ctx.textAlign = 'center';
+                ctx.textBaseline = 'middle';
+                ctx.fillText('$', centerX, centerY);
+            }
+        }
+
+        function roundRect(ctx, x, y, width, height, radius) {
+            ctx.beginPath();
+            ctx.moveTo(x + radius, y);
+            ctx.lineTo(x + width - radius, y);
+            ctx.quadraticCurveTo(x + width, y, x + width, y + radius);
+            ctx.lineTo(x + width, y + height - radius);
+            ctx.quadraticCurveTo(x + width, y + height, x + width - radius, y + height);
+            ctx.lineTo(x + radius, y + height);
+            ctx.quadraticCurveTo(x, y + height, x, y + height - radius);
+            ctx.lineTo(x, y + radius);
+            ctx.quadraticCurveTo(x, y, x + radius, y);
+            ctx.closePath();
+        }
+
+        function drawSparkle(ctx, x, y, radius) {
+            ctx.beginPath();
+            ctx.arc(x, y, radius, 0, Math.PI * 2);
+            ctx.fill();
+        }
+
+        function downloadIcon(size) {
+            const canvas = document.getElementById('canvas' + size);
+            const link = document.createElement('a');
+            link.download = 'icon-' + size + '.png';
+            link.href = canvas.toDataURL('image/png');
+            link.click();
+        }
+
+        function downloadFavicon() {
+            const canvas = document.getElementById('canvas32');
+            const link = document.createElement('a');
+            link.download = 'favicon.png';
+            link.href = canvas.toDataURL('image/png');
+            link.click();
+            alert('Save this as favicon.ico or use a converter tool to create a true .ico file');
+        }
+
+        // Generate icons on load
+        window.addEventListener('load', function() {
+            drawIcon(document.getElementById('canvas192'), 192);
+            drawIcon(document.getElementById('canvas512'), 512);
+            drawIcon(document.getElementById('canvas32'), 32);
+        });
+    </script>
+</body>
+</html>
