@@ -103,14 +103,101 @@ var PRICING_DATA = {
 // Quick lookup maps
 var windowTypeMap = {};
 var pressureSurfaceMap = {};
+var windowConditionMap = {};
+var accessModifierMap = {};
+
+// Feature flag: enable extended Australian window types
+var USE_EXTENDED_TYPES = true;
 
 (function initDataMaps() {
-  for (var i = 0; i < PRICING_DATA.windowTypes.length; i++) {
-    var wt = PRICING_DATA.windowTypes[i];
+  // Build window type map
+  var windowTypesToUse = PRICING_DATA.windowTypes;
+
+  // If extended types are available and enabled, merge them
+  if (USE_EXTENDED_TYPES && window.WINDOW_TYPES_ARRAY) {
+    // Keep original types for backward compatibility
+    // Add extended types after
+    windowTypesToUse = PRICING_DATA.windowTypes.concat(WINDOW_TYPES_ARRAY);
+  }
+
+  // Build map
+  for (var i = 0; i < windowTypesToUse.length; i++) {
+    var wt = windowTypesToUse[i];
     windowTypeMap[wt.id] = wt;
   }
+
+  // Build pressure surface map
   for (var j = 0; j < PRICING_DATA.pressureSurfaces.length; j++) {
     var ps = PRICING_DATA.pressureSurfaces[j];
     pressureSurfaceMap[ps.id] = ps;
   }
+
+  // Build condition maps if available
+  if (window.WINDOW_CONDITIONS_ARRAY) {
+    for (var k = 0; k < WINDOW_CONDITIONS_ARRAY.length; k++) {
+      var cond = WINDOW_CONDITIONS_ARRAY[k];
+      windowConditionMap[cond.id] = cond;
+    }
+  }
+
+  if (window.ACCESS_MODIFIERS_ARRAY) {
+    for (var m = 0; m < ACCESS_MODIFIERS_ARRAY.length; m++) {
+      var acc = ACCESS_MODIFIERS_ARRAY[m];
+      accessModifierMap[acc.id] = acc;
+    }
+  }
 })();
+
+// Helper: Get all available window types
+function getAvailableWindowTypes() {
+  if (USE_EXTENDED_TYPES && window.WINDOW_TYPES_ARRAY) {
+    return PRICING_DATA.windowTypes.concat(WINDOW_TYPES_ARRAY);
+  }
+  return PRICING_DATA.windowTypes;
+}
+
+// Helper: Get condition multiplier by ID or legacy level
+function getConditionMultiplier(conditionIdOrLevel) {
+  if (!conditionIdOrLevel) return 1.0;
+
+  // Try new system first
+  if (windowConditionMap[conditionIdOrLevel]) {
+    return windowConditionMap[conditionIdOrLevel].multiplier;
+  }
+
+  // Fall back to legacy soil levels
+  if (PRICING_DATA.modifiers && PRICING_DATA.modifiers.soil) {
+    var legacySoil = PRICING_DATA.modifiers.soil[conditionIdOrLevel];
+    if (legacySoil) return legacySoil.factor;
+  }
+
+  // Default multipliers for legacy values
+  if (conditionIdOrLevel === 'light') return 1.0;
+  if (conditionIdOrLevel === 'medium') return 1.2;
+  if (conditionIdOrLevel === 'heavy') return 1.4;
+
+  return 1.0;
+}
+
+// Helper: Get access multiplier by ID or legacy level
+function getAccessMultiplier(accessIdOrLevel) {
+  if (!accessIdOrLevel) return 1.0;
+
+  // Try new system first
+  if (accessModifierMap[accessIdOrLevel]) {
+    return accessModifierMap[accessIdOrLevel].multiplier;
+  }
+
+  // Fall back to legacy access levels
+  if (PRICING_DATA.modifiers && PRICING_DATA.modifiers.access) {
+    var legacyAccess = PRICING_DATA.modifiers.access[accessIdOrLevel];
+    if (legacyAccess) return legacyAccess.factor;
+  }
+
+  // Default multipliers for legacy values
+  if (accessIdOrLevel === 'easy') return 1.0;
+  if (accessIdOrLevel === 'ladder') return 1.25;
+  if (accessIdOrLevel === 'highReach') return 1.4;
+
+  return 1.0;
+}
