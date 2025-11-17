@@ -230,7 +230,7 @@
   function init() {
     updateOnlineStatus();
     setupFieldValidation();
-    console.log('Error handling initialized');
+    DEBUG.log('[ERROR-HANDLER] Error handling initialized');
   }
 
   // Auto-initialize

@@ -455,7 +455,7 @@
       });
     }
 
-    console.log('Templates initialized');
+    DEBUG.log('[TEMPLATES] Templates initialized');
   }
 
   // Auto-initialize

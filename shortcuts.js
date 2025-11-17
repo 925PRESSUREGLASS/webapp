@@ -302,7 +302,7 @@
   // Initialize keyboard shortcuts
   function init() {
     document.addEventListener('keydown', handleKeydown);
-    console.log('Keyboard shortcuts enabled. Press ? for help.');
+    DEBUG.log('[SHORTCUTS] Keyboard shortcuts enabled. Press ? for help.');
   }
 
   // Auto-initialize when DOM is ready

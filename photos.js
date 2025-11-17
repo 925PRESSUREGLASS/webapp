@@ -273,7 +273,7 @@
       }
     }
 
-    console.log('Photo manager initialized');
+    DEBUG.log('[PHOTOS] Photo manager initialized');
   }
 
   // Auto-initialize

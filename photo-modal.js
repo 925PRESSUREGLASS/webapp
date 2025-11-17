@@ -145,7 +145,7 @@
 
   // Initialize
   function init() {
-    console.log('Photo modal initialized');
+    DEBUG.log('[PHOTO-MODAL] Photo modal initialized');
   }
 
   // Auto-initialize
