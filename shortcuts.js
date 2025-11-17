@@ -352,31 +352,136 @@
     var isMac = navigator.platform.toUpperCase().indexOf('MAC') >= 0;
     var modKey = isMac ? '⌘' : 'Ctrl';
 
-    var helpText = [
-      'KEYBOARD SHORTCUTS',
-      '',
-      modKey + ' + S - Save preset',
-      modKey + ' + W - Add window line',
-      modKey + ' + P - Add pressure line',
-      modKey + ' + E - Export to PDF',
-      modKey + ' + I - Open invoices',
-      modKey + ' + D - Open client database',
-      modKey + ' + A - Open analytics',
-      modKey + ' + Shift + C - Copy summary',
-      modKey + ' + Shift + W - Window wizard',
-      modKey + ' + Shift + P - Pressure wizard',
-      modKey + ' + 1 - Toggle settings',
-      modKey + ' + T - Focus quote title',
-      'ESC - Close modal',
-      '? - Show this help'
-    ].join('\n');
+    // Create modal overlay
+    var overlay = document.createElement('div');
+    overlay.className = 'shortcuts-help-overlay';
+    overlay.id = 'shortcutsHelpOverlay';
 
-    alert(helpText);
+    // Create modal dialog
+    var dialog = document.createElement('div');
+    dialog.className = 'shortcuts-help-dialog';
+
+    // Build header
+    var header = document.createElement('div');
+    header.className = 'shortcuts-help-header';
+
+    var title = document.createElement('h2');
+    title.textContent = 'Keyboard Shortcuts';
+    header.appendChild(title);
+
+    var closeBtn = document.createElement('button');
+    closeBtn.className = 'shortcuts-help-close';
+    closeBtn.innerHTML = '×';
+    closeBtn.setAttribute('aria-label', 'Close help dialog');
+    closeBtn.onclick = closeShortcutsHelp;
+    header.appendChild(closeBtn);
+
+    dialog.appendChild(header);
+
+    // Build content
+    var content = document.createElement('div');
+    content.className = 'shortcuts-help-content';
+
+    var shortcuts = [
+      { keys: modKey + ' + S', description: 'Save current settings as preset' },
+      { keys: modKey + ' + W', description: 'Add new window cleaning line' },
+      { keys: modKey + ' + P', description: 'Add new pressure cleaning line' },
+      { keys: modKey + ' + E', description: 'Export quote to PDF' },
+      { keys: modKey + ' + I', description: 'Open invoice list' },
+      { keys: modKey + ' + D', description: 'Open client database' },
+      { keys: modKey + ' + A', description: 'Open analytics dashboard' },
+      { keys: modKey + ' + Shift + C', description: 'Copy summary to clipboard' },
+      { keys: modKey + ' + Shift + W', description: 'Open window wizard' },
+      { keys: modKey + ' + Shift + P', description: 'Open pressure wizard' },
+      { keys: modKey + ' + 1', description: 'Toggle settings panel' },
+      { keys: modKey + ' + T', description: 'Focus quote title field' },
+      { keys: 'ESC', description: 'Close active modal' },
+      { keys: '?', description: 'Show this help dialog' }
+    ];
+
+    var table = document.createElement('table');
+    table.className = 'shortcuts-help-table';
+
+    for (var i = 0; i < shortcuts.length; i++) {
+      var row = document.createElement('tr');
+
+      var keyCell = document.createElement('td');
+      keyCell.className = 'shortcuts-help-key';
+      var kbd = document.createElement('kbd');
+      kbd.textContent = shortcuts[i].keys;
+      keyCell.appendChild(kbd);
+      row.appendChild(keyCell);
+
+      var descCell = document.createElement('td');
+      descCell.className = 'shortcuts-help-desc';
+      descCell.textContent = shortcuts[i].description;
+      row.appendChild(descCell);
+
+      table.appendChild(row);
+    }
+
+    content.appendChild(table);
+
+    // Add tip at bottom
+    var tip = document.createElement('p');
+    tip.className = 'shortcuts-help-tip';
+    tip.textContent = 'Tip: Press ? anytime to view these shortcuts';
+    content.appendChild(tip);
+
+    dialog.appendChild(content);
+    overlay.appendChild(dialog);
+
+    // Add to page
+    document.body.appendChild(overlay);
+
+    // Add active class after a brief delay for animation
+    setTimeout(function() {
+      overlay.classList.add('active');
+    }, 10);
+
+    // Close on overlay click
+    overlay.addEventListener('click', function(e) {
+      if (e.target === overlay) {
+        closeShortcutsHelp();
+      }
+    });
+
+    // Close on ESC key
+    var escHandler = function(e) {
+      if (e.key === 'Escape') {
+        closeShortcutsHelp();
+        document.removeEventListener('keydown', escHandler);
+      }
+    };
+    document.addEventListener('keydown', escHandler);
+
+    // Store handler for cleanup
+    overlay.setAttribute('data-esc-handler', 'attached');
+  }
+
+  // Close keyboard shortcuts help
+  function closeShortcutsHelp() {
+    var overlay = document.getElementById('shortcutsHelpOverlay');
+    if (overlay) {
+      overlay.classList.remove('active');
+      setTimeout(function() {
+        if (overlay.parentNode) {
+          overlay.parentNode.removeChild(overlay);
+        }
+      }, 300);
+    }
   }
 
   // Initialize keyboard shortcuts
   function init() {
     document.addEventListener('keydown', handleKeydown);
+
+    // Add click handler for help button
+    var helpBtn = document.getElementById('keyboardShortcutsBtn');
+    if (helpBtn) {
+      helpBtn.addEventListener('click', showShortcutsHelp);
+    }
+
     DEBUG.log('[SHORTCUTS] Keyboard shortcuts enabled. Press ? for help.');
   }
 
