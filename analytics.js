@@ -393,7 +393,7 @@
       notesFooter.appendChild(historyBtn);
     }
 
-    console.log('Analytics initialized');
+    DEBUG.log('[ANALYTICS] Analytics initialized');
   }
 
   // Auto-initialize

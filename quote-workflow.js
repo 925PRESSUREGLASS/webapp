@@ -247,7 +247,7 @@
   function init() {
     addStatusBadge();
     enhanceAnalytics();
-    console.log('Quote workflow initialized - Status: ' + getCurrentStatus());
+    DEBUG.log('[WORKFLOW] Quote workflow initialized - Status: ' + getCurrentStatus());
   }
 
   // Auto-initialize

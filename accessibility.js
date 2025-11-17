@@ -269,7 +269,7 @@
     enhanceFocusIndicators();
     setupMutationObserver();
 
-    console.log('Accessibility enhancements initialized');
+    DEBUG.log('[A11Y] Accessibility enhancements initialized');
   }
 
   // Auto-initialize

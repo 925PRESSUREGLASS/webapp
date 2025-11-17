@@ -1662,7 +1662,7 @@
     // Check for overdue invoices daily
     checkOverdueInvoices();
 
-    console.log('Invoice manager initialized (' + invoices.length + ' invoices)');
+    DEBUG.log('[INVOICE] Invoice manager initialized (' + invoices.length + ' invoices)');
   }
 
   // Auto-initialize
