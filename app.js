@@ -1457,7 +1457,7 @@ $("totalIncGstDisplay").textContent = formatMoney(totalIncGst);
     APP.isInitialized = true;
     APP.initialized = true;
 
-    console.log('[APP] Application initialized successfully');
+    window.DEBUG.log('[APP] Application initialized successfully');
   }
 
   // ————————————————————
@@ -1493,7 +1493,7 @@ $("totalIncGstDisplay").textContent = formatMoney(totalIncGst);
   // Register with bootstrap
   window.APP.registerModule('app', AppModule);
 
-  console.log('[APP] Module registered with bootstrap');
+  window.DEBUG.log('[APP] Module registered with bootstrap');
 
   // ————————————————————
   // INITIALIZATION
@@ -1507,7 +1507,7 @@ $("totalIncGstDisplay").textContent = formatMoney(totalIncGst);
       // Trigger bootstrap initialization after app is ready
       if (window.APP && typeof APP.init === 'function') {
         APP.init().then(function() {
-          console.log('[APP] Bootstrap initialization complete');
+          window.DEBUG.log('[APP] Bootstrap initialization complete');
         }).catch(function(error) {
           console.error('[APP] Bootstrap initialization error:', error);
         });
