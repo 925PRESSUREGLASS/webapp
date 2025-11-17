@@ -79,17 +79,84 @@
   function buildWindowWizardContent() {
     if (!contentEl) return;
 
-    var windowTypes = (window.PRICING_DATA && PRICING_DATA.windowTypes) || [];
+    // Use extended types if available, otherwise fall back to basic types
+    var windowTypes = [];
+    if (typeof getAvailableWindowTypes === 'function') {
+      windowTypes = getAvailableWindowTypes();
+    } else if (window.PRICING_DATA && PRICING_DATA.windowTypes) {
+      windowTypes = PRICING_DATA.windowTypes;
+    }
+
     var optionsHtml = "";
     var i;
-    for (i = 0; i < windowTypes.length; i++) {
-      var wt = windowTypes[i];
-      optionsHtml +=
-        '<option value="' +
-        wt.id +
-        '">' +
-        wt.label +
-        "</option>";
+
+    // Group by category if extended types are available
+    var hasCategories = windowTypes.length > 0 && windowTypes[0].category;
+
+    if (hasCategories) {
+      // Build grouped options
+      var categories = {
+        sliding: [],
+        awning: [],
+        fixed: [],
+        casement: [],
+        louvre: [],
+        bifold: [],
+        stacker: [],
+        skylight: [],
+        custom: [],
+        other: []
+      };
+
+      for (i = 0; i < windowTypes.length; i++) {
+        var wt = windowTypes[i];
+        var cat = wt.category || 'other';
+        if (categories[cat]) {
+          categories[cat].push(wt);
+        } else {
+          categories.other.push(wt);
+        }
+      }
+
+      // Build HTML with optgroups
+      var categoryLabels = {
+        sliding: 'Sliding Windows',
+        awning: 'Awning Windows',
+        fixed: 'Fixed Windows',
+        casement: 'Casement Windows',
+        louvre: 'Louvre Windows',
+        bifold: 'Bi-fold Doors',
+        stacker: 'Stacker Doors',
+        skylight: 'Skylights',
+        custom: 'Custom',
+        other: 'Other'
+      };
+
+      for (var catKey in categories) {
+        if (categories[catKey].length > 0) {
+          optionsHtml += '<optgroup label="' + categoryLabels[catKey] + '">';
+          for (var j = 0; j < categories[catKey].length; j++) {
+            var w = categories[catKey][j];
+            var priceStr = w.basePrice ? ' - $' + w.basePrice.toFixed(0) : '';
+            optionsHtml +=
+              '<option value="' + w.id + '">' +
+              w.label + priceStr +
+              '</option>';
+          }
+          optionsHtml += '</optgroup>';
+        }
+      }
+    } else {
+      // Simple flat list
+      for (i = 0; i < windowTypes.length; i++) {
+        var wt2 = windowTypes[i];
+        optionsHtml +=
+          '<option value="' +
+          wt2.id +
+          '">' +
+          wt2.label +
+          "</option>";
+      }
     }
 
     var html = "";
@@ -146,16 +213,55 @@
     html += "</div>";
     html += "</label>";
 
-    // Soil & tint
+    // Condition (soil) - use enhanced conditions if available
     html += '<label class="field">';
-    html += '<span class="field-label">Soil Level</span>';
-    html += '<select id="wizWinSoil">';
-    html += '<option value="light">Light</option>';
-    html += '<option value="medium" selected>Medium</option>';
-    html += '<option value="heavy">Heavy</option>';
+    html += '<span class="field-label">Condition</span>';
+    html += '<select id="wizWinCondition">';
+
+    if (window.WINDOW_CONDITIONS_ARRAY && WINDOW_CONDITIONS_ARRAY.length > 0) {
+      // Use enhanced conditions
+      for (var c = 0; c < WINDOW_CONDITIONS_ARRAY.length; c++) {
+        var cond = WINDOW_CONDITIONS_ARRAY[c];
+        var selected = cond.id === 'normal_dirt' ? ' selected' : '';
+        html += '<option value="' + cond.id + '"' + selected + '>' +
+                cond.name + ' (' + (cond.multiplier * 100).toFixed(0) + '%)' +
+                '</option>';
+      }
+    } else {
+      // Fall back to legacy soil levels
+      html += '<option value="light">Light</option>';
+      html += '<option value="medium" selected>Medium</option>';
+      html += '<option value="heavy">Heavy</option>';
+    }
+
     html += "</select>";
     html += "</label>";
 
+    // Access modifier - use enhanced modifiers if available
+    html += '<label class="field">';
+    html += '<span class="field-label">Access</span>';
+    html += '<select id="wizWinAccess">';
+
+    if (window.ACCESS_MODIFIERS_ARRAY && ACCESS_MODIFIERS_ARRAY.length > 0) {
+      // Use enhanced access modifiers
+      for (var a = 0; a < ACCESS_MODIFIERS_ARRAY.length; a++) {
+        var acc = ACCESS_MODIFIERS_ARRAY[a];
+        var selectedAcc = acc.id === 'ground_level' ? ' selected' : '';
+        html += '<option value="' + acc.id + '"' + selectedAcc + '>' +
+                acc.name + ' (' + (acc.multiplier * 100).toFixed(0) + '%)' +
+                '</option>';
+      }
+    } else {
+      // Fall back to legacy access (will use highReach checkbox instead)
+      html += '<option value="easy" selected>Easy Access</option>';
+      html += '<option value="ladder">Ladder Required</option>';
+      html += '<option value="highReach">High Reach</option>';
+    }
+
+    html += "</select>";
+    html += "</label>";
+
+    // Tint level
     html += '<label class="field">';
     html += '<span class="field-label">Tint Level</span>';
     html += '<select id="wizWinTint">';
@@ -222,10 +328,28 @@
           var highReach =
             $("wizWinHigh") && $("wizWinHigh").checked ? true : false;
 
-          var soilLevel =
-            $("wizWinSoil") && $("wizWinSoil").value
-              ? $("wizWinSoil").value
-              : "medium";
+          // Get condition and access from new dropdowns if available
+          var conditionId = null;
+          var accessId = null;
+          var soilLevel = "medium"; // Legacy fallback
+
+          if ($("wizWinCondition")) {
+            conditionId = $("wizWinCondition").value;
+            // Also set soilLevel for backward compatibility
+            if (conditionId === 'light_dust') soilLevel = 'light';
+            else if (conditionId === 'normal_dirt') soilLevel = 'medium';
+            else if (conditionId === 'heavy_dirt' || conditionId === 'severe_neglect') soilLevel = 'heavy';
+          } else if ($("wizWinSoil")) {
+            soilLevel = $("wizWinSoil").value;
+          }
+
+          if ($("wizWinAccess")) {
+            accessId = $("wizWinAccess").value;
+            // Set highReach for backward compatibility
+            if (accessId && accessId.indexOf('high') !== -1) {
+              highReach = true;
+            }
+          }
 
           var tintLevel =
             $("wizWinTint") && $("wizWinTint").value
@@ -240,6 +364,8 @@
             outside: outside,
             highReach: highReach,
             soilLevel: soilLevel,
+            conditionId: conditionId,
+            accessId: accessId,
             tintLevel: tintLevel,
             location: location
           };

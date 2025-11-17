@@ -141,19 +141,34 @@ if (line.outside) {
 minutesPerPane += baseOutside * outsideMultiplier;
 }
 
-// High reach and soil modifiers
-var soilFactor = 1.0;
-if (line.soilLevel === 'medium') soilFactor = 1.2;
-else if (line.soilLevel === 'heavy') soilFactor = 1.4;
+// Condition, access, and tint modifiers
+// Support both legacy (soilLevel) and new (conditionId) formats
+var conditionId = line.conditionId || line.soilLevel;
+var accessId = line.accessId || (line.highReach ? 'highReach' : null);
+
+// Get multipliers using helper functions (supports both old and new formats)
+var conditionFactor = 1.0;
+if (typeof getConditionMultiplier === 'function' && conditionId) {
+  conditionFactor = getConditionMultiplier(conditionId);
+} else {
+  // Fallback to legacy logic
+  if (line.soilLevel === 'medium') conditionFactor = 1.2;
+  else if (line.soilLevel === 'heavy') conditionFactor = 1.4;
+}
 
 var accessFactor = 1.0;
-if (line.highReach) accessFactor = 1.4;
+if (typeof getAccessMultiplier === 'function' && accessId) {
+  accessFactor = getAccessMultiplier(accessId);
+} else {
+  // Fallback to legacy logic
+  if (line.highReach) accessFactor = 1.4;
+}
 
 var tintFactor = 1.0;
 if (line.tintLevel === 'light') tintFactor = 1.05;
 else if (line.tintLevel === 'heavy') tintFactor = 1.1;
 
-var combinedFactor = soilFactor * accessFactor * tintFactor;
+var combinedFactor = conditionFactor * accessFactor * tintFactor;
 
 // Total minutes
 var panes = line.panes || 0;
@@ -177,15 +192,23 @@ var outsideMultiplier = config.outsideMultiplier || 1;
 var minutesPerPane = baseOutside * outsideMultiplier;
 
 var panes = line.panes || 0;
-var soilFactor = 1.0;
-if (line.soilLevel === 'medium') soilFactor = 1.2;
-else if (line.soilLevel === 'heavy') soilFactor = 1.4;
+
+// Use same condition logic as main calculation
+var conditionId = line.conditionId || line.soilLevel;
+var conditionFactor = 1.0;
+if (typeof getConditionMultiplier === 'function' && conditionId) {
+  conditionFactor = getConditionMultiplier(conditionId);
+} else {
+  // Fallback to legacy logic
+  if (line.soilLevel === 'medium') conditionFactor = 1.2;
+  else if (line.soilLevel === 'heavy') conditionFactor = 1.4;
+}
 
 var tintFactor = 1.0;
 if (line.tintLevel === 'light') tintFactor = 1.05;
 else if (line.tintLevel === 'heavy') tintFactor = 1.1;
 
-var baseMinutes = minutesPerPane * panes * soilFactor * tintFactor;
+var baseMinutes = minutesPerPane * panes * conditionFactor * tintFactor;
 
 // We assume high reach adds 40% extra on this portion
 var extraMinutes = baseMinutes * 0.4;
