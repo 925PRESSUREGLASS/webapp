@@ -6,6 +6,14 @@
 
   var INVOICES_KEY = 'invoice-database';
   var INVOICE_SETTINGS_KEY = 'invoice-settings';
+
+  // Encryption configuration
+  // NOTE: Encryption is disabled by default for backward compatibility
+  // Set ENABLE_ENCRYPTION = true to enable encrypted storage
+  // TODO: Make this user-configurable via settings UI in future version
+  var ENABLE_ENCRYPTION = false;
+  var ENCRYPTION_KEY = 'tictacstick-2025-invoice-secure';
+
   var invoices = [];
   var settings = {
     nextInvoiceNumber: 1001,
@@ -19,6 +27,12 @@
     includeGST: true
   };
 
+  // Initialize encryption for secure storage (if enabled)
+  if (ENABLE_ENCRYPTION && window.Security && window.Security.SecureStorage) {
+    window.Security.SecureStorage.setKey(ENCRYPTION_KEY);
+    console.log('[INVOICE] Encryption enabled for invoice data');
+  }
+
   var INVOICE_STATUSES = {
     draft: { label: 'Draft', color: '#94a3b8', icon: '📝' },
     sent: { label: 'Sent', color: '#38bdf8', icon: '📤' },
@@ -27,28 +41,55 @@
     cancelled: { label: 'Cancelled', color: '#64748b', icon: '✗' }
   };
 
-  // Load invoices from storage
+  // Load invoices from storage (supports encrypted and unencrypted modes)
   function loadInvoices() {
     try {
-      invoices = window.Security.safeJSONParse(
-        localStorage.getItem(INVOICES_KEY),
-        null,
-        []
-      );
+      if (ENABLE_ENCRYPTION && window.Security && window.Security.SecureStorage) {
+        // Try to load encrypted data first
+        invoices = window.Security.SecureStorage.getItem(INVOICES_KEY, null);
+
+        // If no encrypted data, try to migrate from unencrypted
+        if (invoices === null || invoices === undefined) {
+          var unencryptedData = localStorage.getItem(INVOICES_KEY);
+          if (unencryptedData) {
+            // Migrate unencrypted data to encrypted
+            invoices = window.Security.safeJSONParse(unencryptedData, null, []);
+            if (invoices && invoices.length > 0) {
+              // Save as encrypted
+              window.Security.SecureStorage.setItem(INVOICES_KEY, invoices);
+              console.log('[INVOICE] Migrated ' + invoices.length + ' invoices to encrypted storage');
+            }
+          } else {
+            invoices = [];
+          }
+        }
+      } else {
+        // Load unencrypted data (default mode)
+        invoices = window.Security.safeJSONParse(
+          localStorage.getItem(INVOICES_KEY),
+          null,
+          []
+        );
+      }
       return invoices;
     } catch (e) {
-      console.error('Failed to load invoices:', e);
+      console.error('[INVOICE] Failed to load invoices:', e);
       return [];
     }
   }
 
-  // Save invoices to storage
+  // Save invoices to storage (supports encrypted and unencrypted modes)
   function saveInvoices() {
     try {
-      localStorage.setItem(INVOICES_KEY, JSON.stringify(invoices));
+      if (ENABLE_ENCRYPTION && window.Security && window.Security.SecureStorage) {
+        window.Security.SecureStorage.setItem(INVOICES_KEY, invoices);
+      } else {
+        // Save unencrypted (default mode)
+        localStorage.setItem(INVOICES_KEY, JSON.stringify(invoices));
+      }
       return true;
     } catch (e) {
-      console.error('Failed to save invoices:', e);
+      console.error('[INVOICE] Failed to save invoices:', e);
       if (window.ErrorHandler) {
         window.ErrorHandler.showError('Failed to save invoice data');
       }
@@ -56,14 +97,35 @@
     }
   }
 
-  // Load settings
+  // Load settings (supports encrypted and unencrypted modes)
   function loadSettings() {
     try {
-      var loadedSettings = window.Security.safeJSONParse(
-        localStorage.getItem(INVOICE_SETTINGS_KEY),
-        null,
-        null
-      );
+      var loadedSettings = null;
+      if (ENABLE_ENCRYPTION && window.Security && window.Security.SecureStorage) {
+        // Try to load encrypted data first
+        loadedSettings = window.Security.SecureStorage.getItem(INVOICE_SETTINGS_KEY, null);
+
+        // If no encrypted data, try to migrate from unencrypted
+        if (loadedSettings === null || loadedSettings === undefined) {
+          var unencryptedData = localStorage.getItem(INVOICE_SETTINGS_KEY);
+          if (unencryptedData) {
+            // Migrate unencrypted data to encrypted
+            loadedSettings = window.Security.safeJSONParse(unencryptedData, null, null);
+            if (loadedSettings) {
+              // Save as encrypted
+              window.Security.SecureStorage.setItem(INVOICE_SETTINGS_KEY, loadedSettings);
+              console.log('[INVOICE] Migrated settings to encrypted storage');
+            }
+          }
+        }
+      } else {
+        // Load unencrypted data (default mode)
+        loadedSettings = window.Security.safeJSONParse(
+          localStorage.getItem(INVOICE_SETTINGS_KEY),
+          null,
+          null
+        );
+      }
       if (loadedSettings) {
         Object.keys(loadedSettings).forEach(function(key) {
           settings[key] = loadedSettings[key];
@@ -71,18 +133,23 @@
       }
       return settings;
     } catch (e) {
-      console.error('Failed to load settings:', e);
+      console.error('[INVOICE] Failed to load settings:', e);
       return settings;
     }
   }
 
-  // Save settings
+  // Save settings (supports encrypted and unencrypted modes)
   function saveSettings() {
     try {
-      localStorage.setItem(INVOICE_SETTINGS_KEY, JSON.stringify(settings));
+      if (ENABLE_ENCRYPTION && window.Security && window.Security.SecureStorage) {
+        window.Security.SecureStorage.setItem(INVOICE_SETTINGS_KEY, settings);
+      } else {
+        // Save unencrypted (default mode)
+        localStorage.setItem(INVOICE_SETTINGS_KEY, JSON.stringify(settings));
+      }
       return true;
     } catch (e) {
-      console.error('Failed to save settings:', e);
+      console.error('[INVOICE] Failed to save settings:', e);
       return false;
     }
   }
