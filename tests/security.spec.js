@@ -286,7 +286,7 @@ test.describe('Security: LocalStorage Encryption', () => {
       window.Security.SecureStorage.setKey('test-key-2025');
       window.Security.SecureStorage.setItem('testData', {
         secret: 'sensitive-information',
-        credit card: '1234-5678-9012-3456'
+        creditCard: '1234-5678-9012-3456'
       });
     });
 

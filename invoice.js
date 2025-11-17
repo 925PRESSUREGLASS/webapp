@@ -89,6 +89,26 @@
     return number;
   }
 
+  // Get highest invoice number from existing invoices
+  // Used to prevent duplicate invoice numbers when changing settings
+  function getHighestInvoiceNumber() {
+    if (invoices.length === 0) {
+      return 0;
+    }
+
+    var highest = 0;
+    for (var i = 0; i < invoices.length; i++) {
+      var invoiceNumber = invoices[i].invoiceNumber;
+      // Extract numeric part from invoice number (e.g., "INV-1005" -> 1005)
+      var numericPart = invoiceNumber.replace(/[^0-9]/g, '');
+      var num = parseInt(numericPart) || 0;
+      if (num > highest) {
+        highest = num;
+      }
+    }
+    return highest;
+  }
+
   // Convert current quote to invoice
   function convertQuoteToInvoice() {
     if (!window.APP || !window.APP.getState) {
@@ -173,6 +193,17 @@
       }
     }
 
+    // VALIDATION: Validate invoice before saving
+    if (window.InvoiceValidation) {
+      var validationResult = window.InvoiceValidation.validateInvoice(invoice, { isNew: true });
+      if (!validationResult.isValid) {
+        if (window.ErrorHandler) {
+          window.ErrorHandler.showError('Invoice validation failed: ' + validationResult.errors[0].message);
+        }
+        return null;
+      }
+    }
+
     // Add to invoices array
     invoices.unshift(invoice);
     saveInvoices();
@@ -234,13 +265,18 @@
       notes: paymentData.notes || ''
     };
 
-    if (payment.amount <= 0) {
-      if (window.ErrorHandler) {
-        window.ErrorHandler.showError('Payment amount must be greater than zero');
+    // VALIDATION: Validate payment before recording
+    if (window.InvoiceValidation) {
+      var validationResult = window.InvoiceValidation.validatePayment(payment, invoice);
+      if (!validationResult.isValid) {
+        if (window.ErrorHandler) {
+          window.ErrorHandler.showError('Payment validation failed: ' + validationResult.errors[0].message);
+        }
+        return false;
       }
-      return false;
     }
 
+    // Additional check: warn if payment exceeds balance
     if (payment.amount > invoice.balance) {
       if (!confirm('Payment amount ($' + payment.amount.toFixed(2) + ') exceeds balance ($' + invoice.balance.toFixed(2) + '). Continue?')) {
         return false;
@@ -703,13 +739,50 @@
       e.preventDefault();
 
       settings.invoicePrefix = document.getElementById('invoicePrefix').value;
-      settings.nextInvoiceNumber = parseInt(document.getElementById('nextInvoiceNumber').value) || 1001;
+      var newInvoiceNumber = parseInt(document.getElementById('nextInvoiceNumber').value) || 1001;
+
+      // BUG FIX #2: Prevent decreasing invoice number to avoid duplicates
+      // This maintains tax compliance and prevents duplicate invoice numbers
+      var highestExisting = getHighestInvoiceNumber();
+      if (newInvoiceNumber <= highestExisting) {
+        if (window.ErrorHandler) {
+          window.ErrorHandler.showError('Cannot decrease invoice number to ' + newInvoiceNumber + '. Highest existing invoice is ' + highestExisting + '. This prevents duplicate invoice numbers and maintains tax compliance.');
+        }
+        return;
+      }
+
+      settings.nextInvoiceNumber = newInvoiceNumber;
       settings.paymentTermsDays = parseInt(document.getElementById('paymentTermsDays').value) || 7;
       settings.bankName = document.getElementById('bankName').value;
       settings.accountName = document.getElementById('accountName').value;
-      settings.bsb = document.getElementById('bsb').value;
+
+      // SECURITY: Validate BSB and ABN if provided
+      var bsbValue = document.getElementById('bsb').value;
+      var abnValue = document.getElementById('abn').value;
+
+      if (bsbValue && window.Security) {
+        var bsbValidation = window.Security.validateBSB(bsbValue);
+        if (!bsbValidation.isValid) {
+          if (window.ErrorHandler) {
+            window.ErrorHandler.showError('Invalid BSB: ' + bsbValidation.error);
+          }
+          return;
+        }
+      }
+
+      if (abnValue && window.Security) {
+        var abnValidation = window.Security.validateABN(abnValue);
+        if (!abnValidation.isValid) {
+          if (window.ErrorHandler) {
+            window.ErrorHandler.showError('Invalid ABN: ' + abnValidation.error);
+          }
+          return;
+        }
+      }
+
+      settings.bsb = bsbValue;
       settings.accountNumber = document.getElementById('accountNumber').value;
-      settings.abn = document.getElementById('abn').value;
+      settings.abn = abnValue;
 
       saveSettings();
 
@@ -947,8 +1020,20 @@
     modal.querySelector('#paymentForm').onsubmit = function(e) {
       e.preventDefault();
 
+      // SECURITY: Validate payment amount before processing
+      var amountValue = document.getElementById('paymentAmount').value;
+      if (window.Security) {
+        var amountValidation = window.Security.validateCurrency(amountValue, 'Payment amount');
+        if (!amountValidation.isValid) {
+          if (window.ErrorHandler) {
+            window.ErrorHandler.showError(amountValidation.error);
+          }
+          return;
+        }
+      }
+
       var paymentData = {
-        amount: document.getElementById('paymentAmount').value,
+        amount: amountValue,
         method: document.getElementById('paymentMethod').value,
         date: new Date(document.getElementById('paymentDate').value).getTime(),
         reference: document.getElementById('paymentReference').value,
@@ -1442,6 +1527,15 @@
       return;
     }
 
+    // BUG FIX #1: Prevent editing paid invoices with recorded payments
+    // This prevents data corruption and maintains audit trail integrity
+    if (invoice.status === 'paid' && invoice.amountPaid > 0) {
+      if (window.ErrorHandler) {
+        window.ErrorHandler.showError('Cannot edit paid invoices with recorded payments. This protects data integrity and audit compliance.');
+      }
+      return;
+    }
+
     var modal = createEditInvoiceModal(invoice);
     document.body.appendChild(modal);
     modal.classList.add('active');
@@ -1557,19 +1651,79 @@
       totalInput.value = (subtotal + gst).toFixed(2);
     }
 
-    subtotalInput.oninput = function() {
+    // PERFORMANCE: Debounce function to limit calculation frequency
+    var debounceTimer;
+    function debounce(func, delay) {
+      return function() {
+        var context = this;
+        var args = arguments;
+        clearTimeout(debounceTimer);
+        debounceTimer = setTimeout(function() {
+          func.apply(context, args);
+        }, delay);
+      };
+    }
+
+    subtotalInput.oninput = debounce(function() {
       updateTotal();
       // Auto-calculate GST if changed
       var subtotal = parseFloat(subtotalInput.value) || 0;
       gstInput.value = (subtotal * 0.1).toFixed(2);
       updateTotal();
-    };
+    }, 300);
 
-    gstInput.oninput = updateTotal;
+    gstInput.oninput = debounce(updateTotal, 300);
 
     // Form submission
     modal.querySelector('#editInvoiceForm').onsubmit = function(e) {
       e.preventDefault();
+
+      // SECURITY: Validate inputs before processing
+      var clientEmail = document.getElementById('editClientEmail').value;
+      var clientPhone = document.getElementById('editClientPhone').value;
+      var subtotalValue = document.getElementById('editSubtotal').value;
+      var gstValue = document.getElementById('editGST').value;
+
+      // Validate email if provided
+      if (clientEmail && window.Security) {
+        var emailValidation = window.Security.validateEmail(clientEmail);
+        if (!emailValidation.isValid) {
+          if (window.ErrorHandler) {
+            window.ErrorHandler.showError('Invalid email format: ' + emailValidation.error);
+          }
+          return;
+        }
+      }
+
+      // Validate phone if provided
+      if (clientPhone && window.Security) {
+        var phoneValidation = window.Security.validatePhone(clientPhone);
+        if (!phoneValidation.isValid) {
+          if (window.ErrorHandler) {
+            window.ErrorHandler.showError('Invalid phone format: ' + phoneValidation.error);
+          }
+          return;
+        }
+      }
+
+      // Validate currency fields
+      if (window.Security) {
+        var subtotalValidation = window.Security.validateCurrency(subtotalValue, 'Subtotal');
+        if (!subtotalValidation.isValid) {
+          if (window.ErrorHandler) {
+            window.ErrorHandler.showError(subtotalValidation.error);
+          }
+          return;
+        }
+
+        var gstValidation = window.Security.validateCurrency(gstValue, 'GST');
+        if (!gstValidation.isValid) {
+          if (window.ErrorHandler) {
+            window.ErrorHandler.showError(gstValidation.error);
+          }
+          return;
+        }
+      }
 
       // Update invoice data
       invoice.clientName = document.getElementById('editClientName').value;
@@ -1580,6 +1734,18 @@
       invoice.dueDate = new Date(document.getElementById('editDueDate').value).getTime();
       invoice.subtotal = parseFloat(document.getElementById('editSubtotal').value);
       invoice.gst = parseFloat(document.getElementById('editGST').value);
+
+      // BUG FIX #3: Validate GST is exactly 10% of subtotal
+      // This ensures tax compliance and prevents incorrect GST reporting
+      var expectedGST = parseFloat((invoice.subtotal * 0.10).toFixed(2));
+      var actualGST = parseFloat(invoice.gst.toFixed(2));
+      if (Math.abs(actualGST - expectedGST) > 0.01) {
+        if (window.ErrorHandler) {
+          window.ErrorHandler.showError('GST must be exactly 10% of subtotal. Expected: $' + expectedGST.toFixed(2) + ', but got: $' + actualGST.toFixed(2) + '. This ensures tax compliance.');
+        }
+        return;
+      }
+
       invoice.total = parseFloat(document.getElementById('editTotal').value);
       invoice.quoteTitle = document.getElementById('editQuoteTitle').value;
 
