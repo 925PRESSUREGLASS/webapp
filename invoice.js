@@ -147,6 +147,9 @@
     var gstText = document.getElementById('gstDisplay');
     var gst = gstText ? parseFloat(gstText.textContent.replace(/[$,]/g, '')) : 0;
 
+    // Generate quote ID for tracking
+    var quoteId = 'quote_' + Date.now() + '_' + Math.random().toString(36).substr(2, 9);
+
     // Create invoice
     var invoice = {
       id: 'invoice_' + Date.now() + '_' + Math.random().toString(36).substr(2, 9),
@@ -163,6 +166,7 @@
       clientPhone: '',
 
       // Quote info
+      quoteId: quoteId,
       quoteTitle: state.quoteTitle || 'Untitled Invoice',
       jobType: state.jobType || '',
 
@@ -213,6 +217,15 @@
     // Add to invoices array
     invoices.unshift(invoice);
     saveInvoices();
+
+    // Save quote to history for tracking (optional, non-blocking)
+    if (window.QuoteAnalytics && window.QuoteAnalytics.save) {
+      try {
+        window.QuoteAnalytics.save();
+      } catch (e) {
+        console.warn('[INVOICE] Failed to save quote to history:', e);
+      }
+    }
 
     if (window.ErrorHandler) {
       window.ErrorHandler.showSuccess('Invoice ' + invoice.invoiceNumber + ' created!');
