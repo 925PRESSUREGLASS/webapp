@@ -649,12 +649,12 @@
       html += '</div>';
 
       html += '<div class="invoice-card-actions">';
-      html += '<button type="button" class="btn btn-small btn-secondary" onclick="window.InvoiceManager.viewInvoice(\'' + invoice.id + '\')">View</button>';
-      html += '<button type="button" class="btn btn-small btn-primary" onclick="window.InvoiceManager.editInvoice(\'' + invoice.id + '\')">Edit</button>';
+      html += '<button type="button" class="btn btn-small btn-secondary" onclick="window.InvoiceManager.viewInvoice(\'' + invoice.id + '\')" aria-label="View invoice ' + escapeHtml(invoice.invoiceNumber) + ' for ' + escapeHtml(invoice.clientName || 'unknown client') + '">View</button>';
+      html += '<button type="button" class="btn btn-small btn-primary" onclick="window.InvoiceManager.editInvoice(\'' + invoice.id + '\')" aria-label="Edit invoice ' + escapeHtml(invoice.invoiceNumber) + ' for ' + escapeHtml(invoice.clientName || 'unknown client') + '">Edit</button>';
       if (invoice.balance > 0 && invoice.status !== 'cancelled') {
-        html += '<button type="button" class="btn btn-small btn-primary" onclick="window.InvoiceManager.recordPayment(\'' + invoice.id + '\')">Record Payment</button>';
+        html += '<button type="button" class="btn btn-small btn-primary" onclick="window.InvoiceManager.recordPayment(\'' + invoice.id + '\')" aria-label="Record payment for invoice ' + escapeHtml(invoice.invoiceNumber) + ' for ' + escapeHtml(invoice.clientName || 'unknown client') + '">Record Payment</button>';
       }
-      html += '<button type="button" class="btn btn-small btn-ghost" onclick="window.InvoiceManager.deleteInvoice(\'' + invoice.id + '\')">Delete</button>';
+      html += '<button type="button" class="btn btn-small btn-ghost" onclick="window.InvoiceManager.deleteInvoice(\'' + invoice.id + '\')" aria-label="Delete invoice ' + escapeHtml(invoice.invoiceNumber) + ' for ' + escapeHtml(invoice.clientName || 'unknown client') + '">Delete</button>';
       html += '</div>';
 
       html += '</div>';
@@ -905,12 +905,12 @@
 
     // Actions
     html += '<div class="invoice-detail-actions">';
-    html += '<button type="button" class="btn btn-primary" onclick="window.InvoiceManager.editInvoice(\'' + invoice.id + '\')">Edit Invoice</button>';
+    html += '<button type="button" class="btn btn-primary" onclick="window.InvoiceManager.editInvoice(\'' + invoice.id + '\')" aria-label="Edit invoice ' + escapeHtml(invoice.invoiceNumber) + '">Edit Invoice</button>';
     if (invoice.balance > 0 && invoice.status !== 'cancelled') {
-      html += '<button type="button" class="btn btn-primary" onclick="window.InvoiceManager.showPaymentModal(\'' + invoice.id + '\')">Record Payment</button>';
+      html += '<button type="button" class="btn btn-primary" onclick="window.InvoiceManager.showPaymentModal(\'' + invoice.id + '\')" aria-label="Record payment for invoice ' + escapeHtml(invoice.invoiceNumber) + '">Record Payment</button>';
     }
-    html += '<button type="button" class="btn btn-secondary" onclick="window.InvoiceManager.changeStatus(\'' + invoice.id + '\')">Change Status</button>';
-    html += '<button type="button" class="btn btn-ghost" onclick="window.InvoiceManager.printInvoice(\'' + invoice.id + '\')">Print Invoice</button>';
+    html += '<button type="button" class="btn btn-secondary" onclick="window.InvoiceManager.changeStatus(\'' + invoice.id + '\')" aria-label="Change status of invoice ' + escapeHtml(invoice.invoiceNumber) + '">Change Status</button>';
+    html += '<button type="button" class="btn btn-ghost" onclick="window.InvoiceManager.printInvoice(\'' + invoice.id + '\')" aria-label="Print invoice ' + escapeHtml(invoice.invoiceNumber) + '">Print Invoice</button>';
     html += '</div>';
 
     html += '</div>';
