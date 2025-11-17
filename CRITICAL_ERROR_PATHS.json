@@ -1,0 +1,296 @@
+{
+  "audit_date": "2025-11-17",
+  "application": "TicTacStick - Window & Pressure Cleaning Quote/Invoice Engine",
+  "total_codebase_lines": 9361,
+  "critical_errors": [
+    {
+      "id": "ERR-001",
+      "severity": "CRITICAL",
+      "category": "DOM Access",
+      "title": "Missing DOM Element Null Checks in recalculate()",
+      "file": "/home/user/webapp/app.js",
+      "lines": "792-823",
+      "description": "Display function assumes all DOM elements exist without checking",
+      "affected_elements": [
+        "baseFeeDisplay",
+        "windowsCostDisplay",
+        "pressureCostDisplay",
+        "highReachCostDisplay",
+        "otherAdjustmentsDisplay",
+        "subtotalDisplay",
+        "highReachDisplay",
+        "gstDisplay",
+        "totalIncGstDisplay",
+        "windowsTimeDisplay",
+        "pressureTimeDisplay",
+        "highReachTimeDisplay",
+        "setupTimeDisplay",
+        "timeEstimateDisplay"
+      ],
+      "risk": "Application crashes if any element is removed from HTML",
+      "fix": "Add `if (!element) return;` checks before calling `.textContent`"
+    },
+    {
+      "id": "ERR-002",
+      "severity": "CRITICAL",
+      "category": "Financial Calculations",
+      "title": "GST Calculation Reads from DOM with No Validation",
+      "file": "/home/user/webapp/app.js",
+      "lines": "806-811",
+      "description": "GST calculated using DOM values instead of state, no validation",
+      "code_snippet": "var gst = money.subtotal * 0.10;",
+      "risk": "If subtotal display element is missing or null, GST will be NaN or 0",
+      "impact": "Invoice GST could be incorrect or missing",
+      "fix": "Recalculate GST directly from calculation result, not from DOM"
+    },
+    {
+      "id": "ERR-003",
+      "severity": "CRITICAL",
+      "category": "GST Calculation",
+      "title": "GST Coupled to DOM in Invoice.js",
+      "file": "/home/user/webapp/invoice.js",
+      "lines": "114-122",
+      "description": "Invoice creation extracts GST from DOM element without validation",
+      "code": "var gstText = document.getElementById('gstDisplay');\nvar gst = gstText ? parseFloat(gstText.textContent.replace(/[$,]/g, '')) : 0;",
+      "risk": "If DOM element missing, GST defaults to 0 (wrong invoice total)",
+      "impact": "Financial loss - invoice totals will be wrong",
+      "fix": "Recalculate GST during invoice creation, pass it as parameter"
+    },
+    {
+      "id": "ERR-004",
+      "severity": "CRITICAL",
+      "category": "Input Validation",
+      "title": "No Validation of Panes/Area Values Before Calculation",
+      "file": "/home/user/webapp/calc.js",
+      "lines": "122-164, 198-220",
+      "description": "Window panes and pressure area values not validated for > 0",
+      "risk": "Negative or zero panes/area values create invalid time calculations",
+      "example": "User enters -5 panes → negative time → negative cost",
+      "impact": "Quotes with incorrect pricing",
+      "fix": "Validate panes > 0 and areaSqm > 0 in calculation functions"
+    },
+    {
+      "id": "ERR-005",
+      "severity": "HIGH",
+      "category": "Floating Point Mathematics",
+      "title": "0.01 Tolerance May Fail for Large Invoices",
+      "file": "/home/user/webapp/invoice.js",
+      "lines": "255",
+      "description": "Payment status uses hard-coded 0.01 tolerance for floating point comparison",
+      "code": "if (invoice.balance <= 0.01) { // Account for floating point",
+      "risk": "For invoices > $1,000, 0.01 is less than floating point error margin",
+      "example": "Invoice for $5,000 with $4,999.99 paid → shows as unpaid (balance = $0.005)",
+      "fix": "Use relative tolerance: balance / invoice.total < 0.00001"
+    },
+    {
+      "id": "ERR-006",
+      "severity": "HIGH",
+      "category": "Storage Operations",
+      "title": "Silent Storage Failures in storage.js",
+      "file": "/home/user/webapp/storage.js",
+      "lines": "20, 37, 54, 71",
+      "description": "Storage operations catch errors but silently ignore them",
+      "code": "} catch (e) { // ignore }",
+      "risk": "Data loss without any notification to user",
+      "impact": "User doesn't know their changes weren't saved",
+      "fix": "Log errors and call ErrorHandler.showError() in catch blocks"
+    },
+    {
+      "id": "ERR-007",
+      "severity": "HIGH",
+      "category": "Configuration Validation",
+      "title": "No Maximum Bounds on Rate Configuration",
+      "file": "/home/user/webapp/app.js",
+      "lines": "108-125",
+      "description": "Hourly rates and fees have no upper bounds checking",
+      "code": "var hourlyRate = Math.max(0, parseFloat(...) || 0);",
+      "risk": "User could enter $99,999/hour and break calculations",
+      "impact": "Calculation overflow, display issues",
+      "fix": "Add max bounds: Math.min(Math.max(0, value), 9999)"
+    },
+    {
+      "id": "ERR-008",
+      "severity": "MEDIUM",
+      "category": "Invoice Management",
+      "title": "Invalid Invoice Status Not Validated",
+      "file": "/home/user/webapp/invoice.js",
+      "lines": "344",
+      "description": "getInvoiceStats() accesses stats[invoice.status] without validation",
+      "code": "stats[invoice.status]++;",
+      "risk": "Could create undefined status properties if invoice has invalid status",
+      "impact": "Stats object becomes corrupted, reporting breaks",
+      "fix": "Check if status exists in INVOICE_STATUSES before increment"
+    },
+    {
+      "id": "ERR-009",
+      "severity": "MEDIUM",
+      "category": "Popup Handling",
+      "title": "Fallback Alert May Also Be Blocked",
+      "file": "/home/user/webapp/app.js",
+      "lines": "1242-1248",
+      "description": "If window.open() blocked, shows alert() which might also be blocked",
+      "code": "if (!win) { alert('Pop-up blocked...'); }",
+      "risk": "User gets no feedback if both popup and alert blocked",
+      "impact": "Silent failure to print/save",
+      "fix": "Fallback to toast notification instead of alert"
+    },
+    {
+      "id": "ERR-010",
+      "severity": "MEDIUM",
+      "category": "Data Persistence",
+      "title": "Empty Line Items Allowed in Calculation",
+      "file": "/home/user/webapp/calc.js",
+      "lines": "249-267",
+      "description": "No validation that line items have valid values before calculating",
+      "risk": "Could calculate with line items that have 0 panes (no error)",
+      "impact": "Incorrect time/cost calculations",
+      "fix": "Pre-validate all line items: panes > 0, areaSqm > 0, etc"
+    }
+  ],
+  "error_handling_summary": {
+    "total_try_catch_blocks": 28,
+    "files_with_error_handling": 9,
+    "files_without_error_handling": 3,
+    "well_handled_areas": [
+      "localStorage quota checking (error-handler.js)",
+      "JSON parsing with fallbacks",
+      "Invoice payment validation",
+      "File import/restore operations",
+      "Form field validation"
+    ],
+    "missing_validation": [
+      "Input bounds validation (rates, areas, panes)",
+      "DOM element existence checks",
+      "Line item validity before calculation",
+      "Calculation error recovery",
+      "Silent failure notifications",
+      "Floating-point edge cases for large numbers"
+    ]
+  },
+  "file_analysis": {
+    "calc.js": {
+      "lines": 115,
+      "error_handling": "EXCELLENT",
+      "validation": "Excellent (input types)",
+      "try_catch_blocks": 0,
+      "critical_issues": 0,
+      "high_issues": 1,
+      "medium_issues": 2
+    },
+    "storage.js": {
+      "lines": 84,
+      "error_handling": "GOOD",
+      "validation": "Minimal",
+      "try_catch_blocks": 6,
+      "critical_issues": 0,
+      "high_issues": 1,
+      "medium_issues": 0,
+      "issue": "Silent failures without user notification"
+    },
+    "error-handler.js": {
+      "lines": 257,
+      "error_handling": "EXCELLENT",
+      "validation": "Excellent",
+      "try_catch_blocks": 1,
+      "critical_issues": 0,
+      "high_issues": 0,
+      "medium_issues": 0
+    },
+    "invoice.js": {
+      "lines": 1704,
+      "error_handling": "GOOD",
+      "validation": "Good",
+      "try_catch_blocks": 8,
+      "critical_issues": 2,
+      "high_issues": 1,
+      "medium_issues": 1
+    },
+    "app.js": {
+      "lines": 1500,
+      "error_handling": "MEDIUM",
+      "validation": "MEDIUM",
+      "try_catch_blocks": 2,
+      "critical_issues": 3,
+      "high_issues": 2,
+      "medium_issues": 1
+    },
+    "import-export.js": {
+      "lines": 419,
+      "error_handling": "VERY GOOD",
+      "validation": "GOOD",
+      "try_catch_blocks": 4,
+      "critical_issues": 0,
+      "high_issues": 0,
+      "medium_issues": 0
+    },
+    "quote-workflow.js": {
+      "lines": 277,
+      "error_handling": "GOOD",
+      "validation": "GOOD",
+      "try_catch_blocks": 2,
+      "critical_issues": 0,
+      "high_issues": 0,
+      "medium_issues": 0
+    },
+    "client-database.js": {
+      "lines": 543,
+      "error_handling": "GOOD",
+      "validation": "GOOD",
+      "try_catch_blocks": 2,
+      "critical_issues": 0,
+      "high_issues": 0,
+      "medium_issues": 0
+    },
+    "export.js": {
+      "lines": 324,
+      "error_handling": "GOOD",
+      "validation": "GOOD",
+      "try_catch_blocks": 3,
+      "critical_issues": 0,
+      "high_issues": 0,
+      "medium_issues": 0
+    }
+  },
+  "recommendations_priority": {
+    "critical_fixes": [
+      {
+        "priority": 1,
+        "title": "Add DOM null checks in recalculate()",
+        "estimated_effort": "1 hour",
+        "risk_reduction": "HIGH"
+      },
+      {
+        "priority": 2,
+        "title": "Fix GST calculation coupling",
+        "estimated_effort": "2 hours",
+        "risk_reduction": "CRITICAL"
+      },
+      {
+        "priority": 3,
+        "title": "Validate panes > 0 and areaSqm > 0",
+        "estimated_effort": "1.5 hours",
+        "risk_reduction": "HIGH"
+      }
+    ],
+    "high_priority_fixes": [
+      {
+        "priority": 4,
+        "title": "Add floating-point tolerance for large numbers",
+        "estimated_effort": "1 hour",
+        "risk_reduction": "MEDIUM"
+      },
+      {
+        "priority": 5,
+        "title": "Fix silent storage failures",
+        "estimated_effort": "1.5 hours",
+        "risk_reduction": "HIGH"
+      },
+      {
+        "priority": 6,
+        "title": "Add rate validation bounds",
+        "estimated_effort": "2 hours",
+        "risk_reduction": "MEDIUM"
+      }
+    ]
+  }
+}

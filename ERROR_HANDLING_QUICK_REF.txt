@@ -1,0 +1,192 @@
+╔════════════════════════════════════════════════════════════════════════════╗
+║       TIC-TAC-STICK ERROR HANDLING AUDIT - QUICK REFERENCE GUIDE          ║
+║              Generated: 2025-11-17 | Codebase: 9,361 lines                ║
+╚════════════════════════════════════════════════════════════════════════════╝
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+CRITICAL ERRORS (Must Fix Immediately)
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+1. [ERR-001] DOM Element Null Checks Missing
+   Location: app.js, lines 792-823
+   Problem: recalculate() assumes 14 DOM elements exist
+   Risk:    Crash if any HTML element is removed
+   Fix:     Add: if (!element) return; before each .textContent access
+   Time:    1 hour
+
+2. [ERR-002] GST Calculation from DOM (No Validation)
+   Location: app.js, lines 806-811
+   Problem: GST = money.subtotal * 0.10, reads from potentially missing DOM
+   Risk:    Invoice GST could be 0 (financial loss)
+   Fix:     Calculate GST from calculation result object, not DOM
+   Time:    2 hours
+
+3. [ERR-003] GST in Invoice Creation (DOM Dependency)
+   Location: invoice.js, lines 114-122
+   Problem: Extracts GST from DOM element with parseFloat fallback to 0
+   Risk:    Wrong invoice totals if DOM element missing
+   Fix:     Recalculate GST from state during invoice creation
+   Time:    2 hours
+
+4. [ERR-004] No Validation of Panes/Area Values
+   Location: calc.js, lines 122-164, 198-220
+   Problem: Negative or zero panes/area values allowed
+   Risk:    Negative time/cost calculations possible
+   Fix:     Validate: panes > 0 && areaSqm > 0 before calculating
+   Time:    1.5 hours
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+HIGH PRIORITY ISSUES (Should Fix Soon)
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+5. [ERR-005] Floating Point Tolerance Too Small
+   Location: invoice.js, line 255
+   Problem: Uses 0.01 tolerance for large invoices
+   Risk:    Payment status wrong for invoices > $1,000
+   Example: $5,000 invoice - $4,999.99 payment shows as unpaid
+   Fix:     Use relative: balance / invoice.total < 0.00001
+   Time:    1 hour
+
+6. [ERR-006] Silent Storage Failures
+   Location: storage.js, lines 20, 37, 54, 71
+   Problem: Errors caught but ignored (no logging/notification)
+   Risk:    Data loss without user knowing
+   Fix:     Call ErrorHandler.showError() in all catch blocks
+   Time:    1.5 hours
+
+7. [ERR-007] No Maximum Bounds on Rates
+   Location: app.js, lines 108-125
+   Problem: User can enter $99,999/hour
+   Risk:    Calculation overflow/display issues
+   Fix:     Add: Math.min(Math.max(0, value), 9999)
+   Time:    2 hours
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+MEDIUM PRIORITY ISSUES (Nice to Fix)
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+8. [ERR-008] Invalid Invoice Status
+   Location: invoice.js, line 344
+   Problem: stats[invoice.status]++ with no validation
+   Risk:    Undefined properties in stats object
+   Fix:     Check: if (INVOICE_STATUSES[invoice.status])
+   Time:    0.5 hours
+
+9. [ERR-009] Popup Fallback May Be Blocked
+   Location: app.js, lines 1242-1248
+   Problem: Uses alert() if popup blocked (alert might be blocked too)
+   Risk:    Silent failure to print/save
+   Fix:     Fallback to toast notification
+   Time:    1 hour
+
+10. [ERR-010] Empty Line Items in Calculation
+    Location: calc.js, lines 249-267
+    Problem: No validation before calculation loop
+    Risk:    Could calculate with 0 panes (no error thrown)
+    Fix:     Pre-validate all line items before accumulation
+    Time:    1 hour
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+AFFECTED DOM ELEMENTS (in recalculate())
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+All of these need null checks:
+  • baseFeeDisplay
+  • windowsCostDisplay
+  • pressureCostDisplay
+  • highReachCostDisplay
+  • otherAdjustmentsDisplay
+  • subtotalDisplay
+  • highReachDisplay
+  • gstDisplay
+  • totalIncGstDisplay
+  • windowsTimeDisplay
+  • pressureTimeDisplay
+  • highReachTimeDisplay
+  • setupTimeDisplay
+  • timeEstimateDisplay
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+ERROR HANDLING STATISTICS
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+Total Lines of Code:        9,361
+Try-Catch Blocks:           28
+Files with Error Handling:  9 / 12
+
+Overall Quality:            GOOD (but with critical gaps)
+
+By File:
+  ✓ error-handler.js        → EXCELLENT (257 lines, 1 try-catch)
+  ✓ calc.js                 → EXCELLENT (115 lines, type validation)
+  ✓ import-export.js        → VERY GOOD (419 lines, 4 try-catch)
+  ⚠ invoice.js              → GOOD (1704 lines, 8 try-catch) - 3 critical issues
+  ⚠ app.js                  → MEDIUM (1500 lines, 2 try-catch) - 3 critical issues
+  ⚠ storage.js              → GOOD (84 lines, 6 try-catch) - silent failures
+  ✓ quote-workflow.js       → GOOD (277 lines, 2 try-catch)
+  ✓ client-database.js      → GOOD (543 lines, 2 try-catch)
+  ✓ export.js               → GOOD (324 lines, 3 try-catch)
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+WHAT'S WELL-HANDLED
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+✓ localStorage quota checking (periodic & on load)
+✓ JSON parsing with fallbacks
+✓ User confirmations for destructive operations
+✓ Invoice lookup and payment validation
+✓ Form field validation (min/max on blur)
+✓ File import/restore with merge logic
+✓ Global error & promise rejection handlers
+✓ Online/offline status detection
+✓ Input type validation in calc.js
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+WHAT'S MISSING
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+✗ Input bounds validation (rates, areas, panes)
+✗ DOM element existence checks
+✗ Line item validity before calculation
+✗ Calculation error recovery/retry
+✗ Error notifications for silent failures
+✗ Floating-point edge cases for large numbers
+✗ State-based calculations (too DOM-dependent)
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+TESTING RECOMMENDATIONS
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+UNIT TESTS:
+  1. Calculate with zero panes
+  2. Calculate with negative panes  
+  3. Calculate with very large rates ($99,999/hr)
+  4. Payment with rounding edge cases
+  5. Invoice balance with amounts > $10,000
+  6. GST calculation with subtotals > $50,000
+
+INTEGRATION TESTS:
+  1. Create invoice when DOM elements missing
+  2. Export when DOM elements missing
+  3. Calculate when PrecisionCalc throws error
+  4. Save when localStorage quota exceeded
+  5. Restore backup when merge creates duplicates
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+ESTIMATED REMEDIATION TIME
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+Critical Issues (ERR-001 to ERR-004):     ~6.5 hours
+High Priority (ERR-005 to ERR-007):      ~4.5 hours
+Medium Priority (ERR-008 to ERR-010):    ~2.5 hours
+Testing & QA:                             ~8 hours
+─────────────────────────────────────────────────
+TOTAL ESTIMATED EFFORT:                  ~21.5 hours (3 business days)
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+FULL DOCUMENTATION
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+See: ERROR_HANDLING_AUDIT.md for complete analysis
+See: CRITICAL_ERROR_PATHS.json for structured data
+
