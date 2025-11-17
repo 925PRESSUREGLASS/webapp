@@ -10,51 +10,64 @@ test.describe('Initialization Test', () => {
     await page.goto(APP_URL);
     await page.waitForLoadState('networkidle');
 
-    // Check if APP object exists
+    // Check if APP object exists (created by bootstrap.js)
     const appExists = await page.evaluate(() => {
       return typeof window.APP === 'object' && window.APP !== null;
     });
     console.log('APP object exists:', appExists);
     expect(appExists).toBe(true);
 
-    // Check if APP has the expected methods
+    // Check if APP has bootstrap methods
+    const hasBootstrapMethods = await page.evaluate(() => {
+      return window.APP &&
+        typeof window.APP.registerModule === 'function' &&
+        typeof window.APP.waitForInit === 'function' &&
+        typeof window.APP.init === 'function';
+    });
+    console.log('APP has bootstrap methods:', hasBootstrapMethods);
+    expect(hasBootstrapMethods).toBe(true);
+
+    // Use APP.waitForInit() to wait for full initialization
+    console.log('Waiting for APP.waitForInit()...');
+    const initResult = await page.evaluate(async () => {
+      try {
+        await window.APP.waitForInit();
+        return { success: true, initialized: window.APP.initialized };
+      } catch (error) {
+        return { success: false, error: error.message };
+      }
+    });
+    console.log('Init result:', initResult);
+    expect(initResult.success).toBe(true);
+    expect(initResult.initialized).toBe(true);
+
+    // Check if APP has the expected application methods
     const hasMethods = await page.evaluate(() => {
       return window.APP &&
         typeof window.APP.addWindowLine === 'function' &&
         typeof window.APP.addPressureLine === 'function' &&
         typeof window.APP.recalculate === 'function';
     });
-    console.log('APP has expected methods:', hasMethods);
+    console.log('APP has application methods:', hasMethods);
     expect(hasMethods).toBe(true);
 
-    // Check initialization flag
-    const isInitialized = await page.evaluate(() => {
-      return window.APP && window.APP.isInitialized;
+    // Check that modules are registered
+    const modulesRegistered = await page.evaluate(() => {
+      return window.APP.modules &&
+        typeof window.APP.modules.app === 'object';
     });
-    console.log('APP.isInitialized:', isInitialized);
+    console.log('Modules registered:', modulesRegistered);
+    expect(modulesRegistered).toBe(true);
 
-    // If not initialized, wait for it
-    if (!isInitialized) {
-      console.log('Waiting for APP.isInitialized to become true...');
-      try {
-        await page.waitForFunction(() => {
-          return window.APP && window.APP.isInitialized === true;
-        }, { timeout: 5000 });
-        console.log('APP is now initialized');
-      } catch (e) {
-        console.log('Timeout waiting for initialization');
-        // Log the current state
-        const debugInfo = await page.evaluate(() => {
-          return {
-            APP: typeof window.APP,
-            isInitialized: window.APP ? window.APP.isInitialized : 'APP not found',
-            hasAddWindowLine: window.APP ? typeof window.APP.addWindowLine : 'APP not found'
-          };
-        });
-        console.log('Debug info:', debugInfo);
-      }
-    }
-
-    expect(isInitialized).toBe(true);
+    // Check both initialization flags for backward compatibility
+    const isInitialized = await page.evaluate(() => {
+      return {
+        initialized: window.APP.initialized,
+        isInitialized: window.APP.isInitialized
+      };
+    });
+    console.log('Initialization flags:', isInitialized);
+    expect(isInitialized.initialized).toBe(true);
+    expect(isInitialized.isInitialized).toBe(true);
   });
 });

@@ -16,10 +16,12 @@ test.describe('Quote Calculations', () => {
     await page.reload();
     await page.waitForLoadState('networkidle');
 
-    // Wait for app to be fully initialized
-    await page.waitForFunction(() => {
-      return window.APP && window.APP.isInitialized === true;
-    }, { timeout: 5000 });
+    // Wait for app to be fully initialized using APP.waitForInit()
+    await page.evaluate(async () => {
+      if (window.APP && typeof window.APP.waitForInit === 'function') {
+        await window.APP.waitForInit();
+      }
+    });
   });
 
   test('should load with default configuration values', async ({ page }) => {

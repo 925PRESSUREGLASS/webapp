@@ -38,20 +38,7 @@
   // ————————————————————
   // GLOBAL APP OBJECT
   // ————————————————————
-
-  var APP = {
-    addWindowLine: addWindowLine,
-    addPressureLine: addPressureLine,
-    recalculate: recalculate,
-    duplicateWindowLine: duplicateWindowLine,
-    duplicatePressureLine: duplicatePressureLine,
-    getState: function() {
-      return buildStateFromUI(true);
-    },
-    isInitialized: false
-  };
-
-  window.APP = APP;
+  // Note: APP registration happens at the end of this file after all functions are defined
 
   // ————————————————————
   // AUTOSAVE / LOAD
@@ -1466,14 +1453,65 @@ $("totalIncGstDisplay").textContent = formatMoney(totalIncGst);
     // First recalc
     recalculate();
 
-    // Mark app as initialized for testing
+    // Mark app as initialized for testing (both flags for compatibility)
     APP.isInitialized = true;
+    APP.initialized = true;
+
+    console.log('[APP] Application initialized successfully');
   }
+
+  // ————————————————————
+  // REGISTER WITH BOOTSTRAP
+  // ————————————————————
+
+  // Wait for APP to exist (created by bootstrap.js)
+  if (typeof window.APP === 'undefined') {
+    console.error('[APP] APP object not found! Bootstrap must load first.');
+    // Can't proceed without APP object
+    return;
+  }
+
+  // Register core app methods with existing APP object
+  window.APP.addWindowLine = addWindowLine;
+  window.APP.addPressureLine = addPressureLine;
+  window.APP.recalculate = recalculate;
+  window.APP.duplicateWindowLine = duplicateWindowLine;
+  window.APP.duplicatePressureLine = duplicatePressureLine;
+  window.APP.getState = function() {
+    return buildStateFromUI(true);
+  };
+
+  // Create app module for registration
+  var AppModule = {
+    state: state,
+    loadState: loadInitialState,
+    saveState: autosave,
+    buildStateFromUI: buildStateFromUI,
+    applyStateToUI: applyStateToUI
+  };
+
+  // Register with bootstrap
+  window.APP.registerModule('app', AppModule);
+
+  console.log('[APP] Module registered with bootstrap');
+
+  // ————————————————————
+  // INITIALIZATION
+  // ————————————————————
 
   // iOS Safari compatible DOM ready check
   function tryInit() {
     try {
       initApp();
+
+      // Trigger bootstrap initialization after app is ready
+      if (window.APP && typeof APP.init === 'function') {
+        APP.init().then(function() {
+          console.log('[APP] Bootstrap initialization complete');
+        }).catch(function(error) {
+          console.error('[APP] Bootstrap initialization error:', error);
+        });
+      }
     } catch (e) {
       console.error("Error during initApp", e);
     }
