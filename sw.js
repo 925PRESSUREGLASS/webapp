@@ -1,9 +1,9 @@
 // Service Worker for Tic-Tac-Stick Quote Engine
 // Provides offline functionality and caching
 // iOS Safari compatible - no ES6+ features
-// SECURITY HARDENED - Version 1.2
+// SECURITY HARDENED - Version 1.3
 
-var CACHE_VERSION = '1.2';
+var CACHE_VERSION = '1.3';
 var CACHE_NAME = 'quote-engine-v' + CACHE_VERSION;
 
 // SECURITY: Explicit whitelist of allowed files to cache
@@ -35,6 +35,8 @@ var urlsToCache = [
   '/invoice.js',
   '/theme-light.css',
   '/theme.js',
+  '/theme-customizer.css',
+  '/theme-customizer.js',
   '/analytics.css',
   '/analytics.js',
   '/charts.js',
