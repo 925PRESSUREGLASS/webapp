@@ -1,0 +1,730 @@
+/* mobile.css - Mobile UI Optimizations for TicTacStick Quote Engine
+ * iOS Safari 12+ compatible
+ * Optimized for iPad field use and mobile devices
+ * Priority 1: Touch targets, form inputs, tablet support
+ * Priority 2: Landscape mode, safe areas, keyboard handling
+ */
+
+/* ============================================
+   SAFE AREA SUPPORT (iPhone X+ notch)
+   ============================================ */
+:root {
+  --safe-area-top: env(safe-area-inset-top, 0px);
+  --safe-area-right: env(safe-area-inset-right, 0px);
+  --safe-area-bottom: env(safe-area-inset-bottom, 0px);
+  --safe-area-left: env(safe-area-inset-left, 0px);
+}
+
+body {
+  padding-top: var(--safe-area-top);
+  padding-right: var(--safe-area-right);
+  padding-bottom: var(--safe-area-bottom);
+  padding-left: var(--safe-area-left);
+}
+
+/* ============================================
+   TABLET BREAKPOINT (768px) - iPad specific
+   ============================================ */
+@media (max-width: 768px) {
+  /* Header adjustments for tablet portrait */
+  .hdr {
+    position: static;
+  }
+
+  /* Summary panel no longer sticky on tablets */
+  .card-summary {
+    position: static;
+  }
+
+  /* Modals take more screen space on tablets */
+  .invoice-modal-content,
+  .client-modal-content,
+  .status-modal-content,
+  .wizard-content {
+    width: 92%;
+    max-height: 88vh; /* Account for keyboard (12% buffer) */
+  }
+
+  /* Grid adjustments for tablet */
+  .config-grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  /* Line cards maintain 2-column on tablet */
+  .line-card-body {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  /* Analytics summary stays 3-column on tablet */
+  .analytics-summary {
+    grid-template-columns: repeat(3, 1fr);
+  }
+}
+
+/* ============================================
+   MOBILE TOUCH TARGET IMPROVEMENTS (640px)
+   ============================================ */
+@media (max-width: 640px) {
+  /* BUTTONS - Increase to 44px minimum (Apple/Google standard) */
+  .btn {
+    padding: 10px 16px;
+    min-height: 44px;
+    font-size: 14px;
+    -webkit-tap-highlight-color: transparent;
+    -webkit-user-select: none;
+    user-select: none;
+  }
+
+  .btn-small {
+    padding: 8px 14px;
+    min-height: 40px;
+    font-size: 13px;
+  }
+
+  /* Icon buttons need proper touch targets */
+  .btn-icon {
+    min-width: 44px;
+    min-height: 44px;
+    padding: 10px;
+  }
+
+  /* FORM INPUTS - Increase padding and minimum height */
+  .field input,
+  .field textarea,
+  .field select {
+    padding: 10px 12px;
+    min-height: 44px;
+    font-size: 16px; /* Prevents auto-zoom on iOS */
+    -webkit-appearance: none;
+    appearance: none;
+  }
+
+  /* Number inputs specifically */
+  .field input[type="number"],
+  .field input[inputmode="decimal"],
+  .field input[inputmode="numeric"] {
+    padding: 10px 12px;
+    min-height: 44px;
+    font-size: 16px;
+  }
+
+  /* Textarea minimum height for comfortable editing */
+  .field textarea {
+    min-height: 88px; /* 2x touch target for multi-line */
+  }
+
+  /* Labels more readable at arm's length */
+  .field-label {
+    font-size: 12px;
+    margin-bottom: 6px;
+  }
+
+  /* Select dropdowns */
+  .field select {
+    background-image: url('data:image/svg+xml;utf8,<svg fill="%239ca3af" height="24" viewBox="0 0 24 24" width="24" xmlns="http://www.w3.org/2000/svg"><path d="M7 10l5 5 5-5z"/></svg>');
+    background-repeat: no-repeat;
+    background-position: right 8px center;
+    padding-right: 36px;
+  }
+
+  /* CHECKBOXES & TOGGLES - Increase touch area */
+  .toggle input[type="checkbox"] {
+    width: 24px;
+    height: 24px;
+    min-width: 24px;
+    min-height: 24px;
+    cursor: pointer;
+  }
+
+  .toggle {
+    padding: 8px 0;
+    min-height: 44px;
+    display: inline-flex;
+    align-items: center;
+  }
+
+  /* LINE CARD INPUTS - Better touch targets */
+  .line-card input,
+  .line-card select {
+    padding: 8px 10px;
+    min-height: 40px;
+    font-size: 14px;
+  }
+
+  /* CONFIG PANEL INPUTS */
+  .config-grid input,
+  .config-grid select {
+    padding: 10px 12px;
+    min-height: 44px;
+    font-size: 16px;
+  }
+
+  /* CLOSE BUTTONS - Consistent 48px minimum */
+  .photo-modal-close,
+  .invoice-modal-close,
+  .wizard-close,
+  .modal-close,
+  .close-btn {
+    min-width: 48px;
+    min-height: 48px;
+    width: 48px;
+    height: 48px;
+    padding: 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 24px;
+  }
+
+  /* TAB BUTTONS - Better touch targets */
+  .tabs button,
+  .tab-button {
+    padding: 10px 16px;
+    min-height: 44px;
+    font-size: 14px;
+  }
+
+  /* ACTION BUTTON GROUPS - Full width stacking */
+  .invoice-action-buttons,
+  .invoice-toolbar,
+  .invoice-card-actions,
+  .invoice-detail-actions,
+  .button-group {
+    flex-direction: column;
+    gap: 10px;
+  }
+
+  .invoice-action-buttons button,
+  .invoice-toolbar button,
+  .invoice-card-actions button,
+  .invoice-detail-actions button,
+  .button-group button {
+    width: 100%;
+    min-height: 44px;
+  }
+
+  /* MODAL IMPROVEMENTS */
+  .invoice-modal-content,
+  .client-modal-content,
+  .wizard-content,
+  .status-modal-content,
+  .photo-modal-content {
+    width: 95%;
+    max-width: 95vw;
+    max-height: 85vh; /* Leave room for keyboard */
+    margin: 20px auto;
+  }
+
+  /* Modal headers more compact */
+  .invoice-modal-header,
+  .modal-header {
+    padding: 14px 16px;
+  }
+
+  .invoice-modal-header h2,
+  .modal-header h2 {
+    font-size: 18px;
+    line-height: 1.4;
+  }
+
+  /* Modal body scrolling */
+  .invoice-modal-body,
+  .modal-body {
+    padding: 16px;
+    overflow-y: auto;
+    -webkit-overflow-scrolling: touch;
+  }
+
+  /* TOAST NOTIFICATIONS - Safe area aware */
+  .toast-container {
+    top: calc(10px + var(--safe-area-top));
+    right: calc(10px + var(--safe-area-right));
+    left: calc(10px + var(--safe-area-left));
+    max-width: calc(100% - 20px);
+  }
+
+  .toast {
+    width: 100%;
+    font-size: 14px;
+    padding: 12px 16px;
+  }
+
+  /* PHOTO VIEWER - Optimize for mobile */
+  .photo-modal-image {
+    max-height: 70vh;
+    max-width: 90vw;
+  }
+
+  /* Hide desktop keyboard hints */
+  .photo-modal-hint,
+  .keyboard-hint {
+    display: none;
+  }
+
+  /* VALIDATION ERRORS - Full screen on mobile */
+  .validation-error-modal {
+    width: 95%;
+    max-height: 90vh;
+  }
+
+  .validation-error-content {
+    padding: 16px;
+  }
+
+  /* GRID LAYOUTS - Single column on mobile */
+  .config-grid,
+  .summary-sub,
+  .hdr-meta {
+    grid-template-columns: minmax(0, 1fr);
+    gap: 12px;
+  }
+
+  /* Line cards 2-column grid */
+  .line-card-body {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 10px;
+  }
+
+  /* Analytics summary 2-column */
+  .analytics-summary {
+    grid-template-columns: repeat(2, 1fr);
+    gap: 12px;
+  }
+
+  /* Charts full width */
+  .analytics-chart-row {
+    grid-template-columns: 1fr;
+    gap: 16px;
+  }
+
+  /* TYPOGRAPHY - Better readability on small screens */
+  h1 { font-size: 24px; }
+  h2 { font-size: 20px; }
+  h3 { font-size: 18px; }
+  h4 { font-size: 16px; }
+  h5 { font-size: 14px; }
+
+  /* Body text readable at arm's length */
+  body {
+    font-size: 15px;
+    line-height: 1.6;
+  }
+
+  /* PHOTO GALLERY - Larger thumbnails */
+  .photo-gallery-grid {
+    grid-template-columns: repeat(auto-fill, minmax(140px, 1fr));
+    gap: 12px;
+  }
+
+  .photo-thumbnail {
+    height: 140px;
+  }
+
+  /* CLIENT DATABASE - Single column list */
+  .client-list {
+    grid-template-columns: 1fr;
+  }
+
+  .client-card {
+    padding: 14px;
+  }
+
+  /* QUOTE WORKFLOW - Pipeline stats */
+  .pipeline-stats {
+    grid-template-columns: repeat(2, 1fr);
+    gap: 10px;
+  }
+
+  .pipeline-stat {
+    padding: 12px;
+  }
+
+  /* SCROLLBAR - Thicker on mobile for visibility */
+  ::-webkit-scrollbar {
+    width: 10px;
+    height: 10px;
+  }
+
+  ::-webkit-scrollbar-thumb {
+    border-radius: 5px;
+    min-height: 40px;
+  }
+
+  /* PREVENT TEXT SELECTION DURING SCROLLING */
+  .line-card,
+  .client-card,
+  .invoice-card,
+  .photo-thumbnail,
+  .stat-card {
+    -webkit-user-select: none;
+    user-select: none;
+  }
+
+  /* But allow selection in text content areas */
+  .field input,
+  .field textarea,
+  .invoice-notes,
+  .client-notes,
+  p,
+  span {
+    -webkit-user-select: text;
+    user-select: text;
+  }
+}
+
+/* ============================================
+   LANDSCAPE ORIENTATION (Mobile landscape)
+   ============================================ */
+@media (max-width: 768px) and (orientation: landscape) {
+  /* Reduce vertical spacing in landscape */
+  .card {
+    padding: 12px;
+    margin-bottom: 12px;
+  }
+
+  /* Compact header in landscape */
+  .hdr {
+    padding: 10px 16px;
+  }
+
+  /* Modals take more horizontal space */
+  .invoice-modal-content,
+  .wizard-content {
+    width: 90%;
+    max-height: 80vh; /* Less vertical space in landscape */
+  }
+
+  /* Form fields in 2 columns where space allows */
+  .invoice-form-grid {
+    grid-template-columns: repeat(2, 1fr);
+    gap: 12px;
+  }
+
+  /* Config grid can be 2-column in landscape */
+  .config-grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  /* Analytics stays readable */
+  .analytics-summary {
+    grid-template-columns: repeat(4, 1fr);
+  }
+
+  /* Toast positioned to not block content */
+  .toast-container {
+    top: 10px;
+    right: 10px;
+    max-width: 400px;
+  }
+}
+
+/* ============================================
+   SMALL MOBILE (< 375px) - iPhone SE, small Android
+   ============================================ */
+@media (max-width: 375px) {
+  /* Extra compact on very small screens */
+  body {
+    font-size: 14px;
+  }
+
+  .btn {
+    font-size: 13px;
+    padding: 9px 14px;
+  }
+
+  .btn-small {
+    font-size: 12px;
+    padding: 7px 12px;
+  }
+
+  /* Single column everywhere */
+  .line-card-body,
+  .analytics-summary,
+  .pipeline-stats {
+    grid-template-columns: 1fr;
+  }
+
+  /* Modals almost full screen */
+  .invoice-modal-content,
+  .wizard-content {
+    width: 98%;
+    max-height: 90vh;
+  }
+}
+
+/* ============================================
+   VIRTUAL KEYBOARD HANDLING
+   ============================================ */
+
+/* When keyboard is open, reduce modal height */
+@media (max-width: 640px) {
+  .field input:focus,
+  .field textarea:focus,
+  .field select:focus {
+    /* Ensure focused input is visible */
+    scroll-margin-top: 100px;
+    scroll-margin-bottom: 100px;
+  }
+
+  /* Modal body allows scrolling when keyboard open */
+  .invoice-modal-body:has(:focus),
+  .modal-body:has(:focus) {
+    max-height: 50vh;
+    overflow-y: auto;
+  }
+}
+
+/* ============================================
+   ACCESSIBILITY - High Contrast Mode
+   ============================================ */
+@media (prefers-contrast: high) {
+  .btn {
+    border: 2px solid currentColor;
+  }
+
+  .field input,
+  .field textarea,
+  .field select {
+    border-width: 2px;
+  }
+
+  .validation-error-field {
+    border-width: 3px !important;
+  }
+
+  /* Make close buttons more visible */
+  .modal-close,
+  .photo-modal-close {
+    background: rgba(0, 0, 0, 0.9);
+    border: 2px solid white;
+  }
+}
+
+/* ============================================
+   ACCESSIBILITY - Reduced Motion
+   ============================================ */
+@media (prefers-reduced-motion: reduce) {
+  * {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+  }
+
+  /* But keep transform feedback for touch */
+  .btn:active {
+    transform: scale(0.98);
+  }
+}
+
+/* ============================================
+   PRINT OPTIMIZATIONS (Mobile print)
+   ============================================ */
+@media print {
+  /* Remove safe area padding for print */
+  body {
+    padding: 0;
+  }
+
+  /* Reset button sizes for print */
+  .btn {
+    padding: 4px 8px;
+    min-height: auto;
+  }
+}
+
+/* ============================================
+   DARK MODE MOBILE ENHANCEMENTS
+   ============================================ */
+@media (max-width: 640px) {
+  /* Better contrast for dark mode on mobile screens */
+  body.dark-mode .btn {
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.5);
+  }
+
+  body.dark-mode .field input,
+  body.dark-mode .field textarea,
+  body.dark-mode .field select {
+    border-color: rgba(75, 85, 99, 0.8);
+    background: rgba(17, 24, 39, 0.6);
+  }
+
+  body.dark-mode .modal-content {
+    box-shadow: 0 20px 60px rgba(0, 0, 0, 0.8);
+  }
+}
+
+/* ============================================
+   TOUCH FEEDBACK STATES
+   ============================================ */
+@media (max-width: 640px) {
+  /* Visual feedback on button press */
+  .btn:active {
+    transform: scale(0.97);
+    transition: transform 0.1s;
+  }
+
+  /* Card press feedback */
+  .line-card:active,
+  .client-card:active,
+  .invoice-card:active {
+    transform: scale(0.99);
+    transition: transform 0.1s;
+  }
+
+  /* Toggle feedback */
+  .toggle:active {
+    opacity: 0.7;
+  }
+
+  /* Remove hover states on touch devices */
+  @media (hover: none) {
+    .btn:hover,
+    .line-card:hover,
+    .client-card:hover {
+      filter: none;
+      transform: none;
+    }
+  }
+}
+
+/* ============================================
+   LOADING STATES - Mobile optimized
+   ============================================ */
+@media (max-width: 640px) {
+  .loading-spinner {
+    width: 40px;
+    height: 40px;
+  }
+
+  .loading-overlay {
+    /* Ensure loading overlay respects safe areas */
+    top: var(--safe-area-top);
+    right: var(--safe-area-right);
+    bottom: var(--safe-area-bottom);
+    left: var(--safe-area-left);
+  }
+}
+
+/* ============================================
+   FORM VALIDATION - Mobile friendly
+   ============================================ */
+@media (max-width: 640px) {
+  .validation-error-field {
+    border-width: 2px !important;
+    border-color: #ef4444 !important;
+  }
+
+  .validation-field-error {
+    font-size: 13px;
+    padding: 8px 12px;
+    margin-top: 6px;
+    border-left-width: 4px;
+  }
+
+  .validation-error-icon {
+    font-size: 18px;
+  }
+}
+
+/* ============================================
+   QUICK ADD UI - Touch optimized
+   ============================================ */
+@media (max-width: 640px) {
+  .quick-add-button {
+    min-width: 60px;
+    min-height: 60px;
+    font-size: 14px;
+  }
+
+  .quick-add-grid {
+    gap: 12px;
+    padding: 12px;
+  }
+}
+
+/* ============================================
+   WIZARD MODALS - Mobile flow
+   ============================================ */
+@media (max-width: 640px) {
+  .wizard-step-buttons {
+    flex-direction: column-reverse; /* Back button on bottom */
+    gap: 10px;
+  }
+
+  .wizard-step-buttons button {
+    width: 100%;
+    min-height: 44px;
+  }
+
+  .wizard-progress {
+    margin-bottom: 16px;
+  }
+
+  .wizard-step-indicator {
+    height: 6px; /* Thicker progress bar on mobile */
+  }
+}
+
+/* ============================================
+   DATA TABLES - Mobile responsive
+   ============================================ */
+@media (max-width: 640px) {
+  /* Stack table rows as cards on mobile */
+  .data-table {
+    display: block;
+  }
+
+  .data-table thead {
+    display: none;
+  }
+
+  .data-table tbody {
+    display: block;
+  }
+
+  .data-table tr {
+    display: block;
+    margin-bottom: 12px;
+    padding: 12px;
+    border: 1px solid rgba(55, 65, 81, 0.3);
+    border-radius: 8px;
+  }
+
+  .data-table td {
+    display: block;
+    text-align: left;
+    padding: 6px 0;
+    border: none;
+  }
+
+  .data-table td:before {
+    content: attr(data-label);
+    display: inline-block;
+    font-weight: 600;
+    margin-right: 8px;
+    min-width: 100px;
+  }
+}
+
+/* ============================================
+   PERFORMANCE - Mobile optimizations
+   ============================================ */
+
+/* Use GPU acceleration for animations on mobile */
+@media (max-width: 640px) {
+  .modal-content,
+  .toast,
+  .loading-spinner {
+    will-change: transform;
+    transform: translateZ(0);
+  }
+
+  /* Optimize scrolling performance */
+  .invoice-modal-body,
+  .modal-body,
+  .client-list,
+  .invoice-list {
+    -webkit-overflow-scrolling: touch;
+    overflow-scrolling: touch;
+  }
+}
