@@ -2,9 +2,8 @@
 // Tests the new bootstrap.js initialization system for reliability and edge cases
 
 const { test, expect } = require('@playwright/test');
-const path = require('path');
 
-const APP_URL = 'file://' + path.resolve(__dirname, '../index.html');
+const APP_URL = '/index.html';
 
 test.describe('Bootstrap System', () => {
   test('APP object exists before any module loads', async ({ page }) => {

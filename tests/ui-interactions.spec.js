@@ -2,9 +2,8 @@
 // Tests user interface functionality, wizards, and data persistence
 
 const { test, expect } = require('@playwright/test');
-const path = require('path');
 
-const APP_URL = 'file://' + path.resolve(__dirname, '../index.html');
+const APP_URL = '/index.html';
 
 test.describe('UI Interactions', () => {
   test.beforeEach(async ({ page }) => {
