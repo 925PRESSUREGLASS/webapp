@@ -334,8 +334,11 @@
   // Load custom templates from localStorage
   function loadCustomTemplates() {
     try {
-      var stored = localStorage.getItem('quoteTemplates');
-      return stored ? JSON.parse(stored) : {};
+      return window.Security.safeJSONParse(
+        localStorage.getItem('quoteTemplates'),
+        null,
+        {}
+      );
     } catch (e) {
       console.error('Failed to load custom templates:', e);
       return {};
