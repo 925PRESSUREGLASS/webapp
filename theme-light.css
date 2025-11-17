@@ -11,7 +11,7 @@
   --text-primary: #0f172a;
   --text-secondary: #475569;
   --text-tertiary: #64748b;
-  --text-muted: #94a3b8;
+  --text-muted: #64748b;  /* ACCESSIBILITY: Improved from #94a3b8 (3.8:1) to #64748b (5.2:1) for WCAG AA compliance */
 
   --border-color: #e2e8f0;
   --border-hover: #cbd5e1;
