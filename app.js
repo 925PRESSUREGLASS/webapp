@@ -117,24 +117,25 @@
   // ————————————————————
 
   function buildStateFromUI(includeLines) {
-    var baseFee = parseFloat($("baseFeeInput").value) || 0;
-    var hourlyRate = parseFloat($("hourlyRateInput").value) || 0;
-    var minimumJob = parseFloat($("minimumJobInput").value) || 0;
-    var highReachModifierPercent = parseFloat(
+    // Ensure all numeric values are non-negative
+    var baseFee = Math.max(0, parseFloat($("baseFeeInput").value) || 0);
+    var hourlyRate = Math.max(0, parseFloat($("hourlyRateInput").value) || 0);
+    var minimumJob = Math.max(0, parseFloat($("minimumJobInput").value) || 0);
+    var highReachModifierPercent = Math.max(0, parseFloat(
       $("highReachModifierInput").value
-    ) || 0;
-    var insideMultiplier = parseFloat(
+    ) || 0);
+    var insideMultiplier = Math.max(0.1, parseFloat(
       $("insideMultiplierInput").value
-    ) || 1;
-    var outsideMultiplier = parseFloat(
+    ) || 1);
+    var outsideMultiplier = Math.max(0.1, parseFloat(
       $("outsideMultiplierInput").value
-    ) || 1;
-    var pressureHourlyRate = parseFloat(
+    ) || 1);
+    var pressureHourlyRate = Math.max(0, parseFloat(
       $("pressureHourlyRateInput").value
-    ) || 0;
-    var setupBufferMinutes = parseFloat(
+    ) || 0);
+    var setupBufferMinutes = Math.max(0, parseFloat(
       $("setupBufferMinutesInput").value
-    ) || 0;
+    ) || 0);
 
     var quoteTitle = $("quoteTitleInput").value || "";
     var clientName = $("clientNameInput").value || "";
@@ -1380,6 +1381,12 @@ $("totalIncGstDisplay").textContent = formatMoney(totalIncGst);
 
       state.windowLines = [];
       state.pressureLines = [];
+      state.quoteTitle = "";
+      state.clientName = "";
+      state.clientLocation = "";
+      state.jobType = "";
+      state.internalNotes = "";
+      state.clientNotes = "";
       AppStorage.clearState();
       applyStateToUI();
     });

@@ -16,17 +16,17 @@ test.describe('UI Interactions', () => {
   });
 
   test('should toggle accordion sections', async ({ page }) => {
-    // Config panel should be visible by default
+    // Config panel should be visible by default (has card-body-open class)
     const configBody = page.locator('#configBody');
-    await expect(configBody).toBeVisible();
+    await expect(configBody).toHaveClass(/card-body-open/);
 
     // Click toggle to collapse
     await page.click('button[data-target="configBody"]');
-    await expect(configBody).toBeHidden();
+    await expect(configBody).not.toHaveClass(/card-body-open/);
 
     // Click again to expand
     await page.click('button[data-target="configBody"]');
-    await expect(configBody).toBeVisible();
+    await expect(configBody).toHaveClass(/card-body-open/);
   });
 
   test('should add and remove window lines', async ({ page }) => {
@@ -40,7 +40,7 @@ test.describe('UI Interactions', () => {
     expect(afterAddCount).toBe(1);
 
     // Remove the line
-    await page.click('button.line-remove-btn');
+    await page.click('button:has-text("Remove")');
     const afterRemoveCount = await page.locator('.line-item').count();
     expect(afterRemoveCount).toBe(0);
   });
@@ -92,11 +92,11 @@ test.describe('UI Interactions', () => {
     await page.fill('#quoteTitleInput', 'Test Quote');
     await page.click('#addWindowLineBtn');
 
+    // Set up dialog handler before clicking
+    page.on('dialog', dialog => dialog.accept());
+
     // Click Clear All
     await page.click('#clearAllBtn');
-
-    // Confirm dialog (if present)
-    page.on('dialog', dialog => dialog.accept());
 
     await page.waitForTimeout(100);
 
@@ -112,9 +112,13 @@ test.describe('UI Interactions', () => {
 
     // Add data
     await page.fill('#quoteTitleInput', 'Autosaved Quote');
-    await page.click('#addWindowLineBtn');
-    await page.selectOption('select[data-field="windowType"]', 'standard_1x1');
-    await page.fill('input[data-field="quantity"]', '5');
+
+    // Use wizard to add a window line with specific type
+    await page.click('#openWindowWizardBtn');
+    await page.selectOption('#wizWinType', 'std1');
+    await page.fill('#wizWinPanes', '5');
+    await page.click('#wizWinApply');
+    // Wizard closes automatically after Apply
 
     // Wait for autosave
     await page.waitForTimeout(700);
@@ -137,26 +141,28 @@ test.describe('UI Interactions', () => {
   });
 
   test('should duplicate window line', async ({ page }) => {
-    // Add a window line
-    await page.click('#addWindowLineBtn');
-    await page.selectOption('select[data-field="windowType"]', 'standard_2x2');
-    await page.fill('input[data-field="quantity"]', '7');
+    // Add a window line using wizard
+    await page.click('#openWindowWizardBtn');
+    await page.selectOption('#wizWinType', 'std2');
+    await page.fill('#wizWinPanes', '7');
+    await page.click('#wizWinApply');
 
     const initialCount = await page.locator('.line-item').count();
 
     // Duplicate the line
-    await page.click('button.line-duplicate-btn');
+    await page.click('button:has-text("Duplicate")');
 
     const afterCount = await page.locator('.line-item').count();
     expect(afterCount).toBe(initialCount + 1);
   });
 
   test('should show time estimates in summary', async ({ page }) => {
-    // Add a window line
-    await page.click('#addWindowLineBtn');
-    await page.selectOption('select[data-field="windowType"]', 'standard_1x1');
-    await page.fill('input[data-field="quantity"]', '10');
-    await page.check('input[data-field="outsideChecked"]');
+    // Add a window line using wizard
+    await page.click('#openWindowWizardBtn');
+    await page.selectOption('#wizWinType', 'std1');
+    await page.fill('#wizWinPanes', '10');
+    await page.uncheck('#wizWinInside');  // Uncheck inside to leave only outside
+    await page.click('#wizWinApply');
 
     await page.waitForTimeout(100);
 
@@ -170,11 +176,12 @@ test.describe('UI Interactions', () => {
     const chart = page.locator('#timeChart');
     await expect(chart).toBeVisible();
 
-    // Add data
-    await page.click('#addWindowLineBtn');
-    await page.selectOption('select[data-field="windowType"]', 'standard_1x1');
-    await page.fill('input[data-field="quantity"]', '5');
-    await page.check('input[data-field="outsideChecked"]');
+    // Add data using wizard
+    await page.click('#openWindowWizardBtn');
+    await page.selectOption('#wizWinType', 'std1');
+    await page.fill('#wizWinPanes', '5');
+    await page.uncheck('#wizWinInside');  // Uncheck inside to leave only outside
+    await page.click('#wizWinApply');
 
     await page.waitForTimeout(500);
 
@@ -198,7 +205,7 @@ test.describe('UI Interactions', () => {
 test.describe('Responsive Design', () => {
   test('should display correctly on mobile viewport', async ({ page }) => {
     await page.setViewportSize({ width: 375, height: 667 });
-    await page.goto('/');
+    await page.goto(APP_URL);
 
     // App should be visible
     const app = page.locator('.app');
@@ -211,7 +218,7 @@ test.describe('Responsive Design', () => {
 
   test('should display correctly on tablet viewport', async ({ page }) => {
     await page.setViewportSize({ width: 768, height: 1024 });
-    await page.goto('/');
+    await page.goto(APP_URL);
 
     const app = page.locator('.app');
     await expect(app).toBeVisible();

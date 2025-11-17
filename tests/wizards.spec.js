@@ -31,7 +31,7 @@ test.describe('Window Wizard', () => {
     await expect(page.locator('#wizardOverlay')).toBeHidden();
 
     // No lines should be added
-    const lineCount = await page.locator('.line-item').count();
+    const lineCount = await page.locator('.line-card').count();
     expect(lineCount).toBe(0);
   });
 
@@ -69,7 +69,7 @@ test.describe('Pressure Wizard', () => {
     await expect(page.locator('#wizardOverlay')).toBeHidden();
 
     // No lines should be added
-    const pressureLineCount = await page.locator('#pressureLinesContainer .line-item').count();
+    const pressureLineCount = await page.locator('#pressureLinesContainer .line-card').count();
     expect(pressureLineCount).toBe(0);
   });
 });
@@ -81,6 +81,9 @@ test.describe('Data Validation', () => {
 
     // Try to enter invalid data
     await page.fill('#baseFeeInput', '-100');
+
+    // Trigger blur event to activate validation
+    await page.locator('#baseFeeInput').blur();
     await page.waitForTimeout(100);
 
     // Might be prevented or clamped to 0
@@ -95,11 +98,12 @@ test.describe('Data Validation', () => {
     await page.goto(APP_URL);
     await page.waitForLoadState('networkidle');
 
-    // Add window line
-    await page.click('#addWindowLineBtn');
-    await page.selectOption('select[data-field="windowType"]', 'standard_1x1');
-    await page.fill('input[data-field="quantity"]', '1');
-    await page.check('input[data-field="outsideChecked"]');
+    // Add window line using wizard
+    await page.click('#openWindowWizardBtn');
+    await page.selectOption('#wizWinType', 'std1');
+    await page.fill('#wizWinPanes', '1');
+    await page.uncheck('#wizWinInside');  // Only outside
+    await page.click('#wizWinApply');
 
     await page.waitForTimeout(100);
 

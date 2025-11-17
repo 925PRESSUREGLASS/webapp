@@ -95,10 +95,53 @@
     }
   }
 
+  function initInputValidation() {
+    // Prevent negative values on numeric inputs
+    var numericInputs = [
+      "baseFeeInput",
+      "hourlyRateInput",
+      "minimumJobInput",
+      "highReachModifierInput",
+      "insideMultiplierInput",
+      "outsideMultiplierInput",
+      "pressureHourlyRateInput",
+      "setupBufferMinutesInput"
+    ];
+
+    function validateNumericInput(e) {
+      var input = e.target;
+      var value = parseFloat(input.value);
+
+      // Handle multipliers differently (minimum 0.1)
+      if (input.id === "insideMultiplierInput" || input.id === "outsideMultiplierInput") {
+        if (!isNaN(value) && value < 0.1) {
+          input.value = 0.1;
+        }
+      } else {
+        // For other inputs, prevent negative values
+        if (!isNaN(value) && value < 0) {
+          input.value = 0;
+        }
+      }
+    }
+
+    for (var i = 0; i < numericInputs.length; i++) {
+      var el = $(numericInputs[i]);
+      if (!el) continue;
+
+      // Validate on blur (when user leaves field)
+      el.addEventListener("blur", validateNumericInput);
+
+      // Also validate on change
+      el.addEventListener("change", validateNumericInput);
+    }
+  }
+
   function initUI() {
     initAccordions();
     initModeToggle();
     initLiveRecalc();
+    initInputValidation();
   }
 
   if (document.readyState === "loading") {

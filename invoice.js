@@ -385,6 +385,13 @@
     return true;
   }
 
+  // Search and filter state
+  var searchState = {
+    query: '',
+    statusFilter: 'all',
+    sortBy: 'date'
+  };
+
   // Show invoice list
   function showInvoiceList() {
     var modal = createInvoiceListModal();
@@ -414,6 +421,28 @@
             '<button type="button" class="btn btn-primary" id="createInvoiceBtn">Create Invoice from Quote</button>' +
             '<button type="button" class="btn btn-secondary" id="showAgingReportBtn">📊 Aging Report</button>' +
             '<button type="button" class="btn btn-secondary" id="invoiceSettingsBtn">⚙ Settings</button>' +
+          '</div>' +
+          '<div class="invoice-search-filter">' +
+            '<div class="search-box">' +
+              '<input type="text" id="invoiceSearchInput" placeholder="Search by invoice number, client name..." class="form-control" />' +
+            '</div>' +
+            '<div class="filter-controls">' +
+              '<select id="invoiceStatusFilter" class="form-control">' +
+                '<option value="all">All Status</option>' +
+                '<option value="draft">Draft</option>' +
+                '<option value="sent">Sent</option>' +
+                '<option value="paid">Paid</option>' +
+                '<option value="overdue">Overdue</option>' +
+                '<option value="cancelled">Cancelled</option>' +
+              '</select>' +
+              '<select id="invoiceSortBy" class="form-control">' +
+                '<option value="date">Sort by Date</option>' +
+                '<option value="number">Sort by Number</option>' +
+                '<option value="client">Sort by Client</option>' +
+                '<option value="amount">Sort by Amount</option>' +
+                '<option value="balance">Sort by Balance</option>' +
+              '</select>' +
+            '</div>' +
           '</div>' +
           '<div id="invoiceListContainer"></div>' +
         '</div>' +
@@ -447,7 +476,82 @@
       showSettingsModal();
     };
 
+    // Search and filter event listeners
+    var searchInput = modal.querySelector('#invoiceSearchInput');
+    var statusFilter = modal.querySelector('#invoiceStatusFilter');
+    var sortBy = modal.querySelector('#invoiceSortBy');
+
+    searchInput.oninput = function() {
+      searchState.query = searchInput.value.toLowerCase();
+      renderInvoiceList();
+    };
+
+    statusFilter.onchange = function() {
+      searchState.statusFilter = statusFilter.value;
+      renderInvoiceList();
+    };
+
+    sortBy.onchange = function() {
+      searchState.sortBy = sortBy.value;
+      renderInvoiceList();
+    };
+
+    // Restore previous search state
+    if (searchState.query) {
+      searchInput.value = searchState.query;
+    }
+    if (searchState.statusFilter) {
+      statusFilter.value = searchState.statusFilter;
+    }
+    if (searchState.sortBy) {
+      sortBy.value = searchState.sortBy;
+    }
+
     return modal;
+  }
+
+  // Filter and sort invoices based on search state
+  function getFilteredInvoices() {
+    var filtered = invoices.slice(0);
+
+    // Apply status filter
+    if (searchState.statusFilter && searchState.statusFilter !== 'all') {
+      filtered = filtered.filter(function(invoice) {
+        return invoice.status === searchState.statusFilter;
+      });
+    }
+
+    // Apply search query
+    if (searchState.query) {
+      filtered = filtered.filter(function(invoice) {
+        var searchableText = [
+          invoice.invoiceNumber,
+          invoice.clientName,
+          invoice.clientLocation,
+          invoice.quoteTitle
+        ].join(' ').toLowerCase();
+        return searchableText.indexOf(searchState.query) !== -1;
+      });
+    }
+
+    // Apply sorting
+    filtered.sort(function(a, b) {
+      switch (searchState.sortBy) {
+        case 'number':
+          return a.invoiceNumber.localeCompare(b.invoiceNumber);
+        case 'client':
+          return (a.clientName || '').localeCompare(b.clientName || '');
+        case 'amount':
+          return b.total - a.total;
+        case 'balance':
+          return b.balance - a.balance;
+        case 'date':
+        default:
+          return b.createdDate - a.createdDate;
+      }
+    });
+
+    return filtered;
   }
 
   // Render invoice list
@@ -456,7 +560,7 @@
     if (!container) return;
 
     checkOverdueInvoices();
-    var allInvoices = getAllInvoices();
+    var allInvoices = getFilteredInvoices();
 
     if (allInvoices.length === 0) {
       container.innerHTML = '<p class="invoice-list-empty">No invoices yet. Create your first invoice!</p>';
@@ -504,6 +608,7 @@
 
       html += '<div class="invoice-card-actions">';
       html += '<button type="button" class="btn btn-small btn-secondary" onclick="window.InvoiceManager.viewInvoice(\'' + invoice.id + '\')">View</button>';
+      html += '<button type="button" class="btn btn-small btn-primary" onclick="window.InvoiceManager.editInvoice(\'' + invoice.id + '\')">Edit</button>';
       if (invoice.balance > 0 && invoice.status !== 'cancelled') {
         html += '<button type="button" class="btn btn-small btn-primary" onclick="window.InvoiceManager.recordPayment(\'' + invoice.id + '\')">Record Payment</button>';
       }
@@ -721,6 +826,7 @@
 
     // Actions
     html += '<div class="invoice-detail-actions">';
+    html += '<button type="button" class="btn btn-primary" onclick="window.InvoiceManager.editInvoice(\'' + invoice.id + '\')">Edit Invoice</button>';
     if (invoice.balance > 0 && invoice.status !== 'cancelled') {
       html += '<button type="button" class="btn btn-primary" onclick="window.InvoiceManager.showPaymentModal(\'' + invoice.id + '\')">Record Payment</button>';
     }
@@ -1326,6 +1432,186 @@
     return div.innerHTML;
   }
 
+  // Edit invoice
+  function editInvoice(invoiceId) {
+    var invoice = getInvoice(invoiceId);
+    if (!invoice) {
+      if (window.ErrorHandler) {
+        window.ErrorHandler.showError('Invoice not found');
+      }
+      return;
+    }
+
+    var modal = createEditInvoiceModal(invoice);
+    document.body.appendChild(modal);
+    modal.classList.add('active');
+  }
+
+  // Create edit invoice modal
+  function createEditInvoiceModal(invoice) {
+    var existing = document.getElementById('editInvoiceModal');
+    if (existing) {
+      existing.remove();
+    }
+
+    var modal = document.createElement('div');
+    modal.id = 'editInvoiceModal';
+    modal.className = 'invoice-modal';
+
+    var invoiceDate = new Date(invoice.invoiceDate).toISOString().split('T')[0];
+    var dueDate = new Date(invoice.dueDate).toISOString().split('T')[0];
+
+    modal.innerHTML =
+      '<div class="invoice-modal-content invoice-modal-medium">' +
+        '<div class="invoice-modal-header">' +
+          '<h2>Edit Invoice ' + invoice.invoiceNumber + '</h2>' +
+          '<button type="button" class="invoice-modal-close" aria-label="Close">&times;</button>' +
+        '</div>' +
+        '<div class="invoice-modal-body">' +
+          '<form id="editInvoiceForm">' +
+            '<div class="form-row">' +
+              '<div class="form-group">' +
+                '<label for="editClientName">Client Name *</label>' +
+                '<input type="text" id="editClientName" value="' + escapeHtml(invoice.clientName || '') + '" required />' +
+              '</div>' +
+              '<div class="form-group">' +
+                '<label for="editClientLocation">Location</label>' +
+                '<input type="text" id="editClientLocation" value="' + escapeHtml(invoice.clientLocation || '') + '" />' +
+              '</div>' +
+            '</div>' +
+            '<div class="form-row">' +
+              '<div class="form-group">' +
+                '<label for="editClientEmail">Email</label>' +
+                '<input type="email" id="editClientEmail" value="' + escapeHtml(invoice.clientEmail || '') + '" />' +
+              '</div>' +
+              '<div class="form-group">' +
+                '<label for="editClientPhone">Phone</label>' +
+                '<input type="tel" id="editClientPhone" value="' + escapeHtml(invoice.clientPhone || '') + '" />' +
+              '</div>' +
+            '</div>' +
+            '<div class="form-row">' +
+              '<div class="form-group">' +
+                '<label for="editInvoiceDate">Invoice Date *</label>' +
+                '<input type="date" id="editInvoiceDate" value="' + invoiceDate + '" required />' +
+              '</div>' +
+              '<div class="form-group">' +
+                '<label for="editDueDate">Due Date *</label>' +
+                '<input type="date" id="editDueDate" value="' + dueDate + '" required />' +
+              '</div>' +
+            '</div>' +
+            '<div class="form-row">' +
+              '<div class="form-group">' +
+                '<label for="editSubtotal">Subtotal *</label>' +
+                '<input type="number" id="editSubtotal" step="0.01" value="' + invoice.subtotal.toFixed(2) + '" required />' +
+              '</div>' +
+              '<div class="form-group">' +
+                '<label for="editGST">GST (10%) *</label>' +
+                '<input type="number" id="editGST" step="0.01" value="' + invoice.gst.toFixed(2) + '" required />' +
+              '</div>' +
+              '<div class="form-group">' +
+                '<label for="editTotal">Total *</label>' +
+                '<input type="number" id="editTotal" step="0.01" value="' + invoice.total.toFixed(2) + '" readonly style="background: rgba(31, 41, 55, 0.3);" />' +
+              '</div>' +
+            '</div>' +
+            '<div class="form-group">' +
+              '<label for="editQuoteTitle">Quote Title / Description</label>' +
+              '<textarea id="editQuoteTitle" rows="2">' + escapeHtml(invoice.quoteTitle || '') + '</textarea>' +
+            '</div>' +
+            '<div class="form-group">' +
+              '<label for="editInvoiceStatus">Status</label>' +
+              '<select id="editInvoiceStatus">' +
+                '<option value="draft"' + (invoice.status === 'draft' ? ' selected' : '') + '>Draft</option>' +
+                '<option value="sent"' + (invoice.status === 'sent' ? ' selected' : '') + '>Sent</option>' +
+                '<option value="paid"' + (invoice.status === 'paid' ? ' selected' : '') + '>Paid</option>' +
+                '<option value="overdue"' + (invoice.status === 'overdue' ? ' selected' : '') + '>Overdue</option>' +
+                '<option value="cancelled"' + (invoice.status === 'cancelled' ? ' selected' : '') + '>Cancelled</option>' +
+              '</select>' +
+            '</div>' +
+            '<div class="form-actions">' +
+              '<button type="button" class="btn btn-secondary" id="cancelEditBtn">Cancel</button>' +
+              '<button type="submit" class="btn btn-primary">Save Changes</button>' +
+            '</div>' +
+          '</form>' +
+        '</div>' +
+      '</div>';
+
+    // Event listeners
+    modal.querySelector('.invoice-modal-close').onclick = function() {
+      modal.classList.remove('active');
+      setTimeout(function() { modal.remove(); }, 300);
+    };
+
+    modal.querySelector('#cancelEditBtn').onclick = function() {
+      modal.classList.remove('active');
+      setTimeout(function() { modal.remove(); }, 300);
+    };
+
+    // Calculate total when subtotal or GST changes
+    var subtotalInput = modal.querySelector('#editSubtotal');
+    var gstInput = modal.querySelector('#editGST');
+    var totalInput = modal.querySelector('#editTotal');
+
+    function updateTotal() {
+      var subtotal = parseFloat(subtotalInput.value) || 0;
+      var gst = parseFloat(gstInput.value) || 0;
+      totalInput.value = (subtotal + gst).toFixed(2);
+    }
+
+    subtotalInput.oninput = function() {
+      updateTotal();
+      // Auto-calculate GST if changed
+      var subtotal = parseFloat(subtotalInput.value) || 0;
+      gstInput.value = (subtotal * 0.1).toFixed(2);
+      updateTotal();
+    };
+
+    gstInput.oninput = updateTotal;
+
+    // Form submission
+    modal.querySelector('#editInvoiceForm').onsubmit = function(e) {
+      e.preventDefault();
+
+      // Update invoice data
+      invoice.clientName = document.getElementById('editClientName').value;
+      invoice.clientLocation = document.getElementById('editClientLocation').value;
+      invoice.clientEmail = document.getElementById('editClientEmail').value;
+      invoice.clientPhone = document.getElementById('editClientPhone').value;
+      invoice.invoiceDate = new Date(document.getElementById('editInvoiceDate').value).getTime();
+      invoice.dueDate = new Date(document.getElementById('editDueDate').value).getTime();
+      invoice.subtotal = parseFloat(document.getElementById('editSubtotal').value);
+      invoice.gst = parseFloat(document.getElementById('editGST').value);
+      invoice.total = parseFloat(document.getElementById('editTotal').value);
+      invoice.quoteTitle = document.getElementById('editQuoteTitle').value;
+
+      var newStatus = document.getElementById('editInvoiceStatus').value;
+      if (newStatus !== invoice.status) {
+        invoice.status = newStatus;
+        invoice.statusHistory.push({
+          status: newStatus,
+          timestamp: Date.now(),
+          note: 'Status changed via edit'
+        });
+      }
+
+      // Recalculate balance
+      invoice.balance = invoice.total - invoice.amountPaid;
+
+      // Save changes
+      saveInvoices();
+
+      if (window.ErrorHandler) {
+        window.ErrorHandler.showSuccess('Invoice updated successfully');
+      }
+
+      // Close modal and refresh list
+      modal.classList.remove('active');
+      setTimeout(function() { modal.remove(); }, 300);
+      renderInvoiceList();
+    };
+
+    return modal;
+  }
+
   // Add "Invoices" button to UI
   function addInvoiceButton() {
     // Check if button already exists to prevent duplicates
@@ -1333,17 +1619,38 @@
       return;
     }
 
-    var notesFooter = document.querySelector('.notes-footer');
-    if (!notesFooter) return;
+    // Add to summary panel instead of notes footer
+    var summaryPanel = document.getElementById('summaryBody');
+    if (!summaryPanel) return;
 
-    var button = document.createElement('button');
-    button.type = 'button';
-    button.id = 'manageInvoicesBtn';
-    button.className = 'btn btn-secondary';
-    button.textContent = '📄 Invoices';
-    button.onclick = showInvoiceList;
+    // Create invoice action section
+    var invoiceSection = document.createElement('div');
+    invoiceSection.className = 'invoice-action-section';
+    invoiceSection.innerHTML =
+      '<div class="invoice-action-header">' +
+        '<h3>Invoice Management</h3>' +
+      '</div>' +
+      '<div class="invoice-action-buttons">' +
+        '<button type="button" id="manageInvoicesBtn" class="btn btn-primary">📄 Manage Invoices</button>' +
+        '<button type="button" id="createInvoiceDirectBtn" class="btn btn-secondary">➕ Create Invoice</button>' +
+      '</div>';
 
-    notesFooter.appendChild(button);
+    // Add event listeners
+    summaryPanel.appendChild(invoiceSection);
+
+    document.getElementById('manageInvoicesBtn').onclick = showInvoiceList;
+    document.getElementById('createInvoiceDirectBtn').onclick = function() {
+      if (window.APP && window.APP.getState) {
+        var state = window.APP.getState();
+        if (!state.clientName) {
+          if (window.ErrorHandler) {
+            window.ErrorHandler.showError('Please enter client name before creating an invoice');
+          }
+          return;
+        }
+        convertQuoteToInvoice();
+      }
+    };
   }
 
   // Initialize
@@ -1382,9 +1689,14 @@
     updateStatus: updateInvoiceStatus,
     recordPayment: recordPayment,
     delete: deleteInvoice,
+    deleteInvoice: deleteInvoice,
     getStats: getInvoiceStats,
     showList: showInvoiceList,
     viewInvoice: viewInvoice,
+    editInvoice: editInvoice,
+    showPaymentModal: showRecordPaymentModal,
+    changeStatus: changeInvoiceStatus,
+    printInvoice: printInvoiceView,
     settings: settings,
     saveSettings: saveSettings
   };
