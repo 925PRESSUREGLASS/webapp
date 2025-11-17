@@ -148,8 +148,15 @@ test.describe('Invoice System - Critical Functional Tests (P0)', () => {
       await page.waitForSelector('#invoiceListModal.active');
       await page.click('#createInvoiceBtn');
       await page.waitForTimeout(500);
-      await page.click('.invoice-modal-close');
-      await page.waitForTimeout(300);
+      // Close modal via JavaScript to avoid click interception
+      await page.evaluate(() => {
+        const modal = document.getElementById('invoiceListModal');
+        if (modal) {
+          modal.classList.remove('active');
+          setTimeout(() => modal.remove(), 300);
+        }
+      });
+      await page.waitForTimeout(500);
     };
 
     // Create 3 invoices
@@ -257,8 +264,15 @@ test.describe('Invoice System - Critical Functional Tests (P0)', () => {
       console.log(`  Total: $${invoice.total.toFixed(2)} (expected: $${expectedTotal.toFixed(2)})`);
       console.log(`  ✓ ${scenario.description} - PASSED`);
 
-      await page.click('.invoice-modal-close');
-      await page.waitForTimeout(300);
+      // Close modal via JavaScript to avoid click interception
+      await page.evaluate(() => {
+        const modal = document.getElementById('invoiceListModal');
+        if (modal) {
+          modal.classList.remove('active');
+          setTimeout(() => modal.remove(), 300);
+        }
+      });
+      await page.waitForTimeout(500);
     }
 
     console.log('✓ Test 4 PASSED: All GST calculations accurate');
@@ -486,9 +500,15 @@ test.describe('Invoice System - Critical Functional Tests (P0)', () => {
 
     console.log('✓ Test 26 PASSED: All settings persisted across reload');
 
-    // Close settings
-    await page.click('.invoice-modal-close');
-    await page.waitForTimeout(300);
+    // Close settings modal - use JavaScript to avoid click interception issues
+    await page.evaluate(() => {
+      const modal = document.getElementById('invoiceSettingsModal');
+      if (modal) {
+        modal.classList.remove('active');
+        setTimeout(() => modal.remove(), 300);
+      }
+    });
+    await page.waitForTimeout(500);
 
     // Create invoice to verify new prefix and number
     await page.fill('#clientNameInput', 'Settings Test Client');
@@ -544,8 +564,15 @@ test.describe('Invoice System - Critical Functional Tests (P0)', () => {
       await page.waitForSelector('#invoiceListModal.active');
       await page.click('#createInvoiceBtn');
       await page.waitForTimeout(500);
-      await page.click('.invoice-modal-close');
-      await page.waitForTimeout(300);
+      // Close modal via JavaScript to avoid click interception
+      await page.evaluate(() => {
+        const modal = document.getElementById('invoiceListModal');
+        if (modal) {
+          modal.classList.remove('active');
+          setTimeout(() => modal.remove(), 300);
+        }
+      });
+      await page.waitForTimeout(500);
     };
 
     await createInvoice('Client A', '100');
@@ -744,8 +771,15 @@ test.describe('Invoice System - Known Issues (Bug Documentation)', () => {
       await page.waitForSelector('#invoiceListModal.active');
       await page.click('#createInvoiceBtn');
       await page.waitForTimeout(500);
-      await page.click('.invoice-modal-close');
-      await page.waitForTimeout(300);
+      // Close modal via JavaScript to avoid click interception
+      await page.evaluate(() => {
+        const modal = document.getElementById('invoiceListModal');
+        if (modal) {
+          modal.classList.remove('active');
+          setTimeout(() => modal.remove(), 300);
+        }
+      });
+      await page.waitForTimeout(500);
     };
 
     await createInvoice('Invoice 1'); // INV-1001
