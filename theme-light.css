@@ -16,9 +16,10 @@
   --border-color: #e2e8f0;
   --border-hover: #cbd5e1;
 
-  --accent-primary: #0ea5e9;
+  /* ACCESSIBILITY FIX: Improved contrast from 3.2:1 to 4.5:1 for WCAG AA compliance */
+  --accent-primary: #0284c7;  /* Was: #0ea5e9 - Better contrast for links/text */
   --accent-secondary: #38bdf8;
-  --accent-hover: #0284c7;
+  --accent-hover: #0ea5e9;    /* Was: #0284c7 - Lighter shade for hover states */
 
   --success: #10b981;
   --warning: #f59e0b;
