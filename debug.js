@@ -9,7 +9,8 @@
     // Set to true for development, false for production
     enabled: false,
 
-    // Module-specific debug levels (future enhancement)
+    // Module-specific debug levels
+    // Use DEBUG.enableModule(name) / DEBUG.disableModule(name) to control
     modules: {
       app: true,
       calc: true,
@@ -38,6 +39,13 @@
       if (saved !== null) {
         DEBUG_CONFIG.enabled = saved === 'true';
       }
+
+      // Load module-specific settings
+      var moduleSettings = localStorage.getItem(DEBUG_CONFIG.storageKey + '-modules');
+      if (moduleSettings) {
+        var parsed = JSON.parse(moduleSettings);
+        DEBUG_CONFIG.modules = parsed;
+      }
     } catch (e) {
       // localStorage not available or error reading
     }
@@ -49,6 +57,12 @@
 
     try {
       localStorage.setItem(DEBUG_CONFIG.storageKey, DEBUG_CONFIG.enabled ? 'true' : 'false');
+
+      // Save module-specific settings
+      localStorage.setItem(
+        DEBUG_CONFIG.storageKey + '-modules',
+        JSON.stringify(DEBUG_CONFIG.modules)
+      );
     } catch (e) {
       // localStorage not available or quota exceeded
     }
@@ -265,6 +279,115 @@
     },
 
     /**
+     * Enable debug logging for a specific module
+     * @param {string} moduleName - Name of module to enable
+     * @returns {boolean} True if module was enabled
+     */
+    enableModule: function(moduleName) {
+      if (!moduleName) {
+        console.warn('[DEBUG] enableModule: module name is required');
+        return false;
+      }
+
+      DEBUG_CONFIG.modules[moduleName] = true;
+      saveDebugState();
+
+      if (window.console && console.log) {
+        console.log('[DEBUG] Module "' + moduleName + '" debug logging enabled');
+      }
+      return true;
+    },
+
+    /**
+     * Disable debug logging for a specific module
+     * @param {string} moduleName - Name of module to disable
+     * @returns {boolean} True if module was disabled
+     */
+    disableModule: function(moduleName) {
+      if (!moduleName) {
+        console.warn('[DEBUG] disableModule: module name is required');
+        return false;
+      }
+
+      DEBUG_CONFIG.modules[moduleName] = false;
+      saveDebugState();
+
+      if (window.console && console.log) {
+        console.log('[DEBUG] Module "' + moduleName + '" debug logging disabled');
+      }
+      return true;
+    },
+
+    /**
+     * Check if a specific module has debug logging enabled
+     * @param {string} moduleName - Name of module to check
+     * @returns {boolean} True if module debug logging is enabled
+     */
+    isModuleEnabled: function(moduleName) {
+      return DEBUG_CONFIG.modules[moduleName] === true;
+    },
+
+    /**
+     * Get list of all enabled modules
+     * @returns {Array<string>} Array of enabled module names
+     */
+    getEnabledModules: function() {
+      var enabled = [];
+      for (var moduleName in DEBUG_CONFIG.modules) {
+        if (DEBUG_CONFIG.modules.hasOwnProperty(moduleName) && DEBUG_CONFIG.modules[moduleName]) {
+          enabled.push(moduleName);
+        }
+      }
+      return enabled;
+    },
+
+    /**
+     * Get list of all disabled modules
+     * @returns {Array<string>} Array of disabled module names
+     */
+    getDisabledModules: function() {
+      var disabled = [];
+      for (var moduleName in DEBUG_CONFIG.modules) {
+        if (DEBUG_CONFIG.modules.hasOwnProperty(moduleName) && !DEBUG_CONFIG.modules[moduleName]) {
+          disabled.push(moduleName);
+        }
+      }
+      return disabled;
+    },
+
+    /**
+     * Enable debug logging for all modules
+     */
+    enableAllModules: function() {
+      for (var moduleName in DEBUG_CONFIG.modules) {
+        if (DEBUG_CONFIG.modules.hasOwnProperty(moduleName)) {
+          DEBUG_CONFIG.modules[moduleName] = true;
+        }
+      }
+      saveDebugState();
+
+      if (window.console && console.log) {
+        console.log('[DEBUG] All module debug logging enabled');
+      }
+    },
+
+    /**
+     * Disable debug logging for all modules
+     */
+    disableAllModules: function() {
+      for (var moduleName in DEBUG_CONFIG.modules) {
+        if (DEBUG_CONFIG.modules.hasOwnProperty(moduleName)) {
+          DEBUG_CONFIG.modules[moduleName] = false;
+        }
+      }
+      saveDebugState();
+
+      if (window.console && console.log) {
+        console.log('[DEBUG] All module debug logging disabled');
+      }
+    },
+
+    /**
      * Module-specific debug logger
      * @param {string} moduleName - Name of module
      * @returns {Object} Module-specific logger
@@ -312,6 +435,11 @@
     console.log('%c[DEBUG] Debug system initialized', 'color: #38bdf8; font-weight: bold;');
     console.log('[DEBUG] Type DEBUG.disable() to turn off debug logging');
     console.log('[DEBUG] Type DEBUG.enable() to turn on debug logging');
+    console.log('[DEBUG] Module controls:');
+    console.log('[DEBUG]   DEBUG.enableModule("moduleName") - Enable specific module');
+    console.log('[DEBUG]   DEBUG.disableModule("moduleName") - Disable specific module');
+    console.log('[DEBUG]   DEBUG.getEnabledModules() - List enabled modules');
+    console.log('[DEBUG]   DEBUG.isModuleEnabled("moduleName") - Check module status');
   }
 
 })();
