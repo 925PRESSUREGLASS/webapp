@@ -1030,10 +1030,10 @@ $("totalIncGstDisplay").textContent = formatMoney(totalIncGst);
         rows +=
           "<tr>" +
           "<td>" +
-          (line.title || "Window Line") +
+          window.Security.escapeHTML(line.title || "Window Line") +
           "</td>" +
           "<td>" +
-          (line.location || "") +
+          window.Security.escapeHTML(line.location || "") +
           "</td>" +
           "<td>" +
           (line.panes != null ? line.panes : "") +
@@ -1089,19 +1089,19 @@ $("totalIncGstDisplay").textContent = formatMoney(totalIncGst);
         rows +=
           "<tr>" +
           "<td>" +
-          (line.title || "Surface") +
+          window.Security.escapeHTML(line.title || "Surface") +
           "</td>" +
           "<td>" +
           (line.areaSqm != null ? line.areaSqm + " m²" : "") +
           "</td>" +
           "<td>" +
-          (line.soilLevel || "") +
+          window.Security.escapeHTML(line.soilLevel || "") +
           "</td>" +
           "<td>" +
-          (line.access || "") +
+          window.Security.escapeHTML(line.access || "") +
           "</td>" +
           "<td>" +
-          (line.notes || "") +
+          window.Security.escapeHTML(line.notes || "") +
           "</td>" +
           "<td style='text-align:right;'>" +
           lineTotalText +
@@ -1182,7 +1182,7 @@ $("totalIncGstDisplay").textContent = formatMoney(totalIncGst);
       notesHtml =
         "<div class='quote-doc-notes'>" +
         "<strong>Notes:</strong><br/>" +
-        clientNotes.replace(/\n/g, "<br/>") +
+        window.Security.sanitizeWithLineBreaks(clientNotes) +
         "</div>";
     }
 
@@ -1205,15 +1205,15 @@ $("totalIncGstDisplay").textContent = formatMoney(totalIncGst);
       "</div>" +
       "<div class='quote-doc-meta'>" +
       (clientName
-        ? "<div><strong>Client:</strong> " + clientName + "</div>"
+        ? "<div><strong>Client:</strong> " + window.Security.escapeHTML(clientName) + "</div>"
         : "") +
       (clientLocation
         ? "<div><strong>Location:</strong> " +
-          clientLocation +
+          window.Security.escapeHTML(clientLocation) +
           "</div>"
         : "") +
       (jobType
-        ? "<div><strong>Job type:</strong> " + jobType + "</div>"
+        ? "<div><strong>Job type:</strong> " + window.Security.escapeHTML(jobType) + "</div>"
         : "") +
       "<div><strong>Date:</strong> " +
       dateStr +
