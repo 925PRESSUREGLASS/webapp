@@ -76,8 +76,11 @@
   // Load history
   function loadHistory() {
     try {
-      var stored = localStorage.getItem(HISTORY_KEY);
-      return stored ? JSON.parse(stored) : [];
+      return window.Security.safeJSONParse(
+        localStorage.getItem(HISTORY_KEY),
+        null,
+        []
+      );
     } catch (e) {
       console.error('Failed to load history:', e);
       return [];

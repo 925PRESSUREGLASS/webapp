@@ -32,7 +32,7 @@
         try {
           var value = localStorage.getItem(key);
           if (value) {
-            backup.data[key] = JSON.parse(value);
+            backup.data[key] = window.Security.safeJSONParse(value, null, null);
           }
         } catch (e) {
           console.warn('Failed to export:', key, e);
@@ -87,9 +87,13 @@
 
     reader.onload = function(e) {
       try {
-        var backup = JSON.parse(e.target.result);
+        var backup = window.Security.safeJSONParse(
+          e.target.result,
+          null,
+          null
+        );
 
-        if (!backup.version || !backup.data) {
+        if (!backup || !backup.version || !backup.data) {
           throw new Error('Invalid backup file format');
         }
 
@@ -114,7 +118,7 @@
               // Merge mode: combine with existing data
               var existing = localStorage.getItem(key);
               if (existing) {
-                var existingData = JSON.parse(existing);
+                var existingData = window.Security.safeJSONParse(existing, null, null);
                 var backupData = backup.data[key];
 
                 // Merge arrays (for history, clients, templates)
@@ -330,7 +334,7 @@
       // No backup ever created
       var quoteHistory = localStorage.getItem('quote-history');
       if (quoteHistory) {
-        var history = JSON.parse(quoteHistory);
+        var history = window.Security.safeJSONParse(quoteHistory, null, []);
         if (history.length >= 5) {
           showBackupReminder('You have ' + history.length + ' quotes. Create a backup to protect your data!');
         }

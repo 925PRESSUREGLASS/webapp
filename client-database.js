@@ -10,8 +10,11 @@
   // Load clients from storage
   function loadClients() {
     try {
-      var stored = localStorage.getItem(CLIENTS_KEY);
-      clients = stored ? JSON.parse(stored) : [];
+      clients = window.Security.safeJSONParse(
+        localStorage.getItem(CLIENTS_KEY),
+        null,
+        []
+      );
       return clients;
     } catch (e) {
       console.error('Failed to load clients:', e);

@@ -30,8 +30,11 @@
   // Load invoices from storage
   function loadInvoices() {
     try {
-      var stored = localStorage.getItem(INVOICES_KEY);
-      invoices = stored ? JSON.parse(stored) : [];
+      invoices = window.Security.safeJSONParse(
+        localStorage.getItem(INVOICES_KEY),
+        null,
+        []
+      );
       return invoices;
     } catch (e) {
       console.error('Failed to load invoices:', e);
@@ -56,9 +59,12 @@
   // Load settings
   function loadSettings() {
     try {
-      var stored = localStorage.getItem(INVOICE_SETTINGS_KEY);
-      if (stored) {
-        var loadedSettings = JSON.parse(stored);
+      var loadedSettings = window.Security.safeJSONParse(
+        localStorage.getItem(INVOICE_SETTINGS_KEY),
+        null,
+        null
+      );
+      if (loadedSettings) {
         Object.keys(loadedSettings).forEach(function(key) {
           settings[key] = loadedSettings[key];
         });
