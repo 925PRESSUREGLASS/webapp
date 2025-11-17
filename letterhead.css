@@ -1,0 +1,576 @@
+/* letterhead.css - Professional letterhead printing with branding */
+/* Integrates with theme customization system (v1.7.0) for custom logos */
+
+@media print {
+
+  /* ========================================
+     LETTERHEAD MASTER TOGGLE
+     Apply .use-letterhead to body to enable
+     ======================================== */
+
+  body.use-letterhead {
+    padding-top: 80pt; /* Space for letterhead header */
+    padding-bottom: 60pt; /* Space for letterhead footer */
+  }
+
+  /* ========================================
+     LETTERHEAD HEADER
+     ======================================== */
+
+  .letterhead-header {
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    height: 70pt;
+    background: white;
+    border-bottom: 2pt solid #333;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 10pt 20pt;
+    z-index: 1000;
+  }
+
+  /* Logo area */
+  .letterhead-logo {
+    height: 50pt;
+    width: auto;
+    max-width: 150pt;
+    object-fit: contain;
+  }
+
+  /* Company name and tagline */
+  .letterhead-company {
+    flex: 1;
+    text-align: center;
+    padding: 0 15pt;
+  }
+
+  .letterhead-company-name {
+    font-size: 18pt;
+    font-weight: bold;
+    color: #000;
+    margin: 0 0 3pt 0;
+    letter-spacing: 1pt;
+  }
+
+  .letterhead-company-tagline {
+    font-size: 9pt;
+    color: #666;
+    font-style: italic;
+    margin: 0;
+  }
+
+  /* Contact quick info in header */
+  .letterhead-quick-contact {
+    text-align: right;
+    font-size: 8pt;
+    color: #333;
+    line-height: 1.4;
+  }
+
+  .letterhead-quick-contact a {
+    color: #000;
+    text-decoration: none;
+  }
+
+  /* ========================================
+     LETTERHEAD FOOTER
+     ======================================== */
+
+  .letterhead-footer {
+    position: fixed;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    height: 50pt;
+    background: white;
+    border-top: 1pt solid #ddd;
+    padding: 8pt 20pt;
+    font-size: 8pt;
+    color: #666;
+    z-index: 1000;
+  }
+
+  .letterhead-footer-content {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+  }
+
+  .letterhead-footer-left {
+    text-align: left;
+  }
+
+  .letterhead-footer-center {
+    text-align: center;
+    flex: 1;
+  }
+
+  .letterhead-footer-right {
+    text-align: right;
+  }
+
+  /* Footer details */
+  .letterhead-footer-line {
+    margin: 2pt 0;
+  }
+
+  .letterhead-footer a {
+    color: #333;
+    text-decoration: none;
+  }
+
+  /* ABN/Company registration */
+  .letterhead-footer-legal {
+    font-size: 7pt;
+    color: #999;
+    margin-top: 3pt;
+  }
+
+  /* ========================================
+     ALTERNATIVE: FULL-WIDTH HEADER BAR
+     ======================================== */
+
+  .letterhead-header-bar {
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    height: 25pt;
+    background: linear-gradient(135deg, #333, #666);
+    color: white;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 0 20pt;
+    font-size: 9pt;
+    font-weight: bold;
+    z-index: 1000;
+  }
+
+  .letterhead-header-bar-logo {
+    height: 18pt;
+    width: auto;
+    filter: brightness(0) invert(1); /* Makes logo white */
+  }
+
+  .letterhead-header-bar-text {
+    flex: 1;
+    text-align: center;
+    font-size: 11pt;
+    letter-spacing: 1.5pt;
+  }
+
+  /* ========================================
+     LETTERHEAD WATERMARK
+     ======================================== */
+
+  /* Subtle background watermark with logo */
+  .letterhead-watermark {
+    position: fixed;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    opacity: 0.03;
+    z-index: -1;
+    pointer-events: none;
+  }
+
+  .letterhead-watermark-logo {
+    width: 300pt;
+    height: auto;
+  }
+
+  /* ========================================
+     DRAFT WATERMARK
+     ======================================== */
+
+  body.letterhead-draft .letterhead-draft-watermark {
+    position: fixed;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%) rotate(-45deg);
+    font-size: 72pt;
+    font-weight: bold;
+    color: rgba(255, 0, 0, 0.08);
+    z-index: -1;
+    pointer-events: none;
+    text-transform: uppercase;
+    letter-spacing: 10pt;
+  }
+
+  /* ========================================
+     CONFIDENTIAL WATERMARK
+     ======================================== */
+
+  body.letterhead-confidential .letterhead-confidential-banner {
+    position: fixed;
+    top: 35pt;
+    left: 0;
+    right: 0;
+    background: rgba(255, 0, 0, 0.1);
+    border-top: 1pt solid #c62828;
+    border-bottom: 1pt solid #c62828;
+    padding: 3pt 0;
+    text-align: center;
+    font-size: 9pt;
+    font-weight: bold;
+    color: #c62828;
+    z-index: 999;
+  }
+
+  /* ========================================
+     LETTERHEAD VARIANTS
+     ======================================== */
+
+  /* Minimal letterhead (thin header only) */
+  body.letterhead-minimal {
+    padding-top: 40pt;
+    padding-bottom: 30pt;
+  }
+
+  body.letterhead-minimal .letterhead-header {
+    height: 30pt;
+    border-bottom: 1pt solid #ddd;
+  }
+
+  body.letterhead-minimal .letterhead-logo {
+    height: 20pt;
+  }
+
+  body.letterhead-minimal .letterhead-footer {
+    height: 25pt;
+    border-top: 1pt solid #ddd;
+  }
+
+  /* Formal letterhead (extra spacing and borders) */
+  body.letterhead-formal {
+    padding-top: 100pt;
+    padding-bottom: 80pt;
+  }
+
+  body.letterhead-formal .letterhead-header {
+    height: 90pt;
+    border-bottom: 3pt double #333;
+  }
+
+  body.letterhead-formal .letterhead-footer {
+    height: 70pt;
+    border-top: 3pt double #333;
+  }
+
+  /* Modern letterhead (gradient accents) */
+  body.letterhead-modern .letterhead-header {
+    background: linear-gradient(to bottom, #f8f8f8, white);
+    border-bottom: 2pt solid;
+    border-image: linear-gradient(to right, #38bdf8, #0ea5e9) 1;
+  }
+
+  body.letterhead-modern .letterhead-footer {
+    background: linear-gradient(to top, #f8f8f8, white);
+    border-top: 2pt solid;
+    border-image: linear-gradient(to right, #38bdf8, #0ea5e9) 1;
+  }
+
+  /* ========================================
+     FIRST PAGE vs. CONTINUATION PAGES
+     ======================================== */
+
+  /* Full letterhead only on first page */
+  @page :first {
+    margin-top: 80pt;
+    margin-bottom: 60pt;
+  }
+
+  /* Minimal header on continuation pages */
+  @page {
+    margin-top: 30pt;
+    margin-bottom: 30pt;
+  }
+
+  /* Continuation page header (minimal) */
+  .letterhead-continuation-header {
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    height: 20pt;
+    background: white;
+    border-bottom: 0.5pt solid #ddd;
+    padding: 3pt 20pt;
+    font-size: 7pt;
+    color: #999;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+  }
+
+  /* ========================================
+     CUSTOM LOGO INTEGRATION
+     From theme customization system (v1.7.0)
+     ======================================== */
+
+  /* Use custom uploaded logo */
+  .letterhead-custom-logo {
+    content: var(--custom-logo-url, none);
+    height: 50pt;
+    width: auto;
+    max-width: 150pt;
+  }
+
+  /* Fallback to default if no custom logo */
+  .letterhead-logo.no-custom-logo {
+    /* Use default icon or company name */
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    height: 50pt;
+    font-size: 24pt;
+  }
+
+  /* ========================================
+     COMPANY INFORMATION BLOCKS
+     ======================================== */
+
+  /* Contact information sidebar */
+  .letterhead-contact-block {
+    float: right;
+    width: 150pt;
+    margin: 10pt 0 10pt 15pt;
+    padding: 10pt;
+    background: #f8f8f8;
+    border: 1pt solid #ddd;
+    font-size: 8pt;
+    line-height: 1.5;
+  }
+
+  .letterhead-contact-block-title {
+    font-size: 9pt;
+    font-weight: bold;
+    margin-bottom: 6pt;
+    color: #000;
+  }
+
+  .letterhead-contact-block-item {
+    margin: 3pt 0;
+  }
+
+  /* Address block */
+  .letterhead-address-block {
+    margin: 15pt 0;
+    font-size: 9pt;
+    line-height: 1.5;
+    color: #333;
+  }
+
+  .letterhead-address-label {
+    font-weight: bold;
+    color: #000;
+  }
+
+  /* ========================================
+     DATE & REFERENCE NUMBERS
+     ======================================== */
+
+  .letterhead-document-info {
+    display: flex;
+    justify-content: space-between;
+    margin: 15pt 0;
+    padding: 8pt 0;
+    border-top: 1pt solid #ddd;
+    border-bottom: 1pt solid #ddd;
+    font-size: 9pt;
+  }
+
+  .letterhead-date {
+    color: #666;
+  }
+
+  .letterhead-reference {
+    color: #333;
+    font-weight: bold;
+  }
+
+  /* ========================================
+     SIGNATURE BLOCK
+     ======================================== */
+
+  .letterhead-signature-block {
+    margin-top: 40pt;
+    page-break-inside: avoid;
+  }
+
+  .letterhead-signature-line {
+    width: 200pt;
+    border-top: 1pt solid #333;
+    margin-top: 30pt;
+  }
+
+  .letterhead-signature-name {
+    font-size: 10pt;
+    font-weight: bold;
+    margin-top: 5pt;
+    color: #000;
+  }
+
+  .letterhead-signature-title {
+    font-size: 9pt;
+    color: #666;
+    margin-top: 2pt;
+  }
+
+  /* ========================================
+     QR CODE FOR DIGITAL VERIFICATION
+     ======================================== */
+
+  .letterhead-qr-code {
+    position: absolute;
+    bottom: 15pt;
+    right: 20pt;
+    width: 60pt;
+    height: 60pt;
+  }
+
+  .letterhead-qr-caption {
+    font-size: 6pt;
+    text-align: center;
+    color: #999;
+    margin-top: 2pt;
+  }
+
+  /* ========================================
+     ACCREDITATION LOGOS
+     ======================================== */
+
+  .letterhead-accreditation {
+    position: absolute;
+    bottom: 15pt;
+    left: 20pt;
+    display: flex;
+    gap: 8pt;
+    align-items: center;
+  }
+
+  .letterhead-accreditation-logo {
+    height: 30pt;
+    width: auto;
+    opacity: 0.7;
+  }
+
+  /* ========================================
+     PAGE NUMBERING
+     ======================================== */
+
+  .letterhead-page-number {
+    position: fixed;
+    bottom: 8pt;
+    right: 20pt;
+    font-size: 7pt;
+    color: #999;
+  }
+
+  .letterhead-page-number::after {
+    content: "Page " counter(page) " of " counter(pages);
+  }
+
+  /* ========================================
+     COLORED LETTERHEAD THEMES
+     ======================================== */
+
+  /* Blue theme */
+  body.letterhead-theme-blue .letterhead-header {
+    background: linear-gradient(135deg, #1e3a8a, #3b82f6);
+    color: white;
+    border-bottom: none;
+  }
+
+  body.letterhead-theme-blue .letterhead-company-name,
+  body.letterhead-theme-blue .letterhead-quick-contact {
+    color: white;
+  }
+
+  body.letterhead-theme-blue .letterhead-company-tagline {
+    color: #e0e7ff;
+  }
+
+  /* Green theme */
+  body.letterhead-theme-green .letterhead-header {
+    background: linear-gradient(135deg, #065f46, #10b981);
+    color: white;
+    border-bottom: none;
+  }
+
+  body.letterhead-theme-green .letterhead-company-name,
+  body.letterhead-theme-green .letterhead-quick-contact {
+    color: white;
+  }
+
+  /* Gray theme (professional) */
+  body.letterhead-theme-gray .letterhead-header {
+    background: linear-gradient(135deg, #1f2937, #4b5563);
+    color: white;
+    border-bottom: none;
+  }
+
+  body.letterhead-theme-gray .letterhead-company-name,
+  body.letterhead-theme-gray .letterhead-quick-contact {
+    color: white;
+  }
+
+  /* ========================================
+     RESPONSIVE ADJUSTMENTS
+     ======================================== */
+
+  /* Adjust for Letter size (narrower) */
+  @media print and (max-width: 8.5in) {
+    .letterhead-header,
+    .letterhead-footer {
+      padding-left: 15pt;
+      padding-right: 15pt;
+    }
+
+    .letterhead-company {
+      padding: 0 10pt;
+    }
+  }
+
+  /* ========================================
+     ACCESSIBILITY
+     ======================================== */
+
+  /* High contrast mode for letterhead */
+  @media (prefers-contrast: high) {
+    .letterhead-header {
+      border-bottom-width: 3pt;
+    }
+
+    .letterhead-footer {
+      border-top-width: 3pt;
+    }
+
+    .letterhead-company-name {
+      font-weight: 900;
+    }
+  }
+
+  /* ========================================
+     UTILITY CLASSES
+     ======================================== */
+
+  .letterhead-hide {
+    display: none !important;
+  }
+
+  .letterhead-show {
+    display: block !important;
+  }
+
+  /* Hide letterhead elements when not in use */
+  body:not(.use-letterhead) .letterhead-header,
+  body:not(.use-letterhead) .letterhead-footer,
+  body:not(.use-letterhead) .letterhead-watermark {
+    display: none !important;
+  }
+}

@@ -1,0 +1,537 @@
+/* photo-print-layout.css - Optimized photo grid layouts for printing */
+/* Perfect for window cleaning job documentation and before/after photos */
+
+@media print {
+
+  /* ========================================
+     PHOTO PRINT CONTAINER
+     ======================================== */
+
+  .photo-print-container {
+    width: 100%;
+    margin: 0;
+    padding: 0;
+  }
+
+  .photo-print-header {
+    margin-bottom: 15pt;
+    padding-bottom: 8pt;
+    border-bottom: 1pt solid #333;
+  }
+
+  .photo-print-title {
+    font-size: 14pt;
+    font-weight: bold;
+    color: #000;
+    margin: 0 0 4pt 0;
+  }
+
+  .photo-print-subtitle {
+    font-size: 10pt;
+    color: #666;
+    margin: 0;
+  }
+
+  /* Job details for context */
+  .photo-print-job-info {
+    font-size: 9pt;
+    color: #333;
+    margin-top: 4pt;
+  }
+
+  /* ========================================
+     PHOTO GRID LAYOUTS
+     ======================================== */
+
+  /* 2x2 Grid (4 photos per page) - Large photos */
+  .photo-grid-2x2 {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 10pt;
+    page-break-inside: avoid;
+    margin-bottom: 15pt;
+  }
+
+  /* 3x3 Grid (9 photos per page) - Medium photos */
+  .photo-grid-3x3 {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 8pt;
+    page-break-inside: avoid;
+    margin-bottom: 15pt;
+  }
+
+  /* 4x4 Grid (16 photos per page) - Small photos */
+  .photo-grid-4x4 {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 6pt;
+    page-break-inside: avoid;
+    margin-bottom: 15pt;
+  }
+
+  /* Single photo layout (full page) */
+  .photo-grid-single {
+    width: 100%;
+    max-height: 250mm; /* A4 height minus margins */
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    page-break-after: always;
+  }
+
+  /* ========================================
+     PHOTO ITEMS
+     ======================================== */
+
+  .photo-print-item {
+    position: relative;
+    background: white;
+    border: 1pt solid #ddd;
+    padding: 4pt;
+    box-sizing: border-box;
+    page-break-inside: avoid;
+  }
+
+  .photo-print-item img {
+    width: 100%;
+    height: auto;
+    display: block;
+    object-fit: cover;
+  }
+
+  /* Specific aspect ratios for different grid sizes */
+  .photo-grid-2x2 .photo-print-item img {
+    max-height: 120mm;
+    object-fit: contain;
+  }
+
+  .photo-grid-3x3 .photo-print-item img {
+    max-height: 70mm;
+    object-fit: contain;
+  }
+
+  .photo-grid-4x4 .photo-print-item img {
+    max-height: 45mm;
+    object-fit: contain;
+  }
+
+  .photo-grid-single .photo-print-item img {
+    max-height: 240mm;
+    max-width: 190mm;
+    object-fit: contain;
+  }
+
+  /* ========================================
+     PHOTO CAPTIONS & METADATA
+     ======================================== */
+
+  .photo-caption {
+    font-size: 8pt;
+    color: #333;
+    margin-top: 4pt;
+    text-align: center;
+    line-height: 1.2;
+  }
+
+  .photo-caption-title {
+    font-weight: bold;
+    color: #000;
+    display: block;
+    margin-bottom: 2pt;
+  }
+
+  .photo-caption-details {
+    font-size: 7pt;
+    color: #666;
+  }
+
+  /* Photo metadata (timestamp, location, etc.) */
+  .photo-metadata {
+    font-size: 7pt;
+    color: #999;
+    margin-top: 2pt;
+    text-align: center;
+  }
+
+  /* ========================================
+     BEFORE/AFTER LAYOUTS
+     ======================================== */
+
+  .photo-before-after {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 10pt;
+    page-break-inside: avoid;
+    margin-bottom: 20pt;
+  }
+
+  .photo-before-after-item {
+    position: relative;
+  }
+
+  .photo-before-after-label {
+    position: absolute;
+    top: 8pt;
+    left: 8pt;
+    background: rgba(255, 255, 255, 0.9);
+    padding: 3pt 8pt;
+    font-size: 9pt;
+    font-weight: bold;
+    border: 1pt solid #333;
+  }
+
+  .photo-before-after-label.before {
+    background: #ffebee;
+    color: #c62828;
+  }
+
+  .photo-before-after-label.after {
+    background: #e8f5e9;
+    color: #2e7d32;
+  }
+
+  /* ========================================
+     WINDOW-SPECIFIC LAYOUTS
+     ======================================== */
+
+  /* Window measurement overlay */
+  .photo-window-measurements {
+    position: absolute;
+    bottom: 8pt;
+    right: 8pt;
+    background: rgba(255, 255, 255, 0.95);
+    padding: 4pt 8pt;
+    font-size: 8pt;
+    font-weight: bold;
+    border: 1pt solid #333;
+  }
+
+  /* Room/location labels */
+  .photo-location-label {
+    position: absolute;
+    top: 8pt;
+    right: 8pt;
+    background: rgba(56, 189, 248, 0.9);
+    color: white;
+    padding: 3pt 8pt;
+    font-size: 8pt;
+    font-weight: bold;
+    border-radius: 2pt;
+  }
+
+  /* ========================================
+     PAGE BREAKS & FLOW CONTROL
+     ======================================== */
+
+  /* Force page break after grid */
+  .photo-grid-page-break {
+    page-break-after: always;
+    break-after: page;
+  }
+
+  /* Avoid breaking photo grids */
+  .photo-grid-2x2,
+  .photo-grid-3x3,
+  .photo-grid-4x4 {
+    page-break-inside: avoid;
+    break-inside: avoid;
+  }
+
+  /* Individual photos should not break */
+  .photo-print-item {
+    page-break-inside: avoid;
+    break-inside: avoid;
+  }
+
+  /* ========================================
+     PHOTO GALLERY TITLE PAGE
+     ======================================== */
+
+  .photo-gallery-cover {
+    page-break-after: always;
+    text-align: center;
+    padding-top: 100pt;
+  }
+
+  .photo-gallery-cover-title {
+    font-size: 24pt;
+    font-weight: bold;
+    color: #000;
+    margin-bottom: 20pt;
+  }
+
+  .photo-gallery-cover-subtitle {
+    font-size: 14pt;
+    color: #666;
+    margin-bottom: 40pt;
+  }
+
+  .photo-gallery-cover-details {
+    font-size: 11pt;
+    color: #333;
+    line-height: 1.8;
+  }
+
+  /* ========================================
+     PHOTO INDEX / TABLE OF CONTENTS
+     ======================================== */
+
+  .photo-index {
+    margin-bottom: 20pt;
+  }
+
+  .photo-index-title {
+    font-size: 12pt;
+    font-weight: bold;
+    margin-bottom: 10pt;
+    color: #000;
+  }
+
+  .photo-index-list {
+    font-size: 9pt;
+    line-height: 1.6;
+    color: #333;
+  }
+
+  .photo-index-item {
+    display: flex;
+    justify-content: space-between;
+    padding: 3pt 0;
+    border-bottom: 1pt dotted #ddd;
+  }
+
+  .photo-index-item-name {
+    flex: 1;
+  }
+
+  .photo-index-item-page {
+    color: #666;
+    font-size: 8pt;
+  }
+
+  /* ========================================
+     PHOTO COUNT & SUMMARY
+     ======================================== */
+
+  .photo-summary {
+    margin-top: 15pt;
+    padding: 8pt;
+    background: #f8f8f8;
+    border-left: 3pt solid #333;
+  }
+
+  .photo-summary-title {
+    font-size: 10pt;
+    font-weight: bold;
+    margin-bottom: 4pt;
+  }
+
+  .photo-summary-stats {
+    font-size: 9pt;
+    color: #333;
+    line-height: 1.4;
+  }
+
+  /* ========================================
+     QUALITY INDICATORS
+     ======================================== */
+
+  /* High-res photo indicator */
+  .photo-quality-badge {
+    position: absolute;
+    top: 8pt;
+    left: 8pt;
+    font-size: 7pt;
+    padding: 2pt 6pt;
+    background: rgba(76, 175, 80, 0.9);
+    color: white;
+    font-weight: bold;
+    border-radius: 2pt;
+  }
+
+  /* Low-res warning */
+  .photo-quality-badge.low-res {
+    background: rgba(255, 152, 0, 0.9);
+  }
+
+  /* ========================================
+     CONTACT SHEET LAYOUT
+     ======================================== */
+
+  /* Dense grid for overview */
+  .photo-contact-sheet {
+    display: grid;
+    grid-template-columns: repeat(5, 1fr);
+    gap: 4pt;
+    margin-bottom: 15pt;
+  }
+
+  .photo-contact-sheet .photo-print-item {
+    padding: 2pt;
+  }
+
+  .photo-contact-sheet .photo-print-item img {
+    max-height: 35mm;
+  }
+
+  .photo-contact-sheet .photo-caption {
+    font-size: 6pt;
+    margin-top: 2pt;
+  }
+
+  /* ========================================
+     PANORAMA / WIDE PHOTOS
+     ======================================== */
+
+  .photo-panorama {
+    width: 100%;
+    margin-bottom: 15pt;
+    page-break-inside: avoid;
+  }
+
+  .photo-panorama img {
+    width: 100%;
+    height: auto;
+    max-height: 100mm;
+    object-fit: contain;
+  }
+
+  .photo-panorama .photo-caption {
+    text-align: left;
+    margin-top: 4pt;
+  }
+
+  /* ========================================
+     ANNOTATIONS & MARKERS
+     ======================================== */
+
+  /* Problem area highlighting */
+  .photo-annotation {
+    position: absolute;
+    border: 2pt solid red;
+    background: rgba(255, 0, 0, 0.1);
+  }
+
+  .photo-annotation-label {
+    position: absolute;
+    background: red;
+    color: white;
+    padding: 2pt 6pt;
+    font-size: 8pt;
+    font-weight: bold;
+  }
+
+  /* ========================================
+     PHOTO NOTES & DESCRIPTIONS
+     ======================================== */
+
+  .photo-notes-section {
+    margin-top: 10pt;
+    padding: 8pt;
+    background: #fffde7;
+    border-left: 3pt solid #fbc02d;
+  }
+
+  .photo-notes-title {
+    font-size: 9pt;
+    font-weight: bold;
+    margin-bottom: 4pt;
+    color: #000;
+  }
+
+  .photo-notes-content {
+    font-size: 8pt;
+    color: #333;
+    line-height: 1.4;
+  }
+
+  /* ========================================
+     FOOTER FOR PHOTO PAGES
+     ======================================== */
+
+  .photo-print-footer {
+    margin-top: 20pt;
+    padding-top: 8pt;
+    border-top: 1pt solid #ddd;
+    text-align: center;
+    font-size: 7pt;
+    color: #999;
+  }
+
+  /* ========================================
+     RESPONSIVE GRID ADJUSTMENTS
+     ======================================== */
+
+  /* For Letter size paper (8.5 x 11 inches) */
+  @page letter {
+    size: letter;
+    margin: 0.5in;
+  }
+
+  /* Adjust grid for narrower Letter paper */
+  @media print and (max-width: 8.5in) {
+    .photo-grid-4x4 {
+      grid-template-columns: repeat(3, 1fr);
+    }
+
+    .photo-contact-sheet {
+      grid-template-columns: repeat(4, 1fr);
+    }
+  }
+
+  /* For A4 paper (210 x 297 mm) */
+  @page a4 {
+    size: A4;
+    margin: 12mm;
+  }
+
+  /* ========================================
+     PRINT QUALITY OPTIMIZATION
+     ======================================== */
+
+  /* Force high-quality image rendering */
+  .photo-print-item img {
+    image-rendering: -webkit-optimize-contrast;
+    image-rendering: crisp-edges;
+    -ms-interpolation-mode: nearest-neighbor;
+  }
+
+  /* Prevent image pixelation */
+  .photo-print-item {
+    -webkit-print-color-adjust: exact;
+    print-color-adjust: exact;
+  }
+
+  /* ========================================
+     UTILITY CLASSES FOR PHOTOS
+     ======================================== */
+
+  .photo-landscape {
+    aspect-ratio: 16 / 9;
+  }
+
+  .photo-portrait {
+    aspect-ratio: 9 / 16;
+  }
+
+  .photo-square {
+    aspect-ratio: 1 / 1;
+  }
+
+  .photo-full-bleed {
+    width: 100%;
+    padding: 0;
+    border: none;
+  }
+
+  .photo-bordered {
+    border: 2pt solid #333;
+    padding: 8pt;
+  }
+
+  .photo-shadow {
+    box-shadow: 0 2pt 8pt rgba(0, 0, 0, 0.2);
+  }
+}
