@@ -2,6 +2,7 @@
 // Tests the core pricing engine for windows and pressure cleaning
 
 const { test, expect } = require('@playwright/test');
+const { waitForAppInit } = require('./test-helpers');
 
 const APP_URL = '/index.html';
 
@@ -15,12 +16,8 @@ test.describe('Quote Calculations', () => {
     await page.reload();
     await page.waitForLoadState('networkidle');
 
-    // Wait for app to be fully initialized using APP.waitForInit()
-    await page.evaluate(async () => {
-      if (window.APP && typeof window.APP.waitForInit === 'function') {
-        await window.APP.waitForInit();
-      }
-    });
+    // Wait for app to be fully initialized
+    await waitForAppInit(page, 15000); // Longer timeout after reload
   });
 
   test('should load with default configuration values', async ({ page }) => {

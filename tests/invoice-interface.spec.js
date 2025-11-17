@@ -1,5 +1,6 @@
 // @ts-check
 const { test, expect } = require('@playwright/test');
+const { waitForAppInit, clickWhenReady, waitForModalActive } = require('./test-helpers');
 
 const APP_URL = '/index.html';
 
@@ -8,6 +9,8 @@ test.describe('Invoice Interface Tests', () => {
   test.beforeEach(async ({ page }) => {
     await page.goto(APP_URL);
     await page.waitForLoadState('networkidle');
+    // Wait for APP to be fully initialized before each test
+    await waitForAppInit(page);
   });
 
   test('should load the main page successfully', async ({ page }) => {
@@ -23,12 +26,13 @@ test.describe('Invoice Interface Tests', () => {
   });
 
   test('should open invoice modal when clicked', async ({ page }) => {
-    // Click invoice button
-    await page.click('#manageInvoicesBtn');
+    // Click invoice button and wait for it to be ready
+    await clickWhenReady(page, '#manageInvoicesBtn');
 
-    // Wait for modal to appear
+    // Wait for modal to appear and be active
+    await waitForModalActive(page, 'invoiceListModal');
     const modal = page.locator('#invoiceListModal');
-    await expect(modal).toBeVisible({ timeout: 5000 });
+    await expect(modal).toBeVisible();
     await expect(modal).toHaveClass(/active/);
 
     console.log('✓ Invoice modal opens correctly');
