@@ -1,7 +1,7 @@
 # CLAUDE.md - AI Assistant Guide for TicTacStick Quote Engine
 
-**Last Updated:** 2025-11-17
-**Version:** 1.7.0
+**Last Updated:** 2025-11-18
+**Version:** 1.8.0
 **Project:** TicTacStick Quote Engine for 925 Pressure Glass
 
 ---
@@ -18,6 +18,55 @@
 8. [Security & Validation](#security--validation)
 9. [Module Reference](#module-reference)
 10. [Troubleshooting](#troubleshooting)
+
+---
+
+## What's New in v1.8.0
+
+### Enhanced Print Layouts System (November 2025)
+
+This release adds comprehensive professional printing capabilities:
+
+**New Modules (12 files):**
+- `invoice-print.css` - Professional invoice print layout
+- `photo-print-layout.css` - Photo grid layouts (2×2, 3×3, 4×4, before/after)
+- `letterhead.css` - Branded letterhead system with logo support
+- `window-types-extended.js` - Australian-specific window types (louvre, awning, hopper, bay/bow)
+- `conditions-modifiers.js` - Job condition pricing adjustments (weather, difficulty, urgency)
+- `pressure-surfaces-extended.js` - Extended surface types (sandstone, timber, roof tiles)
+- `lazy-loader.js` + `lazy-loader-init.js` - On-demand module loading
+- `quick-add-ui.js` - Mobile-optimized quick add interface
+- `custom-window-calculator.js` - Custom dimension calculator
+- `travel-calculator.js` - Travel time/cost calculation
+- `profitability-analyzer.js` - Job profitability analysis
+- `job-presets.js` - Job preset management
+- `quote-migration.js` - Data migration utilities
+
+**New CSS Files (4):**
+- `mobile.css` - Mobile responsive design (540 lines)
+- `invoice-print.css` - Invoice print layout (399 lines)
+- `photo-print-layout.css` - Photo grids (372 lines)
+- `letterhead.css` - Professional letterhead (426 lines)
+
+**New Test Suites (8):**
+- `analytics.spec.js`, `client-database.spec.js`, `data-validation.spec.js`
+- `debug-modules.spec.js`, `export.spec.js`, `storage.spec.js`
+- `templates.spec.js`, `theme.spec.js`
+
+**New Documentation:**
+- `PRINT_GUIDE.md` - Comprehensive 900-line printing guide
+
+**Key Features:**
+- 📄 Professional invoice printing with letterhead
+- 📸 Photo documentation with multiple grid layouts
+- 🎨 Custom branding with logo upload
+- 📱 Mobile-optimized UI components
+- 📊 Business intelligence (travel, profitability)
+- ⚡ Performance optimization with lazy loading
+- 🪟 Extended Australian window types
+- 🏢 Job presets for common configurations
+
+**Total:** ~3,500 lines of new code + documentation
 
 ---
 
@@ -103,10 +152,11 @@ TicTacStick is a **Progressive Web App (PWA)** quote engine for 925 Pressure Gla
 
 ### Current Phase
 
-**Phase 2B:** Invoice System Verification
-- Status: Testing and validation in progress
-- Recent: Fixed 3 critical invoice bugs (v1.6)
-- Next: User acceptance testing and production deployment
+**Phase 3:** Feature Enhancement & Production Optimization
+- Status: Active development with production deployments
+- Recent: Enhanced print layouts system (v1.8.0), theme customization, mobile UI
+- Focus: Business intelligence, mobile optimization, advanced features
+- Next: User testing of new features, performance optimization
 
 ---
 
@@ -121,67 +171,109 @@ webapp/
 ├── package.json            # Node dependencies (tests only)
 ├── playwright.config.js    # Test configuration
 ├── .mcp.json              # Claude Code integration
+├── CHANGELOG.md            # Version history and changes
 │
-├── Core JavaScript (~20,600 lines total)
+├── Core JavaScript (~19,000 lines total)
 ├── bootstrap.js            # APP namespace initialization (MUST LOAD FIRST)
-├── debug.js               # Debug system (load before others)
-├── security.js            # XSS prevention, sanitization (load early)
-├── validation.js          # Input validation system (load before invoice)
-├── data.js                # Pricing data and lookup tables
-├── storage.js             # LocalStorage wrapper
-├── calc.js                # Precision calculation engine
-├── app.js                 # Core application state (45K)
-├── ui.js                  # DOM manipulation and UI updates
-├── wizard.js              # Modal wizard dialogs
-├── loading.js             # Loading states
-├── accessibility.js       # ARIA, keyboard nav
-├── error-handler.js       # Global error handling
+├── debug.js               # Debug system (load before others) - 445 lines
+├── security.js            # XSS prevention, sanitization (load early) - 808 lines
+├── validation.js          # Input validation system (load before invoice) - 1,323 lines
+├── lazy-loader.js         # Lazy loading system - 743 lines
+├── lazy-loader-init.js    # Lazy loader initialization - 164 lines
+├── storage.js             # LocalStorage wrapper - 90 lines
+├── calc.js                # Precision calculation engine - 365 lines
+├── app.js                 # Core application state - 1,533 lines
+├── ui.js                  # DOM manipulation and UI updates - 140 lines
+├── wizard.js              # Modal wizard dialogs - 563 lines
+├── loading.js             # Loading states - 124 lines
+├── accessibility.js       # ARIA, keyboard nav - 365 lines
+├── error-handler.js       # Global error handling - 239 lines
+│
+├── Data & Configuration Modules
+├── data.js                # Base pricing data and lookup tables - 192 lines
+├── window-types-extended.js    # Enhanced Australian window types - 405 lines
+├── conditions-modifiers.js     # Job condition modifiers - 307 lines
+├── pressure-surfaces-extended.js # Extended pressure surface types - 300 lines
+├── quote-migration.js     # Quote data migration utilities - 262 lines
 │
 ├── Feature Modules
-├── invoice.js             # Invoice system (67K - largest file)
-├── client-database.js     # CRM functionality
-├── quote-workflow.js      # Quote status tracking
-├── analytics.js           # Business intelligence
-├── charts.js              # Chart.js integration
-├── photos.js              # Photo attachments
-├── photo-modal.js         # Full-screen photo viewer
-├── image-compression.js   # Photo compression
-├── templates.js           # Quote templates
-├── export.js              # PDF generation
-├── import-export.js       # Backup/restore
-├── theme.js               # Dark/Light theme
-├── shortcuts.js           # Keyboard shortcuts
+├── invoice.js             # Invoice system (largest file) - 1,965 lines
+├── client-database.js     # CRM functionality - 546 lines
+├── quote-workflow.js      # Quote status tracking - 318 lines
+├── analytics.js           # Business intelligence - 419 lines
+├── charts.js              # Chart.js integration - 337 lines
+├── photos.js              # Photo attachments - 267 lines
+├── photo-modal.js         # Full-screen photo viewer - 156 lines
+├── image-compression.js   # Photo compression - 714 lines
+├── templates.js           # Quote templates - 480 lines
+├── export.js              # PDF generation - 347 lines
+├── import-export.js       # Backup/restore - 423 lines
+├── theme.js               # Dark/Light theme - 133 lines
+├── theme-customizer.js    # Theme customization UI - 663 lines
+├── shortcuts.js           # Keyboard shortcuts - 501 lines
+│
+├── Mobile & UI Enhancement Modules
+├── quick-add-ui.js        # Quick add UI for mobile - 351 lines
+├── custom-window-calculator.js # Custom window calculator - 314 lines
+│
+├── Business Intelligence Modules
+├── travel-calculator.js   # Travel time & cost calculator - 331 lines
+├── profitability-analyzer.js # Job profitability analysis - 324 lines
+│
+├── Job Management Modules
+├── job-presets.js         # Job presets and templates - 428 lines
 │
 ├── Performance & PWA
-├── performance-monitor.js # Performance tracking
-├── performance-utils.js   # Optimization utilities
-├── lazy-loader.js         # Lazy loading (in development)
-├── sw.js                  # Service Worker
-├── sw-optimized.js        # Advanced caching (not in use)
+├── performance-monitor.js # Performance tracking - 444 lines
+├── performance-utils.js   # Optimization utilities - 439 lines
+├── sw.js                  # Service Worker - 223 lines
+├── sw-optimized.js        # Advanced caching (not in use) - 553 lines
 │
-├── CSS Files (~12 total)
-├── app.css                # Main styles
-├── invoice.css            # Invoice UI (25K - largest CSS)
-├── validation.css         # Validation error styles
-├── theme-light.css        # Light theme overrides
-├── print.css              # PDF export styles
-├── toast.css              # Toast notifications
-├── [other CSS files]
+├── CSS Files (~19 total)
+├── app.css                # Main styles - 391 lines
+├── invoice.css            # Invoice UI - 856 lines
+├── validation.css         # Validation error styles - 353 lines
+├── theme-light.css        # Light theme overrides - 218 lines
+├── theme-customizer.css   # Theme customizer UI - 262 lines
+├── mobile.css             # Mobile responsive styles - 540 lines
+├── print.css              # General print styles - 214 lines
+├── invoice-print.css      # Invoice print layout - 399 lines
+├── photo-print-layout.css # Photo grid print layouts - 372 lines
+├── letterhead.css         # Professional letterhead - 426 lines
+├── toast.css              # Toast notifications - 37 lines
+├── loading.css            # Loading states - 93 lines
+├── photo-modal.css        # Photo modal viewer - 153 lines
+├── photos.css             # Photo gallery - 99 lines
+├── client-database.css    # CRM styles - 234 lines
+├── quote-workflow.css     # Workflow styles - 184 lines
+├── import-export.css      # Import/export UI - 167 lines
+├── analytics.css          # Analytics dashboard - 138 lines
+├── shortcuts.css          # Keyboard shortcuts UI - 135 lines
 │
-├── tests/                 # Playwright test suite
+├── tests/                 # Playwright test suite (20 test files)
 │   ├── bootstrap.spec.js  # Module registration tests
-│   ├── calculations.spec.js
-│   ├── invoice-functional.spec.js
-│   ├── invoice-interface.spec.js
-│   ├── security.spec.js
-│   ├── ui-interactions.spec.js
-│   ├── wizards.spec.js
-│   ├── check-errors.spec.js
-│   ├── init-test.spec.js
+│   ├── calculations.spec.js # Calculation accuracy tests
+│   ├── invoice-functional.spec.js # Invoice CRUD tests
+│   ├── invoice-interface.spec.js  # Invoice UI tests
+│   ├── security.spec.js   # XSS & security tests
+│   ├── ui-interactions.spec.js # UI interaction tests
+│   ├── wizards.spec.js    # Wizard dialog tests
+│   ├── check-errors.spec.js # Error checking tests
+│   ├── init-test.spec.js  # Initialization tests
+│   ├── analytics.spec.js  # Analytics tests (NEW v1.8)
+│   ├── client-database.spec.js # CRM tests (NEW v1.8)
+│   ├── data-validation.spec.js # Data validation tests (NEW v1.8)
+│   ├── debug-modules.spec.js # Debug system tests (NEW v1.8)
+│   ├── export.spec.js     # Export functionality tests (NEW v1.8)
+│   ├── storage.spec.js    # Storage tests (NEW v1.8)
+│   ├── templates.spec.js  # Template system tests (NEW v1.8)
+│   ├── theme.spec.js      # Theme tests (NEW v1.8)
 │   ├── examples/          # Example tests
 │   └── fixtures/          # Test fixtures
 │
 └── docs/                  # Documentation
+    ├── PRINT_GUIDE.md     # Comprehensive print documentation (NEW v1.8)
+    ├── THEME_CUSTOMIZATION_GUIDE.md # Theme customization (v1.7)
     ├── BUG_FIX_IMPLEMENTATION_PLAN.md
     ├── MIGRATION_STRATEGY.md
     ├── INVOICE_TESTING_CHECKLIST.md
@@ -196,30 +288,67 @@ From `index.html`, scripts MUST load in this order:
 <!-- 1. FIRST: Bootstrap creates APP namespace -->
 <script src="bootstrap.js"></script>
 
-<!-- 2. EARLY: Debug and Security (no defer) -->
+<!-- 2. EARLY: Debug, Security, Validation (no defer - must be available immediately) -->
 <script src="debug.js"></script>
 <script src="security.js"></script>
 <script src="validation.js"></script>
 
-<!-- 3. Core modules (with defer) -->
+<!-- 3. Lazy Loader System -->
+<script src="lazy-loader.js"></script>
+<script src="lazy-loader-init.js" defer></script>
+
+<!-- 4. Data & Configuration Modules (extended types must load before data.js) -->
+<script src="window-types-extended.js" defer></script>
+<script src="conditions-modifiers.js" defer></script>
+<script src="pressure-surfaces-extended.js" defer></script>
 <script src="data.js" defer></script>
+<script src="quote-migration.js" defer></script>
+
+<!-- 5. Core modules (with defer) -->
 <script src="storage.js" defer></script>
 <script src="calc.js" defer></script>
 <script src="app.js" defer></script>
 
-<!-- 4. UI and feature modules (with defer) -->
+<!-- 6. Mobile & Business Intelligence Modules -->
+<script src="quick-add-ui.js" defer></script>
+<script src="custom-window-calculator.js" defer></script>
+<script src="travel-calculator.js" defer></script>
+<script src="profitability-analyzer.js" defer></script>
+
+<!-- 7. Job Management -->
+<script src="job-presets.js" defer></script>
+
+<!-- 8. UI and feature modules (with defer) -->
 <script src="ui.js" defer></script>
 <script src="wizard.js" defer></script>
-<!-- ... other modules ... -->
+<script src="loading.js" defer></script>
+<script src="accessibility.js" defer></script>
+<script src="client-database.js" defer></script>
+<script src="quote-workflow.js" defer></script>
+<script src="import-export.js" defer></script>
 <script src="invoice.js" defer></script>
+<script src="theme.js" defer></script>
+<script src="theme-customizer.js" defer></script>
+<script src="shortcuts.js" defer></script>
+<script src="error-handler.js" defer></script>
+<script src="export.js" defer></script>
+<script src="templates.js" defer></script>
+<script src="photos.js" defer></script>
+
+<!-- 9. Lazy-loaded modules (loaded on demand via LazyLoader) -->
+<!-- analytics.js, charts.js, photo-modal.js are loaded when needed -->
 ```
 
 **Why This Order?**
 - `bootstrap.js` creates `window.APP` namespace - MUST be first
-- `debug.js` and `security.js` have no dependencies - load early
-- `validation.js` must load before `invoice.js`
+- `debug.js`, `security.js`, `validation.js` have no dependencies - load early (no defer)
+- `lazy-loader.js` loads early to enable on-demand module loading
+- Extended type modules must load before `data.js` to register custom types
+- `quote-migration.js` handles data format updates
 - `app.js` depends on `calc.js`, `data.js`, `storage.js`
+- Business intelligence and mobile modules load before UI
 - Feature modules depend on core modules
+- Some modules (analytics, charts, photo-modal) are lazy-loaded on demand
 
 ---
 
@@ -906,6 +1035,212 @@ Update `PROJECT_STATE.md` LocalStorage Schema section with:
 - Purpose
 - When it's updated
 
+### How to Use the Printing System (v1.8.0)
+
+The app now includes professional print layouts for invoices, photos, and documents.
+
+#### Print an Invoice
+
+1. **Open invoice in invoice system**
+2. **Click "Print Invoice" or press Ctrl+P**
+3. **Select print options:**
+   - Standard invoice layout (clean, business-ready)
+   - With letterhead (professional branding)
+   - With company logo (uses theme customizer logo)
+
+**Browser Print Settings:**
+- Chrome: File → Print or Ctrl+P
+- Firefox: File → Print or Ctrl+P
+- Safari: File → Print or Cmd+P
+- Paper: A4 or Letter
+- Margins: Default or Minimum (for letterhead)
+- Background graphics: Enabled (for colors/logos)
+
+#### Print Photos (Job Documentation)
+
+1. **Add photos to quote**
+2. **Click photo to open photo viewer**
+3. **Select print layout:**
+   - **2×2 Grid** - 4 photos/page (large, for comparisons)
+   - **3×3 Grid** - 9 photos/page (standard documentation)
+   - **4×4 Grid** - 16 photos/page (overview/contact sheet)
+   - **Before/After** - Side-by-side with color labels
+   - **Full Page** - Single photo (feature photo)
+   - **Panorama** - Full-width layout
+
+4. **Press Ctrl+P to print**
+
+**Photo Print Features:**
+- Automatic captions (title, timestamp, location)
+- Page break optimization (keeps photos together)
+- High-quality rendering settings
+- Window measurement overlays
+- Room/location labels with color badges
+
+#### Customize Letterhead
+
+1. **Open Theme Customizer** (Settings → Theme)
+2. **Upload company logo**
+3. **Set company name and tagline**
+4. **Choose letterhead style:**
+   - Standard: Full header and footer
+   - Minimal: Thin header/footer (saves paper)
+   - Formal: Extra spacing and borders
+   - Modern: Gradient accents
+
+5. **Select letterhead color:** Blue, Green, or Gray
+6. **Add optional elements:**
+   - Draft watermark
+   - Confidential banner
+   - Signature block
+   - QR code for verification
+   - ABN/company registration
+
+**See:** `PRINT_GUIDE.md` for comprehensive printing documentation
+
+### How to Add Custom Window Types (Extended)
+
+With the new `window-types-extended.js` module, you can add Australian-specific window types:
+
+1. **Edit window-types-extended.js:**
+
+```javascript
+// Add to EXTENDED_WINDOW_TYPES object
+louvre: {
+  name: 'Louvre Windows',
+  description: 'Adjustable slat windows',
+  time: {
+    in: 4,   // minutes per pane inside
+    out: 5   // minutes per pane outside
+  },
+  difficulty: 'medium',
+  highReachMultiplier: 1.4
+}
+```
+
+2. **The type will automatically register with the system**
+3. **Update wizard.js** to include in dropdown if needed
+4. **Write tests** in `data-validation.spec.js`
+
+### How to Add Job Condition Modifiers
+
+1. **Edit conditions-modifiers.js:**
+
+```javascript
+// Add to CONDITION_MODIFIERS object
+extremeHeat: {
+  name: 'Extreme Heat (35°C+)',
+  description: 'Hot weather premium',
+  multiplier: 1.15,  // 15% increase
+  category: 'weather',
+  enabled: true
+}
+```
+
+2. **Apply modifier in quote:**
+
+```javascript
+var basePrice = 500;
+var adjustedPrice = ConditionsModifiers.applyModifier(basePrice, 'extremeHeat');
+// Result: $575
+```
+
+### How to Configure Lazy Loading
+
+The lazy loader defers loading heavy modules until needed:
+
+1. **Register a module for lazy loading** in `lazy-loader-init.js`:
+
+```javascript
+LazyLoader.register('myModule', {
+  script: 'my-module.js',
+  dependencies: ['jquery'],  // Optional
+  preload: false  // Don't load until requested
+});
+```
+
+2. **Load when needed:**
+
+```javascript
+LazyLoader.load('myModule').then(function() {
+  // Module is now loaded
+  window.MyModule.doSomething();
+});
+```
+
+3. **Check if loaded:**
+
+```javascript
+if (LazyLoader.isLoaded('analytics')) {
+  // Use analytics
+}
+```
+
+**Currently Lazy-Loaded:**
+- `analytics.js` - Loads when analytics panel opened
+- `charts.js` - Loads when charts needed
+- `photo-modal.js` - Loads when photo viewed full-screen
+
+### How to Add Business Intelligence Features
+
+#### Add Travel Cost Calculation
+
+```javascript
+// In travel-calculator.js
+TravelCalculator.calculateDistance('123 Main St, Perth WA');
+// Returns: { distance: 15.2, time: 22, cost: 12.50 }
+
+// Add to quote
+TravelCalculator.addTravelToQuote(location);
+```
+
+#### Analyze Job Profitability
+
+```javascript
+// In profitability-analyzer.js
+var analysis = ProfitabilityAnalyzer.analyzeJob({
+  revenue: 450,
+  costs: 120,
+  timeHours: 3.5
+});
+
+console.log(analysis.margin);  // 73.3%
+console.log(analysis.hourlyRate);  // $128.57/hr
+console.log(analysis.breakEven);  // $120
+```
+
+### How to Create Job Presets
+
+1. **Create a preset from current quote:**
+
+```javascript
+JobPresets.createPreset('3BR House Standard', {
+  baseFee: 120,
+  hourlyRate: 95,
+  windowLines: [
+    { type: 'standard', quantity: 12 },
+    { type: 'sliding', quantity: 4 }
+  ],
+  pressureLines: [
+    { surface: 'concrete', area: 50 }
+  ]
+});
+```
+
+2. **Load preset later:**
+
+```javascript
+JobPresets.loadPreset('3BR House Standard');
+// Automatically fills quote with saved configuration
+```
+
+3. **Organize by category:**
+
+```javascript
+var residential = JobPresets.getPresetsByCategory('residential');
+var commercial = JobPresets.getPresetsByCategory('commercial');
+```
+
 ### How to Debug Issues
 
 1. **Enable debug mode:**
@@ -1309,7 +1644,7 @@ Wizard.openPressureWizard()
 Wizard.close()
 ```
 
-#### theme.js (3.9K)
+#### theme.js (133 lines)
 
 **Purpose:** Dark/Light theme toggle
 
@@ -1323,6 +1658,256 @@ Wizard.close()
 Theme.toggle()
 Theme.set(mode)  // 'light' or 'dark'
 Theme.getCurrent()
+```
+
+#### theme-customizer.js (663 lines) **NEW v1.7.0**
+
+**Purpose:** Advanced theme customization UI
+
+**Key Features:**
+- Custom color scheme creation
+- Logo upload and management
+- Font customization
+- Brand color selection
+- Theme presets
+- Export/import custom themes
+- Real-time preview
+
+**Key Functions:**
+```javascript
+ThemeCustomizer.open()
+ThemeCustomizer.applyCustomTheme(theme)
+ThemeCustomizer.saveCustomTheme(name, theme)
+ThemeCustomizer.loadCustomTheme(id)
+ThemeCustomizer.exportTheme()
+ThemeCustomizer.importTheme(data)
+```
+
+### Data & Configuration Modules
+
+#### data.js (192 lines)
+
+**Purpose:** Base pricing data and lookup tables
+
+**Key Data:**
+- Window types (standard, sliding, etc.)
+- Pressure cleaning surfaces (concrete, pavers, etc.)
+- Base rates and multipliers
+
+#### window-types-extended.js (405 lines) **NEW v1.8.0**
+
+**Purpose:** Enhanced Australian window types with detailed configurations
+
+**Key Features:**
+- Louvre windows (adjustable slats)
+- Awning windows (top-hinged)
+- Hopper windows (bottom-hinged)
+- Bay/bow windows (curved/angled)
+- Garden windows (greenhouse-style)
+- Skylight windows (roof-mounted)
+- Custom time factors per type
+- High-reach considerations
+
+**Key Functions:**
+```javascript
+WindowTypesExtended.getType(typeId)
+WindowTypesExtended.calculateTime(type, quantity)
+WindowTypesExtended.getAllTypes()
+```
+
+#### conditions-modifiers.js (307 lines) **NEW v1.8.0**
+
+**Purpose:** Job condition modifiers and pricing adjustments
+
+**Key Features:**
+- Weather conditions (rain, extreme heat)
+- Site difficulty (high-rise, tight access)
+- Time of day (after hours, weekend)
+- Urgency (same day, emergency)
+- Property condition (first clean, heavy buildup)
+- Safety requirements (harness work, confined space)
+
+**Key Functions:**
+```javascript
+ConditionsModifiers.applyModifier(basePrice, modifierType)
+ConditionsModifiers.getModifierList()
+ConditionsModifiers.calculateAdjustedPrice(basePrice, conditions)
+```
+
+#### pressure-surfaces-extended.js (300 lines) **NEW v1.8.0**
+
+**Purpose:** Extended pressure cleaning surface types
+
+**Key Features:**
+- Additional surface types (sandstone, timber decking, roof tiles)
+- Surface-specific time calculations
+- Difficulty ratings
+- Equipment recommendations
+- Chemical requirements
+
+**Key Functions:**
+```javascript
+PressureSurfacesExtended.getSurface(surfaceId)
+PressureSurfacesExtended.calculateTime(surface, area)
+PressureSurfacesExtended.getAllSurfaces()
+```
+
+#### quote-migration.js (262 lines) **NEW v1.8.0**
+
+**Purpose:** Quote data migration and version compatibility
+
+**Key Features:**
+- Migrate old quote formats to new structure
+- Handle breaking changes gracefully
+- Preserve user data during updates
+- Backward compatibility checks
+
+**Key Functions:**
+```javascript
+QuoteMigration.migrate(quoteData)
+QuoteMigration.checkVersion(data)
+QuoteMigration.upgradeToLatest(data)
+```
+
+### Performance & Loading Modules
+
+#### lazy-loader.js (743 lines) **NEW v1.8.0**
+
+**Purpose:** On-demand module loading system for performance optimization
+
+**Key Features:**
+- Defer loading of heavy modules (analytics, charts)
+- Load modules only when needed
+- Progress tracking
+- Dependency management
+- Error handling and fallbacks
+- Preload hints for anticipated features
+
+**Key Functions:**
+```javascript
+LazyLoader.load(moduleName)
+LazyLoader.loadMultiple([modules])
+LazyLoader.preload(moduleName)
+LazyLoader.isLoaded(moduleName)
+```
+
+**Lazy-Loaded Modules:**
+- `analytics.js` - Loaded when analytics panel opened
+- `charts.js` - Loaded when charts needed
+- `photo-modal.js` - Loaded when photo viewed full-screen
+
+#### lazy-loader-init.js (164 lines) **NEW v1.8.0**
+
+**Purpose:** Initialize lazy loader and set up event handlers
+
+**Key Features:**
+- Register lazy-loadable modules
+- Set up UI event triggers
+- Handle module load failures
+- Display loading states
+
+### Mobile & UI Enhancement Modules
+
+#### quick-add-ui.js (351 lines) **NEW v1.8.0**
+
+**Purpose:** Mobile-optimized quick add interface
+
+**Key Features:**
+- Streamlined UI for touch devices
+- Quick window/pressure line addition
+- Preset buttons for common items
+- Gesture support
+- Compact layout for small screens
+
+**Key Functions:**
+```javascript
+QuickAddUI.show()
+QuickAddUI.hide()
+QuickAddUI.addQuickWindow(preset)
+QuickAddUI.addQuickPressure(preset)
+```
+
+#### custom-window-calculator.js (314 lines) **NEW v1.8.0**
+
+**Purpose:** Custom window dimension calculator
+
+**Key Features:**
+- Calculate price based on exact measurements
+- Support for unusual window shapes
+- Area calculation (width × height)
+- Custom pricing per square meter
+- Visual measurement guide
+
+**Key Functions:**
+```javascript
+CustomWindowCalculator.open()
+CustomWindowCalculator.calculate(width, height)
+CustomWindowCalculator.addCustomWindow(dimensions)
+```
+
+### Business Intelligence Modules
+
+#### travel-calculator.js (331 lines) **NEW v1.8.0**
+
+**Purpose:** Calculate travel time and costs for job pricing
+
+**Key Features:**
+- Distance calculation from base location
+- Travel time estimation
+- Fuel cost calculation
+- Travel zone pricing (CBD, suburbs, rural)
+- Integration with quote pricing
+- Saved locations
+
+**Key Functions:**
+```javascript
+TravelCalculator.calculateDistance(destination)
+TravelCalculator.calculateTravelCost(distance)
+TravelCalculator.addTravelToQuote(location)
+TravelCalculator.saveLocation(name, location)
+```
+
+#### profitability-analyzer.js (324 lines) **NEW v1.8.0**
+
+**Purpose:** Analyze job profitability and margins
+
+**Key Features:**
+- Break-even analysis
+- Profit margin calculation
+- Cost vs. revenue comparison
+- Time efficiency metrics
+- Hourly rate optimization suggestions
+- Job type profitability reports
+
+**Key Functions:**
+```javascript
+ProfitabilityAnalyzer.analyzeJob(jobData)
+ProfitabilityAnalyzer.calculateMargin(quote)
+ProfitabilityAnalyzer.suggestPricing(jobType)
+ProfitabilityAnalyzer.generateReport()
+```
+
+### Job Management Modules
+
+#### job-presets.js (428 lines) **NEW v1.8.0**
+
+**Purpose:** Job preset management and quick templates
+
+**Key Features:**
+- Save common job configurations
+- Quick load presets (e.g., "3BR House Standard")
+- Preset categories (residential, commercial)
+- Default settings per job type
+- Preset sharing and export
+
+**Key Functions:**
+```javascript
+JobPresets.createPreset(name, config)
+JobPresets.loadPreset(id)
+JobPresets.deletePreset(id)
+JobPresets.getPresetsByCategory(category)
+JobPresets.exportPresets()
+JobPresets.importPresets(data)
 ```
 
 ---
@@ -1557,7 +2142,9 @@ var value = window.Security.validateNumber(input, {
 
 | Task | File |
 |------|------|
-| Add new window type | `data.js` |
+| Add new window type | `data.js`, `window-types-extended.js` |
+| Add job condition modifiers | `conditions-modifiers.js` |
+| Add pressure surface types | `pressure-surfaces-extended.js` |
 | Modify calculation logic | `calc.js` |
 | Change state management | `app.js` |
 | Update UI rendering | `ui.js` |
@@ -1567,8 +2154,15 @@ var value = window.Security.validateNumber(input, {
 | Update PWA config | `manifest.json` |
 | Modify offline caching | `sw.js` |
 | Change test config | `playwright.config.js` |
-| Update styles | `app.css`, `invoice.css`, etc. |
+| Update styles | `app.css`, `invoice.css`, `mobile.css`, etc. |
 | Add keyboard shortcuts | `shortcuts.js` |
+| Customize theme/branding | `theme-customizer.js` |
+| Add business intelligence | `travel-calculator.js`, `profitability-analyzer.js` |
+| Modify print layouts | `print.css`, `invoice-print.css`, `letterhead.css`, `photo-print-layout.css` |
+| Add mobile features | `quick-add-ui.js`, `custom-window-calculator.js` |
+| Configure lazy loading | `lazy-loader.js`, `lazy-loader-init.js` |
+| Add job presets | `job-presets.js` |
+| Migrate quote data | `quote-migration.js` |
 
 ---
 
@@ -1576,8 +2170,31 @@ var value = window.Security.validateNumber(input, {
 
 ### Version History
 
-- **v1.7.0** (Current) - Comprehensive documentation, CLAUDE.md created
+- **v1.8.0** (Current - 2025-11-18) - Enhanced print layouts system
+  - Professional invoice printing (`invoice-print.css`)
+  - Photo grid layouts for job documentation (`photo-print-layout.css`)
+  - Professional letterhead system (`letterhead.css`)
+  - Comprehensive print documentation (`PRINT_GUIDE.md`)
+  - Extended window types, conditions, and surface types
+  - Lazy loading system for performance optimization
+  - Mobile UI enhancements (quick add, custom calculator)
+  - Business intelligence modules (travel, profitability)
+  - Job presets management
+  - Quote migration system
+  - 8 new test suites
+
+- **v1.7.0** (2025-11-17) - Theme customization and comprehensive documentation
+  - Theme customizer with custom branding
+  - Logo upload and management
+  - Custom color schemes
+  - Comprehensive CLAUDE.md created
+  - Mobile responsive design improvements
+
 - **v1.6.0** - Critical invoice bug fixes, validation integration
+  - Fixed paid invoice editing
+  - Duplicate invoice number prevention
+  - GST validation enforcement
+
 - **v1.5.0** - Security hardening, error handling audit
 - **v1.4.0** - Dark/Light theme, analytics, photos
 - **v1.3.0** - CSV export, templates, validation
@@ -1598,12 +2215,15 @@ var value = window.Security.validateNumber(input, {
 - `VALIDATION_INTEGRATION_GUIDE.md` - Validation guide
 - `TEST_REPORT.md` - Test documentation
 - `DEBUG_SYSTEM_GUIDE.md` - Debug system
+- `PRINT_GUIDE.md` - Printing documentation (v1.8.0)
+- `THEME_CUSTOMIZATION_GUIDE.md` - Theme customization (v1.7.0)
 
 **Planning Documents:**
 - `IMPROVEMENT_PLAN_V2.0.md` - Future roadmap
 - `PRIORITY_MATRIX.md` - Feature prioritization
 - `PHASE_1_COMPLETE.md` - Phase 1 summary
 - `docs/MIGRATION_STRATEGY.md` - Cloud migration plan
+- `CHANGELOG.md` - Complete version history
 
 ### License
 
@@ -1613,7 +2233,7 @@ MIT License - 925 Pressure Glass
 
 **Gerard Varone** - 925 Pressure Glass
 **Location:** Perth, Western Australia
-**Project Phase:** Phase 2B - Invoice System Verification
+**Project Phase:** Phase 3 - Feature Enhancement & Production Optimization
 
 ---
 
