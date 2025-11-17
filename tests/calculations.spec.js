@@ -2,9 +2,8 @@
 // Tests the core pricing engine for windows and pressure cleaning
 
 const { test, expect } = require('@playwright/test');
-const path = require('path');
 
-const APP_URL = 'file://' + path.resolve(__dirname, '../index.html');
+const APP_URL = '/index.html';
 
 test.describe('Quote Calculations', () => {
   test.beforeEach(async ({ page }) => {
