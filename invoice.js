@@ -1606,7 +1606,8 @@
               '</div>' +
               '<div class="form-group">' +
                 '<label for="editGST">GST (10%) *</label>' +
-                '<input type="number" id="editGST" step="0.01" value="' + invoice.gst.toFixed(2) + '" required />' +
+                '<input type="number" id="editGST" step="0.01" value="' + invoice.gst.toFixed(2) + '" readonly style="background: rgba(31, 41, 55, 0.3);" title="GST is automatically calculated as 10% of subtotal" />' +
+                '<small style="display: block; margin-top: 4px; color: #9ca3af;">Automatically calculated as 10% of subtotal</small>' +
               '</div>' +
               '<div class="form-group">' +
                 '<label for="editTotal">Total *</label>' +
@@ -1671,14 +1672,14 @@
     }
 
     subtotalInput.oninput = debounce(function() {
-      updateTotal();
-      // Auto-calculate GST if changed
+      // Auto-calculate GST when subtotal changes
       var subtotal = parseFloat(subtotalInput.value) || 0;
       gstInput.value = (subtotal * 0.1).toFixed(2);
       updateTotal();
     }, 300);
 
-    gstInput.oninput = debounce(updateTotal, 300);
+    // GST field is read-only, no manual input allowed (BUG FIX #3)
+    // GST is always calculated as 10% of subtotal for tax compliance
 
     // Form submission
     modal.querySelector('#editInvoiceForm').onsubmit = function(e) {
