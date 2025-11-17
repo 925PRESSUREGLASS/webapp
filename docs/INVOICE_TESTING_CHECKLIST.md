@@ -48,7 +48,8 @@ console.log(typeof window.APP);             // Should output "object"
   clientEmail: "john@example.com",
   clientPhone: "0400123456",
 
-  // Quote info (NO quoteId field - not implemented)
+  // Quote info
+  quoteId: "quote_1700000000000_abc123def",  // Unique quote identifier, displayed in UI
   quoteTitle: "Office Windows - Level 12",
   jobType: "commercial",
 
@@ -141,7 +142,7 @@ console.log(typeof window.APP);             // Should output "object"
 - [ ] `statusHistory` array has one entry: {status: "draft", timestamp: <now>, note: "Invoice created"}
 - [ ] `quoteTitle` copied from quote
 - [ ] `jobType` copied from quote
-- [ ] NO `quoteId` field (feature not implemented - expected limitation)
+- [ ] `quoteId` field generated and displayed in invoice detail/edit views
 - [ ] Success message shown: "Invoice INV-1001 created!"
 - [ ] No console errors
 
