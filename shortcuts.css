@@ -1,0 +1,217 @@
+/* shortcuts.css - Keyboard shortcuts help modal styles */
+/* iOS Safari compatible */
+
+/* Help Modal Overlay */
+.shortcuts-help-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background-color: rgba(0, 0, 0, 0.7);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 10000;
+  opacity: 0;
+  visibility: hidden;
+  transition: opacity 0.3s ease, visibility 0.3s ease;
+}
+
+.shortcuts-help-overlay.active {
+  opacity: 1;
+  visibility: visible;
+}
+
+/* Help Dialog */
+.shortcuts-help-dialog {
+  background: #1f2937;
+  border-radius: 12px;
+  box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.3), 0 10px 10px -5px rgba(0, 0, 0, 0.2);
+  max-width: 600px;
+  width: 90%;
+  max-height: 85vh;
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+  transform: scale(0.9);
+  transition: transform 0.3s ease;
+}
+
+.shortcuts-help-overlay.active .shortcuts-help-dialog {
+  transform: scale(1);
+}
+
+/* Header */
+.shortcuts-help-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 20px 24px;
+  border-bottom: 1px solid #374151;
+}
+
+.shortcuts-help-header h2 {
+  margin: 0;
+  font-size: 1.5rem;
+  font-weight: 600;
+  color: #f9fafb;
+}
+
+.shortcuts-help-close {
+  background: transparent;
+  border: none;
+  color: #9ca3af;
+  font-size: 2rem;
+  line-height: 1;
+  cursor: pointer;
+  padding: 0;
+  width: 32px;
+  height: 32px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 6px;
+  transition: background-color 0.2s ease, color 0.2s ease;
+}
+
+.shortcuts-help-close:hover {
+  background-color: #374151;
+  color: #f9fafb;
+}
+
+/* Content */
+.shortcuts-help-content {
+  padding: 24px;
+  overflow-y: auto;
+  flex: 1;
+}
+
+/* Shortcuts Table */
+.shortcuts-help-table {
+  width: 100%;
+  border-collapse: collapse;
+}
+
+.shortcuts-help-table tr {
+  border-bottom: 1px solid #374151;
+}
+
+.shortcuts-help-table tr:last-child {
+  border-bottom: none;
+}
+
+.shortcuts-help-table td {
+  padding: 12px 8px;
+  vertical-align: middle;
+}
+
+.shortcuts-help-key {
+  width: 40%;
+  font-weight: 500;
+}
+
+.shortcuts-help-key kbd {
+  display: inline-block;
+  background: #374151;
+  color: #f9fafb;
+  padding: 6px 12px;
+  border-radius: 6px;
+  font-family: 'SF Mono', 'Monaco', 'Inconsolata', 'Fira Code', 'Consolas', monospace;
+  font-size: 0.875rem;
+  border: 1px solid #4b5563;
+  box-shadow: 0 2px 0 rgba(0, 0, 0, 0.2);
+  white-space: nowrap;
+}
+
+.shortcuts-help-desc {
+  color: #d1d5db;
+  font-size: 0.95rem;
+}
+
+/* Tip */
+.shortcuts-help-tip {
+  margin-top: 20px;
+  padding: 12px 16px;
+  background-color: #374151;
+  border-radius: 8px;
+  color: #9ca3af;
+  font-size: 0.875rem;
+  text-align: center;
+  border-left: 3px solid #3b82f6;
+}
+
+/* Light Theme */
+[data-theme="light"] .shortcuts-help-dialog {
+  background: #ffffff;
+}
+
+[data-theme="light"] .shortcuts-help-header {
+  border-bottom-color: #e5e7eb;
+}
+
+[data-theme="light"] .shortcuts-help-header h2 {
+  color: #111827;
+}
+
+[data-theme="light"] .shortcuts-help-close {
+  color: #6b7280;
+}
+
+[data-theme="light"] .shortcuts-help-close:hover {
+  background-color: #f3f4f6;
+  color: #111827;
+}
+
+[data-theme="light"] .shortcuts-help-table tr {
+  border-bottom-color: #e5e7eb;
+}
+
+[data-theme="light"] .shortcuts-help-key kbd {
+  background: #f3f4f6;
+  color: #111827;
+  border-color: #d1d5db;
+}
+
+[data-theme="light"] .shortcuts-help-desc {
+  color: #4b5563;
+}
+
+[data-theme="light"] .shortcuts-help-tip {
+  background-color: #eff6ff;
+  color: #1e40af;
+  border-left-color: #3b82f6;
+}
+
+/* Mobile Responsive */
+@media (max-width: 640px) {
+  .shortcuts-help-dialog {
+    width: 95%;
+    max-height: 90vh;
+  }
+
+  .shortcuts-help-header {
+    padding: 16px 20px;
+  }
+
+  .shortcuts-help-header h2 {
+    font-size: 1.25rem;
+  }
+
+  .shortcuts-help-content {
+    padding: 20px;
+  }
+
+  .shortcuts-help-key {
+    width: 45%;
+  }
+
+  .shortcuts-help-key kbd {
+    font-size: 0.8rem;
+    padding: 4px 8px;
+  }
+
+  .shortcuts-help-desc {
+    font-size: 0.875rem;
+  }
+}
