@@ -25,8 +25,12 @@ test.describe('Console Error Check', () => {
     await page.goto(APP_URL);
     await page.waitForLoadState('networkidle');
 
-    // Wait a bit for initialization
-    await page.waitForTimeout(1000);
+    // Wait for app initialization using APP.waitForInit()
+    await page.evaluate(async () => {
+      if (window.APP && typeof window.APP.waitForInit === 'function') {
+        await window.APP.waitForInit();
+      }
+    });
 
     // Log all console messages
     console.log('Console messages:');
@@ -42,12 +46,15 @@ test.describe('Console Error Check', () => {
       });
     }
 
-    // Check if APP.isInitialized
-    const isInitialized = await page.evaluate(() => {
-      return window.APP && window.APP.isInitialized;
+    // Check if APP.isInitialized (both flags for compatibility)
+    const initFlags = await page.evaluate(() => {
+      return {
+        initialized: window.APP && window.APP.initialized,
+        isInitialized: window.APP && window.APP.isInitialized
+      };
     });
 
-    console.log('APP.isInitialized:', isInitialized);
+    console.log('APP initialization flags:', initFlags);
 
     // Check for error messages
     const errorMessages = consoleMessages.filter(msg => msg.type === 'error');

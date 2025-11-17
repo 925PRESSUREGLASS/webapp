@@ -389,15 +389,25 @@
 	</div>
 
 	<!-- SCRIPTS -->
+	<!-- Bootstrap must load FIRST to create APP namespace -->
+	<script src="bootstrap.js"></script>
+
+	<!-- External dependencies -->
+	<!-- Chart.js temporarily commented out for testing - network issues in test environment -->
+	<!-- <script src="https://cdn.jsdelivr.net/npm/chart.js" defer></script> -->
+
+	<!-- Core modules (load in dependency order) -->
 	<!-- Debug system loads first (no defer - must be available immediately) -->
 	<script src="debug.js"></script>
 	<script src="https://cdn.jsdelivr.net/npm/chart.js" defer></script>
 	<script src="data.js" defer></script>
 	<script src="storage.js" defer></script>
 	<script src="calc.js" defer></script>
-	<script src="wizard.js" defer></script>
 	<script src="app.js" defer></script>
+
+	<!-- UI and feature modules -->
 	<script src="ui.js" defer></script>
+	<script src="wizard.js" defer></script>
 	<script src="loading.js" defer></script>
 	<script src="accessibility.js" defer></script>
 	<script src="client-database.js" defer></script>
