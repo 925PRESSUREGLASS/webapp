@@ -18,7 +18,12 @@ var AppStorage = (function () {
     try {
       localStorage.setItem(AUTOSAVE_KEY, JSON.stringify(state));
     } catch (e) {
-      // ignore
+      console.error('[STORAGE] Failed to save state:', e);
+      if (e.name === 'QuotaExceededError') {
+        if (window.showToast) {
+          window.showToast('Storage full! Please export and delete old data.', 'error');
+        }
+      }
     }
   }
 
@@ -27,6 +32,7 @@ var AppStorage = (function () {
       var raw = localStorage.getItem(AUTOSAVE_KEY);
       return safeParse(raw, null);
     } catch (e) {
+      console.error('[STORAGE] Failed to load state:', e);
       return null;
     }
   }
@@ -35,7 +41,7 @@ var AppStorage = (function () {
     try {
       localStorage.removeItem(AUTOSAVE_KEY);
     } catch (e) {
-      // ignore
+      console.error('[STORAGE] Failed to clear state:', e);
     }
   }
 
@@ -44,6 +50,7 @@ var AppStorage = (function () {
       var raw = localStorage.getItem(PRESETS_KEY);
       return safeParse(raw, []);
     } catch (e) {
+      console.error('[STORAGE] Failed to load presets:', e);
       return [];
     }
   }
@@ -52,7 +59,12 @@ var AppStorage = (function () {
     try {
       localStorage.setItem(PRESETS_KEY, JSON.stringify(list || []));
     } catch (e) {
-      // ignore
+      console.error('[STORAGE] Failed to save presets:', e);
+      if (e.name === 'QuotaExceededError') {
+        if (window.showToast) {
+          window.showToast('Storage full! Cannot save preset.', 'error');
+        }
+      }
     }
   }
 
@@ -61,6 +73,7 @@ var AppStorage = (function () {
       var raw = localStorage.getItem(SAVED_QUOTES_KEY);
       return safeParse(raw, []);
     } catch (e) {
+      console.error('[STORAGE] Failed to load saved quotes:', e);
       return [];
     }
   }
@@ -69,7 +82,12 @@ var AppStorage = (function () {
     try {
       localStorage.setItem(SAVED_QUOTES_KEY, JSON.stringify(list || []));
     } catch (e) {
-      // ignore
+      console.error('[STORAGE] Failed to save quotes:', e);
+      if (e.name === 'QuotaExceededError') {
+        if (window.showToast) {
+          window.showToast('Storage full! Cannot save quote.', 'error');
+        }
+      }
     }
   }
 
