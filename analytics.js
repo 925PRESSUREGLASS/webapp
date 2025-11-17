@@ -285,7 +285,7 @@
       html += '<h3>Top Clients</h3>';
       html += '<ul>';
       analytics.topClients.forEach(function(client) {
-        html += '<li><span>' + client.name + '</span> <strong>' + formatCurrency(client.revenue) + '</strong></li>';
+        html += '<li><span>' + window.Security.escapeHTML(client.name) + '</span> <strong>' + formatCurrency(client.revenue) + '</strong></li>';
       });
       html += '</ul>';
       html += '</div>';
