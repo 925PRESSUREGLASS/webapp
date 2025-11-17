@@ -62,6 +62,24 @@
       key: 't',
       ctrl: true,
       description: 'Focus quote title field'
+    },
+    // Open invoices: Cmd/Ctrl + I
+    openInvoices: {
+      key: 'i',
+      ctrl: true,
+      description: 'Open invoice list'
+    },
+    // Open client database: Cmd/Ctrl + D
+    openClients: {
+      key: 'd',
+      ctrl: true,
+      description: 'Open client database'
+    },
+    // Open analytics: Cmd/Ctrl + A
+    openAnalytics: {
+      key: 'a',
+      ctrl: true,
+      description: 'Open analytics dashboard'
     }
   };
 
@@ -151,6 +169,27 @@
       return;
     }
 
+    // Cmd/Ctrl + I: Open invoices
+    if (ctrl && !shift && key === 'i' && !inInput) {
+      event.preventDefault();
+      openInvoicesAction();
+      return;
+    }
+
+    // Cmd/Ctrl + D: Open client database
+    if (ctrl && !shift && key === 'd' && !inInput) {
+      event.preventDefault();
+      openClientsAction();
+      return;
+    }
+
+    // Cmd/Ctrl + A: Open analytics (override select all when not in input)
+    if (ctrl && !shift && key === 'a' && !inInput) {
+      event.preventDefault();
+      openAnalyticsAction();
+      return;
+    }
+
     // ? (question mark): Show help
     if (key === '?' && !inInput && !ctrl && !alt) {
       event.preventDefault();
@@ -230,6 +269,33 @@
     }
   }
 
+  function openInvoicesAction() {
+    if (window.InvoiceManager && window.InvoiceManager.showList) {
+      window.InvoiceManager.showList();
+      showToast('Opening invoices...', 'info');
+    } else {
+      showToast('Invoice system not available', 'error');
+    }
+  }
+
+  function openClientsAction() {
+    if (window.ClientDatabase && window.ClientDatabase.showList) {
+      window.ClientDatabase.showList();
+      showToast('Opening client database...', 'info');
+    } else {
+      showToast('Client database not available', 'error');
+    }
+  }
+
+  function openAnalyticsAction() {
+    if (window.QuoteAnalytics && window.QuoteAnalytics.renderDashboard) {
+      window.QuoteAnalytics.renderDashboard('all');
+      showToast('Loading analytics...', 'info');
+    } else {
+      showToast('Analytics not available', 'error');
+    }
+  }
+
   function closeActiveModal() {
     var overlay = document.getElementById('wizardOverlay');
     if (overlay && overlay.style.display !== 'none') {
@@ -287,6 +353,9 @@
       modKey + ' + W - Add window line',
       modKey + ' + P - Add pressure line',
       modKey + ' + E - Export to PDF',
+      modKey + ' + I - Open invoices',
+      modKey + ' + D - Open client database',
+      modKey + ' + A - Open analytics',
       modKey + ' + Shift + C - Copy summary',
       modKey + ' + Shift + W - Window wizard',
       modKey + ' + Shift + P - Pressure wizard',
