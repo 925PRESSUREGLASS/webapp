@@ -351,10 +351,10 @@
 					</header>
 					<div class="sec-b" id="analyticsBody">
 						<div class="config-footer-row" style="margin-bottom: 15px;">
-							<button type="button" class="btn btn-small" onclick="window.QuoteAnalytics && window.QuoteAnalytics.renderDashboard('all')">
+							<button type="button" class="btn btn-small" id="viewAnalyticsBtn">
 								View Analytics
 							</button>
-							<button type="button" class="btn btn-small btn-secondary" onclick="window.QuoteAnalytics && window.QuoteAnalytics.exportHistory()">
+							<button type="button" class="btn btn-small btn-secondary" id="exportHistoryBtn">
 								Export History
 							</button>
 						</div>
@@ -420,8 +420,12 @@
 	<script src="security.js"></script>
 	<!-- Validation system (no defer - must be available before invoice and other modules) -->
 	<script src="validation.js"></script>
-	<!-- Chart.js for analytics charts -->
-	<script src="https://cdn.jsdelivr.net/npm/chart.js" defer></script>
+	<!-- Lazy loader for on-demand module loading -->
+	<script src="lazy-loader.js"></script>
+	<!-- Lazy loader initialization and event handlers -->
+	<script src="lazy-loader-init.js" defer></script>
+	<!-- Chart.js for analytics charts - loaded on demand by LazyLoader -->
+	<!-- <script src="https://cdn.jsdelivr.net/npm/chart.js" defer></script> -->
 	<!-- Enhanced Australian window types and modifiers (must load before data.js) -->
 	<script src="window-types-extended.js" defer></script>
 	<script src="conditions-modifiers.js" defer></script>
@@ -458,9 +462,10 @@
 	<script src="error-handler.js" defer></script>
 	<script src="export.js" defer></script>
 	<script src="templates.js" defer></script>
-	<script src="analytics.js" defer></script>
-	<script src="charts.js" defer></script>
-	<script src="photo-modal.js" defer></script>
+	<!-- Lazy-loaded modules (loaded on demand via LazyLoader) -->
+	<!-- <script src="analytics.js" defer></script> -->
+	<!-- <script src="charts.js" defer></script> -->
+	<!-- <script src="photo-modal.js" defer></script> -->
 	<script src="photos.js" defer></script>
 
 	<!-- Service Worker Registration -->
