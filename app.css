@@ -1,5 +1,42 @@
 /* app.css – core layout & styling for Tic-Tac-Stick */
 
+/* DARK THEME VARIABLES (Default) */
+:root,
+[data-theme="dark"] {
+  /* Background colors */
+  --bg-primary: #0f172a;
+  --bg-secondary: #1f2937;
+  --bg-tertiary: #020617;
+  --bg-card: #1f2937;
+  --bg-card-hover: #374151;
+
+  /* Text colors */
+  --text-primary: #e5e7eb;
+  --text-secondary: #94a3b8;
+  --text-tertiary: #64748b;
+  --text-muted: #64748b;
+
+  /* Border colors */
+  --border-color: #334155;
+  --border-hover: #475569;
+
+  /* Accent colors */
+  --accent-primary: #38bdf8;
+  --accent-secondary: #0ea5e9;
+  --accent-hover: #0ea5e9;
+
+  /* Semantic colors */
+  --success: #22c55e;
+  --warning: #f59e0b;
+  --error: #ef4444;
+  --info: #3b82f6;
+
+  /* Shadows */
+  --shadow-sm: 0 1px 2px 0 rgba(0, 0, 0, 0.3);
+  --shadow-md: 0 4px 6px -1px rgba(0, 0, 0, 0.5);
+  --shadow-lg: 0 10px 15px -3px rgba(0, 0, 0, 0.7);
+}
+
 /* RESET / BASE */
 *,
 *::before,

@@ -7,6 +7,106 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [1.7.0] - 2025-11-18
+
+### Added
+
+#### Advanced Theme Customization System
+- **Theme Customizer UI** - Full-featured theme customization modal
+  - 18 customizable color variables for complete UI control
+  - Real-time color pickers with hex code input
+  - Live preview mode while editing
+  - Base theme selection (Dark or Light)
+  - Mobile-responsive customization interface
+  - Location: `theme-customizer.js`, `theme-customizer.css`
+
+- **Logo Upload Functionality**
+  - Custom logo upload with file size validation (500KB limit)
+  - Support for PNG, JPG, GIF, SVG formats
+  - Logo stored as base64 in localStorage
+  - Preview before saving
+  - One-click logo removal
+  - Logo automatically replaces header icon
+  - Location: `theme-customizer.js:290-330`
+
+- **Theme Import/Export**
+  - Export custom themes as downloadable JSON files
+  - Import themes from JSON files
+  - Share themes across devices or with team members
+  - Backup and restore custom configurations
+  - Theme validation on import
+  - Location: `theme-customizer.js:580-630`
+
+- **Theme Management**
+  - Save custom themes to localStorage
+  - Automatic theme persistence across sessions
+  - Reset to defaults functionality with confirmation
+  - Theme preview before saving
+  - Comprehensive error handling
+  - Location: `theme-customizer.js:90-190`
+
+- **CSS Variables System**
+  - Added CSS custom properties for dark theme
+  - 18 color variables covering all UI elements
+  - Organized by category (backgrounds, text, borders, accents, semantic)
+  - Shadow variables for consistent depth
+  - Location: `app.css:3-38`
+
+- **Public API**
+  - `window.ThemeCustomizer` API for programmatic control
+  - Methods: open, close, apply, reset, save, load, export
+  - Integration with existing `window.ThemeManager`
+  - Location: `theme-customizer.js:760-768`
+
+- **Documentation**
+  - Comprehensive Theme Customization Guide
+  - Use cases and best practices
+  - API reference
+  - Troubleshooting guide
+  - Accessibility recommendations
+  - Location: `THEME_CUSTOMIZATION_GUIDE.md`
+
+### Changed
+
+- **index.html** - Integrated theme customizer files
+  - Added `theme-customizer.css` stylesheet (line 50)
+  - Added `theme-customizer.js` script (line 440)
+
+- **app.css** - Added CSS variables for dark theme
+  - Added :root and [data-theme="dark"] selectors
+  - Defined 18 color variables for theming
+  - Added shadow variables
+
+### Technical Details
+
+**Files Added:**
+- `theme-customizer.js` (~770 lines) - Core customization logic
+- `theme-customizer.css` (~380 lines) - Customizer UI styling
+- `THEME_CUSTOMIZATION_GUIDE.md` (~650 lines) - Complete documentation
+
+**Files Modified:**
+- `index.html` - Added 2 file references
+- `app.css` - Added 36 lines of CSS variables
+
+**Storage Keys:**
+- `quote-engine-custom-theme` - Custom theme data
+- `quote-engine-custom-logo` - Custom logo (base64)
+
+**Features:**
+- iOS Safari 12+ compatible (ES5 JavaScript)
+- Mobile-responsive UI
+- Accessibility-focused design
+- WCAG AA color contrast recommendations
+- localStorage-based persistence
+- Zero server dependencies
+
+**Business Impact:**
+- White-label branding capability
+- Professional theme marketplace potential
+- Improved user personalization
+- Brand consistency for teams
+- Competitive differentiation
+
 ### Fixed - 2025-11-17
 
 #### Critical Bug Fixes
