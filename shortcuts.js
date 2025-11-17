@@ -314,12 +314,18 @@
       container = document.createElement('div');
       container.id = 'toastContainer';
       container.className = 'toast-container';
+      // Accessibility: aria-live makes toast announcements available to screen readers
+      container.setAttribute('aria-live', 'polite');
+      container.setAttribute('aria-atomic', 'true');
       document.body.appendChild(container);
     }
 
     // Create toast
     var toast = document.createElement('div');
     toast.className = 'toast toast-' + (type || 'info');
+    // Accessibility: role="status" indicates this is a status message
+    toast.setAttribute('role', 'status');
+    toast.setAttribute('aria-live', 'polite');
     toast.textContent = message;
 
     // Add to container
