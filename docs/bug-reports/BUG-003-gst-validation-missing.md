@@ -3,10 +3,12 @@
 **Severity:** HIGH
 **Priority:** P1
 **Type:** Data Integrity / Tax Compliance
-**Status:** Open
+**Status:** ✅ FIXED
 **Affects:** invoice.js (lines 1549-1568)
 **Discovered:** 2025-11-17
 **Discovered By:** Testing team during invoice editing tests
+**Fixed:** 2025-11-17
+**Fixed In:** invoice.js:1609, 1681-1682, 1745-1754
 
 ---
 
@@ -445,9 +447,67 @@ Fix is complete when:
 
 ---
 
+## ✅ Resolution
+
+**Fixed:** 2025-11-17
+
+### Implementation
+
+Three changes were made to ensure GST is always exactly 10% of subtotal:
+
+#### 1. Made GST Field Read-Only (invoice.js:1609)
+
+```javascript
+'<label for="editGST">GST (10%) *</label>' +
+'<input type="number" id="editGST" step="0.01" value="' + invoice.gst.toFixed(2) + '" readonly style="background: rgba(31, 41, 55, 0.3);" title="GST is automatically calculated as 10% of subtotal" />' +
+'<small style="display: block; margin-top: 4px; color: #9ca3af;">Automatically calculated as 10% of subtotal</small>'
+```
+
+#### 2. Removed Manual GST Input Handler (invoice.js:1681-1682)
+
+```javascript
+// GST field is read-only, no manual input allowed (BUG FIX #3)
+// GST is always calculated as 10% of subtotal for tax compliance
+```
+
+#### 3. Added GST Validation on Save (invoice.js:1745-1754)
+
+```javascript
+// BUG FIX #3: Validate GST is exactly 10% of subtotal
+// This ensures tax compliance and prevents incorrect GST reporting
+var expectedGST = parseFloat((invoice.subtotal * 0.10).toFixed(2));
+var actualGST = parseFloat(invoice.gst.toFixed(2));
+if (Math.abs(actualGST - expectedGST) > 0.01) {
+  if (window.ErrorHandler) {
+    window.ErrorHandler.showError('GST must be exactly 10% of subtotal. Expected: $' + expectedGST.toFixed(2) + ', but got: $' + actualGST.toFixed(2) + '. This ensures tax compliance.');
+  }
+  return;
+}
+```
+
+### What Changed
+
+1. **GST Field Read-Only:** Users cannot manually edit GST amount
+2. **Auto-Calculation:** GST automatically recalculates when subtotal changes
+3. **Validation on Save:** Belt-and-suspenders validation ensures GST is exactly 10%
+4. **User Guidance:** Helpful text explains that GST is auto-calculated
+5. **Tax Compliance:** Ensures all invoices meet ATO requirements
+
+### Testing
+
+- ✅ GST field is read-only in edit form
+- ✅ GST auto-calculates when subtotal changes
+- ✅ Cannot manually override GST calculation
+- ✅ Validation prevents saving incorrect GST (belt-and-suspenders)
+- ✅ Error message shows expected vs actual GST if mismatch
+- ✅ GST always exactly 10% of subtotal (±1 cent rounding tolerance)
+- ✅ No regression in other features
+
+---
+
 ## References
 
 - **Test Plan:** `docs/INVOICE_TESTING_CHECKLIST.md` (Test 4, Test 11)
-- **Source Code:** `invoice.js:1549-1568, 1571-1610`
+- **Source Code:** `invoice.js:1609, 1681-1682, 1745-1754`
 - **ATO GST Info:** https://www.ato.gov.au/rates/gst/
-- **Related PR:** (will be linked when fix is created)
+- **Related PR:** Branch `claude/fix-todo-mi3dkd3vd7o1rep1-01KY8dd7ox1XZBsKMuNUZsdG`
