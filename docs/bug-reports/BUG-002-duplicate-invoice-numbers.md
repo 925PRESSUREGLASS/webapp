@@ -3,10 +3,12 @@
 **Severity:** CRITICAL
 **Priority:** P0
 **Type:** Data Integrity / Compliance
-**Status:** Open
+**Status:** ✅ FIXED
 **Affects:** invoice.js (lines 634-725, 84-90)
 **Discovered:** 2025-11-17
 **Discovered By:** Testing team during invoice numbering verification
+**Fixed:** 2025-11-17
+**Fixed In:** invoice.js:750-758
 
 ---
 
@@ -473,10 +475,47 @@ Fix is complete when:
 
 ---
 
+## ✅ Resolution
+
+**Fixed:** 2025-11-17
+
+### Implementation
+
+Added validation in the settings form submit handler (invoice.js:750-758):
+
+```javascript
+// BUG FIX #2: Prevent decreasing invoice number to avoid duplicates
+// This maintains tax compliance and prevents duplicate invoice numbers
+var highestExisting = getHighestInvoiceNumber();
+if (newInvoiceNumber <= highestExisting) {
+  if (window.ErrorHandler) {
+    window.ErrorHandler.showError('Cannot decrease invoice number to ' + newInvoiceNumber + '. Highest existing invoice is ' + highestExisting + '. This prevents duplicate invoice numbers and maintains tax compliance.');
+  }
+  return;
+}
+```
+
+### What Changed
+
+1. **Validation Added:** Settings form now validates invoice number cannot be decreased below highest existing
+2. **Helper Function:** `getHighestInvoiceNumber()` checks all existing invoices
+3. **User Feedback:** Clear error message explains why change was rejected
+4. **Tax Compliance:** Enforces sequential invoice numbering as required by ATO
+
+### Testing
+
+- ✅ Cannot decrease invoice number below highest existing invoice
+- ✅ Error message displays with current highest invoice number
+- ✅ Can increase invoice number (creates gaps, which is allowed)
+- ✅ Prevents duplicate invoice numbers from being created
+- ✅ No regression in other features
+
+---
+
 ## References
 
 - **Test Plan:** `docs/INVOICE_TESTING_CHECKLIST.md` (Test 33)
 - **Test Automation:** `tests/invoice-functional.spec.js`
-- **Source Code:** `invoice.js:634-725, 84-90`
+- **Source Code:** `invoice.js:750-758`
 - **ATO Guidelines:** https://www.ato.gov.au/business/gst/tax-invoices/
-- **Related PR:** (will be linked when fix is created)
+- **Related PR:** Branch `claude/fix-todo-mi3dkd3vd7o1rep1-01KY8dd7ox1XZBsKMuNUZsdG`
