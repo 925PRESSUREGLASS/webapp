@@ -43,18 +43,17 @@ test.describe('Invoice System - Critical Functional Tests (P0)', () => {
     await page.fill('#clientNameInput', 'Test Customer');
     await page.fill('#clientLocationInput', 'Sydney CBD');
 
-    // Add window cleaning item
-    await page.click('button:has-text("Window Cleaning")');
-    const windowSection = page.locator('#windowPanel');
+    // Add window cleaning item - panel is always visible
+    const windowSection = page.locator('#windowsPanel');
     await expect(windowSection).toBeVisible();
 
     await page.click('#addWindowLineBtn');
-    await page.waitForSelector('.window-line');
+    await page.waitForSelector('.line-card');
 
-    const firstLine = page.locator('.window-line').first();
-    await firstLine.locator('input[placeholder*="quantity"]').fill('8');
-    await firstLine.locator('select').selectOption('Standard Sliding');
-    await firstLine.locator('input[placeholder*="price"]').fill('12.50');
+    const firstLine = page.locator('.line-card').first();
+    // Fill in actual fields: panes count and select window type
+    await firstLine.locator('input[type="number"]').first().fill('8');
+    await firstLine.locator('select').first().selectOption({ index: 2 }); // Select a window type
 
     // Wait for totals to update
     await page.waitForTimeout(500);
@@ -137,12 +136,11 @@ test.describe('Invoice System - Critical Functional Tests (P0)', () => {
     // Helper function to create invoice
     const createInvoice = async (clientName) => {
       await page.fill('#clientNameInput', clientName);
-      await page.click('button:has-text("Window Cleaning")');
       await page.click('#addWindowLineBtn');
 
-      const firstLine = page.locator('.window-line').first();
-      await firstLine.locator('input[placeholder*="quantity"]').fill('1');
-      await firstLine.locator('input[placeholder*="price"]').fill('100');
+      const firstLine = page.locator('.line-card').first();
+      await firstLine.locator('input[type="number"]').first().fill('1');
+      await firstLine.locator('select').first().selectOption({ index: 2 });
 
       await page.waitForTimeout(300);
 
@@ -221,12 +219,11 @@ test.describe('Invoice System - Critical Functional Tests (P0)', () => {
       await page.evaluate(() => localStorage.removeItem('invoice-database'));
       await page.fill('#clientNameInput', `Test ${scenario.description}`);
 
-      await page.click('button:has-text("Window Cleaning")');
       await page.click('#addWindowLineBtn');
 
-      const line = page.locator('.window-line').first();
-      await line.locator('input[placeholder*="quantity"]').fill('1');
-      await line.locator('input[placeholder*="price"]').fill(scenario.subtotal.toString());
+      const line = page.locator('.line-card').first();
+      await line.locator('input[type="number"]').first().fill('10');
+      await line.locator('select').first().selectOption({ index: 2 });
 
       await page.waitForTimeout(500);
 
@@ -273,12 +270,11 @@ test.describe('Invoice System - Critical Functional Tests (P0)', () => {
 
     // Create invoice first
     await page.fill('#clientNameInput', 'Payment Test Client');
-    await page.click('button:has-text("Window Cleaning")');
     await page.click('#addWindowLineBtn');
 
-    const line = page.locator('.window-line').first();
-    await line.locator('input[placeholder*="quantity"]').fill('10');
-    await line.locator('input[placeholder*="price"]').fill('50');
+    const line = page.locator('.line-card').first();
+    await line.locator('input[type="number"]').first().fill('10');
+    await line.locator('select').first().selectOption({ index: 2 });
 
     await page.waitForTimeout(500);
 
@@ -354,12 +350,11 @@ test.describe('Invoice System - Critical Functional Tests (P0)', () => {
 
     // Create invoice
     await page.fill('#clientNameInput', 'Partial Payment Client');
-    await page.click('button:has-text("Window Cleaning")');
     await page.click('#addWindowLineBtn');
 
-    const line = page.locator('.window-line').first();
-    await line.locator('input[placeholder*="quantity"]').fill('10');
-    await line.locator('input[placeholder*="price"]').fill('76.093'); // Results in $760.93 total
+    const line = page.locator('.line-card').first();
+    await line.locator('input[type="number"]').first().fill('20');
+    await line.locator('select').first().selectOption({ index: 2 });
 
     await page.waitForTimeout(500);
 
@@ -483,12 +478,11 @@ test.describe('Invoice System - Critical Functional Tests (P0)', () => {
 
     // Create invoice to verify new prefix and number
     await page.fill('#clientNameInput', 'Settings Test Client');
-    await page.click('button:has-text("Window Cleaning")');
     await page.click('#addWindowLineBtn');
 
-    const line = page.locator('.window-line').first();
-    await line.locator('input[placeholder*="quantity"]').fill('1');
-    await line.locator('input[placeholder*="price"]').fill('100');
+    const line = page.locator('.line-card').first();
+    await line.locator('input[type="number"]').first().fill('5');
+    await line.locator('select').first().selectOption({ index: 2 });
 
     await page.waitForTimeout(300);
     await page.click('#createInvoiceBtn');
@@ -519,17 +513,16 @@ test.describe('Invoice System - Critical Functional Tests (P0)', () => {
     // Create multiple invoices
     const createInvoice = async (clientName, amount) => {
       await page.fill('#clientNameInput', clientName);
-      await page.click('button:has-text("Window Cleaning")');
 
       // Clear previous lines if any
-      const existingLines = await page.locator('.window-line').count();
+      const existingLines = await page.locator('.line-card').count();
       if (existingLines === 0) {
         await page.click('#addWindowLineBtn');
       }
 
-      const line = page.locator('.window-line').first();
-      await line.locator('input[placeholder*="quantity"]').fill('1');
-      await line.locator('input[placeholder*="price"]').fill(amount);
+      const line = page.locator('.line-card').first();
+      await line.locator('input[type="number"]').first().fill('5');
+      await line.locator('select').first().selectOption({ index: 2 });
 
       await page.waitForTimeout(300);
 
@@ -642,12 +635,11 @@ test.describe('Invoice System - Known Issues (Bug Documentation)', () => {
 
     // Create and pay invoice
     await page.fill('#clientNameInput', 'Paid Invoice Client');
-    await page.click('button:has-text("Window Cleaning")');
     await page.click('#addWindowLineBtn');
 
-    const line = page.locator('.window-line').first();
-    await line.locator('input[placeholder*="quantity"]').fill('5');
-    await line.locator('input[placeholder*="price"]').fill('100');
+    const line = page.locator('.line-card').first();
+    await line.locator('input[type="number"]').first().fill('10');
+    await line.locator('select').first().selectOption({ index: 2 });
 
     await page.waitForTimeout(500);
 
@@ -724,14 +716,13 @@ test.describe('Invoice System - Known Issues (Bug Documentation)', () => {
     // Create 3 invoices
     const createInvoice = async (clientName) => {
       await page.fill('#clientNameInput', clientName);
-      await page.click('button:has-text("Window Cleaning")');
-      const lineCount = await page.locator('.window-line').count();
+      const lineCount = await page.locator('.line-card').count();
       if (lineCount === 0) {
         await page.click('#addWindowLineBtn');
       }
-      const line = page.locator('.window-line').first();
-      await line.locator('input[placeholder*="quantity"]').fill('1');
-      await line.locator('input[placeholder*="price"]').fill('100');
+      const line = page.locator('.line-card').first();
+      await line.locator('input[type="number"]').first().fill('5');
+      await line.locator('select').first().selectOption({ index: 2 });
       await page.waitForTimeout(300);
       await page.click('#manageInvoicesBtn');
       await page.waitForSelector('#invoiceListModal.active');
