@@ -113,8 +113,10 @@ test.describe('Invoice System - Critical Functional Tests (P0)', () => {
     expect(invoice.amountPaid).toBe(0);
     expect(invoice.balance).toBe(invoice.total);
 
-    // NO quoteId field (not implemented)
-    expect(invoice.quoteId).toBeUndefined();
+    // QuoteId field should be set for tracking
+    expect(invoice.quoteId).toBeDefined();
+    expect(typeof invoice.quoteId).toBe('string');
+    expect(invoice.quoteId).toMatch(/^quote_\d+_[a-z0-9]+$/);
 
     // Status history
     expect(invoice.statusHistory).toBeDefined();
