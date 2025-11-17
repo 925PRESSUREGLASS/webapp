@@ -508,7 +508,7 @@
     loadClients();
     initAutoComplete();
     addManageButton();
-    console.log('Client database initialized (' + clients.length + ' clients)');
+    DEBUG.log('[CLIENT-DB] Client database initialized (' + clients.length + ' clients)');
   }
 
   // Auto-initialize

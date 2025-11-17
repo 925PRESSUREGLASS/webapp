@@ -392,7 +392,7 @@
       checkBackupReminder();
     }, 3000);
 
-    console.log('Import/Export initialized');
+    DEBUG.log('[IMPORT/EXPORT] Import/Export initialized');
   }
 
   // Auto-initialize

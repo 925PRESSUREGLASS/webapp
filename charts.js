@@ -322,7 +322,7 @@
       attributeFilter: ['data-theme']
     });
 
-    console.log('Analytics charts initialized');
+    DEBUG.log('[CHARTS] Analytics charts initialized');
   }
 
   // Auto-initialize

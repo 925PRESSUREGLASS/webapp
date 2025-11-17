@@ -116,7 +116,7 @@
 
   // Initialize
   function init() {
-    console.log('Loading states initialized');
+    DEBUG.log('[LOADING] Loading states initialized');
   }
 
   // Auto-initialize

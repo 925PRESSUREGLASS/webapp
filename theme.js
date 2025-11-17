@@ -110,7 +110,7 @@
     // Add toggle button to header if not exists
     addToggleButton();
 
-    console.log('Theme system initialized:', theme);
+    DEBUG.log('[THEME] Theme system initialized:', theme);
   }
 
   // Add theme toggle button to header
