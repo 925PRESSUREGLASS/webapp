@@ -1,0 +1,634 @@
+/* invoice-print.css - Professional print layout for invoices */
+/* Optimized for A4 (210x297mm) and Letter (8.5x11in) paper sizes */
+
+@media print {
+
+  /* ========================================
+     GLOBAL PRINT SETTINGS
+     ======================================== */
+
+  * {
+    -webkit-print-color-adjust: exact;
+    print-color-adjust: exact;
+    color-adjust: exact;
+  }
+
+  @page {
+    size: A4;
+    margin: 15mm 10mm;
+  }
+
+  @page :first {
+    margin-top: 10mm;
+  }
+
+  /* ========================================
+     HIDE NON-PRINTABLE ELEMENTS
+     ======================================== */
+
+  /* Hide navigation and UI controls */
+  .hdr,
+  .hdr-actions,
+  button:not(.print-only),
+  .btn:not(.print-only),
+  .card-toggle,
+  .wizard-overlay,
+  .wizard-dialog,
+  .toast,
+  .loading-overlay,
+  nav,
+  aside,
+  .no-print {
+    display: none !important;
+  }
+
+  /* Hide sections not related to invoice */
+  .card:not(.invoice-card),
+  .main > .col:not(.invoice-column) {
+    display: none !important;
+  }
+
+  /* ========================================
+     BODY & CONTAINER
+     ======================================== */
+
+  body {
+    background: white !important;
+    color: #000 !important;
+    font-family: 'Arial', 'Helvetica', sans-serif;
+    font-size: 10pt;
+    line-height: 1.4;
+    margin: 0;
+    padding: 0;
+  }
+
+  .app {
+    max-width: 100%;
+    margin: 0;
+    padding: 0;
+  }
+
+  .main {
+    display: block;
+    margin: 0;
+    padding: 0;
+  }
+
+  /* ========================================
+     INVOICE HEADER
+     ======================================== */
+
+  .invoice-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    margin-bottom: 20pt;
+    padding-bottom: 10pt;
+    border-bottom: 2pt solid #333;
+  }
+
+  .invoice-company-info {
+    flex: 1;
+  }
+
+  .invoice-company-name {
+    font-size: 18pt;
+    font-weight: bold;
+    color: #000;
+    margin: 0 0 4pt 0;
+  }
+
+  .invoice-company-details {
+    font-size: 9pt;
+    color: #333;
+    line-height: 1.3;
+  }
+
+  .invoice-logo {
+    width: 60pt;
+    height: 60pt;
+    object-fit: contain;
+  }
+
+  .invoice-title-section {
+    text-align: right;
+  }
+
+  .invoice-title {
+    font-size: 22pt;
+    font-weight: bold;
+    color: #000;
+    margin: 0;
+  }
+
+  .invoice-number {
+    font-size: 11pt;
+    color: #333;
+    margin: 4pt 0;
+  }
+
+  .invoice-date {
+    font-size: 9pt;
+    color: #666;
+  }
+
+  /* ========================================
+     CLIENT INFORMATION
+     ======================================== */
+
+  .invoice-client-section {
+    margin-bottom: 15pt;
+    padding: 8pt;
+    background: #f8f8f8;
+    border-left: 3pt solid #333;
+  }
+
+  .invoice-client-label {
+    font-size: 8pt;
+    text-transform: uppercase;
+    letter-spacing: 0.5pt;
+    color: #666;
+    margin-bottom: 4pt;
+  }
+
+  .invoice-client-name {
+    font-size: 12pt;
+    font-weight: bold;
+    color: #000;
+    margin-bottom: 2pt;
+  }
+
+  .invoice-client-details {
+    font-size: 9pt;
+    color: #333;
+    line-height: 1.3;
+  }
+
+  /* ========================================
+     LINE ITEMS TABLE
+     ======================================== */
+
+  .invoice-items-table {
+    width: 100%;
+    border-collapse: collapse;
+    margin-bottom: 15pt;
+  }
+
+  .invoice-items-table thead {
+    background: #333;
+    color: white;
+  }
+
+  .invoice-items-table th {
+    padding: 6pt 8pt;
+    text-align: left;
+    font-size: 9pt;
+    font-weight: bold;
+    text-transform: uppercase;
+    letter-spacing: 0.3pt;
+  }
+
+  .invoice-items-table th.text-right {
+    text-align: right;
+  }
+
+  .invoice-items-table tbody tr {
+    border-bottom: 1pt solid #ddd;
+  }
+
+  .invoice-items-table tbody tr:nth-child(even) {
+    background: #fafafa;
+  }
+
+  .invoice-items-table td {
+    padding: 8pt;
+    font-size: 10pt;
+    color: #000;
+    vertical-align: top;
+  }
+
+  .invoice-items-table td.text-right {
+    text-align: right;
+  }
+
+  .invoice-item-description {
+    font-size: 9pt;
+    color: #666;
+    margin-top: 2pt;
+  }
+
+  /* Quantity column */
+  .invoice-items-table .qty-col {
+    width: 60pt;
+    text-align: center;
+  }
+
+  /* Unit price column */
+  .invoice-items-table .price-col {
+    width: 80pt;
+    text-align: right;
+  }
+
+  /* Amount column */
+  .invoice-items-table .amount-col {
+    width: 90pt;
+    text-align: right;
+    font-weight: bold;
+  }
+
+  /* ========================================
+     TOTALS SECTION
+     ======================================== */
+
+  .invoice-totals {
+    margin-top: 15pt;
+    margin-left: auto;
+    width: 250pt;
+    border-top: 2pt solid #333;
+  }
+
+  .invoice-total-row {
+    display: flex;
+    justify-content: space-between;
+    padding: 5pt 0;
+    font-size: 10pt;
+  }
+
+  .invoice-total-row.subtotal {
+    border-bottom: 1pt solid #ddd;
+  }
+
+  .invoice-total-row.tax {
+    color: #666;
+    font-size: 9pt;
+  }
+
+  .invoice-total-row.grand-total {
+    font-size: 14pt;
+    font-weight: bold;
+    border-top: 2pt solid #333;
+    padding-top: 8pt;
+    margin-top: 5pt;
+  }
+
+  .invoice-total-label {
+    text-align: left;
+  }
+
+  .invoice-total-value {
+    text-align: right;
+    font-weight: bold;
+  }
+
+  .invoice-total-row.tax .invoice-total-value {
+    font-weight: normal;
+  }
+
+  /* ========================================
+     PAYMENT INFORMATION
+     ======================================== */
+
+  .invoice-payment-info {
+    margin-top: 20pt;
+    padding: 10pt;
+    background: #f0f0f0;
+    border: 1pt solid #ccc;
+  }
+
+  .invoice-payment-title {
+    font-size: 11pt;
+    font-weight: bold;
+    margin-bottom: 6pt;
+    color: #000;
+  }
+
+  .invoice-payment-details {
+    font-size: 9pt;
+    color: #333;
+    line-height: 1.5;
+  }
+
+  .invoice-payment-details strong {
+    color: #000;
+  }
+
+  /* ========================================
+     PAYMENT STATUS
+     ======================================== */
+
+  .invoice-status-badge {
+    display: inline-block;
+    padding: 4pt 10pt;
+    font-size: 9pt;
+    font-weight: bold;
+    text-transform: uppercase;
+    border-radius: 3pt;
+    margin-top: 10pt;
+  }
+
+  .invoice-status-paid {
+    background: #e8f5e9;
+    color: #2e7d32;
+    border: 1pt solid #4caf50;
+  }
+
+  .invoice-status-pending {
+    background: #fff3e0;
+    color: #e65100;
+    border: 1pt solid #ff9800;
+  }
+
+  .invoice-status-overdue {
+    background: #ffebee;
+    color: #c62828;
+    border: 1pt solid #f44336;
+  }
+
+  /* ========================================
+     NOTES & TERMS
+     ======================================== */
+
+  .invoice-notes {
+    margin-top: 20pt;
+    padding-top: 10pt;
+    border-top: 1pt solid #ddd;
+  }
+
+  .invoice-notes-title {
+    font-size: 10pt;
+    font-weight: bold;
+    margin-bottom: 4pt;
+    color: #000;
+  }
+
+  .invoice-notes-content {
+    font-size: 9pt;
+    color: #333;
+    line-height: 1.4;
+  }
+
+  .invoice-terms {
+    margin-top: 15pt;
+    padding: 8pt;
+    background: #fafafa;
+    border-left: 2pt solid #666;
+  }
+
+  .invoice-terms-title {
+    font-size: 9pt;
+    font-weight: bold;
+    margin-bottom: 4pt;
+    color: #000;
+  }
+
+  .invoice-terms-content {
+    font-size: 8pt;
+    color: #666;
+    line-height: 1.3;
+  }
+
+  /* ========================================
+     FOOTER
+     ======================================== */
+
+  .invoice-footer {
+    margin-top: 30pt;
+    padding-top: 10pt;
+    border-top: 1pt solid #ddd;
+    text-align: center;
+    font-size: 8pt;
+    color: #999;
+  }
+
+  .invoice-footer-line {
+    margin: 2pt 0;
+  }
+
+  /* ========================================
+     QR CODE & PAYMENT STUB (Optional)
+     ======================================== */
+
+  .invoice-qr-code {
+    width: 80pt;
+    height: 80pt;
+    margin: 10pt 0;
+  }
+
+  .invoice-payment-stub {
+    margin-top: 40pt;
+    padding-top: 15pt;
+    border-top: 2pt dashed #999;
+    page-break-inside: avoid;
+  }
+
+  .invoice-stub-title {
+    font-size: 10pt;
+    font-weight: bold;
+    margin-bottom: 8pt;
+  }
+
+  .invoice-stub-details {
+    font-size: 9pt;
+    line-height: 1.6;
+  }
+
+  /* ========================================
+     PAGE BREAKS
+     ======================================== */
+
+  .page-break {
+    page-break-after: always;
+    break-after: page;
+  }
+
+  .page-break-before {
+    page-break-before: always;
+    break-before: page;
+  }
+
+  .avoid-break {
+    page-break-inside: avoid;
+    break-inside: avoid;
+  }
+
+  /* Prevent orphan rows in tables */
+  .invoice-items-table tr {
+    page-break-inside: avoid;
+    break-inside: avoid;
+  }
+
+  /* Keep totals section together */
+  .invoice-totals {
+    page-break-inside: avoid;
+    break-inside: avoid;
+  }
+
+  /* ========================================
+     MULTI-PAGE SUPPORT
+     ======================================== */
+
+  /* Page numbers */
+  @page {
+    @bottom-right {
+      content: "Page " counter(page) " of " counter(pages);
+      font-size: 8pt;
+      color: #999;
+    }
+  }
+
+  /* Repeat table headers on each page */
+  .invoice-items-table thead {
+    display: table-header-group;
+  }
+
+  .invoice-items-table tfoot {
+    display: table-footer-group;
+  }
+
+  /* ========================================
+     ACCESSIBILITY
+     ======================================== */
+
+  /* High contrast for printing */
+  .invoice-items-table,
+  .invoice-totals,
+  .invoice-header {
+    -webkit-print-color-adjust: exact;
+    print-color-adjust: exact;
+  }
+
+  /* Ensure links are visible */
+  a {
+    color: #000;
+    text-decoration: underline;
+  }
+
+  a[href]:after {
+    content: " (" attr(href) ")";
+    font-size: 8pt;
+    color: #666;
+  }
+
+  /* ========================================
+     UTILITY CLASSES
+     ======================================== */
+
+  .print-only {
+    display: block !important;
+  }
+
+  .print-hide {
+    display: none !important;
+  }
+
+  .text-bold {
+    font-weight: bold;
+  }
+
+  .text-right {
+    text-align: right;
+  }
+
+  .text-center {
+    text-align: center;
+  }
+
+  .text-muted {
+    color: #666;
+  }
+
+  .mt-small {
+    margin-top: 8pt;
+  }
+
+  .mt-medium {
+    margin-top: 15pt;
+  }
+
+  .mt-large {
+    margin-top: 25pt;
+  }
+
+  /* ========================================
+     RESPONSIVE PRINT (Letter vs A4)
+     ======================================== */
+
+  /* Adjust for US Letter (8.5 x 11 inches) */
+  @page letter {
+    size: letter;
+    margin: 0.6in 0.4in;
+  }
+
+  /* Adjust for A4 (210 x 297 mm) */
+  @page a4 {
+    size: A4;
+    margin: 15mm 10mm;
+  }
+
+  /* ========================================
+     DRAFT WATERMARK (Optional)
+     ======================================== */
+
+  .invoice-draft-watermark {
+    position: fixed;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%) rotate(-45deg);
+    font-size: 72pt;
+    font-weight: bold;
+    color: rgba(0, 0, 0, 0.05);
+    z-index: -1;
+    pointer-events: none;
+  }
+
+  /* ========================================
+     LOGO & BRANDING (from theme system)
+     ======================================== */
+
+  /* Use custom logo from theme customizer if available */
+  .invoice-logo.custom-logo {
+    border: 1pt solid #ddd;
+    padding: 2pt;
+  }
+
+  /* ========================================
+     PHOTO ATTACHMENTS PREVIEW
+     ======================================== */
+
+  .invoice-photos-preview {
+    margin-top: 20pt;
+    page-break-before: always;
+  }
+
+  .invoice-photos-title {
+    font-size: 12pt;
+    font-weight: bold;
+    margin-bottom: 10pt;
+    color: #000;
+  }
+
+  .invoice-photos-grid {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 10pt;
+  }
+
+  .invoice-photo-item {
+    border: 1pt solid #ddd;
+    padding: 4pt;
+    background: white;
+  }
+
+  .invoice-photo-item img {
+    width: 100%;
+    height: auto;
+    display: block;
+  }
+
+  .invoice-photo-caption {
+    font-size: 8pt;
+    color: #666;
+    margin-top: 4pt;
+    text-align: center;
+  }
+}
