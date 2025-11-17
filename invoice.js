@@ -861,6 +861,9 @@
     html += '<div class="invoice-detail-dates">';
     html += '<div><strong>Invoice Date:</strong> ' + invoiceDate.toLocaleDateString() + '</div>';
     html += '<div><strong>Due Date:</strong> ' + dueDate.toLocaleDateString() + '</div>';
+    if (invoice.quoteId) {
+      html += '<div><strong>Quote ID:</strong> <code>' + escapeHtml(invoice.quoteId) + '</code></div>';
+    }
     html += '</div>';
     html += '</div>';
 
@@ -1631,6 +1634,11 @@
               '<label for="editQuoteTitle">Quote Title / Description</label>' +
               '<textarea id="editQuoteTitle" rows="2">' + escapeHtml(invoice.quoteTitle || '') + '</textarea>' +
             '</div>' +
+            (invoice.quoteId ?
+              '<div class="form-group">' +
+                '<label>Quote ID</label>' +
+                '<input type="text" value="' + escapeHtml(invoice.quoteId) + '" readonly style="background: rgba(31, 41, 55, 0.3); font-family: monospace;" title="Original quote identifier" />' +
+              '</div>' : '') +
             '<div class="form-group">' +
               '<label for="editInvoiceStatus">Status</label>' +
               '<select id="editInvoiceStatus">' +
