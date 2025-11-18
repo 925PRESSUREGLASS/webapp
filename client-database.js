@@ -489,15 +489,22 @@
 
   // Add "Manage Clients" button to UI
   function addManageButton() {
+    // Check if button already exists
+    if (document.getElementById('manageClientsBtn')) {
+      return;
+    }
+
     var header = document.querySelector('.hdr-meta');
     if (!header) return;
 
     var button = document.createElement('button');
     button.type = 'button';
     button.id = 'manageClientsBtn';
-    button.className = 'btn btn-secondary btn-small';
+    button.className = 'btn btn-secondary btn-sm';
     button.textContent = '👥 Clients';
     button.onclick = showClientList;
+    button.setAttribute('aria-label', 'Manage clients');
+    button.title = 'Manage Clients (Edit, Delete, Select)';
     button.style.marginLeft = '10px';
 
     var clientNameField = document.querySelector('.hdr-meta-field');
