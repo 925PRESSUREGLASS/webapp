@@ -1,7 +1,7 @@
 # CLAUDE.md - AI Assistant Guide for TicTacStick Quote Engine
 
 **Last Updated:** 2025-11-18
-**Version:** 1.9.0
+**Version:** 1.10.0
 **Project:** TicTacStick Quote Engine for 925 Pressure Glass
 
 ---
@@ -19,6 +19,90 @@
 9. [Module Reference](#module-reference)
 10. [Design System](#design-system)
 11. [Troubleshooting](#troubleshooting)
+
+---
+
+## What's New in v1.10.0
+
+### PDF Generation Suite & Production Tools (November 2025)
+
+This release adds comprehensive PDF generation and production deployment capabilities:
+
+**New PDF Generation Suite (5 files, ~2,610 lines):**
+- `pdf-config.js` - PDF configuration and branding (408 lines)
+  - Company branding settings
+  - Page layout specifications (A4, margins, fonts)
+  - Color schemes and styling
+  - Header/footer templates
+  - Logo and contact information
+
+- `pdf-components.js` - PDF component rendering engine (625 lines)
+  - Reusable PDF components (headers, tables, signatures)
+  - Text formatting and styling helpers
+  - Table generation with alternating rows
+  - Logo and image embedding
+  - QR code generation for verification
+
+- `quote-pdf.js` - Quote PDF generation logic (576 lines)
+  - Convert quotes to professional PDFs
+  - Multi-page support with automatic pagination
+  - Line item tables with calculations
+  - Summary sections with GST breakdown
+  - Terms and conditions
+  - Client and job information
+
+- `quote-pdf-ui.js` - PDF generation UI controls (494 lines)
+  - Generate PDF button and modal
+  - Email preview and sending interface
+  - PDF download and print options
+  - Progress indicators
+  - Error handling and user feedback
+
+- `quote-pdf.css` - PDF UI styling (507 lines)
+  - PDF action button styling
+  - Email modal layout
+  - Progress indicators
+  - Responsive PDF controls
+
+**New Production Tools (3 files, ~1,428 lines):**
+- `deployment-helper.js` - Pre-deployment validation (510 lines)
+  - Version checking
+  - Required module validation
+  - LocalStorage health checks
+  - Configuration verification
+  - Security audit (CSP, XSS prevention)
+  - Performance benchmarks
+  - **Usage:** `DeploymentHelper.runPreDeploymentChecks()`
+
+- `health-check.js` - Post-deployment monitoring (493 lines)
+  - Continuous health monitoring
+  - LocalStorage availability checks
+  - Module registration verification
+  - Performance metrics tracking
+  - Error rate monitoring
+  - Service Worker status
+  - **Usage:** `HealthCheck.runHealthCheck()` or `HealthCheck.startMonitoring(interval)`
+
+- `bug-tracker.js` - Bug reporting system (425 lines)
+  - User-friendly bug reporting interface
+  - Automatic environment capture (browser, OS, version)
+  - Screenshot attachment
+  - LocalStorage state snapshot
+  - Error stack trace capture
+  - Export bug reports to JSON
+  - **Usage:** `BugTracker.init()` - adds bug report button to UI
+
+**Key Features:**
+- 📄 Professional PDF quote generation with jsPDF
+- 📧 Email integration for sending quotes
+- 🎨 Customizable PDF branding and templates
+- ✅ Comprehensive pre-deployment validation
+- 🏥 Production health monitoring
+- 🐛 Built-in bug tracking and reporting
+- 📊 Performance benchmarking
+- 🔒 Security audit tools
+
+**Total:** ~4,000 lines of new code
 
 ---
 
@@ -206,10 +290,11 @@ TicTacStick is a **Progressive Web App (PWA)** quote engine for 925 Pressure Gla
 ### Current Phase
 
 **Phase 3:** Feature Enhancement & Production Optimization
-- Status: Active development with production deployments
-- Recent: Enhanced print layouts system (v1.8.0), theme customization, mobile UI
-- Focus: Business intelligence, mobile optimization, advanced features
-- Next: User testing of new features, performance optimization
+- Status: Active production deployment with comprehensive tooling
+- Recent: PDF generation suite (v1.10.0), design system (v1.9.0), print layouts (v1.8.0)
+- Current: Professional PDF quotes, production monitoring, bug tracking
+- Focus: Production stability, user feedback, feature refinement
+- Next: User acceptance testing, performance optimization, cloud migration planning
 
 ---
 
@@ -276,19 +361,34 @@ webapp/
 ├── Job Management Modules
 ├── job-presets.js         # Job presets and templates - 428 lines
 │
+├── PDF Generation Suite (NEW v1.10.0)
+├── pdf-config.js          # PDF configuration and branding - 408 lines
+├── pdf-components.js      # PDF component rendering engine - 625 lines
+├── quote-pdf.js           # Quote PDF generation logic - 576 lines
+├── quote-pdf-ui.js        # PDF generation UI controls - 494 lines
+│
+├── Production Tools (NEW v1.10.0)
+├── deployment-helper.js   # Pre-deployment validation - 510 lines
+├── health-check.js        # Post-deployment monitoring - 493 lines
+├── bug-tracker.js         # Bug tracking and reporting - 425 lines
+│
 ├── Performance & PWA
 ├── performance-monitor.js # Performance tracking - 444 lines
 ├── performance-utils.js   # Optimization utilities - 439 lines
 ├── sw.js                  # Service Worker - 223 lines
 ├── sw-optimized.js        # Advanced caching (not in use) - 553 lines
+├── ui-components.js       # UI helpers (toast, modals) - 380 lines
 │
-├── CSS Files (~19 total)
+├── CSS Files (~22 total)
+├── css/design-system.css  # Design system (NEW v1.9.0) - 1,539 lines
+├── css/analytics.css      # Analytics dashboard - 138 lines (in css/ subdirectory)
 ├── app.css                # Main styles - 391 lines
 ├── invoice.css            # Invoice UI - 856 lines
 ├── validation.css         # Validation error styles - 353 lines
 ├── theme-light.css        # Light theme overrides - 218 lines
 ├── theme-customizer.css   # Theme customizer UI - 262 lines
 ├── mobile.css             # Mobile responsive styles - 540 lines
+├── quote-pdf.css          # PDF UI styling (NEW v1.10.0) - 507 lines
 ├── print.css              # General print styles - 214 lines
 ├── invoice-print.css      # Invoice print layout - 399 lines
 ├── photo-print-layout.css # Photo grid print layouts - 372 lines
@@ -341,10 +441,11 @@ From `index.html`, scripts MUST load in this order:
 <!-- 1. FIRST: Bootstrap creates APP namespace -->
 <script src="bootstrap.js"></script>
 
-<!-- 2. EARLY: Debug, Security, Validation (no defer - must be available immediately) -->
+<!-- 2. EARLY: Debug, Security, Validation, UI Components (no defer - must be available immediately) -->
 <script src="debug.js"></script>
 <script src="security.js"></script>
 <script src="validation.js"></script>
+<script src="ui-components.js"></script>
 
 <!-- 3. Lazy Loader System -->
 <script src="lazy-loader.js"></script>
@@ -386,21 +487,36 @@ From `index.html`, scripts MUST load in this order:
 <script src="error-handler.js" defer></script>
 <script src="export.js" defer></script>
 <script src="templates.js" defer></script>
+
+<!-- 9. PDF Generation Suite (NEW v1.10.0) -->
+<script src="pdf-config.js" defer></script>
+<script src="pdf-components.js" defer></script>
+<script src="quote-pdf.js" defer></script>
+<script src="quote-pdf-ui.js" defer></script>
+
+<!-- 10. Photos (loaded after PDF modules) -->
 <script src="photos.js" defer></script>
 
-<!-- 9. Lazy-loaded modules (loaded on demand via LazyLoader) -->
+<!-- 11. Production Tools (NEW v1.10.0) -->
+<script src="deployment-helper.js" defer></script>
+<script src="health-check.js" defer></script>
+<script src="bug-tracker.js" defer></script>
+
+<!-- 12. Lazy-loaded modules (loaded on demand via LazyLoader) -->
 <!-- analytics.js, charts.js, photo-modal.js are loaded when needed -->
 ```
 
 **Why This Order?**
 - `bootstrap.js` creates `window.APP` namespace - MUST be first
-- `debug.js`, `security.js`, `validation.js` have no dependencies - load early (no defer)
+- `debug.js`, `security.js`, `validation.js`, `ui-components.js` have no dependencies - load early (no defer)
 - `lazy-loader.js` loads early to enable on-demand module loading
 - Extended type modules must load before `data.js` to register custom types
 - `quote-migration.js` handles data format updates
 - `app.js` depends on `calc.js`, `data.js`, `storage.js`
 - Business intelligence and mobile modules load before UI
 - Feature modules depend on core modules
+- PDF generation suite loads after core features
+- Production tools load last for monitoring and debugging
 - Some modules (analytics, charts, photo-modal) are lazy-loaded on demand
 
 ---
@@ -1294,6 +1410,163 @@ var residential = JobPresets.getPresetsByCategory('residential');
 var commercial = JobPresets.getPresetsByCategory('commercial');
 ```
 
+### How to Generate PDF Quotes (v1.10.0)
+
+The PDF generation suite allows you to create professional PDF quotes with jsPDF.
+
+#### Generate and Download a PDF
+
+```javascript
+// Get current quote state
+var state = window.APP.getState();
+
+// Generate PDF
+var pdf = QuotePDF.generatePDF(state);
+
+// Download PDF
+QuotePDF.download(pdf, 'quote-' + state.quoteTitle + '.pdf');
+```
+
+#### Generate and Print a PDF
+
+```javascript
+var state = window.APP.getState();
+var pdf = QuotePDF.generatePDF(state);
+QuotePDF.print(pdf);
+```
+
+#### Customize PDF Branding
+
+Edit `pdf-config.js` to customize:
+
+```javascript
+// In pdf-config.js
+PDF_CONFIG.branding = {
+  company: {
+    name: '925 Pressure Glass',
+    tagline: 'Window & Pressure Cleaning Specialists',
+    abn: '12 345 678 901',
+    phone: '0400 000 000',
+    email: 'info@925pressureglass.com.au',
+    website: 'www.925pressureglass.com.au'
+  },
+  colors: {
+    primary: '#2563eb',
+    secondary: '#10b981',
+    accent: '#f59e0b'
+  },
+  logo: 'data:image/png;base64,...' // Base64 encoded logo
+};
+```
+
+#### Using PDF Components
+
+```javascript
+// Create new PDF document
+var doc = new jsPDF(PDF_CONFIG);
+
+// Add header
+PDFComponents.addHeader(doc, {
+  title: 'Window Cleaning Quote',
+  subtitle: 'Quote #001234'
+});
+
+// Add table
+var data = [
+  ['Service', 'Quantity', 'Price'],
+  ['Standard Windows', '10', '$150.00'],
+  ['Sliding Doors', '4', '$80.00']
+];
+PDFComponents.addTable(doc, data, ['Service', 'Quantity', 'Price']);
+
+// Add footer
+PDFComponents.addFooter(doc, 1, 1);
+```
+
+### How to Use Production Tools (v1.10.0)
+
+#### Pre-Deployment Validation
+
+Before deploying to production, run comprehensive checks:
+
+```javascript
+// In browser console on staging environment
+DeploymentHelper.runPreDeploymentChecks();
+
+// Output:
+// ========================================
+// PRE-DEPLOYMENT CHECKS
+// ========================================
+//
+// --- Checking Version ---
+// ✓ Version: 1.10.0
+//
+// --- Checking Modules ---
+// ✓ All 25 required modules registered
+//
+// --- Checking LocalStorage ---
+// ✓ Available and writable
+// ✓ 2.5 MB used of 5 MB quota
+//
+// --- Checking Security ---
+// ✓ CSP headers configured
+// ✓ XSS prevention active
+//
+// --- Checking Performance ---
+// ✓ Page load: 1.2s (target: <2s)
+// ✓ Memory usage: 45 MB (target: <100 MB)
+//
+// === ALL CHECKS PASSED ✓ ===
+// Ready for deployment!
+```
+
+#### Health Monitoring in Production
+
+```javascript
+// Start continuous health monitoring (every 15 minutes)
+HealthCheck.startMonitoring(15);
+
+// Or run single health check
+HealthCheck.runHealthCheck();
+
+// Get results
+var results = HealthCheck.getLastResults();
+console.log('Health Score:', results.score + '/100');
+
+// If score < 80, investigate issues
+if (results.score < 80) {
+  console.warn('Health issues detected:', results.issues);
+}
+
+// Stop monitoring
+HealthCheck.stopMonitoring();
+```
+
+#### Enable Bug Tracking
+
+```javascript
+// Initialize bug tracker (adds "Report Bug" button to UI)
+BugTracker.init();
+
+// Users can now click the button to report bugs
+// Reports include:
+// - Environment (browser, OS, app version)
+// - Screenshot
+// - LocalStorage snapshot
+// - Console errors
+// - Stack traces
+
+// View all bug reports
+var bugs = BugTracker.getBugList();
+
+// Export specific bug report
+BugTracker.exportReport('bug_1234567890');
+// Downloads JSON file with full bug details
+
+// Clear all bug reports (after fixing)
+BugTracker.clearBugs();
+```
+
 ### How to Debug Issues
 
 1. **Enable debug mode:**
@@ -1963,6 +2236,269 @@ JobPresets.exportPresets()
 JobPresets.importPresets(data)
 ```
 
+### PDF Generation Suite
+
+#### pdf-config.js (408 lines) **NEW v1.10.0**
+
+**Purpose:** PDF configuration and company branding
+
+**Key Features:**
+- Page layout configuration (A4, margins, orientation)
+- Company branding (logo, colors, contact info)
+- Font settings and styles
+- Header/footer templates
+- Color scheme definitions
+
+**Key Configuration:**
+```javascript
+PDF_CONFIG.format         // 'a4'
+PDF_CONFIG.orientation    // 'portrait'
+PDF_CONFIG.margin         // {top, right, bottom, left}
+PDF_CONFIG.branding       // {logo, company, contact, colors}
+PDF_CONFIG.fonts          // {heading, body, sizes}
+```
+
+#### pdf-components.js (625 lines) **NEW v1.10.0**
+
+**Purpose:** Reusable PDF component rendering engine
+
+**Key Features:**
+- Header and footer components
+- Table generation with styling
+- Logo and image embedding
+- Text formatting helpers
+- QR code generation
+- Signature blocks
+- Terms and conditions sections
+
+**Key Functions:**
+```javascript
+PDFComponents.addHeader(doc, options)
+PDFComponents.addFooter(doc, pageNum, totalPages)
+PDFComponents.addTable(doc, data, columns, options)
+PDFComponents.addLogo(doc, logoData, x, y, width, height)
+PDFComponents.addQRCode(doc, text, x, y, size)
+PDFComponents.addSignatureBlock(doc, x, y)
+PDFComponents.formatCurrency(amount)
+PDFComponents.formatDate(date)
+```
+
+#### quote-pdf.js (576 lines) **NEW v1.10.0**
+
+**Purpose:** Quote to PDF conversion engine
+
+**Key Features:**
+- Convert quote data to professional PDF
+- Multi-page support with pagination
+- Line item tables with calculations
+- Summary sections with GST breakdown
+- Client and job information
+- Terms and conditions
+- Automatic page breaks
+
+**Key Functions:**
+```javascript
+QuotePDF.generatePDF(quoteData)
+QuotePDF.addClientInfo(doc, quote)
+QuotePDF.addJobDetails(doc, quote)
+QuotePDF.addLineItems(doc, windowLines, pressureLines)
+QuotePDF.addSummary(doc, breakdown)
+QuotePDF.addTerms(doc)
+QuotePDF.download(doc, filename)
+QuotePDF.print(doc)
+```
+
+**Usage Example:**
+```javascript
+// Generate PDF from current quote
+var state = window.APP.getState();
+var pdf = QuotePDF.generatePDF(state);
+QuotePDF.download(pdf, 'quote-' + state.quoteTitle + '.pdf');
+```
+
+#### quote-pdf-ui.js (494 lines) **NEW v1.10.0**
+
+**Purpose:** PDF generation UI controls and user interactions
+
+**Key Features:**
+- Generate PDF button and modal
+- Email quote preview
+- Download and print options
+- Progress indicators
+- Error handling
+- User feedback (toasts, confirmations)
+
+**Key Functions:**
+```javascript
+QuotePDFUI.init()
+QuotePDFUI.showGenerateModal()
+QuotePDFUI.hideGenerateModal()
+QuotePDFUI.handleGeneratePDF()
+QuotePDFUI.showEmailModal(pdfBlob)
+QuotePDFUI.handleSendEmail(pdfBlob, emailData)
+```
+
+### Production Tools
+
+#### deployment-helper.js (510 lines) **NEW v1.10.0**
+
+**Purpose:** Pre-deployment validation and checks
+
+**Key Features:**
+- Version verification
+- Required module validation
+- LocalStorage health checks
+- Configuration verification
+- Security audit (CSP, XSS prevention)
+- Performance benchmarks
+- Dependency checking
+- Environment validation
+
+**Key Functions:**
+```javascript
+DeploymentHelper.runPreDeploymentChecks()
+DeploymentHelper.checkVersion()
+DeploymentHelper.checkModules()
+DeploymentHelper.checkLocalStorage()
+DeploymentHelper.checkSecurity()
+DeploymentHelper.checkPerformance()
+DeploymentHelper.generateReport()
+```
+
+**Usage:**
+```javascript
+// Before deployment, run in browser console:
+DeploymentHelper.runPreDeploymentChecks();
+// Reviews all checks, outputs detailed report
+```
+
+**Checks Performed:**
+- ✅ App version matches expected
+- ✅ All required modules registered
+- ✅ LocalStorage available and writable
+- ✅ CSP headers configured
+- ✅ No XSS vulnerabilities in test inputs
+- ✅ Performance metrics within acceptable ranges
+- ✅ Service Worker registered
+- ✅ All critical files present
+
+#### health-check.js (493 lines) **NEW v1.10.0**
+
+**Purpose:** Post-deployment continuous health monitoring
+
+**Key Features:**
+- Periodic health checks
+- LocalStorage monitoring
+- Module availability checking
+- Performance tracking
+- Error rate monitoring
+- Service Worker status
+- Automatic issue detection
+- Health score calculation
+
+**Key Functions:**
+```javascript
+HealthCheck.runHealthCheck()
+HealthCheck.startMonitoring(intervalMinutes)
+HealthCheck.stopMonitoring()
+HealthCheck.getLastResults()
+HealthCheck.checkLocalStorage()
+HealthCheck.checkModules()
+HealthCheck.checkPerformance()
+HealthCheck.generateHealthScore()
+```
+
+**Usage:**
+```javascript
+// Single health check
+HealthCheck.runHealthCheck();
+
+// Continuous monitoring every 15 minutes
+HealthCheck.startMonitoring(15);
+
+// Get last results
+var results = HealthCheck.getLastResults();
+console.log('Health Score:', results.score + '/100');
+```
+
+**Monitored Metrics:**
+- LocalStorage availability and quota
+- Module registration status
+- App initialization state
+- Error frequency
+- Performance metrics (load time, memory)
+- Service Worker status
+- Browser compatibility
+
+#### bug-tracker.js (425 lines) **NEW v1.10.0**
+
+**Purpose:** User bug reporting and tracking system
+
+**Key Features:**
+- User-friendly bug report interface
+- Automatic environment capture
+- Screenshot attachment support
+- LocalStorage state snapshot
+- Error stack trace capture
+- Bug severity classification
+- Export reports to JSON
+- Bug list management
+
+**Key Functions:**
+```javascript
+BugTracker.init()
+BugTracker.showReportModal()
+BugTracker.submitReport(bugData)
+BugTracker.attachScreenshot(screenshot)
+BugTracker.captureEnvironment()
+BugTracker.captureState()
+BugTracker.exportReport(bugId)
+BugTracker.getBugList()
+BugTracker.clearBugs()
+```
+
+**Usage:**
+```javascript
+// Initialize bug tracker (adds UI button)
+BugTracker.init();
+
+// User clicks "Report Bug" button
+// Modal appears with form:
+// - Bug title
+// - Description
+// - Steps to reproduce
+// - Severity (low, medium, high, critical)
+// - Screenshot upload
+
+// Automatic capture includes:
+// - Browser and OS info
+// - App version
+// - URL and timestamp
+// - LocalStorage snapshot
+// - Console errors
+// - Performance metrics
+```
+
+**Bug Report Structure:**
+```javascript
+{
+  id: 'bug_1234567890',
+  timestamp: '2025-11-18T10:30:00Z',
+  title: 'Invoice PDF generation fails',
+  description: 'When clicking Generate PDF...',
+  severity: 'high',
+  environment: {
+    browser: 'Safari 12.1',
+    os: 'iOS 12.4',
+    appVersion: '1.10.0',
+    url: 'https://...'
+  },
+  state: { /* LocalStorage snapshot */ },
+  screenshot: 'data:image/png;base64,...',
+  stackTrace: '...'
+}
+```
+
 ---
 
 ## Design System
@@ -2610,6 +3146,14 @@ var value = window.Security.validateNumber(input, {
 | Configure lazy loading | `lazy-loader.js`, `lazy-loader-init.js` |
 | Add job presets | `job-presets.js` |
 | Migrate quote data | `quote-migration.js` |
+| Generate PDF quotes | `quote-pdf.js`, `pdf-components.js`, `pdf-config.js` |
+| Customize PDF branding | `pdf-config.js` |
+| Add PDF UI controls | `quote-pdf-ui.js`, `quote-pdf.css` |
+| Run pre-deployment checks | `deployment-helper.js` |
+| Monitor production health | `health-check.js` |
+| Enable bug tracking | `bug-tracker.js` |
+| Update design system | `css/design-system.css` |
+| Add UI components | `ui-components.js` |
 
 ---
 
@@ -2617,7 +3161,29 @@ var value = window.Security.validateNumber(input, {
 
 ### Version History
 
-- **v1.8.0** (Current - 2025-11-18) - Enhanced print layouts system
+- **v1.10.0** (Current - 2025-11-18) - PDF Generation Suite & Production Tools
+  - Professional PDF quote generation with jsPDF
+  - PDF configuration and branding system (`pdf-config.js`)
+  - Reusable PDF components library (`pdf-components.js`)
+  - Quote to PDF conversion engine (`quote-pdf.js`)
+  - PDF generation UI controls (`quote-pdf-ui.js`)
+  - PDF styling system (`quote-pdf.css`)
+  - Pre-deployment validation tool (`deployment-helper.js`)
+  - Production health monitoring (`health-check.js`)
+  - User bug tracking and reporting (`bug-tracker.js`)
+  - Total: ~4,000 lines of new code
+
+- **v1.9.0** (2025-11-18) - Professional UI/UX Design System
+  - Complete design system (`css/design-system.css` - 1,539 lines)
+  - UI component helpers (`ui-components.js` - 380 lines)
+  - Comprehensive design documentation (`docs/DESIGN_SYSTEM.md` - 964 lines)
+  - Mobile-first responsive patterns with iOS Safari optimizations
+  - WCAG AA accessibility compliance
+  - Professional button and form components
+  - Toast notifications, modals, loading states
+  - Total: ~2,800 lines of new code + documentation
+
+- **v1.8.0** (2025-11-18) - Enhanced print layouts system
   - Professional invoice printing (`invoice-print.css`)
   - Photo grid layouts for job documentation (`photo-print-layout.css`)
   - Professional letterhead system (`letterhead.css`)
