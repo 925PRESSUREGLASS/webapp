@@ -21,9 +21,9 @@
   --border-hover: #475569;
 
   /* Accent colors - Vibrant Purple & Orange */
-  --accent-primary: #7c3aed;
+  --accent-primary: #6d28d9;  /* Darker purple for dark theme */
   --accent-secondary: #14b8a6;
-  --accent-hover: #a78bfa;
+  --accent-hover: #7c3aed;    /* Lighter purple for hover */
   --accent-orange: #f97316;
 
   /* Semantic colors */
