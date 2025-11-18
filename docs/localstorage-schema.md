@@ -2279,4 +2279,426 @@ APP.Storage.Batch = (function() {
 
 ---
 
+## Advanced Storage Patterns
+
+### Pattern 1: Collection Management
+
+```javascript
+/**
+ * Generic collection management pattern
+ */
+APP.Storage.Collection = function(storageKey) {
+    this.key = storageKey;
+
+    // Get all items
+    this.getAll = function() {
+        return APP.Storage.load(this.key) || [];
+    };
+
+    // Get item by ID
+    this.getById = function(id) {
+        var items = this.getAll();
+        return items.find(function(item) {
+            return item.id === id;
+        });
+    };
+
+    // Add item
+    this.add = function(item) {
+        var items = this.getAll();
+
+        // Generate ID if missing
+        if (!item.id) {
+            item.id = this.generateId();
+        }
+
+        // Add timestamps
+        item.createdAt = new Date().toISOString();
+        item.updatedAt = item.createdAt;
+
+        items.push(item);
+        APP.Storage.save(this.key, items);
+
+        return item;
+    };
+
+    // Update item
+    this.update = function(id, updates) {
+        var items = this.getAll();
+        var index = items.findIndex(function(item) {
+            return item.id === id;
+        });
+
+        if (index === -1) {
+            return null;
+        }
+
+        // Update timestamp
+        updates.updatedAt = new Date().toISOString();
+
+        items[index] = Object.assign({}, items[index], updates);
+        APP.Storage.save(this.key, items);
+
+        return items[index];
+    };
+
+    // Delete item
+    this.delete = function(id) {
+        var items = this.getAll();
+        var filtered = items.filter(function(item) {
+            return item.id !== id;
+        });
+
+        if (filtered.length === items.length) {
+            return false; // Item not found
+        }
+
+        APP.Storage.save(this.key, filtered);
+        return true;
+    };
+
+    // Find items
+    this.find = function(predicate) {
+        var items = this.getAll();
+        return items.filter(predicate);
+    };
+
+    // Count items
+    this.count = function() {
+        return this.getAll().length;
+    };
+
+    // Generate ID
+    this.generateId = function() {
+        var prefix = this.key.replace('tts_', '').toUpperCase().substring(0, 3);
+        var num = this.count() + 1;
+        return prefix + '-' + num.toString().padStart(3, '0');
+    };
+};
+
+// Usage example
+var quotesCollection = new APP.Storage.Collection('tts_quotes');
+var newQuote = quotesCollection.add({ /* quote data */ });
+```
+
+### Pattern 2: Draft Management
+
+```javascript
+/**
+ * Draft management pattern for auto-save functionality
+ */
+APP.Storage.Draft = (function() {
+    var DRAFT_KEY_PREFIX = 'tts_draft_';
+
+    return {
+        /**
+         * Save draft
+         */
+        save: function(type, data) {
+            var key = DRAFT_KEY_PREFIX + type;
+            data.lastSaved = new Date().toISOString();
+            APP.Storage.save(key, data);
+        },
+
+        /**
+         * Load draft
+         */
+        load: function(type) {
+            var key = DRAFT_KEY_PREFIX + type;
+            return APP.Storage.load(key);
+        },
+
+        /**
+         * Clear draft
+         */
+        clear: function(type) {
+            var key = DRAFT_KEY_PREFIX + type;
+            APP.Storage.remove(key);
+        },
+
+        /**
+         * Check if draft exists
+         */
+        exists: function(type) {
+            return this.load(type) !== null;
+        },
+
+        /**
+         * Get draft age in milliseconds
+         */
+        getAge: function(type) {
+            var draft = this.load(type);
+            if (!draft || !draft.lastSaved) {
+                return null;
+            }
+            return Date.now() - new Date(draft.lastSaved).getTime();
+        },
+
+        /**
+         * Auto-save draft with debouncing
+         */
+        autoSave: function(type, data) {
+            APP.Storage.DebouncedSave.save(DRAFT_KEY_PREFIX + type, data);
+        }
+    };
+})();
+
+// Usage
+APP.Storage.Draft.autoSave('quote', quoteData);
+var savedDraft = APP.Storage.Draft.load('quote');
+```
+
+### Pattern 3: Relationship Management
+
+```javascript
+/**
+ * Manage relationships between entities
+ */
+APP.Storage.Relations = (function() {
+    return {
+        /**
+         * Get quotes for client
+         */
+        getQuotesForClient: function(clientId) {
+            var quotes = APP.Storage.load('tts_quotes') || [];
+            return quotes.filter(function(quote) {
+                return quote.clientId === clientId;
+            });
+        },
+
+        /**
+         * Get invoices for quote
+         */
+        getInvoicesForQuote: function(quoteId) {
+            var invoices = APP.Storage.load('tts_invoices') || [];
+            return invoices.filter(function(invoice) {
+                return invoice.quoteId === quoteId;
+            });
+        },
+
+        /**
+         * Get client for quote
+         */
+        getClientForQuote: function(quoteId) {
+            var quotes = APP.Storage.load('tts_quotes') || [];
+            var quote = quotes.find(function(q) {
+                return q.id === quoteId;
+            });
+
+            if (!quote) {
+                return null;
+            }
+
+            var clients = APP.Storage.load('tts_clients') || [];
+            return clients.find(function(c) {
+                return c.id === quote.clientId;
+            });
+        },
+
+        /**
+         * Get full quote with related data
+         */
+        getQuoteWithRelations: function(quoteId) {
+            var quote = APP.Storage.Index.lookup('tts_quotes', 'id', quoteId)[0];
+
+            if (!quote) {
+                return null;
+            }
+
+            return {
+                quote: quote,
+                client: this.getClientForQuote(quoteId),
+                invoices: this.getInvoicesForQuote(quoteId)
+            };
+        },
+
+        /**
+         * Get client with all related data
+         */
+        getClientWithRelations: function(clientId) {
+            var clients = APP.Storage.load('tts_clients') || [];
+            var client = clients.find(function(c) {
+                return c.id === clientId;
+            });
+
+            if (!client) {
+                return null;
+            }
+
+            return {
+                client: client,
+                quotes: this.getQuotesForClient(clientId),
+                invoices: this.getInvoicesForQuote(null).filter(function(inv) {
+                    return inv.clientId === clientId;
+                })
+            };
+        }
+    };
+})();
+```
+
+### Pattern 4: Search & Filter
+
+```javascript
+/**
+ * Advanced search and filtering
+ */
+APP.Storage.Search = (function() {
+    return {
+        /**
+         * Search quotes
+         */
+        searchQuotes: function(query) {
+            var quotes = APP.Storage.load('tts_quotes') || [];
+
+            if (!query || query.trim() === '') {
+                return quotes;
+            }
+
+            query = query.toLowerCase();
+
+            return quotes.filter(function(quote) {
+                // Search in ID
+                if (quote.id.toLowerCase().indexOf(query) !== -1) {
+                    return true;
+                }
+
+                // Search in client name
+                if (quote.clientSnapshot) {
+                    var name = (quote.clientSnapshot.firstName + ' ' +
+                               quote.clientSnapshot.lastName).toLowerCase();
+                    if (name.indexOf(query) !== -1) {
+                        return true;
+                    }
+                }
+
+                // Search in line items
+                if (quote.lineItems) {
+                    for (var i = 0; i < quote.lineItems.length; i++) {
+                        var item = quote.lineItems[i];
+                        if (item.description.toLowerCase().indexOf(query) !== -1) {
+                            return true;
+                        }
+                    }
+                }
+
+                // Search in notes
+                if (quote.notes && quote.notes.toLowerCase().indexOf(query) !== -1) {
+                    return true;
+                }
+
+                return false;
+            });
+        },
+
+        /**
+         * Filter quotes by criteria
+         */
+        filterQuotes: function(filters) {
+            var quotes = APP.Storage.load('tts_quotes') || [];
+
+            return quotes.filter(function(quote) {
+                // Status filter
+                if (filters.status && quote.status !== filters.status) {
+                    return false;
+                }
+
+                // Service type filter
+                if (filters.serviceType && quote.serviceType !== filters.serviceType) {
+                    return false;
+                }
+
+                // Client filter
+                if (filters.clientId && quote.clientId !== filters.clientId) {
+                    return false;
+                }
+
+                // Date range filter
+                if (filters.dateFrom) {
+                    if (new Date(quote.createdAt) < new Date(filters.dateFrom)) {
+                        return false;
+                    }
+                }
+
+                if (filters.dateTo) {
+                    if (new Date(quote.createdAt) > new Date(filters.dateTo)) {
+                        return false;
+                    }
+                }
+
+                // Amount range filter
+                if (filters.minAmount && quote.financials.total < filters.minAmount) {
+                    return false;
+                }
+
+                if (filters.maxAmount && quote.financials.total > filters.maxAmount) {
+                    return false;
+                }
+
+                // Tags filter
+                if (filters.tags && filters.tags.length > 0) {
+                    if (!quote.tags) {
+                        return false;
+                    }
+
+                    var hasTag = false;
+                    for (var i = 0; i < filters.tags.length; i++) {
+                        if (quote.tags.indexOf(filters.tags[i]) !== -1) {
+                            hasTag = true;
+                            break;
+                        }
+                    }
+
+                    if (!hasTag) {
+                        return false;
+                    }
+                }
+
+                return true;
+            });
+        },
+
+        /**
+         * Sort quotes
+         */
+        sortQuotes: function(quotes, sortBy, sortOrder) {
+            sortOrder = sortOrder || 'desc';
+
+            return quotes.sort(function(a, b) {
+                var aVal, bVal;
+
+                switch(sortBy) {
+                    case 'date':
+                        aVal = new Date(a.createdAt);
+                        bVal = new Date(b.createdAt);
+                        break;
+                    case 'amount':
+                        aVal = a.financials.total;
+                        bVal = b.financials.total;
+                        break;
+                    case 'client':
+                        aVal = a.clientSnapshot.lastName;
+                        bVal = b.clientSnapshot.lastName;
+                        break;
+                    case 'id':
+                        aVal = a.id;
+                        bVal = b.id;
+                        break;
+                    default:
+                        return 0;
+                }
+
+                if (sortOrder === 'asc') {
+                    return aVal > bVal ? 1 : -1;
+                } else {
+                    return aVal < bVal ? 1 : -1;
+                }
+            });
+        }
+    };
+})();
+```
+
+---
+
 **END OF ASSET #2: LocalStorage Schema Documentation (Parts 1 & 2 Complete)**
