@@ -399,9 +399,172 @@
   }
 }
 
+/* Customer Directory Page */
+.page {
+  min-height: 100vh;
+  background: var(--color-bg, #0f172a);
+  padding: 2rem 1rem;
+}
+
+.page .container {
+  max-width: 1400px;
+  margin: 0 auto;
+}
+
+.page-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 2rem;
+  padding-bottom: 1rem;
+  border-bottom: 2px solid rgba(148, 163, 184, 0.2);
+}
+
+.page-header h1 {
+  margin: 0;
+  font-size: 2rem;
+  color: var(--color-text, #e5e7eb);
+  font-weight: 700;
+}
+
+/* Customer Directory Grid */
+#customer-list {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(350px, 1fr));
+  gap: 1.5rem;
+}
+
+.customer-card {
+  background: rgba(15, 23, 42, 0.6);
+  border: 1px solid rgba(148, 163, 184, 0.2);
+  border-radius: 12px;
+  transition: all 0.3s ease;
+}
+
+.customer-card:hover {
+  transform: translateY(-4px);
+  box-shadow: 0 12px 24px rgba(0, 0, 0, 0.4);
+  border-color: rgba(56, 189, 248, 0.4);
+}
+
+.customer-card .card-header {
+  padding: 1.25rem;
+  border-bottom: 1px solid rgba(148, 163, 184, 0.15);
+}
+
+.customer-card .card-body {
+  padding: 1.25rem;
+}
+
+.customer-card-actions {
+  display: flex;
+  gap: 0.5rem;
+  flex-wrap: wrap;
+}
+
+/* Empty State */
+.empty-state {
+  text-align: center;
+  padding: 4rem 2rem;
+  color: #94a3b8;
+}
+
+.empty-state-icon {
+  width: 4rem;
+  height: 4rem;
+  margin: 0 auto 1.5rem;
+  color: #475569;
+}
+
+.empty-state-title {
+  margin: 0 0 0.5rem;
+  font-size: 1.5rem;
+  color: #cbd5e1;
+  font-weight: 600;
+}
+
+.empty-state-message {
+  margin: 0;
+  font-size: 1rem;
+  color: #94a3b8;
+}
+
+/* Light Theme - Customer Directory Page */
+[data-theme="light"] .page {
+  background: #f8fafc;
+}
+
+[data-theme="light"] .page-header {
+  border-bottom-color: #e2e8f0;
+}
+
+[data-theme="light"] .page-header h1 {
+  color: #0f172a;
+}
+
+[data-theme="light"] .customer-card {
+  background: #ffffff;
+  border-color: #e2e8f0;
+}
+
+[data-theme="light"] .customer-card:hover {
+  box-shadow: 0 12px 24px rgba(0, 0, 0, 0.1);
+  border-color: rgba(14, 165, 233, 0.4);
+}
+
+[data-theme="light"] .empty-state {
+  color: #64748b;
+}
+
+[data-theme="light"] .empty-state-icon {
+  color: #cbd5e1;
+}
+
+[data-theme="light"] .empty-state-title {
+  color: #0f172a;
+}
+
+[data-theme="light"] .empty-state-message {
+  color: #64748b;
+}
+
+/* Mobile Responsive - Customer Directory Page */
+@media (max-width: 768px) {
+  .page {
+    padding: 1rem 0.5rem;
+  }
+
+  .page-header {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 1rem;
+  }
+
+  .page-header h1 {
+    font-size: 1.5rem;
+  }
+
+  #customer-list {
+    grid-template-columns: 1fr;
+    gap: 1rem;
+  }
+
+  .customer-card-actions {
+    flex-direction: column;
+  }
+
+  .customer-card-actions .btn {
+    width: 100%;
+  }
+}
+
 /* Print - hide client modal */
 @media print {
   .client-modal {
+    display: none !important;
+  }
+
+  .page {
     display: none !important;
   }
 }
