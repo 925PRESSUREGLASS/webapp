@@ -215,6 +215,11 @@
 
     customTheme = null;
 
+    // Reset theme mode to dark
+    if (window.ThemeManager) {
+      window.ThemeManager.set('dark');
+    }
+
     if (window.ErrorHandler) {
       window.ErrorHandler.showInfo('Theme reset to defaults');
     }
@@ -543,8 +548,10 @@
             saveCustomLogo(currentTheme.logo);
           }
 
-          // Apply theme
-          applyCustomTheme(currentTheme);
+          // Set theme mode to 'custom'
+          if (window.ThemeManager) {
+            window.ThemeManager.set('custom');
+          }
 
           if (window.ErrorHandler) {
             window.ErrorHandler.showSuccess('Custom theme saved and applied');
@@ -618,7 +625,7 @@
     var btn = document.createElement('button');
     btn.id = 'themeCustomizerBtn';
     btn.type = 'button';
-    btn.className = 'btn btn-ghost btn-small';
+    btn.className = 'btn btn-tertiary btn-sm';
     btn.innerHTML = '🎨 Customize';
     btn.onclick = openCustomizer;
     btn.setAttribute('aria-label', 'Open theme customizer');
@@ -637,14 +644,8 @@
     // Add customizer button
     addCustomizerButton();
 
-    // Load and apply saved custom theme after a delay to ensure base theme is loaded
-    setTimeout(function() {
-      var savedTheme = loadCustomTheme();
-      if (savedTheme) {
-        console.log('[THEME-CUSTOMIZER] Loading saved custom theme:', savedTheme);
-        applyCustomTheme(savedTheme);
-      }
-    }, 200);
+    // Note: Custom theme application is now handled by theme.js
+    // when the theme mode is set to 'custom'
 
     DEBUG.log('[THEME-CUSTOMIZER] Theme customizer initialized');
   }
