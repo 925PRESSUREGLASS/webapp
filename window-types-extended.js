@@ -357,6 +357,68 @@
     },
 
     // ========================================
+    // ADDITIONAL SIZES
+    // ========================================
+
+    FIXED_600: {
+      id: 'fixed_600',
+      name: 'Fixed Window 600mm',
+      code: 'FIX-600',
+      category: 'fixed',
+      width: 600,
+      height: 1200,
+      baseMinutesInside: 2,
+      baseMinutesOutside: 2,
+      basePrice: 12.00,
+      description: 'Small fixed glass panel',
+      commonLocations: 'Sidelights, small feature windows'
+    },
+
+    BIFOLD_4800: {
+      id: 'bifold_4800',
+      name: 'Bi-fold Door 4800mm',
+      code: 'BFD-4800',
+      category: 'bifold',
+      width: 4800,
+      height: 2100,
+      baseMinutesInside: 28,
+      baseMinutesOutside: 28,
+      basePrice: 120.00,
+      description: '6-panel bi-fold door system',
+      commonLocations: 'Large alfresco, premium homes',
+      notes: 'Very large system, premium pricing'
+    },
+
+    STACKER_4800: {
+      id: 'stacker_4800',
+      name: 'Stacker Door 4800mm',
+      code: 'STK-4800',
+      category: 'stacker',
+      width: 4800,
+      height: 2100,
+      baseMinutesInside: 24,
+      baseMinutesOutside: 24,
+      basePrice: 110.00,
+      description: '4-panel stacker door',
+      commonLocations: 'Very large openings, luxury homes'
+    },
+
+    SKYLIGHT_1200: {
+      id: 'skylight_1200',
+      name: 'Skylight 1200x1200mm',
+      code: 'SKY-1200',
+      category: 'skylight',
+      width: 1200,
+      height: 1200,
+      baseMinutesInside: 18,
+      baseMinutesOutside: 18,
+      basePrice: 80.00,
+      description: 'Very large skylight',
+      commonLocations: 'Large living areas, cathedral ceilings',
+      notes: 'Difficult access, premium pricing'
+    },
+
+    // ========================================
     // CUSTOM SIZE (User Input)
     // ========================================
 
@@ -372,6 +434,188 @@
       basePrice: null,
       description: 'Non-standard size, manual entry',
       notes: 'Will be calculated based on dimensions entered'
+    }
+  };
+
+  // ========================================
+  // HELPER FUNCTIONS
+  // ========================================
+
+  var WindowTypeHelpers = {
+
+    /**
+     * Get window type by ID
+     * @param {string} typeId - The window type ID
+     * @returns {Object|null} Window type object or null if not found
+     */
+    getType: function(typeId) {
+      if (!typeId) return null;
+      for (var key in WINDOW_TYPES_EXTENDED) {
+        if (WINDOW_TYPES_EXTENDED.hasOwnProperty(key)) {
+          if (WINDOW_TYPES_EXTENDED[key].id === typeId) {
+            return WINDOW_TYPES_EXTENDED[key];
+          }
+        }
+      }
+      return null;
+    },
+
+    /**
+     * Get all window types
+     * @returns {Object} All window types
+     */
+    getAllTypes: function() {
+      return WINDOW_TYPES_EXTENDED;
+    },
+
+    /**
+     * Get window types by category
+     * @param {string} category - Category name (sliding, awning, fixed, etc.)
+     * @returns {Array} Array of window types in that category
+     */
+    getTypesByCategory: function(category) {
+      var results = [];
+      for (var key in WINDOW_TYPES_EXTENDED) {
+        if (WINDOW_TYPES_EXTENDED.hasOwnProperty(key)) {
+          var type = WINDOW_TYPES_EXTENDED[key];
+          if (type.category === category) {
+            results.push(type);
+          }
+        }
+      }
+      return results;
+    },
+
+    /**
+     * Calculate time for window type
+     * @param {string} typeId - Window type ID
+     * @param {number} quantity - Number of windows
+     * @param {boolean} inside - Clean inside?
+     * @param {boolean} outside - Clean outside?
+     * @returns {number} Total minutes
+     */
+    calculateTime: function(typeId, quantity, inside, outside) {
+      var type = this.getType(typeId);
+      if (!type) return 0;
+
+      var timeIn = inside ? (type.baseMinutesInside || 0) : 0;
+      var timeOut = outside ? (type.baseMinutesOutside || 0) : 0;
+      var timePerWindow = timeIn + timeOut;
+
+      return Math.round(timePerWindow * quantity);
+    },
+
+    /**
+     * Calculate base price for window type
+     * @param {string} typeId - Window type ID
+     * @param {number} quantity - Number of windows
+     * @returns {number} Base price in dollars
+     */
+    calculateBasePrice: function(typeId, quantity) {
+      var type = this.getType(typeId);
+      if (!type || !type.basePrice) return 0;
+
+      return type.basePrice * quantity;
+    },
+
+    /**
+     * Get difficulty level for a window type
+     * @param {string} typeId - Window type ID
+     * @returns {string} Difficulty level (easy, medium, hard)
+     */
+    getDifficulty: function(typeId) {
+      var type = this.getType(typeId);
+      if (!type) return 'medium';
+
+      // Determine difficulty based on category and size
+      if (type.category === 'louvre') return 'hard';
+      if (type.category === 'bifold' || type.category === 'stacker') return 'hard';
+      if (type.category === 'skylight') return 'hard';
+      if (type.category === 'casement') return 'medium';
+      if (type.width >= 2400) return 'medium';
+
+      return 'easy';
+    },
+
+    /**
+     * Get difficulty multiplier
+     * @param {string} difficulty - Difficulty level
+     * @returns {number} Multiplier
+     */
+    getDifficultyMultiplier: function(difficulty) {
+      var multipliers = {
+        'easy': 1.0,
+        'medium': 1.2,
+        'hard': 1.5
+      };
+      return multipliers[difficulty] || 1.0;
+    },
+
+    /**
+     * Search window types by name or description
+     * @param {string} query - Search query
+     * @returns {Array} Matching window types
+     */
+    searchTypes: function(query) {
+      if (!query) return [];
+
+      var results = [];
+      var lowerQuery = query.toLowerCase();
+
+      for (var key in WINDOW_TYPES_EXTENDED) {
+        if (WINDOW_TYPES_EXTENDED.hasOwnProperty(key)) {
+          var type = WINDOW_TYPES_EXTENDED[key];
+          var nameMatch = type.name && type.name.toLowerCase().indexOf(lowerQuery) !== -1;
+          var descMatch = type.description && type.description.toLowerCase().indexOf(lowerQuery) !== -1;
+          var codeMatch = type.code && type.code.toLowerCase().indexOf(lowerQuery) !== -1;
+
+          if (nameMatch || descMatch || codeMatch) {
+            results.push(type);
+          }
+        }
+      }
+
+      return results;
+    },
+
+    /**
+     * Get categories list
+     * @returns {Array} List of unique categories
+     */
+    getCategories: function() {
+      var categories = [];
+      var seen = {};
+
+      for (var key in WINDOW_TYPES_EXTENDED) {
+        if (WINDOW_TYPES_EXTENDED.hasOwnProperty(key)) {
+          var cat = WINDOW_TYPES_EXTENDED[key].category;
+          if (cat && !seen[cat]) {
+            categories.push(cat);
+            seen[cat] = true;
+          }
+        }
+      }
+
+      return categories;
+    },
+
+    /**
+     * Get window type by code
+     * @param {string} code - Window type code (e.g., 'SLD-1200')
+     * @returns {Object|null} Window type or null
+     */
+    getTypeByCode: function(code) {
+      if (!code) return null;
+
+      for (var key in WINDOW_TYPES_EXTENDED) {
+        if (WINDOW_TYPES_EXTENDED.hasOwnProperty(key)) {
+          if (WINDOW_TYPES_EXTENDED[key].code === code) {
+            return WINDOW_TYPES_EXTENDED[key];
+          }
+        }
+      }
+
+      return null;
     }
   };
 
@@ -398,8 +642,36 @@
     }
   }
 
+  // Register with APP namespace
+  if (window.APP && window.APP.registerModule) {
+    window.APP.registerModule('windowTypesExtended', {
+      types: WINDOW_TYPES_EXTENDED,
+      helpers: WindowTypeHelpers,
+      getType: WindowTypeHelpers.getType.bind(WindowTypeHelpers),
+      getAllTypes: WindowTypeHelpers.getAllTypes.bind(WindowTypeHelpers),
+      calculateTime: WindowTypeHelpers.calculateTime.bind(WindowTypeHelpers),
+      calculateBasePrice: WindowTypeHelpers.calculateBasePrice.bind(WindowTypeHelpers),
+      searchTypes: WindowTypeHelpers.searchTypes.bind(WindowTypeHelpers)
+    });
+  }
+
   // Export globally
   window.WINDOW_TYPES_EXTENDED = WINDOW_TYPES_EXTENDED;
   window.WINDOW_TYPES_ARRAY = WINDOW_TYPES_ARRAY;
+  window.WindowTypesExtended = {
+    types: WINDOW_TYPES_EXTENDED,
+    getType: WindowTypeHelpers.getType.bind(WindowTypeHelpers),
+    getAllTypes: WindowTypeHelpers.getAllTypes.bind(WindowTypeHelpers),
+    getTypesByCategory: WindowTypeHelpers.getTypesByCategory.bind(WindowTypeHelpers),
+    calculateTime: WindowTypeHelpers.calculateTime.bind(WindowTypeHelpers),
+    calculateBasePrice: WindowTypeHelpers.calculateBasePrice.bind(WindowTypeHelpers),
+    getDifficulty: WindowTypeHelpers.getDifficulty.bind(WindowTypeHelpers),
+    getDifficultyMultiplier: WindowTypeHelpers.getDifficultyMultiplier.bind(WindowTypeHelpers),
+    searchTypes: WindowTypeHelpers.searchTypes.bind(WindowTypeHelpers),
+    getCategories: WindowTypeHelpers.getCategories.bind(WindowTypeHelpers),
+    getTypeByCode: WindowTypeHelpers.getTypeByCode.bind(WindowTypeHelpers)
+  };
+
+  console.log('[WINDOW-TYPES-EXTENDED] Loaded ' + WINDOW_TYPES_ARRAY.length + ' window types');
 
 })();
