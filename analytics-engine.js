@@ -236,7 +236,6 @@
      * Calculate operational metrics
      */
     function calculateOperationalMetrics(dateRange) {
-        // Placeholder - would integrate with task management if available
         var metrics = {
             totalTasks: 0,
             completedTasks: 0,
@@ -246,14 +245,83 @@
             averageResponseTime: 0
         };
 
-        // Try to get quotes as proxy for response time
-        var quotes = getAllQuotes();
-        quotes = filterByDateRange(quotes, 'timestamp', dateRange);
+        // Check if TaskManager is available (v1.11.0+)
+        if (window.TaskManager && typeof window.TaskManager.getAllTasks === 'function') {
+            var allTasks = window.TaskManager.getAllTasks();
 
-        metrics.totalTasks = quotes.length;
-        metrics.completedTasks = quotes.length; // Assume all quotes are completed
-        metrics.completionRate = 100;
-        metrics.averageResponseTime = 2; // Placeholder
+            // Filter tasks by date range (using createdDate)
+            var tasks = filterByDateRange(allTasks, 'createdDate', dateRange);
+
+            metrics.totalTasks = tasks.length;
+
+            var completionTimes = [];
+            var responseTimes = [];
+
+            for (var i = 0; i < tasks.length; i++) {
+                var task = tasks[i];
+
+                // Count by status
+                if (task.status === 'completed') {
+                    metrics.completedTasks++;
+
+                    // Calculate completion time (created to completed)
+                    if (task.completedDate && task.createdDate) {
+                        var created = new Date(task.createdDate);
+                        var completed = new Date(task.completedDate);
+                        var completionTimeHours = (completed - created) / (1000 * 60 * 60);
+                        completionTimes.push(completionTimeHours);
+                    }
+                } else if (task.status === 'overdue') {
+                    metrics.overdueTasks++;
+                }
+
+                // Calculate response time (created to scheduled)
+                if (task.scheduledDate && task.createdDate) {
+                    var createdDate = new Date(task.createdDate);
+                    var scheduledDate = new Date(task.scheduledDate);
+                    var responseTimeHours = (scheduledDate - createdDate) / (1000 * 60 * 60);
+                    responseTimes.push(responseTimeHours);
+                }
+            }
+
+            // Calculate completion rate
+            if (metrics.totalTasks > 0) {
+                metrics.completionRate = Math.round((metrics.completedTasks / metrics.totalTasks) * 100);
+            }
+
+            // Calculate average completion time
+            if (completionTimes.length > 0) {
+                var totalCompletionTime = 0;
+                for (var j = 0; j < completionTimes.length; j++) {
+                    totalCompletionTime += completionTimes[j];
+                }
+                metrics.averageCompletionTime = Math.round(totalCompletionTime / completionTimes.length);
+            }
+
+            // Calculate average response time
+            if (responseTimes.length > 0) {
+                var totalResponseTime = 0;
+                for (var k = 0; k < responseTimes.length; k++) {
+                    totalResponseTime += responseTimes[k];
+                }
+                metrics.averageResponseTime = Math.round(totalResponseTime / responseTimes.length);
+            } else {
+                // Fallback: estimate from quotes
+                var quotes = getAllQuotes();
+                quotes = filterByDateRange(quotes, 'timestamp', dateRange);
+                // Average response time of 2 hours for quotes
+                metrics.averageResponseTime = quotes.length > 0 ? 2 : 0;
+            }
+        } else {
+            // Fallback to quotes-based metrics (pre-v1.11.0 compatibility)
+            var quotesForMetrics = getAllQuotes();
+            quotesForMetrics = filterByDateRange(quotesForMetrics, 'timestamp', dateRange);
+
+            metrics.totalTasks = quotesForMetrics.length;
+            metrics.completedTasks = quotesForMetrics.length;
+            metrics.completionRate = quotesForMetrics.length > 0 ? 100 : 0;
+            metrics.averageResponseTime = quotesForMetrics.length > 0 ? 2 : 0;
+        }
 
         return metrics;
     }
