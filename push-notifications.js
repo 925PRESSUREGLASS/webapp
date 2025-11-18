@@ -181,33 +181,124 @@
    */
   function navigateTo(page, params) {
     console.log('[PUSH] Navigate to:', page, params);
+    params = params || {};
 
-    // TODO: Implement navigation based on your app structure
-    // This is a placeholder implementation
+    // Hide all pages first
+    hideAllPages();
 
-    // Show task dashboard
-    if (page === 'tasks') {
-      if (window.TaskDashboardUI && window.TaskDashboardUI.show) {
-        window.TaskDashboardUI.show();
-      }
+    // Navigate based on page type
+    switch (page) {
+      case 'tasks':
+        // Show task dashboard page
+        showPage('page-tasks');
+        if (window.TaskDashboard && window.TaskDashboard.init) {
+          window.TaskDashboard.init();
+        }
+        break;
+
+      case 'quote-detail':
+        // Show main app and scroll to quote section
+        showMainApp();
+        if (params.id) {
+          // Load specific quote if QuoteManager exists
+          if (window.QuoteManager && window.QuoteManager.loadQuote) {
+            window.QuoteManager.loadQuote(params.id);
+          } else {
+            console.warn('[PUSH] QuoteManager not available');
+          }
+        }
+        break;
+
+      case 'invoices':
+        // Show main app and open invoice modal
+        showMainApp();
+        if (window.InvoiceSystem && window.InvoiceSystem.showInvoiceList) {
+          window.InvoiceSystem.showInvoiceList();
+        } else {
+          console.warn('[PUSH] InvoiceSystem not available');
+        }
+        break;
+
+      case 'contract-detail':
+        // Show main app
+        showMainApp();
+        if (params.id && window.ContractManager && window.ContractManager.viewContract) {
+          window.ContractManager.viewContract(params.id);
+        } else {
+          console.warn('[PUSH] ContractManager not available or no contract ID');
+        }
+        break;
+
+      case 'client-detail':
+        // Show main app and open client database
+        showMainApp();
+        if (window.ClientDatabase && window.ClientDatabase.showList) {
+          window.ClientDatabase.showList();
+          // If specific client, try to select it
+          if (params.id && window.ClientDatabase.selectClient) {
+            window.ClientDatabase.selectClient(params.id);
+          }
+        } else {
+          console.warn('[PUSH] ClientDatabase not available');
+        }
+        break;
+
+      case 'home':
+      default:
+        // Show main app (quote form)
+        showMainApp();
+        break;
     }
 
-    // Show specific quote
-    if (page === 'quote-detail' && params && params.id) {
-      if (window.QuoteManager && window.QuoteManager.showQuote) {
-        window.QuoteManager.showQuote(params.id);
-      }
+    console.log('[PUSH] Navigation completed to:', page);
+  }
+
+  /**
+   * Hide all pages
+   */
+  function hideAllPages() {
+    var pages = document.querySelectorAll('.page');
+    for (var i = 0; i < pages.length; i++) {
+      pages[i].style.display = 'none';
+    }
+  }
+
+  /**
+   * Show specific page by ID
+   * @param {string} pageId - Page element ID
+   */
+  function showPage(pageId) {
+    // Hide main app
+    var mainApp = document.querySelector('.app');
+    if (mainApp) {
+      mainApp.style.display = 'none';
     }
 
-    // Show invoices
-    if (page === 'invoices') {
-      if (window.InvoiceSystem && window.InvoiceSystem.showInvoiceList) {
-        window.InvoiceSystem.showInvoiceList();
-      }
+    // Show requested page
+    var page = document.getElementById(pageId);
+    if (page) {
+      page.style.display = 'block';
+      console.log('[PUSH] Showing page:', pageId);
+    } else {
+      console.warn('[PUSH] Page not found:', pageId);
+      // Fallback to main app
+      showMainApp();
     }
+  }
 
-    // Fallback: log to console
-    console.log('[PUSH] Navigation not fully implemented for:', page);
+  /**
+   * Show main app (quote form)
+   */
+  function showMainApp() {
+    // Hide all pages
+    hideAllPages();
+
+    // Show main app
+    var mainApp = document.querySelector('.app');
+    if (mainApp) {
+      mainApp.style.display = 'block';
+      console.log('[PUSH] Showing main app');
+    }
   }
 
   // ============================================
@@ -436,7 +527,8 @@
       scheduleFollowUpReminder: scheduleFollowUpReminder,
       checkPermissions: checkPermissions,
       requestPermissions: requestPermissions,
-      getPushToken: getPushToken
+      getPushToken: getPushToken,
+      navigateTo: navigateTo
     });
   }
 
@@ -451,8 +543,12 @@
     scheduleFollowUpReminder: scheduleFollowUpReminder,
     checkPermissions: checkPermissions,
     requestPermissions: requestPermissions,
-    getPushToken: getPushToken
+    getPushToken: getPushToken,
+    navigateTo: navigateTo
   };
+
+  // Expose navigateTo globally for other modules to use
+  window.navigateTo = navigateTo;
 
   console.log('[PUSH-NOTIFICATIONS] Module loaded');
 })();

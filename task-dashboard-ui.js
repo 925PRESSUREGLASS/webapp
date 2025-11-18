@@ -402,6 +402,48 @@
     }
   }
 
+  /**
+   * Show task dashboard page
+   */
+  function show() {
+    console.log('[TASK-DASHBOARD] Showing task dashboard');
+
+    // Hide main app
+    var mainApp = document.querySelector('.app');
+    if (mainApp) {
+      mainApp.style.display = 'none';
+    }
+
+    // Show task page
+    var taskPage = document.getElementById('page-tasks');
+    if (taskPage) {
+      taskPage.style.display = 'block';
+      // Reload dashboard data
+      loadTaskDashboard();
+    } else {
+      console.error('[TASK-DASHBOARD] Task page not found');
+    }
+  }
+
+  /**
+   * Hide task dashboard page
+   */
+  function hide() {
+    console.log('[TASK-DASHBOARD] Hiding task dashboard');
+
+    // Hide task page
+    var taskPage = document.getElementById('page-tasks');
+    if (taskPage) {
+      taskPage.style.display = 'none';
+    }
+
+    // Show main app
+    var mainApp = document.querySelector('.app');
+    if (mainApp) {
+      mainApp.style.display = 'block';
+    }
+  }
+
   // Auto-init when DOM is ready
   if (document.readyState === 'loading') {
     document.addEventListener('DOMContentLoaded', function() {
@@ -419,6 +461,8 @@
   if (window.APP && window.APP.registerModule) {
     window.APP.registerModule('taskDashboard', {
       init: init,
+      show: show,
+      hide: hide,
       renderTaskList: renderTaskList,
       applyTaskFilters: applyTaskFilters,
       filterTasks: filterTasks,
@@ -431,10 +475,15 @@
   // Global API
   window.TaskDashboard = {
     init: init,
+    show: show,
+    hide: hide,
     renderTaskList: renderTaskList,
     applyTaskFilters: applyTaskFilters,
     filterTasks: filterTasks
   };
+
+  // TaskDashboardUI alias (for backwards compatibility with push-notifications.js)
+  window.TaskDashboardUI = window.TaskDashboard;
 
   // Global functions for HTML onclick handlers
   window.viewTask = viewTask;
