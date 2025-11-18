@@ -54,6 +54,7 @@
 	<link rel="stylesheet" href="analytics.css" />
 	<link rel="stylesheet" href="photos.css" />
 	<link rel="stylesheet" href="mobile.css" />
+	<link rel="stylesheet" href="quote-pdf.css" />
 	<link rel="stylesheet" href="print.css" media="print" />
 	<link rel="stylesheet" href="invoice-print.css" media="print" />
 	<link rel="stylesheet" href="photo-print-layout.css" media="print" />
@@ -422,6 +423,8 @@
 	<!-- External dependencies -->
 	<!-- Chart.js temporarily commented out for testing - network issues in test environment -->
 	<!-- <script src="https://cdn.jsdelivr.net/npm/chart.js" defer></script> -->
+	<!-- jsPDF for quote PDF generation -->
+	<script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js" defer></script>
 
 	<!-- Core modules (load in dependency order) -->
 	<!-- Debug system loads first (no defer - must be available immediately) -->
@@ -474,6 +477,11 @@
 	<script src="error-handler.js" defer></script>
 	<script src="export.js" defer></script>
 	<script src="templates.js" defer></script>
+	<!-- PDF Generation Modules -->
+	<script src="pdf-config.js" defer></script>
+	<script src="pdf-components.js" defer></script>
+	<script src="quote-pdf.js" defer></script>
+	<script src="quote-pdf-ui.js" defer></script>
 	<!-- Lazy-loaded modules (loaded on demand via LazyLoader) -->
 	<!-- <script src="analytics.js" defer></script> -->
 	<!-- <script src="charts.js" defer></script> -->

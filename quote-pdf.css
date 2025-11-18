@@ -1,0 +1,507 @@
+/* quote-pdf.css - PDF UI Styles */
+/* Styling for PDF buttons, email modal, and related components */
+
+/* ============================================
+   PDF Action Buttons
+   ============================================ */
+
+.pdf-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.75rem;
+  margin: 1.5rem 0;
+  padding: 1rem;
+  background-color: var(--bg-secondary, #f9fafb);
+  border-radius: 0.5rem;
+  border: 1px solid var(--border-color, #e5e7eb);
+}
+
+.pdf-actions .btn-icon {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.75rem 1.25rem;
+  font-size: 0.875rem;
+  font-weight: 500;
+  border-radius: 0.375rem;
+  transition: all 0.2s ease;
+  cursor: pointer;
+  white-space: nowrap;
+}
+
+.pdf-actions .btn-icon svg {
+  width: 1.25rem;
+  height: 1.25rem;
+  flex-shrink: 0;
+}
+
+/* Primary button (Preview) */
+.pdf-actions .btn-primary {
+  background-color: var(--primary-color, #2563eb);
+  color: white;
+  border: 1px solid var(--primary-color, #2563eb);
+}
+
+.pdf-actions .btn-primary:hover {
+  background-color: var(--primary-hover, #1d4ed8);
+  border-color: var(--primary-hover, #1d4ed8);
+  transform: translateY(-1px);
+  box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
+}
+
+.pdf-actions .btn-primary:active {
+  transform: translateY(0);
+}
+
+/* Secondary button (Download) */
+.pdf-actions .btn-secondary {
+  background-color: white;
+  color: var(--text-dark, #1f2937);
+  border: 1px solid var(--border-color, #d1d5db);
+}
+
+.pdf-actions .btn-secondary:hover {
+  background-color: var(--bg-secondary, #f9fafb);
+  border-color: var(--text-medium, #9ca3af);
+  transform: translateY(-1px);
+  box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
+}
+
+/* Tertiary button (Email) */
+.pdf-actions .btn-tertiary {
+  background-color: var(--secondary-color, #10b981);
+  color: white;
+  border: 1px solid var(--secondary-color, #10b981);
+}
+
+.pdf-actions .btn-tertiary:hover {
+  background-color: var(--secondary-hover, #059669);
+  border-color: var(--secondary-hover, #059669);
+  transform: translateY(-1px);
+  box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
+}
+
+/* Accent button (Share) */
+.pdf-actions .btn-accent {
+  background-color: var(--accent-color, #f59e0b);
+  color: white;
+  border: 1px solid var(--accent-color, #f59e0b);
+}
+
+.pdf-actions .btn-accent:hover {
+  background-color: var(--accent-hover, #d97706);
+  border-color: var(--accent-hover, #d97706);
+  transform: translateY(-1px);
+  box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
+}
+
+/* Disabled state */
+.pdf-actions .btn-icon:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+  transform: none !important;
+}
+
+.pdf-actions .btn-icon:disabled:hover {
+  transform: none;
+  box-shadow: none;
+}
+
+/* Mobile-only buttons */
+.mobile-only {
+  display: none;
+}
+
+@media (max-width: 640px) {
+  .mobile-only {
+    display: inline-flex;
+  }
+
+  .pdf-actions {
+    flex-direction: column;
+  }
+
+  .pdf-actions .btn-icon {
+    width: 100%;
+    justify-content: center;
+  }
+
+  .pdf-actions .btn-icon span {
+    flex: 1;
+    text-align: left;
+  }
+}
+
+/* ============================================
+   Email Modal
+   ============================================ */
+
+#email-modal-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background-color: rgba(0, 0, 0, 0.5);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 9999;
+  opacity: 0;
+  transition: opacity 0.3s ease;
+  padding: 1rem;
+}
+
+#email-modal-overlay.active {
+  opacity: 1;
+}
+
+#email-modal {
+  background-color: white;
+  border-radius: 0.5rem;
+  box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04);
+  max-width: 600px;
+  width: 100%;
+  max-height: 90vh;
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+  transform: scale(0.95);
+  transition: transform 0.3s ease;
+}
+
+#email-modal.active {
+  transform: scale(1);
+}
+
+/* Modal header */
+#email-modal .modal-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 1.25rem 1.5rem;
+  border-bottom: 1px solid var(--border-color, #e5e7eb);
+  background-color: var(--bg-secondary, #f9fafb);
+}
+
+#email-modal .modal-title {
+  font-size: 1.25rem;
+  font-weight: 600;
+  color: var(--text-dark, #1f2937);
+  margin: 0;
+}
+
+#email-modal .modal-close {
+  background: none;
+  border: none;
+  padding: 0.5rem;
+  cursor: pointer;
+  color: var(--text-medium, #6b7280);
+  border-radius: 0.375rem;
+  transition: all 0.2s ease;
+}
+
+#email-modal .modal-close:hover {
+  background-color: var(--bg-hover, #f3f4f6);
+  color: var(--text-dark, #1f2937);
+}
+
+#email-modal .modal-close svg {
+  width: 1.5rem;
+  height: 1.5rem;
+}
+
+/* Modal body */
+#email-modal .modal-body {
+  padding: 1.5rem;
+  overflow-y: auto;
+  flex: 1;
+}
+
+#email-modal .form-group {
+  margin-bottom: 1.25rem;
+}
+
+#email-modal .form-group:last-child {
+  margin-bottom: 0;
+}
+
+#email-modal .form-label {
+  display: block;
+  font-size: 0.875rem;
+  font-weight: 500;
+  color: var(--text-dark, #1f2937);
+  margin-bottom: 0.5rem;
+}
+
+#email-modal .form-input,
+#email-modal .form-textarea {
+  width: 100%;
+  padding: 0.625rem 0.875rem;
+  font-size: 0.875rem;
+  line-height: 1.5;
+  color: var(--text-dark, #1f2937);
+  background-color: white;
+  border: 1px solid var(--border-color, #d1d5db);
+  border-radius: 0.375rem;
+  transition: all 0.2s ease;
+  font-family: inherit;
+}
+
+#email-modal .form-input:focus,
+#email-modal .form-textarea:focus {
+  outline: none;
+  border-color: var(--primary-color, #2563eb);
+  ring: 2px;
+  ring-color: rgba(37, 99, 235, 0.2);
+  box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.1);
+}
+
+#email-modal .form-textarea {
+  resize: vertical;
+  min-height: 150px;
+}
+
+/* Alert box */
+#email-modal .alert {
+  padding: 0.875rem;
+  border-radius: 0.375rem;
+  margin-top: 1rem;
+}
+
+#email-modal .alert-info {
+  background-color: #dbeafe;
+  border: 1px solid #93c5fd;
+  color: #1e40af;
+}
+
+#email-modal .alert-content {
+  display: flex;
+  align-items: flex-start;
+  gap: 0.75rem;
+}
+
+#email-modal .alert-content svg {
+  width: 1.25rem;
+  height: 1.25rem;
+  flex-shrink: 0;
+  margin-top: 0.125rem;
+}
+
+#email-modal .alert-message {
+  font-size: 0.875rem;
+  line-height: 1.5;
+}
+
+#email-modal .alert-message strong {
+  font-weight: 600;
+}
+
+/* Modal footer */
+#email-modal .modal-footer {
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  gap: 0.75rem;
+  padding: 1.25rem 1.5rem;
+  border-top: 1px solid var(--border-color, #e5e7eb);
+  background-color: var(--bg-secondary, #f9fafb);
+}
+
+#email-modal .modal-footer button {
+  padding: 0.625rem 1.25rem;
+  font-size: 0.875rem;
+  font-weight: 500;
+  border-radius: 0.375rem;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  border: 1px solid transparent;
+}
+
+#email-modal .modal-footer .btn-secondary {
+  background-color: white;
+  color: var(--text-dark, #1f2937);
+  border-color: var(--border-color, #d1d5db);
+}
+
+#email-modal .modal-footer .btn-secondary:hover {
+  background-color: var(--bg-secondary, #f9fafb);
+  border-color: var(--text-medium, #9ca3af);
+}
+
+#email-modal .modal-footer .btn-primary {
+  background-color: var(--primary-color, #2563eb);
+  color: white;
+  border-color: var(--primary-color, #2563eb);
+}
+
+#email-modal .modal-footer .btn-primary:hover {
+  background-color: var(--primary-hover, #1d4ed8);
+  border-color: var(--primary-hover, #1d4ed8);
+}
+
+/* Modal open body state */
+body.modal-open {
+  overflow: hidden;
+}
+
+/* ============================================
+   PDF Status Indicators
+   ============================================ */
+
+.pdf-status {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.375rem 0.75rem;
+  font-size: 0.75rem;
+  font-weight: 500;
+  border-radius: 9999px;
+  text-transform: uppercase;
+  letter-spacing: 0.025em;
+}
+
+.pdf-status.draft {
+  background-color: #fef3c7;
+  color: #92400e;
+}
+
+.pdf-status.sent {
+  background-color: #dbeafe;
+  color: #1e40af;
+}
+
+.pdf-status.accepted {
+  background-color: #d1fae5;
+  color: #065f46;
+}
+
+.pdf-status.expired {
+  background-color: #fee2e2;
+  color: #991b1b;
+}
+
+/* ============================================
+   PDF Loading States
+   ============================================ */
+
+.pdf-generating {
+  position: relative;
+  pointer-events: none;
+  opacity: 0.6;
+}
+
+.pdf-generating::after {
+  content: '';
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  width: 1rem;
+  height: 1rem;
+  margin-top: -0.5rem;
+  margin-left: -0.5rem;
+  border: 2px solid currentColor;
+  border-right-color: transparent;
+  border-radius: 50%;
+  animation: pdf-spin 0.6s linear infinite;
+}
+
+@keyframes pdf-spin {
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+/* ============================================
+   Responsive Adjustments
+   ============================================ */
+
+@media (max-width: 640px) {
+  #email-modal {
+    max-height: 100vh;
+    border-radius: 0;
+  }
+
+  #email-modal .modal-header,
+  #email-modal .modal-body,
+  #email-modal .modal-footer {
+    padding: 1rem;
+  }
+
+  #email-modal .modal-footer {
+    flex-direction: column-reverse;
+  }
+
+  #email-modal .modal-footer button {
+    width: 100%;
+  }
+}
+
+/* ============================================
+   Dark Mode Support
+   ============================================ */
+
+@media (prefers-color-scheme: dark) {
+  body.dark-mode #email-modal {
+    background-color: var(--dark-bg-secondary, #1f2937);
+  }
+
+  body.dark-mode #email-modal .modal-header,
+  body.dark-mode #email-modal .modal-footer {
+    background-color: var(--dark-bg-tertiary, #111827);
+    border-color: var(--dark-border, #374151);
+  }
+
+  body.dark-mode #email-modal .modal-title {
+    color: var(--dark-text, #f9fafb);
+  }
+
+  body.dark-mode #email-modal .modal-body {
+    color: var(--dark-text-medium, #d1d5db);
+  }
+
+  body.dark-mode #email-modal .form-label {
+    color: var(--dark-text, #f9fafb);
+  }
+
+  body.dark-mode #email-modal .form-input,
+  body.dark-mode #email-modal .form-textarea {
+    background-color: var(--dark-bg-secondary, #1f2937);
+    border-color: var(--dark-border, #374151);
+    color: var(--dark-text, #f9fafb);
+  }
+
+  body.dark-mode #email-modal .form-input:focus,
+  body.dark-mode #email-modal .form-textarea:focus {
+    border-color: var(--primary-color, #2563eb);
+    box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.2);
+  }
+
+  body.dark-mode .pdf-actions {
+    background-color: var(--dark-bg-tertiary, #111827);
+    border-color: var(--dark-border, #374151);
+  }
+
+  body.dark-mode .pdf-actions .btn-secondary {
+    background-color: var(--dark-bg-secondary, #1f2937);
+    border-color: var(--dark-border, #374151);
+    color: var(--dark-text, #f9fafb);
+  }
+
+  body.dark-mode .pdf-actions .btn-secondary:hover {
+    background-color: var(--dark-bg-tertiary, #111827);
+    border-color: var(--dark-border-hover, #4b5563);
+  }
+}
+
+/* ============================================
+   Print Styles
+   ============================================ */
+
+@media print {
+  .pdf-actions,
+  #email-modal-overlay,
+  #email-modal {
+    display: none !important;
+  }
+}
