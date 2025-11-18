@@ -68,11 +68,30 @@
 	<div class="app">
 		<!-- HEADER -->
 		<header class="hdr">
-			<div class="hdr-row">
-				<div class="hdr-ic">🧽</div>
-				<div class="hdr-info">
-					<div class="hdr-title">Tic-Tac-Stick Quote Engine</div>
-					<div class="hdr-subtitle">925 Pressure Glass · Window & Pressure Cleaning</div>
+			<div class="hdr-row hdr-row-top">
+				<div class="hdr-brand">
+					<div class="hdr-ic">🧽</div>
+					<div class="hdr-info">
+						<div class="hdr-title">Tic-Tac-Stick Quote Engine</div>
+						<div class="hdr-subtitle">925 Pressure Glass · Window & Pressure Cleaning</div>
+					</div>
+				</div>
+				<div class="hdr-actions">
+					<button id="toggleModeBtn" type="button" class="btn btn-secondary" aria-label="Switch to wizard mode">
+						Switch to Wizard Mode
+					</button>
+					<button id="clearAllBtn" type="button" class="btn btn-tertiary" aria-label="Clear all quote data">
+						Clear All
+					</button>
+					<button id="keyboardShortcutsBtn" type="button" class="btn btn-tertiary" title="Keyboard Shortcuts (Press ?)" aria-label="View keyboard shortcuts">
+						⌨️ Help
+					</button>
+					<button id="webhookSettingsBtn" type="button" class="btn btn-tertiary" title="Webhook & Sync Settings" aria-label="Open webhook settings" onclick="openWebhookSettings()">
+						🔄 Sync
+					</button>
+					<button id="testRunnerBtn" type="button" class="btn btn-tertiary" title="Test & QA Suite" aria-label="Open test runner" onclick="openTestRunner()">
+						🧪 Tests
+					</button>
 				</div>
 			</div>
 			<div class="hdr-row hdr-row-meta">
@@ -99,23 +118,6 @@
 							<option value="mixed">Mixed Windows & Pressure</option>
 						</select>
 					</label>
-				</div>
-				<div class="hdr-actions">
-					<button id="toggleModeBtn" type="button" class="btn btn-secondary" aria-label="Switch to wizard mode">
-						Switch to Wizard Mode
-					</button>
-					<button id="clearAllBtn" type="button" class="btn btn-tertiary" aria-label="Clear all quote data">
-						Clear All
-					</button>
-					<button id="keyboardShortcutsBtn" type="button" class="btn btn-tertiary" title="Keyboard Shortcuts (Press ?)" aria-label="View keyboard shortcuts">
-						⌨️ Help
-					</button>
-					<button id="webhookSettingsBtn" type="button" class="btn btn-tertiary" title="Webhook & Sync Settings" aria-label="Open webhook settings" onclick="openWebhookSettings()">
-						🔄 Sync
-					</button>
-				<button id="testRunnerBtn" type="button" class="btn btn-tertiary" title="Test & QA Suite" aria-label="Open test runner" onclick="openTestRunner()">
-					🧪 Tests
-				</button>
 				</div>
 			</div>
 		</header>

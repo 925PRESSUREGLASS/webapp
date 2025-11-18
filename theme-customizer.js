@@ -133,11 +133,11 @@
   function applyCustomColors(colors) {
     var root = document.documentElement;
 
-    // Apply each color as a CSS variable
+    // Apply each color as a CSS variable with !important to override base theme
     for (var key in colors) {
       if (colors.hasOwnProperty(key)) {
         var cssVarName = '--' + key.replace(/([A-Z])/g, '-$1').toLowerCase();
-        root.style.setProperty(cssVarName, colors[key]);
+        root.style.setProperty(cssVarName, colors[key], 'important');
       }
     }
   }
@@ -169,18 +169,22 @@
       window.ThemeManager.set(theme.baseTheme);
     }
 
-    // Apply custom colors
-    if (theme.colors) {
-      applyCustomColors(theme.colors);
-    }
+    // Apply custom colors after a short delay to ensure base theme is loaded
+    setTimeout(function() {
+      if (theme.colors) {
+        applyCustomColors(theme.colors);
+      }
 
-    // Apply custom logo
-    if (theme.logo) {
-      applyCustomLogo(theme.logo);
-    }
+      // Apply custom logo
+      if (theme.logo) {
+        applyCustomLogo(theme.logo);
+      }
 
-    // Mark as custom theme
-    document.documentElement.setAttribute('data-custom-theme', 'true');
+      // Mark as custom theme
+      document.documentElement.setAttribute('data-custom-theme', 'true');
+
+      console.log('[THEME-CUSTOMIZER] Custom theme applied:', theme);
+    }, 100);
   }
 
   // Reset to default theme
@@ -630,14 +634,17 @@
 
   // Initialize theme customizer
   function init() {
-    // Load and apply saved custom theme
-    var savedTheme = loadCustomTheme();
-    if (savedTheme) {
-      applyCustomTheme(savedTheme);
-    }
-
     // Add customizer button
     addCustomizerButton();
+
+    // Load and apply saved custom theme after a delay to ensure base theme is loaded
+    setTimeout(function() {
+      var savedTheme = loadCustomTheme();
+      if (savedTheme) {
+        console.log('[THEME-CUSTOMIZER] Loading saved custom theme:', savedTheme);
+        applyCustomTheme(savedTheme);
+      }
+    }, 200);
 
     DEBUG.log('[THEME-CUSTOMIZER] Theme customizer initialized');
   }
