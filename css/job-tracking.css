@@ -1,0 +1,626 @@
+/* job-tracking.css - Job Tracking UI Styles */
+
+/* Job Timer Card */
+.job-timer-card {
+    text-align: center;
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    color: white;
+    padding: 2rem;
+    margin-bottom: 1.5rem;
+}
+
+.timer-display {
+    margin-bottom: 1rem;
+}
+
+.timer-value {
+    font-size: 3rem;
+    font-weight: bold;
+    font-family: 'Courier New', monospace;
+    letter-spacing: 0.1em;
+}
+
+.timer-label {
+    font-size: 0.875rem;
+    opacity: 0.9;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+}
+
+.timer-controls {
+    display: flex;
+    gap: 0.5rem;
+    justify-content: center;
+    margin-top: 1rem;
+}
+
+.timer-controls .btn {
+    min-width: 120px;
+}
+
+/* Quick Actions Grid */
+.quick-actions-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+    gap: 1rem;
+    margin-bottom: 1.5rem;
+}
+
+.quick-action-btn {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 0.5rem;
+    padding: 1rem;
+    background: white;
+    border: 2px solid #e5e7eb;
+    border-radius: 8px;
+    cursor: pointer;
+    transition: all 0.2s;
+}
+
+.quick-action-btn:hover {
+    border-color: #667eea;
+    background: #f9fafb;
+    transform: translateY(-2px);
+}
+
+.quick-action-icon {
+    font-size: 2rem;
+}
+
+.quick-action-label {
+    font-size: 0.875rem;
+    font-weight: 500;
+    color: #374151;
+    text-align: center;
+}
+
+/* Work Items */
+.work-item {
+    background: white;
+    border: 1px solid #e5e7eb;
+    border-radius: 8px;
+    padding: 1rem;
+    margin-bottom: 1rem;
+}
+
+.work-item-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 1rem;
+}
+
+.work-item-header h4 {
+    margin: 0;
+    font-size: 1rem;
+    color: #111827;
+}
+
+.work-item-comparison {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 1rem;
+    margin-bottom: 1rem;
+}
+
+.comparison-col {
+    padding: 0.75rem;
+    background: #f9fafb;
+    border-radius: 6px;
+}
+
+.comparison-label {
+    font-size: 0.75rem;
+    font-weight: 600;
+    text-transform: uppercase;
+    color: #6b7280;
+    margin-bottom: 0.5rem;
+}
+
+.comparison-value {
+    font-size: 0.875rem;
+    color: #374151;
+}
+
+.comparison-value > div {
+    margin-bottom: 0.25rem;
+}
+
+.work-item-issues {
+    padding: 0.75rem;
+    background: #fef3c7;
+    border-left: 3px solid #f59e0b;
+    border-radius: 4px;
+    font-size: 0.875rem;
+    margin-bottom: 0.5rem;
+}
+
+.variance-indicator {
+    padding: 0.5rem;
+    border-radius: 4px;
+    font-size: 0.875rem;
+    font-weight: 500;
+    text-align: center;
+}
+
+.variance-indicator.positive {
+    background: #d1fae5;
+    color: #065f46;
+}
+
+.variance-indicator.negative {
+    background: #fee2e2;
+    color: #991b1b;
+}
+
+.variance-indicator.neutral {
+    background: #e0e7ff;
+    color: #3730a3;
+}
+
+/* Additional Work */
+.additional-work-section {
+    margin-top: 1.5rem;
+    padding-top: 1.5rem;
+    border-top: 2px solid #e5e7eb;
+}
+
+.additional-work-section h4 {
+    margin-bottom: 1rem;
+    color: #374151;
+}
+
+.additional-work-item {
+    background: #f0fdf4;
+    border: 1px solid #86efac;
+    border-radius: 6px;
+    padding: 0.75rem;
+    margin-bottom: 0.5rem;
+}
+
+/* Photos Section */
+.photo-tabs {
+    display: flex;
+    gap: 0.5rem;
+    margin-bottom: 1rem;
+    border-bottom: 2px solid #e5e7eb;
+}
+
+.photo-tab {
+    padding: 0.75rem 1.5rem;
+    background: none;
+    border: none;
+    border-bottom: 2px solid transparent;
+    cursor: pointer;
+    font-weight: 500;
+    color: #6b7280;
+    transition: all 0.2s;
+    margin-bottom: -2px;
+}
+
+.photo-tab:hover {
+    color: #374151;
+}
+
+.photo-tab.active {
+    color: #667eea;
+    border-bottom-color: #667eea;
+}
+
+.photos-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+    gap: 1rem;
+}
+
+.photo-card {
+    background: white;
+    border: 1px solid #e5e7eb;
+    border-radius: 8px;
+    overflow: hidden;
+    transition: transform 0.2s;
+}
+
+.photo-card:hover {
+    transform: translateY(-4px);
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+}
+
+.photo-thumbnail {
+    width: 100%;
+    height: 150px;
+    object-fit: cover;
+    cursor: pointer;
+}
+
+.photo-info {
+    padding: 0.75rem;
+}
+
+.photo-location {
+    font-weight: 600;
+    font-size: 0.875rem;
+    color: #111827;
+    margin-bottom: 0.25rem;
+}
+
+.photo-time {
+    font-size: 0.75rem;
+    color: #6b7280;
+    margin-bottom: 0.5rem;
+}
+
+.photo-notes {
+    font-size: 0.875rem;
+    color: #374151;
+}
+
+/* Photo Viewer Modal */
+.photo-viewer-modal {
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: rgba(0, 0, 0, 0.95);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    z-index: 10000;
+    padding: 2rem;
+}
+
+.photo-viewer-content {
+    position: relative;
+    max-width: 90vw;
+    max-height: 90vh;
+    background: white;
+    border-radius: 8px;
+    overflow: hidden;
+}
+
+.photo-viewer-close {
+    position: absolute;
+    top: 1rem;
+    right: 1rem;
+    width: 40px;
+    height: 40px;
+    background: rgba(0, 0, 0, 0.8);
+    color: white;
+    border: none;
+    border-radius: 50%;
+    font-size: 1.5rem;
+    cursor: pointer;
+    z-index: 10;
+}
+
+.photo-viewer-close:hover {
+    background: rgba(0, 0, 0, 1);
+}
+
+.photo-viewer-image {
+    max-width: 100%;
+    max-height: 70vh;
+    display: block;
+}
+
+.photo-viewer-info {
+    padding: 1rem;
+    background: #f9fafb;
+}
+
+.photo-viewer-info > div {
+    margin-bottom: 0.5rem;
+}
+
+/* Issues & Notes */
+.issues-section,
+.notes-section {
+    margin-bottom: 1.5rem;
+}
+
+.issues-section h4,
+.notes-section h4 {
+    margin-bottom: 1rem;
+    color: #374151;
+}
+
+.issue-card {
+    background: white;
+    border-left: 4px solid #6b7280;
+    border-radius: 6px;
+    padding: 1rem;
+    margin-bottom: 1rem;
+}
+
+.issue-card.severity-low {
+    border-left-color: #3b82f6;
+    background: #eff6ff;
+}
+
+.issue-card.severity-medium {
+    border-left-color: #f59e0b;
+    background: #fffbeb;
+}
+
+.issue-card.severity-high {
+    border-left-color: #ef4444;
+    background: #fef2f2;
+}
+
+.issue-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 0.5rem;
+}
+
+.issue-type {
+    font-weight: 600;
+    text-transform: capitalize;
+    color: #111827;
+}
+
+.issue-severity {
+    font-size: 0.75rem;
+    font-weight: 500;
+    padding: 0.25rem 0.75rem;
+    border-radius: 12px;
+    background: rgba(0, 0, 0, 0.1);
+    text-transform: uppercase;
+}
+
+.issue-description {
+    color: #374151;
+    margin-bottom: 0.5rem;
+}
+
+.issue-impact,
+.issue-resolution {
+    font-size: 0.875rem;
+    color: #6b7280;
+    margin-bottom: 0.25rem;
+}
+
+.issue-time {
+    font-size: 0.75rem;
+    color: #9ca3af;
+    margin-top: 0.5rem;
+}
+
+.note-card {
+    background: #fefce8;
+    border: 1px solid #fde047;
+    border-radius: 6px;
+    padding: 0.75rem;
+    margin-bottom: 0.75rem;
+}
+
+.note-type {
+    font-size: 0.75rem;
+    font-weight: 600;
+    text-transform: uppercase;
+    color: #854d0e;
+    margin-bottom: 0.25rem;
+}
+
+.note-text {
+    color: #374151;
+    margin-bottom: 0.5rem;
+}
+
+.note-time {
+    font-size: 0.75rem;
+    color: #6b7280;
+}
+
+/* Pricing Section */
+.pricing-comparison {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 1rem;
+    margin-bottom: 1rem;
+}
+
+.pricing-col {
+    text-align: center;
+    padding: 1rem;
+    background: #f9fafb;
+    border-radius: 6px;
+}
+
+.pricing-label {
+    font-size: 0.75rem;
+    font-weight: 600;
+    text-transform: uppercase;
+    color: #6b7280;
+    margin-bottom: 0.5rem;
+}
+
+.pricing-value {
+    font-size: 1.5rem;
+    font-weight: bold;
+    color: #111827;
+}
+
+.pricing-value.text-success {
+    color: #10b981;
+}
+
+.pricing-value.text-danger {
+    color: #ef4444;
+}
+
+.pricing-difference {
+    color: #6b7280;
+}
+
+/* Complete Job Modal */
+.rating-stars {
+    display: flex;
+    gap: 0.5rem;
+    justify-content: center;
+    margin: 1rem 0;
+}
+
+.rating-stars .star {
+    font-size: 2rem;
+    cursor: pointer;
+    color: #d1d5db;
+    transition: color 0.2s;
+}
+
+.rating-stars .star:hover,
+.rating-stars .star.active {
+    color: #fbbf24;
+}
+
+/* Pricing Insights Page */
+.accuracy-gauge {
+    text-align: center;
+    padding: 2rem;
+}
+
+.gauge-value {
+    font-size: 4rem;
+    font-weight: bold;
+    color: #667eea;
+}
+
+.gauge-label {
+    font-size: 1rem;
+    color: #6b7280;
+    margin-top: 0.5rem;
+}
+
+.accuracy-stats {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+    gap: 1rem;
+    margin-top: 2rem;
+}
+
+.stat {
+    text-align: center;
+    padding: 1rem;
+    background: #f9fafb;
+    border-radius: 6px;
+}
+
+.stat-label {
+    font-size: 0.875rem;
+    color: #6b7280;
+    margin-bottom: 0.5rem;
+}
+
+.stat-value {
+    font-size: 1.5rem;
+    font-weight: bold;
+    color: #111827;
+}
+
+.metrics-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+    gap: 1rem;
+}
+
+.metric-item {
+    padding: 1rem;
+    background: #f9fafb;
+    border-radius: 6px;
+}
+
+.metric-label {
+    font-size: 0.875rem;
+    color: #6b7280;
+    margin-bottom: 0.5rem;
+}
+
+.metric-value {
+    font-size: 1.25rem;
+    font-weight: 600;
+    color: #111827;
+}
+
+/* Responsive */
+@media (max-width: 768px) {
+    .timer-value {
+        font-size: 2rem;
+    }
+
+    .quick-actions-grid {
+        grid-template-columns: repeat(2, 1fr);
+    }
+
+    .work-item-comparison {
+        grid-template-columns: 1fr;
+    }
+
+    .pricing-comparison {
+        grid-template-columns: 1fr;
+    }
+
+    .photos-grid {
+        grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
+    }
+
+    .photo-viewer-modal {
+        padding: 1rem;
+    }
+}
+
+/* Dark Theme Support */
+@media (prefers-color-scheme: dark) {
+    .work-item,
+    .photo-card,
+    .issue-card,
+    .note-card,
+    .additional-work-item {
+        background: #1f2937;
+        border-color: #374151;
+        color: #f9fafb;
+    }
+
+    .comparison-col,
+    .pricing-col,
+    .stat,
+    .metric-item {
+        background: #1f2937;
+    }
+
+    .comparison-label,
+    .pricing-label,
+    .stat-label,
+    .metric-label {
+        color: #9ca3af;
+    }
+
+    .comparison-value,
+    .pricing-value,
+    .stat-value,
+    .metric-value {
+        color: #f9fafb;
+    }
+
+    .work-item-header h4,
+    .issue-type {
+        color: #f9fafb;
+    }
+
+    .quick-action-btn {
+        background: #1f2937;
+        border-color: #374151;
+    }
+
+    .quick-action-btn:hover {
+        background: #374151;
+    }
+
+    .photo-viewer-info {
+        background: #1f2937;
+        color: #f9fafb;
+    }
+}

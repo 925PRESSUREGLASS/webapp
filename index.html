@@ -59,6 +59,7 @@
 	<link rel="stylesheet" href="css/ghl-settings.css" />
 	<link rel="stylesheet" href="mobile.css" />
 	<link rel="stylesheet" href="quote-pdf.css" />
+	<link rel="stylesheet" href="css/job-tracking.css" />
 	<link rel="stylesheet" href="css/test-runner.css" />
 	<link rel="stylesheet" href="print.css" media="print" />
 	<link rel="stylesheet" href="invoice-print.css" media="print" />
@@ -1136,6 +1137,276 @@
 			</div>
 		</div>
 	</div>
+
+	<!-- ACTIVE JOB PAGE (Hidden by default) -->
+	<div class="page" id="page-active-job" style="display: none;">
+		<div class="container">
+			<div class="page-header">
+				<button class="btn btn-secondary btn-sm" onclick="navigateTo('jobs')">← Jobs</button>
+				<h1 id="job-title">Job #JOB-0001</h1>
+				<div class="page-actions">
+					<button class="btn btn-danger" id="complete-job-btn" onclick="JobTrackingUI.showCompleteJobDialog()">
+						✓ Complete Job
+					</button>
+				</div>
+			</div>
+
+			<!-- Job Timer -->
+			<div class="card job-timer-card">
+				<div class="timer-display">
+					<div class="timer-value" id="job-timer">00:00:00</div>
+					<div class="timer-label">Time Elapsed</div>
+				</div>
+				<div class="timer-controls">
+					<button class="btn btn-primary" id="start-job-btn" onclick="JobTrackingUI.startJobTracking()">
+						▶ Start Job
+					</button>
+					<button class="btn btn-secondary hidden" id="pause-job-btn" onclick="JobTrackingUI.pauseJobTracking()">
+						⏸ Pause
+					</button>
+				</div>
+			</div>
+
+			<!-- Quick Actions -->
+			<div class="quick-actions-grid">
+				<button class="quick-action-btn" onclick="takeBeforePhoto()">
+					<span class="quick-action-icon">📷</span>
+					<span class="quick-action-label">Before Photo</span>
+				</button>
+				<button class="quick-action-btn" onclick="takeAfterPhoto()">
+					<span class="quick-action-icon">📸</span>
+					<span class="quick-action-label">After Photo</span>
+				</button>
+				<button class="quick-action-btn" onclick="recordJobIssue()">
+					<span class="quick-action-icon">⚠️</span>
+					<span class="quick-action-label">Report Issue</span>
+				</button>
+				<button class="quick-action-btn" onclick="addJobNote()">
+					<span class="quick-action-icon">📝</span>
+					<span class="quick-action-label">Add Note</span>
+				</button>
+				<button class="quick-action-btn" onclick="addScopeChange()">
+					<span class="quick-action-icon">➕</span>
+					<span class="quick-action-label">Extra Work</span>
+				</button>
+				<button class="quick-action-btn" onclick="updateDifficulty()">
+					<span class="quick-action-icon">🎯</span>
+					<span class="quick-action-label">Difficulty</span>
+				</button>
+			</div>
+
+			<!-- Work Items Tracker -->
+			<div class="card">
+				<div class="card-header">
+					<h3 class="card-title">Work Items</h3>
+				</div>
+				<div class="card-body">
+					<div id="work-items-list">
+						<!-- Populated by JavaScript -->
+					</div>
+				</div>
+			</div>
+
+			<!-- Photos Section -->
+			<div class="card">
+				<div class="card-header">
+					<h3 class="card-title">Job Photos</h3>
+					<span class="badge" id="photo-count">0</span>
+				</div>
+				<div class="card-body">
+					<div class="photo-tabs">
+						<button class="photo-tab active" onclick="JobTrackingUI.showPhotoCategory('before')">Before</button>
+						<button class="photo-tab" onclick="JobTrackingUI.showPhotoCategory('after')">After</button>
+						<button class="photo-tab" onclick="JobTrackingUI.showPhotoCategory('issues')">Issues</button>
+					</div>
+					<div id="photos-grid">
+						<!-- Photos appear here -->
+					</div>
+				</div>
+			</div>
+
+			<!-- Issues & Notes -->
+			<div class="card">
+				<div class="card-header">
+					<h3 class="card-title">Issues & Notes</h3>
+				</div>
+				<div class="card-body">
+					<div id="issues-notes-list">
+						<!-- Issues and notes appear here -->
+					</div>
+				</div>
+			</div>
+
+			<!-- Price Adjustment -->
+			<div class="card">
+				<div class="card-header">
+					<h3 class="card-title">Pricing</h3>
+				</div>
+				<div class="card-body">
+					<div class="pricing-comparison">
+						<div class="pricing-col">
+							<div class="pricing-label">Original Quote</div>
+							<div class="pricing-value" id="original-total">$0.00</div>
+						</div>
+						<div class="pricing-col">
+							<div class="pricing-label">Actual Cost</div>
+							<div class="pricing-value" id="actual-total">$0.00</div>
+						</div>
+						<div class="pricing-col">
+							<div class="pricing-label">Difference</div>
+							<div class="pricing-value pricing-difference" id="price-difference">$0.00</div>
+						</div>
+					</div>
+				</div>
+			</div>
+		</div>
+	</div>
+
+	<!-- PRICING INSIGHTS PAGE (Hidden by default) -->
+	<div class="page" id="page-pricing-insights" style="display: none;">
+		<div class="container">
+			<div class="page-header">
+				<h1>Pricing Insights</h1>
+				<p class="subtitle">Learn from completed jobs to improve accuracy</p>
+			</div>
+
+			<!-- Accuracy Overview -->
+			<div class="card">
+				<div class="card-header">
+					<h3 class="card-title">Pricing Accuracy</h3>
+				</div>
+				<div class="card-body">
+					<div class="accuracy-gauge">
+						<div class="gauge-value" id="accuracy-percentage">0%</div>
+						<div class="gauge-label">Accurate</div>
+					</div>
+
+					<div class="accuracy-stats">
+						<div class="stat">
+							<div class="stat-label">Jobs Analyzed</div>
+							<div class="stat-value" id="jobs-analyzed">0</div>
+						</div>
+						<div class="stat">
+							<div class="stat-label">Underquotes</div>
+							<div class="stat-value text-danger" id="underquotes-count">0</div>
+						</div>
+						<div class="stat">
+							<div class="stat-label">Overquotes</div>
+							<div class="stat-value text-warning" id="overquotes-count">0</div>
+						</div>
+						<div class="stat">
+							<div class="stat-label">Avg Variance</div>
+							<div class="stat-value" id="avg-variance">0%</div>
+						</div>
+					</div>
+				</div>
+			</div>
+
+			<!-- Performance Metrics -->
+			<div class="card">
+				<div class="card-header">
+					<h3 class="card-title">Performance Metrics</h3>
+				</div>
+				<div class="card-body">
+					<div class="metrics-grid">
+						<div class="metric-item">
+							<div class="metric-label">Avg Time Per Window</div>
+							<div class="metric-value" id="avg-time-window">0 min</div>
+						</div>
+						<div class="metric-item">
+							<div class="metric-label">Avg Time Per SQM</div>
+							<div class="metric-value" id="avg-time-sqm">0 min</div>
+						</div>
+						<div class="metric-item">
+							<div class="metric-label">Avg Job Duration</div>
+							<div class="metric-value" id="avg-job-duration">0 min</div>
+						</div>
+						<div class="metric-item">
+							<div class="metric-label">Avg Job Value</div>
+							<div class="metric-value" id="avg-job-value">$0</div>
+						</div>
+					</div>
+				</div>
+			</div>
+
+			<!-- Common Issues -->
+			<div class="card">
+				<div class="card-header">
+					<h3 class="card-title">Common Issues</h3>
+				</div>
+				<div class="card-body">
+					<div id="common-issues-list">
+						<!-- Populated by JavaScript -->
+					</div>
+				</div>
+			</div>
+
+			<!-- Recommendations -->
+			<div class="card">
+				<div class="card-header">
+					<h3 class="card-title">Recommendations</h3>
+				</div>
+				<div class="card-body">
+					<div id="recommendations-list">
+						<!-- Populated by JavaScript -->
+					</div>
+				</div>
+			</div>
+		</div>
+	</div>
+
+	<!-- Complete Job Modal -->
+	<div class="modal" id="complete-job-modal" style="display: none;">
+		<div class="modal-content">
+			<div class="modal-header">
+				<h2>Complete Job</h2>
+				<button class="modal-close" onclick="JobTrackingUI.closeCompleteJobDialog()">&times;</button>
+			</div>
+			<div class="modal-body">
+				<div class="form-group">
+					<label>Client Rating</label>
+					<div class="rating-stars" id="client-rating">
+						<span class="star" data-rating="1" onclick="JobTrackingUI.setRating(1)">☆</span>
+						<span class="star" data-rating="2" onclick="JobTrackingUI.setRating(2)">☆</span>
+						<span class="star" data-rating="3" onclick="JobTrackingUI.setRating(3)">☆</span>
+						<span class="star" data-rating="4" onclick="JobTrackingUI.setRating(4)">☆</span>
+						<span class="star" data-rating="5" onclick="JobTrackingUI.setRating(5)">☆</span>
+					</div>
+				</div>
+
+				<div class="form-group">
+					<label for="client-feedback">Client Feedback</label>
+					<textarea class="form-control" id="client-feedback" rows="3" placeholder="Any feedback from the client..."></textarea>
+				</div>
+
+				<div class="form-group">
+					<label>
+						<input type="checkbox" id="photos-shown">
+						Showed before/after photos to client
+					</label>
+				</div>
+
+				<div class="form-group">
+					<label>
+						<input type="checkbox" id="warranty-issued">
+						Issued service warranty
+					</label>
+				</div>
+
+				<div class="form-group">
+					<label>
+						<input type="checkbox" id="followup-required">
+						Follow-up required
+					</label>
+				</div>
+			</div>
+			<div class="modal-footer">
+				<button class="btn btn-secondary" onclick="JobTrackingUI.closeCompleteJobDialog()">Cancel</button>
+				<button class="btn btn-primary" onclick="JobTrackingUI.finalizeJobCompletion()">Complete Job</button>
+			</div>
+		</div>
+	</div>
+
 	<!-- SCRIPTS -->
 	<!-- Bootstrap must load FIRST to create APP namespace -->
 	<script src="bootstrap.js"></script>
@@ -1266,6 +1537,12 @@
 
 	<!-- Backup & Restore System -->
 	<script src="backup-manager.js" defer></script>
+
+	<!-- Job Tracking & Pricing Intelligence System (NEW v1.13.0) -->
+	<script src="job-manager.js" defer></script>
+	<script src="pricing-intelligence.js" defer></script>
+	<script src="photo-comparison.js" defer></script>
+	<script src="job-tracking-ui.js" defer></script>
 
 	<!-- Production Configuration (loads last to override development settings) -->
 	<script src="config-production.js" defer></script>
@@ -1507,6 +1784,208 @@
 				});
 			}
 		});
+	</script>
+
+	<!-- Job Tracking Helper Functions -->
+	<script>
+		// Global helper functions for job tracking
+
+		/**
+		 * Take before photo (uses file input as fallback)
+		 */
+		function takeBeforePhoto() {
+			// Fallback to file input (camera module integration can be added later)
+			var input = document.createElement('input');
+			input.type = 'file';
+			input.accept = 'image/*';
+			input.capture = 'camera';  // Request camera on mobile
+			input.onchange = function(e) {
+				var file = e.target.files[0];
+				if (file) {
+					var reader = new FileReader();
+					reader.onload = function(event) {
+						var location = prompt('Photo location:', 'Front entrance');
+						var notes = prompt('Photo notes:', 'Before cleaning');
+
+						if (window.JobManager && window.JobTrackingUI && window.JobTrackingUI._currentJobId) {
+							window.JobManager.addPhoto(window.JobTrackingUI._currentJobId, 'before', event.target.result, location, notes);
+
+							var job = window.JobManager.getJob(window.JobTrackingUI._currentJobId);
+							if (job) {
+								var container = document.getElementById('photos-grid');
+								if (container) window.JobTrackingUI.renderPhotos(job);
+								if (window.UIComponents && window.UIComponents.showToast) {
+									window.UIComponents.showToast('Before photo added', 'success');
+								}
+							}
+						}
+					};
+					reader.readAsDataURL(file);
+				}
+			};
+			input.click();
+		}
+
+		/**
+		 * Take after photo
+		 */
+		function takeAfterPhoto() {
+			var input = document.createElement('input');
+			input.type = 'file';
+			input.accept = 'image/*';
+			input.capture = 'camera';
+			input.onchange = function(e) {
+				var file = e.target.files[0];
+				if (file) {
+					var reader = new FileReader();
+					reader.onload = function(event) {
+						var location = prompt('Photo location:', 'Front entrance');
+						var notes = prompt('Photo notes:', 'After cleaning');
+
+						if (window.JobManager && window.JobTrackingUI && window.JobTrackingUI._currentJobId) {
+							window.JobManager.addPhoto(window.JobTrackingUI._currentJobId, 'after', event.target.result, location, notes);
+
+							var job = window.JobManager.getJob(window.JobTrackingUI._currentJobId);
+							if (job) {
+								var container = document.getElementById('photos-grid');
+								if (container) window.JobTrackingUI.renderPhotos(job);
+								if (window.UIComponents && window.UIComponents.showToast) {
+									window.UIComponents.showToast('After photo added', 'success');
+								}
+							}
+						}
+					};
+					reader.readAsDataURL(file);
+				}
+			};
+			input.click();
+		}
+
+		/**
+		 * Record job issue
+		 */
+		function recordJobIssue() {
+			if (!window.JobTrackingUI || !window.JobTrackingUI._currentJobId) return;
+
+			var type = prompt('Issue type (access/equipment/weather/damage/other):', 'access');
+			if (!type) return;
+
+			var description = prompt('Describe the issue:');
+			if (!description) return;
+
+			var severity = prompt('Severity (low/medium/high):', 'medium');
+			var impact = prompt('Impact on job:');
+			var resolution = prompt('How was it resolved:');
+
+			window.JobManager.recordIssue(window.JobTrackingUI._currentJobId, {
+				type: type,
+				description: description,
+				severity: severity,
+				impact: impact,
+				resolution: resolution
+			});
+
+			var job = window.JobManager.getJob(window.JobTrackingUI._currentJobId);
+			if (job) {
+				var container = document.getElementById('issues-notes-list');
+				if (container) window.JobTrackingUI.renderIssuesAndNotes(job);
+			}
+
+			if (window.UIComponents && window.UIComponents.showToast) {
+				window.UIComponents.showToast('Issue recorded', 'warning');
+			}
+		}
+
+		/**
+		 * Add job note
+		 */
+		function addJobNote() {
+			if (!window.JobTrackingUI || !window.JobTrackingUI._currentJobId) return;
+
+			var note = prompt('Add note:');
+			if (!note) return;
+
+			var type = prompt('Note type (client-preference/observation/reminder/other):', 'observation');
+
+			window.JobManager.addNote(window.JobTrackingUI._currentJobId, note, type);
+
+			var job = window.JobManager.getJob(window.JobTrackingUI._currentJobId);
+			if (job) {
+				var container = document.getElementById('issues-notes-list');
+				if (container) window.JobTrackingUI.renderIssuesAndNotes(job);
+			}
+
+			if (window.UIComponents && window.UIComponents.showToast) {
+				window.UIComponents.showToast('Note added', 'success');
+			}
+		}
+
+		/**
+		 * Add scope change
+		 */
+		function addScopeChange() {
+			if (!window.JobTrackingUI || !window.JobTrackingUI._currentJobId) return;
+
+			var description = prompt('Describe additional work:');
+			if (!description) return;
+
+			var quantity = parseFloat(prompt('Quantity:', '1'));
+			var unitPrice = parseFloat(prompt('Price per unit:', '50'));
+			var time = parseFloat(prompt('Time spent (minutes):', '30'));
+
+			var approved = confirm('Has client approved this additional work?');
+
+			window.JobManager.addAdditionalWork(window.JobTrackingUI._currentJobId, {
+				description: description,
+				quantity: quantity,
+				unitPrice: unitPrice,
+				time: time
+			}, approved);
+
+			var job = window.JobManager.getJob(window.JobTrackingUI._currentJobId);
+			if (job) {
+				var container = document.getElementById('work-items-list');
+				if (container) window.JobTrackingUI.renderWorkItems(job);
+				window.JobTrackingUI.updatePricingDisplay(job);
+			}
+
+			if (window.UIComponents && window.UIComponents.showToast) {
+				window.UIComponents.showToast('Additional work added', 'success');
+			}
+		}
+
+		/**
+		 * Update difficulty
+		 */
+		function updateDifficulty() {
+			if (!window.JobTrackingUI || !window.JobTrackingUI._currentJobId) return;
+
+			var job = window.JobManager.getJob(window.JobTrackingUI._currentJobId);
+			if (!job) return;
+
+			var itemIndex = parseInt(prompt('Which item to update? (0-' + (job.actual.items.length - 1) + '):', '0'));
+
+			if (isNaN(itemIndex) || itemIndex < 0 || itemIndex >= job.actual.items.length) {
+				alert('Invalid item index');
+				return;
+			}
+
+			var difficulty = prompt('New difficulty (easy/normal/hard/very-hard):', 'normal');
+
+			window.JobManager.updateItemActual(window.JobTrackingUI._currentJobId, itemIndex, {
+				actualDifficulty: difficulty.toLowerCase()
+			});
+
+			job = window.JobManager.getJob(window.JobTrackingUI._currentJobId);
+			if (job) {
+				var container = document.getElementById('work-items-list');
+				if (container) window.JobTrackingUI.renderWorkItems(job);
+			}
+
+			if (window.UIComponents && window.UIComponents.showToast) {
+				window.UIComponents.showToast('Difficulty updated', 'success');
+			}
+		}
 	</script>
 
 	<!-- Service Worker Registration -->
