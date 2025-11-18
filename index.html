@@ -54,6 +54,7 @@
 	<link rel="stylesheet" href="analytics.css" />
 	<link rel="stylesheet" href="photos.css" />
 	<link rel="stylesheet" href="css/tasks.css" />
+	<link rel="stylesheet" href="css/invoice-payments.css" />
 	<link rel="stylesheet" href="mobile.css" />
 	<link rel="stylesheet" href="quote-pdf.css" />
 	<link rel="stylesheet" href="print.css" media="print" />
@@ -692,6 +693,98 @@
 		</div>
 	</div>
 
+	<!-- INVOICES & PAYMENTS PAGE (Hidden by default) -->
+	<div class="page" id="page-invoices" style="display: none;">
+		<div class="container">
+			<!-- Header -->
+			<div class="page-header">
+				<h1>Invoices & Payments</h1>
+				<div class="page-header-actions">
+					<button class="btn btn-tertiary btn-sm" onclick="closePage('page-invoices')" aria-label="Back to main">
+						← Back
+					</button>
+					<button class="btn btn-primary btn-sm" onclick="showCreateInvoiceModal()" aria-label="Create new invoice">
+						+ New Invoice
+					</button>
+				</div>
+			</div>
+
+			<!-- Payment Summary Cards -->
+			<div class="payment-summary-grid">
+				<div class="card">
+					<div class="card-body">
+						<div class="summary-label">Total Invoiced</div>
+						<div class="summary-value" id="total-invoiced">$0.00</div>
+					</div>
+				</div>
+
+				<div class="card">
+					<div class="card-body">
+						<div class="summary-label">Total Paid</div>
+						<div class="summary-value summary-positive" id="total-paid">$0.00</div>
+					</div>
+				</div>
+
+				<div class="card">
+					<div class="card-body">
+						<div class="summary-label">Outstanding</div>
+						<div class="summary-value summary-warning" id="total-outstanding">$0.00</div>
+					</div>
+				</div>
+
+				<div class="card">
+					<div class="card-body">
+						<div class="summary-label">Overdue</div>
+						<div class="summary-value summary-danger" id="total-overdue">$0.00</div>
+					</div>
+				</div>
+			</div>
+
+			<!-- Invoice Filters -->
+			<div class="card" style="margin-bottom: 1.5rem;">
+				<div class="card-body">
+					<div class="invoice-filters">
+						<select class="form-select" id="invoice-status-filter" onchange="filterInvoices()" aria-label="Filter by status">
+							<option value="all">All Status</option>
+							<option value="draft">Draft</option>
+							<option value="sent">Sent</option>
+							<option value="paid">Paid</option>
+							<option value="overdue">Overdue</option>
+							<option value="partially-paid">Partially Paid</option>
+							<option value="cancelled">Cancelled</option>
+						</select>
+
+						<input
+							type="search"
+							class="form-input"
+							id="invoice-search"
+							placeholder="Search invoices..."
+							oninput="filterInvoices()"
+							aria-label="Search invoices"
+						/>
+					</div>
+				</div>
+			</div>
+
+			<!-- Invoice List -->
+			<div id="invoice-list">
+				<!-- Populated by JavaScript -->
+			</div>
+
+			<!-- Empty State -->
+			<div id="invoices-empty-state" class="empty-state" style="display: none;">
+				<svg class="empty-state-icon" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+					<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/>
+				</svg>
+				<h3 class="empty-state-title">No Invoices</h3>
+				<p class="empty-state-message">Create your first invoice to start tracking payments.</p>
+				<button class="btn btn-primary" onclick="showCreateInvoiceModal()">
+					Create Invoice
+				</button>
+			</div>
+		</div>
+	</div>
+
 	<!-- SCRIPTS -->
 	<!-- Bootstrap must load FIRST to create APP namespace -->
 	<script src="bootstrap.js"></script>
@@ -744,6 +837,12 @@
 	<script src="followup-automation.js" defer></script>
 	<script src="ghl-task-sync.js" defer></script>
 	<script src="task-dashboard-ui.js" defer></script>
+
+	<!-- Payment & Invoicing (Prompt #32) -->
+	<script src="payment-config.js" defer></script>
+	<script src="invoice-manager.js" defer></script>
+	<script src="payment-gateway.js" defer></script>
+	<script src="invoice-pdf-generator.js" defer></script>
 
 	<!-- UI and feature modules -->
 	<script src="ui.js" defer></script>
