@@ -1109,6 +1109,9 @@
 	<script src="push-notifications.js" defer></script>
 	<script src="geolocation-helper.js" defer></script>
 
+	<!-- Error handler must load early for other modules -->
+	<script src="error-handler.js" defer></script>
+
 	<!-- UI and feature modules -->
 	<script src="ui.js" defer></script>
 	<script src="wizard.js" defer></script>
@@ -1130,7 +1133,6 @@
 	<script src="theme.js" defer></script>
 	<script src="theme-customizer.js" defer></script>
 	<script src="shortcuts.js" defer></script>
-	<script src="error-handler.js" defer></script>
 	<!-- In-App Help System -->
 	<script src="help-system.js" defer></script>
 	<script src="export.js" defer></script>
