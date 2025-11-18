@@ -1623,4 +1623,660 @@ function transformQuote(localQuote) {
 
 ---
 
-**END OF ASSET #2: LocalStorage Schema Documentation**
+---
+
+## Backup & Restore
+
+### Backup Strategy
+
+```javascript
+/**
+ * Complete backup system
+ */
+APP.Storage.Backup = (function() {
+    return {
+        /**
+         * Create full backup of all data
+         */
+        createFullBackup: function() {
+            var backup = {
+                version: APP.VERSION,
+                timestamp: new Date().toISOString(),
+                type: 'full',
+                data: {}
+            };
+
+            // Get all TicTacStick keys
+            var keys = APP.Storage.getKeys();
+
+            keys.forEach(function(key) {
+                backup.data[key] = APP.Storage.load(key);
+            });
+
+            // Add metadata
+            backup.metadata = {
+                totalKeys: keys.length,
+                totalSize: APP.Storage.QuotaMonitor.getTotalSize(),
+                breakdown: APP.Storage.QuotaMonitor.getBreakdown(),
+                quotesCount: (backup.data.tts_quotes || []).length,
+                clientsCount: (backup.data.tts_clients || []).length,
+                invoicesCount: (backup.data.tts_invoices || []).length
+            };
+
+            return backup;
+        },
+
+        /**
+         * Create incremental backup (only changed data)
+         */
+        createIncrementalBackup: function(since) {
+            var backup = {
+                version: APP.VERSION,
+                timestamp: new Date().toISOString(),
+                type: 'incremental',
+                since: since,
+                data: {}
+            };
+
+            // Get quotes modified since timestamp
+            var quotes = APP.Storage.load('tts_quotes') || [];
+            backup.data.tts_quotes = quotes.filter(function(q) {
+                return new Date(q.updatedAt) > new Date(since);
+            });
+
+            // Get clients modified since timestamp
+            var clients = APP.Storage.load('tts_clients') || [];
+            backup.data.tts_clients = clients.filter(function(c) {
+                return new Date(c.updatedAt) > new Date(since);
+            });
+
+            // Get invoices modified since timestamp
+            var invoices = APP.Storage.load('tts_invoices') || [];
+            backup.data.tts_invoices = invoices.filter(function(i) {
+                return new Date(i.updatedAt) > new Date(since);
+            });
+
+            return backup;
+        },
+
+        /**
+         * Export backup to JSON file
+         */
+        exportBackup: function(backup) {
+            var json = JSON.stringify(backup, null, 2);
+            var blob = new Blob([json], { type: 'application/json' });
+            var filename = 'tictacstick-backup-' +
+                           new Date().toISOString().split('T')[0] +
+                           '.json';
+
+            return {
+                blob: blob,
+                filename: filename,
+                size: blob.size
+            };
+        },
+
+        /**
+         * Download backup file
+         */
+        downloadBackup: function(backup) {
+            var exported = this.exportBackup(backup);
+
+            // Create download link
+            var url = URL.createObjectURL(exported.blob);
+            var a = document.createElement('a');
+            a.href = url;
+            a.download = exported.filename;
+            document.body.appendChild(a);
+            a.click();
+            document.body.removeChild(a);
+            URL.revokeObjectURL(url);
+
+            return exported.filename;
+        },
+
+        /**
+         * Compress backup using simple compression
+         */
+        compressBackup: function(backup) {
+            // Simple compression: remove whitespace from JSON
+            var json = JSON.stringify(backup);
+
+            // Additional compression could be added here
+            // (e.g., LZString if library available)
+
+            return {
+                compressed: json,
+                originalSize: JSON.stringify(backup, null, 2).length,
+                compressedSize: json.length,
+                ratio: (json.length / JSON.stringify(backup, null, 2).length).toFixed(2)
+            };
+        },
+
+        /**
+         * Restore from backup
+         */
+        restoreFromBackup: function(backupData, options) {
+            options = options || {
+                merge: false,      // Merge with existing or replace?
+                skipValidation: false,
+                dryRun: false
+            };
+
+            var results = {
+                success: false,
+                restored: {},
+                errors: [],
+                warnings: []
+            };
+
+            try {
+                // Parse if string
+                var backup = typeof backupData === 'string' ?
+                            JSON.parse(backupData) : backupData;
+
+                // Validate backup structure
+                if (!backup.version || !backup.data) {
+                    throw new Error('Invalid backup format');
+                }
+
+                // Check version compatibility
+                if (backup.version !== APP.VERSION) {
+                    results.warnings.push('Backup version mismatch: ' +
+                                         backup.version + ' vs ' + APP.VERSION);
+                }
+
+                // Restore each key
+                for (var key in backup.data) {
+                    if (backup.data.hasOwnProperty(key)) {
+                        try {
+                            var data = backup.data[key];
+
+                            // Validate data if not skipped
+                            if (!options.skipValidation) {
+                                if (key === 'tts_quotes') {
+                                    data.forEach(function(quote) {
+                                        var validation = APP.Storage.validateQuote(quote);
+                                        if (!validation.valid) {
+                                            results.warnings.push('Invalid quote: ' + quote.id);
+                                        }
+                                    });
+                                }
+                            }
+
+                            // Merge or replace
+                            if (options.merge && Array.isArray(data)) {
+                                var existing = APP.Storage.load(key) || [];
+                                data = APP.Storage.mergeArrays(existing, data, 'id');
+                            }
+
+                            // Dry run: don't actually save
+                            if (!options.dryRun) {
+                                APP.Storage.save(key, data);
+                            }
+
+                            results.restored[key] = data.length || 1;
+
+                        } catch (e) {
+                            results.errors.push('Failed to restore ' + key + ': ' + e.message);
+                        }
+                    }
+                }
+
+                results.success = results.errors.length === 0;
+
+            } catch (e) {
+                results.errors.push('Backup restore failed: ' + e.message);
+            }
+
+            return results;
+        },
+
+        /**
+         * Schedule automatic backups
+         */
+        scheduleAutoBackup: function(frequency) {
+            // frequency: daily, weekly, monthly
+            var settings = APP.Storage.load('tts_settings') || {};
+
+            settings.backup = {
+                enabled: true,
+                frequency: frequency,
+                lastBackup: new Date().toISOString()
+            };
+
+            APP.Storage.save('tts_settings', settings);
+
+            // Set up interval
+            var interval;
+            switch(frequency) {
+                case 'daily':
+                    interval = 24 * 60 * 60 * 1000; // 24 hours
+                    break;
+                case 'weekly':
+                    interval = 7 * 24 * 60 * 60 * 1000; // 7 days
+                    break;
+                case 'monthly':
+                    interval = 30 * 24 * 60 * 60 * 1000; // 30 days
+                    break;
+                default:
+                    interval = 7 * 24 * 60 * 60 * 1000; // Default weekly
+            }
+
+            setInterval(function() {
+                var backup = APP.Storage.Backup.createFullBackup();
+                APP.Storage.Backup.downloadBackup(backup);
+            }, interval);
+        }
+    };
+})();
+```
+
+### Backup File Format
+
+```javascript
+/**
+ * Standard backup file structure
+ */
+var BackupFileFormat = {
+    // Metadata
+    version: '1.7.0',                   // App version
+    timestamp: '2025-11-18T14:30:00.000Z', // Backup creation time
+    type: 'full',                       // full|incremental
+    since: null,                        // For incremental backups
+
+    // Data
+    data: {
+        tts_quotes: [],                 // All quotes
+        tts_clients: [],                // All clients
+        tts_invoices: [],               // All invoices
+        tts_settings: {},               // Settings
+        tts_pricing_config: {},         // Pricing config
+        tts_app_state: {},              // App state
+        // ... other keys
+    },
+
+    // Metadata about backup
+    metadata: {
+        totalKeys: 10,
+        totalSize: 1234567,             // Bytes
+        breakdown: {                     // Size breakdown
+            quotes: 500000,
+            clients: 200000,
+            invoices: 300000,
+            other: 234567
+        },
+        quotesCount: 89,
+        clientsCount: 45,
+        invoicesCount: 67
+    },
+
+    // Checksum for integrity
+    checksum: 'abc123def456'
+};
+```
+
+### Cloud Backup (Future Feature)
+
+```javascript
+/**
+ * Cloud backup integration (placeholder for future implementation)
+ */
+APP.Storage.CloudBackup = (function() {
+    return {
+        /**
+         * Upload backup to cloud storage
+         */
+        uploadToCloud: function(backup, provider) {
+            // Future implementation
+            // Providers: google_drive, dropbox, s3, supabase
+            console.log('Cloud backup not yet implemented');
+
+            return {
+                success: false,
+                message: 'Cloud backup coming in future version',
+                provider: provider
+            };
+        },
+
+        /**
+         * Download backup from cloud
+         */
+        downloadFromCloud: function(backupId, provider) {
+            // Future implementation
+            console.log('Cloud restore not yet implemented');
+
+            return null;
+        },
+
+        /**
+         * List available cloud backups
+         */
+        listCloudBackups: function(provider) {
+            // Future implementation
+            return [];
+        }
+    };
+})();
+```
+
+---
+
+## Performance Optimization
+
+### Lazy Loading
+
+```javascript
+/**
+ * Lazy load large datasets
+ */
+APP.Storage.LazyLoader = (function() {
+    var cache = {};
+
+    return {
+        /**
+         * Load data with caching
+         */
+        load: function(key, force) {
+            // Return from cache if available
+            if (!force && cache[key]) {
+                return cache[key];
+            }
+
+            // Load from storage
+            var data = APP.Storage.load(key);
+
+            // Cache for future use
+            cache[key] = data;
+
+            return data;
+        },
+
+        /**
+         * Load specific item from array by ID
+         */
+        loadItem: function(key, id) {
+            var data = this.load(key);
+
+            if (!Array.isArray(data)) {
+                return null;
+            }
+
+            return data.find(function(item) {
+                return item.id === id;
+            });
+        },
+
+        /**
+         * Load paginated data
+         */
+        loadPage: function(key, page, pageSize) {
+            var data = this.load(key);
+
+            if (!Array.isArray(data)) {
+                return [];
+            }
+
+            var start = (page - 1) * pageSize;
+            var end = start + pageSize;
+
+            return data.slice(start, end);
+        },
+
+        /**
+         * Clear cache
+         */
+        clearCache: function(key) {
+            if (key) {
+                delete cache[key];
+            } else {
+                cache = {};
+            }
+        },
+
+        /**
+         * Preload data in background
+         */
+        preload: function(keys) {
+            keys.forEach(function(key) {
+                setTimeout(function() {
+                    APP.Storage.LazyLoader.load(key);
+                }, 0);
+            });
+        }
+    };
+})();
+```
+
+### Indexing
+
+```javascript
+/**
+ * Create indexes for faster lookups
+ */
+APP.Storage.Index = (function() {
+    var indexes = {};
+
+    return {
+        /**
+         * Create index on field
+         */
+        createIndex: function(key, field) {
+            var data = APP.Storage.load(key);
+
+            if (!Array.isArray(data)) {
+                return;
+            }
+
+            var indexKey = key + '_' + field;
+            indexes[indexKey] = {};
+
+            data.forEach(function(item, index) {
+                var value = item[field];
+                if (value !== undefined) {
+                    if (!indexes[indexKey][value]) {
+                        indexes[indexKey][value] = [];
+                    }
+                    indexes[indexKey][value].push(index);
+                }
+            });
+        },
+
+        /**
+         * Lookup by indexed field
+         */
+        lookup: function(key, field, value) {
+            var indexKey = key + '_' + field;
+
+            if (!indexes[indexKey]) {
+                this.createIndex(key, field);
+            }
+
+            var indices = indexes[indexKey][value] || [];
+            var data = APP.Storage.load(key);
+
+            return indices.map(function(i) {
+                return data[i];
+            });
+        },
+
+        /**
+         * Rebuild all indexes
+         */
+        rebuildIndexes: function() {
+            // Rebuild quote indexes
+            this.createIndex('tts_quotes', 'status');
+            this.createIndex('tts_quotes', 'clientId');
+            this.createIndex('tts_quotes', 'serviceType');
+
+            // Rebuild client indexes
+            this.createIndex('tts_clients', 'status');
+            this.createIndex('tts_clients', 'propertyType');
+
+            // Rebuild invoice indexes
+            this.createIndex('tts_invoices', 'status');
+            this.createIndex('tts_invoices', 'clientId');
+        },
+
+        /**
+         * Clear indexes
+         */
+        clearIndexes: function() {
+            indexes = {};
+        }
+    };
+})();
+```
+
+### Debounced Saves
+
+```javascript
+/**
+ * Debounce frequent saves to reduce I/O
+ */
+APP.Storage.DebouncedSave = (function() {
+    var timeouts = {};
+    var DEBOUNCE_DELAY = 1000; // 1 second
+
+    return {
+        /**
+         * Queue a save operation
+         */
+        save: function(key, data, delay) {
+            delay = delay || DEBOUNCE_DELAY;
+
+            // Clear existing timeout
+            if (timeouts[key]) {
+                clearTimeout(timeouts[key]);
+            }
+
+            // Set new timeout
+            timeouts[key] = setTimeout(function() {
+                APP.Storage.save(key, data);
+                delete timeouts[key];
+            }, delay);
+        },
+
+        /**
+         * Force immediate save (flush)
+         */
+        flush: function(key) {
+            if (timeouts[key]) {
+                clearTimeout(timeouts[key]);
+                delete timeouts[key];
+            }
+            // Actual save happens in the timeout callback
+        },
+
+        /**
+         * Flush all pending saves
+         */
+        flushAll: function() {
+            for (var key in timeouts) {
+                if (timeouts.hasOwnProperty(key)) {
+                    this.flush(key);
+                }
+            }
+        }
+    };
+})();
+```
+
+### Batch Operations
+
+```javascript
+/**
+ * Batch multiple operations for better performance
+ */
+APP.Storage.Batch = (function() {
+    return {
+        /**
+         * Save multiple keys at once
+         */
+        saveMultiple: function(operations) {
+            var results = {
+                success: [],
+                failed: []
+            };
+
+            operations.forEach(function(op) {
+                try {
+                    APP.Storage.save(op.key, op.data);
+                    results.success.push(op.key);
+                } catch (e) {
+                    results.failed.push({
+                        key: op.key,
+                        error: e.message
+                    });
+                }
+            });
+
+            return results;
+        },
+
+        /**
+         * Load multiple keys at once
+         */
+        loadMultiple: function(keys) {
+            var results = {};
+
+            keys.forEach(function(key) {
+                results[key] = APP.Storage.load(key);
+            });
+
+            return results;
+        },
+
+        /**
+         * Delete multiple keys at once
+         */
+        deleteMultiple: function(keys) {
+            var results = {
+                success: [],
+                failed: []
+            };
+
+            keys.forEach(function(key) {
+                try {
+                    APP.Storage.remove(key);
+                    results.success.push(key);
+                } catch (e) {
+                    results.failed.push({
+                        key: key,
+                        error: e.message
+                    });
+                }
+            });
+
+            return results;
+        },
+
+        /**
+         * Update multiple items in array
+         */
+        updateMultipleItems: function(key, updates) {
+            var data = APP.Storage.load(key);
+
+            if (!Array.isArray(data)) {
+                return false;
+            }
+
+            updates.forEach(function(update) {
+                var index = data.findIndex(function(item) {
+                    return item.id === update.id;
+                });
+
+                if (index !== -1) {
+                    data[index] = Object.assign({}, data[index], update.changes);
+                }
+            });
+
+            return APP.Storage.save(key, data);
+        }
+    };
+})();
+```
+
+---
+
+**END OF ASSET #2: LocalStorage Schema Documentation (Parts 1 & 2 Complete)**
