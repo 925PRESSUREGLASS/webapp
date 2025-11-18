@@ -279,6 +279,8 @@
       highReach: !!options.highReach,
       panes: typeof options.panes === "number" ? options.panes : 4,
       soilLevel: options.soilLevel || "medium",
+      conditionId: options.conditionId || null,
+      accessId: options.accessId || null,
       tintLevel: options.tintLevel || "none",
       location: options.location || ""
     };
@@ -437,13 +439,76 @@
 
     var selectType = createEl("select");
     selectType.value = line.windowTypeId;
-    for (var j = 0; j < PRICING_DATA.windowTypes.length; j++) {
-      var wt = PRICING_DATA.windowTypes[j];
-      var opt = createEl("option");
-      opt.value = wt.id;
-      opt.textContent = wt.label;
-      if (wt.id === line.windowTypeId) opt.selected = true;
-      selectType.appendChild(opt);
+
+    // Use extended types with categories if available
+    var windowTypes = PRICING_DATA.windowTypes;
+    var hasCategories = windowTypes.length > 0 && windowTypes[0].category;
+
+    if (hasCategories) {
+      // Build grouped options
+      var categories = {
+        sliding: [],
+        awning: [],
+        fixed: [],
+        casement: [],
+        louvre: [],
+        bifold: [],
+        stacker: [],
+        skylight: [],
+        custom: [],
+        other: []
+      };
+
+      for (var wti = 0; wti < windowTypes.length; wti++) {
+        var wtItem = windowTypes[wti];
+        var cat = wtItem.category || 'other';
+        if (categories[cat]) {
+          categories[cat].push(wtItem);
+        } else {
+          categories.other.push(wtItem);
+        }
+      }
+
+      // Build HTML with optgroups
+      var categoryLabels = {
+        sliding: 'Sliding Windows',
+        awning: 'Awning Windows',
+        fixed: 'Fixed Windows',
+        casement: 'Casement Windows',
+        louvre: 'Louvre Windows',
+        bifold: 'Bi-fold Doors',
+        stacker: 'Stacker Doors',
+        skylight: 'Skylights',
+        custom: 'Custom',
+        other: 'Other'
+      };
+
+      for (var catKey in categories) {
+        if (categories[catKey].length > 0) {
+          var optgroup = createEl("optgroup");
+          optgroup.label = categoryLabels[catKey];
+          for (var cti = 0; cti < categories[catKey].length; cti++) {
+            var w = categories[catKey][cti];
+            var opt = createEl("option");
+            opt.value = w.id;
+            var priceStr = w.basePrice ? ' - $' + w.basePrice.toFixed(0) : '';
+            opt.textContent = w.label + priceStr;
+            if (w.id === line.windowTypeId) opt.selected = true;
+            optgroup.appendChild(opt);
+          }
+          selectType.appendChild(optgroup);
+        }
+      }
+    } else {
+      // Simple flat list
+      for (var j = 0; j < windowTypes.length; j++) {
+        var wt = windowTypes[j];
+        var opt = createEl("option");
+        opt.value = wt.id;
+        opt.textContent = wt.label;
+        if (wt.id === line.windowTypeId) opt.selected = true;
+        selectType.appendChild(opt);
+      }
     }
 
     selectType.addEventListener("change", function (e) {
@@ -526,32 +591,99 @@
     col2.appendChild(flagsLabel);
     col2.appendChild(flagsWrapper);
 
-    // Column 3 – soil, tint, location
+    // Column 3 – condition, access, tint, location
     var col3 = createEl("div", "line-field");
 
-    var soilLabel = createEl("label");
-    soilLabel.textContent = "Soil";
+    // Condition dropdown (replaces simple Soil)
+    var conditionLabel = createEl("label");
+    conditionLabel.textContent = "Condition";
 
-    var soilSelect = createEl("select");
+    var conditionSelect = createEl("select");
 
-    var soilOptions = [
-      { v: "light", t: "Light" },
-      { v: "medium", t: "Medium" },
-      { v: "heavy", t: "Heavy" }
-    ];
-
-    var s;
-    for (s = 0; s < soilOptions.length; s++) {
-      var so = soilOptions[s];
-      var soEl = createEl("option");
-      soEl.value = so.v;
-      soEl.textContent = so.t;
-      if (line.soilLevel === so.v) soEl.selected = true;
-      soilSelect.appendChild(soEl);
+    if (window.WINDOW_CONDITIONS_ARRAY && WINDOW_CONDITIONS_ARRAY.length > 0) {
+      // Use enhanced conditions
+      for (var c = 0; c < WINDOW_CONDITIONS_ARRAY.length; c++) {
+        var cond = WINDOW_CONDITIONS_ARRAY[c];
+        var condOpt = createEl("option");
+        condOpt.value = cond.id;
+        condOpt.textContent = cond.name + " (" + (cond.multiplier * 100).toFixed(0) + "%)";
+        if (line.conditionId === cond.id) {
+          condOpt.selected = true;
+        } else if (!line.conditionId && cond.id === "normal_dirt") {
+          condOpt.selected = true;
+        }
+        conditionSelect.appendChild(condOpt);
+      }
+    } else {
+      // Fall back to legacy soil levels
+      var soilOptions = [
+        { v: "light", t: "Light" },
+        { v: "medium", t: "Medium" },
+        { v: "heavy", t: "Heavy" }
+      ];
+      for (var s = 0; s < soilOptions.length; s++) {
+        var so = soilOptions[s];
+        var soEl = createEl("option");
+        soEl.value = so.v;
+        soEl.textContent = so.t;
+        if (line.soilLevel === so.v) soEl.selected = true;
+        conditionSelect.appendChild(soEl);
+      }
     }
 
-    soilSelect.addEventListener("change", function (e) {
-      line.soilLevel = e.target.value;
+    conditionSelect.addEventListener("change", function (e) {
+      line.conditionId = e.target.value;
+      // Update soilLevel for backward compatibility
+      if (e.target.value === "light_dust") line.soilLevel = "light";
+      else if (e.target.value === "normal_dirt") line.soilLevel = "medium";
+      else if (e.target.value === "heavy_dirt" || e.target.value === "severe_neglect") line.soilLevel = "heavy";
+      else line.soilLevel = e.target.value;
+      scheduleAutosave(true);
+      recalculate();
+    });
+
+    // Access dropdown
+    var accessLabel = createEl("label");
+    accessLabel.textContent = "Access";
+
+    var accessSelect = createEl("select");
+
+    if (window.ACCESS_MODIFIERS_ARRAY && ACCESS_MODIFIERS_ARRAY.length > 0) {
+      // Use enhanced access modifiers
+      for (var a = 0; a < ACCESS_MODIFIERS_ARRAY.length; a++) {
+        var acc = ACCESS_MODIFIERS_ARRAY[a];
+        var accOpt = createEl("option");
+        accOpt.value = acc.id;
+        accOpt.textContent = acc.name + " (" + (acc.multiplier * 100).toFixed(0) + "%)";
+        if (line.accessId === acc.id) {
+          accOpt.selected = true;
+        } else if (!line.accessId && acc.id === "ground_level") {
+          accOpt.selected = true;
+        }
+        accessSelect.appendChild(accOpt);
+      }
+    } else {
+      // Fall back to legacy access (use highReach checkbox instead)
+      var accessOptions = [
+        { v: "easy", t: "Easy Access" },
+        { v: "ladder", t: "Ladder Required" },
+        { v: "highReach", t: "High Reach" }
+      ];
+      for (var ax = 0; ax < accessOptions.length; ax++) {
+        var axo = accessOptions[ax];
+        var axEl = createEl("option");
+        axEl.value = axo.v;
+        axEl.textContent = axo.t;
+        accessSelect.appendChild(axEl);
+      }
+    }
+
+    accessSelect.addEventListener("change", function (e) {
+      line.accessId = e.target.value;
+      // Set highReach for backward compatibility
+      if (e.target.value && e.target.value.indexOf("high") !== -1) {
+        line.highReach = true;
+      }
       scheduleAutosave(true);
       recalculate();
     });
@@ -593,8 +725,10 @@
       scheduleAutosave(true);
     });
 
-    col3.appendChild(soilLabel);
-    col3.appendChild(soilSelect);
+    col3.appendChild(conditionLabel);
+    col3.appendChild(conditionSelect);
+    col3.appendChild(accessLabel);
+    col3.appendChild(accessSelect);
     col3.appendChild(tintLabel);
     col3.appendChild(tintSelect);
     col3.appendChild(locLabel);
