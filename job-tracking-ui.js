@@ -872,6 +872,174 @@
         renderWorkItems(job);
     }
 
+    /**
+     * Render jobs list page
+     */
+    function renderJobsList(filterStatus) {
+        var container = document.getElementById('jobs-list-container');
+        if (!container) return;
+
+        var jobs = window.JobManager.getAllJobs();
+
+        // Filter if specified
+        if (filterStatus && filterStatus !== 'all') {
+            var filtered = [];
+            for (var i = 0; i < jobs.length; i++) {
+                if (jobs[i].status === filterStatus) {
+                    filtered.push(jobs[i]);
+                }
+            }
+            jobs = filtered;
+        }
+
+        // Sort by created date (newest first)
+        jobs.sort(function(a, b) {
+            return new Date(b.createdDate) - new Date(a.createdDate);
+        });
+
+        if (jobs.length === 0) {
+            container.innerHTML = '<p class="text-muted">No jobs found.</p>';
+            return;
+        }
+
+        var html = '<div class="jobs-list">';
+
+        for (var i = 0; i < jobs.length; i++) {
+            var job = jobs[i];
+            var statusClass = 'status-' + job.status;
+
+            html += '<div class="job-card" onclick="JobTrackingUI.openJob(\'' + job.id + '\')">';
+
+            // Job header
+            html += '<div class="job-card-header">';
+            html += '<div class="job-number">' + job.jobNumber + '</div>';
+            html += '<span class="badge ' + statusClass + '">' + formatStatusLabel(job.status) + '</span>';
+            html += '</div>';
+
+            // Job info
+            html += '<div class="job-card-body">';
+            html += '<div class="job-client">';
+            html += '<strong>' + (job.client.name || 'Unnamed Client') + '</strong>';
+            html += '</div>';
+            html += '<div class="job-address">' + (job.client.address || 'No address') + '</div>';
+
+            // Job details
+            html += '<div class="job-details">';
+            if (job.schedule.scheduledDate) {
+                var schedDate = new Date(job.schedule.scheduledDate);
+                html += '<div class="job-detail">';
+                html += '<span class="detail-label">Scheduled:</span> ';
+                html += schedDate.toLocaleDateString() + ' ' + schedDate.toLocaleTimeString([], {hour: '2-digit', minute: '2-digit'});
+                html += '</div>';
+            }
+            if (job.schedule.actualDuration) {
+                html += '<div class="job-detail">';
+                html += '<span class="detail-label">Duration:</span> ' + job.schedule.actualDuration + ' min';
+                html += '</div>';
+            }
+            html += '<div class="job-detail">';
+            html += '<span class="detail-label">Value:</span> $' + (job.actual.total || job.estimate.total || 0).toFixed(2);
+            html += '</div>';
+            html += '</div>';
+
+            html += '</div>';
+
+            // Job actions
+            html += '<div class="job-card-footer">';
+            if (job.status === 'scheduled') {
+                html += '<button class="btn btn-sm btn-primary" onclick="event.stopPropagation(); JobTrackingUI.openJob(\'' + job.id + '\')">Start Job</button>';
+            } else if (job.status === 'in-progress') {
+                html += '<button class="btn btn-sm btn-success" onclick="event.stopPropagation(); JobTrackingUI.openJob(\'' + job.id + '\')">Continue</button>';
+            } else if (job.status === 'completed' && !job.invoiceGenerated) {
+                html += '<button class="btn btn-sm btn-secondary" onclick="event.stopPropagation(); generateJobInvoiceFromList(\'' + job.id + '\')">Generate Invoice</button>';
+            }
+            html += '</div>';
+
+            html += '</div>';
+        }
+
+        html += '</div>';
+
+        container.innerHTML = html;
+
+        // Update summary cards
+        updateJobsSummary();
+    }
+
+    /**
+     * Update jobs summary cards
+     */
+    function updateJobsSummary() {
+        var jobs = window.JobManager.getAllJobs();
+
+        var scheduledCount = 0;
+        var inProgressCount = 0;
+        var completedCount = 0;
+        var totalRevenue = 0;
+
+        for (var i = 0; i < jobs.length; i++) {
+            var job = jobs[i];
+
+            if (job.status === 'scheduled') scheduledCount++;
+            if (job.status === 'in-progress') inProgressCount++;
+            if (job.status === 'completed' || job.status === 'invoiced') {
+                completedCount++;
+                totalRevenue += job.actual.total || 0;
+            }
+        }
+
+        var scheduledEl = document.getElementById('jobs-count-scheduled');
+        var inProgressEl = document.getElementById('jobs-count-in-progress');
+        var completedEl = document.getElementById('jobs-count-completed');
+        var revenueEl = document.getElementById('jobs-total-revenue');
+
+        if (scheduledEl) scheduledEl.textContent = scheduledCount;
+        if (inProgressEl) inProgressEl.textContent = inProgressCount;
+        if (completedEl) completedEl.textContent = completedCount;
+        if (revenueEl) revenueEl.textContent = '$' + totalRevenue.toFixed(2);
+    }
+
+    /**
+     * Filter jobs by status
+     */
+    function filterJobs(status) {
+        // Update active tab
+        var tabs = document.querySelectorAll('.filter-tab');
+        for (var i = 0; i < tabs.length; i++) {
+            tabs[i].classList.remove('active');
+            var tabText = tabs[i].textContent.toLowerCase().trim();
+            var statusMatch = (status === 'all' && tabText === 'all') ||
+                            (status === 'scheduled' && tabText === 'scheduled') ||
+                            (status === 'in-progress' && tabText === 'in progress') ||
+                            (status === 'completed' && tabText === 'completed') ||
+                            (status === 'invoiced' && tabText === 'invoiced');
+            if (statusMatch) {
+                tabs[i].classList.add('active');
+            }
+        }
+
+        renderJobsList(status);
+    }
+
+    /**
+     * Format status label for display
+     */
+    function formatStatusLabel(status) {
+        if (status === 'in-progress') return 'In Progress';
+        if (status === 'scheduled') return 'Scheduled';
+        if (status === 'completed') return 'Completed';
+        if (status === 'invoiced') return 'Invoiced';
+        return status;
+    }
+
+    /**
+     * Initialize jobs page
+     */
+    function initJobsPage() {
+        renderJobsList('all');
+        updateJobsSummary();
+    }
+
     // Register module
     if (window.APP && window.APP.registerModule) {
         window.APP.registerModule('jobTrackingUI', {
@@ -879,7 +1047,10 @@
             openJob: openJob,
             editWorkItem: editWorkItem,
             viewPhoto: viewPhoto,
-            showPhotoCategory: showPhotoCategory
+            showPhotoCategory: showPhotoCategory,
+            renderJobsList: renderJobsList,
+            filterJobs: filterJobs,
+            initJobsPage: initJobsPage
         });
     }
 
@@ -895,7 +1066,11 @@
         showCompleteJobDialog: showCompleteJobDialog,
         closeCompleteJobDialog: closeCompleteJobDialog,
         setRating: setRating,
-        finalizeJobCompletion: finalizeJobCompletion
+        finalizeJobCompletion: finalizeJobCompletion,
+        renderJobsList: renderJobsList,
+        filterJobs: filterJobs,
+        initJobsPage: initJobsPage,
+        _currentJobId: _currentJobId
     };
 
     // Export job function buttons globally for HTML onclick handlers
