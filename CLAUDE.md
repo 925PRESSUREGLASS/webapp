@@ -1,7 +1,7 @@
 # CLAUDE.md - AI Assistant Guide for TicTacStick Quote Engine
 
 **Last Updated:** 2025-11-18
-**Version:** 1.8.0
+**Version:** 1.9.0
 **Project:** TicTacStick Quote Engine for 925 Pressure Glass
 
 ---
@@ -17,13 +17,66 @@
 7. [Common Tasks](#common-tasks)
 8. [Security & Validation](#security--validation)
 9. [Module Reference](#module-reference)
-10. [Troubleshooting](#troubleshooting)
+10. [Design System](#design-system)
+11. [Troubleshooting](#troubleshooting)
 
 ---
 
-## What's New in v1.8.0
+## What's New in v1.9.0
 
-### Enhanced Print Layouts System (November 2025)
+### Professional UI/UX Design System (November 2025)
+
+This release adds a comprehensive design system for consistent, accessible, and professional UI/UX:
+
+**New Core Files:**
+- `css/design-system.css` - Complete design system (1,200+ lines)
+  - CSS variables for colors, typography, spacing
+  - Button components (primary, secondary, tertiary, danger)
+  - Form components (inputs, selects, checkboxes, radios)
+  - Card and modal components
+  - Loading states and skeleton screens
+  - Toast notifications and alerts
+  - Mobile-first responsive patterns
+  - iOS Safari specific fixes
+  - Accessibility utilities (ARIA, focus states)
+  - Animation and micro-interactions
+
+- `ui-components.js` - UI helper functions (430+ lines)
+  - Toast notification system
+  - Loading overlay management
+  - Confirmation modals
+  - Alert dialogs
+  - iOS viewport height fix
+
+**New Documentation:**
+- `docs/DESIGN_SYSTEM.md` - Complete design system guide (1,000+ lines)
+  - Component library with examples
+  - Color system and typography
+  - Accessibility guidelines
+  - iOS Safari compatibility
+  - Best practices and migration guide
+
+**Key Improvements:**
+- 🎨 Unified color palette and typography scale
+- 📱 Mobile-first with 44px minimum touch targets
+- ♿ WCAG AA accessibility compliance
+- 🍎 iOS Safari optimizations (viewport fix, no zoom on inputs)
+- ⚡ GPU-accelerated animations
+- 🔄 Consistent button and form styling
+- 🎯 Professional polish with micro-interactions
+- 📋 Toast notifications replace browser alerts
+- 🔐 Proper ARIA labels throughout
+
+**HTML Updates:**
+- Updated all buttons to use new design system classes
+- Added ARIA labels and accessibility attributes
+- Replaced `btn-small` → `btn-sm`
+- Replaced `btn-ghost` → `btn-tertiary`
+- Added proper form labels and hints
+
+**Total:** ~1,700 lines of new code + comprehensive documentation
+
+### Enhanced Print Layouts System (v1.8.0)
 
 This release adds comprehensive professional printing capabilities:
 
@@ -1909,6 +1962,400 @@ JobPresets.getPresetsByCategory(category)
 JobPresets.exportPresets()
 JobPresets.importPresets(data)
 ```
+
+---
+
+## Design System
+
+### Overview
+
+TicTacStick v1.9.0 includes a comprehensive design system for consistent, accessible, and professional UI/UX.
+
+**Files:**
+- `css/design-system.css` - Complete CSS design system (1,200+ lines)
+- `ui-components.js` - JavaScript UI helpers (430+ lines)
+- `docs/DESIGN_SYSTEM.md` - Full documentation (1,000+ lines)
+
+### Quick Start
+
+**Using Design System Components:**
+
+```html
+<!-- Primary Button -->
+<button class="btn btn-primary">Save Quote</button>
+
+<!-- Form Input with Label -->
+<div class="form-group">
+    <label class="form-label form-label-required" for="name">Client Name</label>
+    <input type="text" id="name" class="form-input" aria-required="true">
+    <span class="form-hint">Full name as it appears on quote</span>
+</div>
+
+<!-- Card Component -->
+<div class="card">
+    <div class="card-header">
+        <h3 class="card-title">Quote Summary</h3>
+    </div>
+    <div class="card-body">
+        <p>Card content...</p>
+    </div>
+</div>
+```
+
+**Using UI Components (JavaScript):**
+
+```javascript
+// Show success toast
+UIComponents.showToast('Quote saved!', 'success');
+
+// Show loading overlay
+UIComponents.showLoading('Saving...');
+UIComponents.hideLoading();
+
+// Confirmation modal
+UIComponents.showConfirm({
+    title: 'Delete Quote?',
+    message: 'This cannot be undone.',
+    confirmText: 'Delete',
+    danger: true,
+    onConfirm: function() {
+        // Delete action
+    }
+});
+```
+
+### Button Components
+
+```html
+<!-- Button Variants -->
+<button class="btn btn-primary">Primary Action</button>
+<button class="btn btn-secondary">Secondary Action</button>
+<button class="btn btn-tertiary">Tertiary Action</button>
+<button class="btn btn-danger">Delete</button>
+<button class="btn btn-success">Complete</button>
+
+<!-- Button Sizes -->
+<button class="btn btn-sm">Small</button>
+<button class="btn">Default</button>
+<button class="btn btn-lg">Large</button>
+
+<!-- Button Modifiers -->
+<button class="btn btn-block">Full Width</button>
+<button class="btn btn-loading">Loading...</button>
+<button class="btn btn-icon">
+    <svg>...</svg> With Icon
+</button>
+```
+
+### Form Components
+
+```html
+<!-- Text Input -->
+<div class="form-group">
+    <label class="form-label" for="email">Email</label>
+    <input type="email" id="email" class="form-input">
+</div>
+
+<!-- Select Dropdown -->
+<select class="form-select" aria-label="Choose option">
+    <option value="">Select...</option>
+    <option value="1">Option 1</option>
+</select>
+
+<!-- Textarea -->
+<textarea class="form-textarea" rows="4"></textarea>
+
+<!-- Checkbox -->
+<div class="form-checkbox-wrapper">
+    <input type="checkbox" id="agree" class="form-checkbox">
+    <label for="agree">I agree</label>
+</div>
+
+<!-- Error State -->
+<input type="text" class="form-input form-input-error">
+<span class="form-error">This field is required</span>
+```
+
+### Color System
+
+**CSS Variables:**
+
+```css
+/* Primary Colors */
+--color-primary: #2563eb
+--color-primary-light: #3b82f6
+--color-primary-dark: #1e40af
+
+/* Semantic Colors */
+--color-error: #ef4444
+--color-warning: #f59e0b
+--color-success: #10b981
+--color-info: #3b82f6
+
+/* Neutral Scale */
+--color-neutral-50: #f9fafb    /* Lightest */
+--color-neutral-100: #f3f4f6   /* Cards */
+--color-neutral-200: #e5e7eb   /* Borders */
+--color-neutral-500: #6b7280   /* Text */
+--color-neutral-900: #111827   /* Darkest */
+```
+
+### Typography
+
+```css
+/* Font Sizes */
+--font-size-xs: 0.75rem     /* 12px */
+--font-size-sm: 0.875rem    /* 14px */
+--font-size-base: 1rem      /* 16px - iOS safe */
+--font-size-lg: 1.125rem    /* 18px */
+--font-size-xl: 1.25rem     /* 20px */
+
+/* Font Weights */
+--font-weight-normal: 400
+--font-weight-medium: 500
+--font-weight-semibold: 600
+--font-weight-bold: 700
+```
+
+### Spacing & Layout
+
+```css
+/* Spacing Scale */
+--spacing-xs: 0.25rem    /* 4px */
+--spacing-sm: 0.5rem     /* 8px */
+--spacing-md: 1rem       /* 16px */
+--spacing-lg: 1.5rem     /* 24px */
+--spacing-xl: 2rem       /* 32px */
+
+/* Border Radius */
+--radius-sm: 0.25rem     /* 4px */
+--radius-md: 0.5rem      /* 8px */
+--radius-lg: 0.75rem     /* 12px */
+--radius-full: 9999px    /* Pills */
+
+/* Shadows */
+--shadow-sm: 0 1px 2px...
+--shadow-md: 0 4px 6px...
+--shadow-lg: 0 10px 15px...
+```
+
+### UI Components (JavaScript)
+
+#### Toast Notifications
+
+```javascript
+// Success
+UIComponents.showToast('Operation successful!', 'success');
+
+// Error
+UIComponents.showToast('Something went wrong', 'error');
+
+// Warning
+UIComponents.showToast('Please review', 'warning');
+
+// Info
+UIComponents.showToast('Quote autosaved', 'info');
+
+// Custom duration (ms)
+UIComponents.showToast('Message', 'success', 5000);
+```
+
+#### Loading States
+
+```javascript
+// Show loading overlay
+UIComponents.showLoading('Generating PDF...');
+
+// Hide loading overlay
+UIComponents.hideLoading();
+```
+
+#### Modals
+
+```javascript
+// Confirmation modal
+UIComponents.showConfirm({
+    title: 'Confirm Delete',
+    message: 'Are you sure you want to delete this quote?',
+    confirmText: 'Delete',
+    cancelText: 'Cancel',
+    danger: true,  // Red button
+    onConfirm: function() {
+        // Confirmed
+    },
+    onCancel: function() {
+        // Cancelled
+    }
+});
+
+// Alert modal
+UIComponents.showAlert({
+    title: 'Success',
+    message: 'Quote has been saved.',
+    buttonText: 'OK',
+    onClose: function() {
+        // Closed
+    }
+});
+```
+
+### Accessibility
+
+**ARIA Labels:**
+
+```html
+<!-- Button with icon only -->
+<button class="btn btn-tertiary" aria-label="Close modal">
+    <svg>...</svg>
+</button>
+
+<!-- Form input -->
+<input
+    type="text"
+    aria-required="true"
+    aria-describedby="hint"
+>
+<span id="hint">Helper text</span>
+
+<!-- Modal -->
+<div
+    class="modal"
+    role="dialog"
+    aria-modal="true"
+    aria-labelledby="modal-title"
+>
+    <h3 id="modal-title">Title</h3>
+</div>
+```
+
+**Focus States:**
+
+All interactive elements have visible focus indicators:
+```css
+*:focus {
+    outline: 2px solid var(--color-primary);
+    outline-offset: 2px;
+}
+```
+
+**Screen Reader Only:**
+
+```html
+<span class="sr-only">Loading...</span>
+```
+
+### Mobile & iOS Safari
+
+**Touch Targets:**
+- Minimum 44px height for all interactive elements
+- Adequate spacing between touch targets
+
+**iOS Fixes:**
+```css
+/* Prevent zoom on input focus */
+input, select, textarea {
+    font-size: 16px;  /* iOS won't zoom */
+}
+
+/* Viewport height fix (handled by UIComponents.init()) */
+.full-height {
+    height: calc(var(--vh, 1vh) * 100);
+}
+
+/* Smooth scrolling */
+.modal-body {
+    -webkit-overflow-scrolling: touch;
+}
+```
+
+**Modal Background Scroll Prevention:**
+
+Automatically handled by UI components:
+```javascript
+// Prevents body scroll when modal opens
+document.body.classList.add('modal-open');
+```
+
+### Responsive Patterns
+
+**Mobile-First Breakpoints:**
+
+```css
+/* Mobile: 0-767px (default) */
+
+/* Tablet: 768px+ */
+@media (min-width: 768px) { }
+
+/* Desktop: 1024px+ */
+@media (min-width: 1024px) { }
+```
+
+**Utilities:**
+
+```html
+<!-- Stack to row -->
+<div class="stack-mobile">
+    <!-- Vertical on mobile, horizontal on tablet+ -->
+</div>
+
+<!-- Visibility -->
+<div class="hide-mobile">Desktop only</div>
+<div class="show-mobile">Mobile only</div>
+```
+
+### Best Practices
+
+**DO ✅**
+- Use CSS variables for colors and spacing
+- Add ARIA labels to icon-only buttons
+- Use `btn-primary` for main actions
+- Show loading states for async operations
+- Use confirmation modals for destructive actions
+- Maintain 44px minimum touch targets
+- Test on actual iOS devices
+
+**DON'T ❌**
+- Don't use inline styles
+- Don't create custom colors
+- Don't skip ARIA labels
+- Don't use `<div>` for buttons
+- Don't animate width/height (use transform)
+- Don't use browser `alert()` or `confirm()`
+- Don't make touch targets smaller than 44px
+
+### Migration from Old Styles
+
+**Button Classes:**
+
+| Old | New |
+|-----|-----|
+| `btn-small` | `btn-sm` |
+| `btn-ghost` | `btn-tertiary` |
+| Custom colors | `btn-primary`, `btn-secondary`, `btn-danger` |
+
+**Toast Notifications:**
+
+Replace custom toast with:
+```javascript
+UIComponents.showToast(message, type, duration);
+```
+
+### Complete Documentation
+
+For full design system documentation including all components, patterns, and examples:
+
+**See:** `docs/DESIGN_SYSTEM.md`
+
+This includes:
+- Complete component library
+- Usage examples for every component
+- Color system details
+- Typography scale
+- Spacing and layout patterns
+- Accessibility guidelines
+- iOS Safari compatibility
+- Animation patterns
+- Best practices and anti-patterns
 
 ---
 
