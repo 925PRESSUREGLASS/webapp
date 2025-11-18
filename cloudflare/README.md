@@ -128,8 +128,12 @@ Make sure `ALLOWED_ORIGINS` environment variable includes your TicTacStick domai
 
 ### Signature Verification Failures
 
-1. Check `WEBHOOK_SECRET` matches GHL configuration
-2. Implement proper HMAC verification (see TODO in code)
+If you're getting 401 Unauthorized errors:
+
+1. Check `WEBHOOK_SECRET` environment variable matches GHL configuration exactly
+2. Verify GHL is sending the `X-GHL-Signature` header
+3. Check worker logs for signature mismatch warnings (shows expected vs received)
+4. Ensure webhook payload hasn't been modified in transit
 
 ### Events Not Appearing
 
@@ -140,10 +144,11 @@ Make sure `ALLOWED_ORIGINS` environment variable includes your TicTacStick domai
 ## Security Best Practices
 
 1. **Never commit secrets** - Always use environment variables
-2. **Implement signature verification** - Uncomment and complete the signature verification code
-3. **Limit CORS origins** - Only allow your actual domains
-4. **Monitor logs** - Watch for suspicious activity
-5. **Rotate secrets** - Change webhook secret periodically
+2. **Signature verification is enabled** - HMAC-SHA256 verification protects against forged webhooks
+3. **Limit CORS origins** - Only allow your actual domains in ALLOWED_ORIGINS
+4. **Monitor logs** - Watch for signature verification failures and suspicious activity
+5. **Rotate secrets** - Change webhook secret periodically and update both GHL and worker config
+6. **Use HTTPS only** - Never expose webhook endpoint over HTTP
 
 ## Cost
 
