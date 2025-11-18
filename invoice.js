@@ -8,10 +8,9 @@
   var INVOICE_SETTINGS_KEY = 'invoice-settings';
 
   // Encryption configuration
-  // NOTE: Encryption is now user-configurable via Invoice Settings UI
-  // The enableEncryption setting is stored in the settings object
-  // ENABLE_ENCRYPTION is deprecated - use settings.enableEncryption instead
-  var ENABLE_ENCRYPTION = false;  // DEPRECATED: Use settings.enableEncryption
+  // NOTE: Encryption is disabled by default for backward compatibility
+  // This is now user-configurable via settings UI (see settings.enableEncryption)
+  var ENABLE_ENCRYPTION = false;  // Will be set from settings after loading
   var ENCRYPTION_KEY = 'tictacstick-2025-invoice-secure';
 
   var invoices = [];
@@ -25,15 +24,18 @@
     accountNumber: '',
     abn: '',
     includeGST: true,
-    enableEncryption: false  // User-configurable encryption setting
+    enableEncryption: false
   };
 
-  // Initialize encryption helper function
-  // Called after settings are loaded to set up encryption if enabled
+  // Initialize encryption based on settings
+  // This is called after settings are loaded
   function initializeEncryption() {
-    if (settings.enableEncryption && window.Security && window.Security.SecureStorage) {
+    ENABLE_ENCRYPTION = settings.enableEncryption || false;
+    if (ENABLE_ENCRYPTION && window.Security && window.Security.SecureStorage) {
       window.Security.SecureStorage.setKey(ENCRYPTION_KEY);
       console.log('[INVOICE] Encryption enabled for invoice data');
+    } else {
+      console.log('[INVOICE] Encryption disabled (using unencrypted storage)');
     }
   }
 
@@ -101,33 +103,35 @@
     }
   }
 
-  // Load settings (supports encrypted and unencrypted modes)
+  // Load settings (always loads from unencrypted storage first to check enableEncryption flag)
   function loadSettings() {
     try {
       var loadedSettings = null;
 
-      // First, try loading from unencrypted storage
-      // This ensures we can bootstrap the encryption setting itself
+      // Always try unencrypted storage first to get the enableEncryption flag
       var unencryptedData = localStorage.getItem(INVOICE_SETTINGS_KEY);
       if (unencryptedData) {
         loadedSettings = window.Security.safeJSONParse(unencryptedData, null, null);
       }
 
-      // If we have loaded settings and encryption is enabled, try encrypted storage
-      if (loadedSettings && loadedSettings.enableEncryption && window.Security && window.Security.SecureStorage) {
-        // Check if encrypted version exists
+      // If enableEncryption flag is set in loaded settings, try encrypted storage
+      if (loadedSettings && loadedSettings.enableEncryption &&
+          window.Security && window.Security.SecureStorage) {
+        // Temporarily set encryption flag to load encrypted data
+        var tempEncryption = ENABLE_ENCRYPTION;
+        ENABLE_ENCRYPTION = true;
+        window.Security.SecureStorage.setKey(ENCRYPTION_KEY);
+
         var encryptedSettings = window.Security.SecureStorage.getItem(INVOICE_SETTINGS_KEY, null);
         if (encryptedSettings) {
-          // Use encrypted version
           loadedSettings = encryptedSettings;
-        } else if (loadedSettings) {
-          // Migrate to encrypted storage
-          window.Security.SecureStorage.setItem(INVOICE_SETTINGS_KEY, loadedSettings);
-          console.log('[INVOICE] Migrated settings to encrypted storage');
+          console.log('[INVOICE] Loaded encrypted settings');
         }
+
+        // Restore encryption flag (will be set properly in initializeEncryption)
+        ENABLE_ENCRYPTION = tempEncryption;
       }
 
-      // Merge loaded settings into default settings
       if (loadedSettings) {
         Object.keys(loadedSettings).forEach(function(key) {
           settings[key] = loadedSettings[key];
@@ -805,11 +809,11 @@
               '<input type="text" id="abn" value="' + escapeHtml(settings.abn) + '" placeholder="12 345 678 901" />' +
             '</div>' +
             '<div class="form-group">' +
-              '<div class="form-checkbox-wrapper">' +
+              '<label class="form-checkbox-label">' +
                 '<input type="checkbox" id="enableEncryption" ' + (settings.enableEncryption ? 'checked' : '') + ' />' +
-                '<label for="enableEncryption">Enable Encrypted Storage</label>' +
-              '</div>' +
-              '<p class="form-hint">Encrypts invoice data in browser storage for enhanced security. Recommended for sensitive financial data.</p>' +
+                ' Enable Encrypted Storage' +
+              '</label>' +
+              '<p class="form-hint">Enable encryption to store invoice data securely. Requires page reload to take effect.</p>' +
             '</div>' +
             '<div class="form-actions">' +
               '<button type="button" class="btn btn-secondary" id="cancelSettingsBtn">Cancel</button>' +
@@ -880,10 +884,21 @@
       settings.abn = abnValue;
       settings.enableEncryption = document.getElementById('enableEncryption').checked;
 
+      // Get encryption setting
+      var previousEncryptionSetting = settings.enableEncryption;
+      settings.enableEncryption = document.getElementById('enableEncryption').checked;
+
       saveSettings();
 
-      if (window.ErrorHandler) {
-        window.ErrorHandler.showSuccess('Settings saved');
+      // If encryption setting changed, notify user that reload is required
+      if (previousEncryptionSetting !== settings.enableEncryption) {
+        if (window.ErrorHandler) {
+          window.ErrorHandler.showSuccess('Settings saved. Please reload the page for encryption changes to take effect.');
+        }
+      } else {
+        if (window.ErrorHandler) {
+          window.ErrorHandler.showSuccess('Settings saved');
+        }
       }
 
       modal.classList.remove('active');
@@ -1927,7 +1942,7 @@
   // Initialize
   function init() {
     loadSettings();
-    initializeEncryption();  // Initialize encryption based on loaded settings
+    initializeEncryption();
     loadInvoices();
     addInvoiceButton();
 
