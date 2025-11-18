@@ -200,16 +200,16 @@
     html += '<span class="field-label">Inside / Outside</span>';
     html += '<div class="toggle">';
     html +=
-      '<input id="wizWinInside" type="checkbox" checked /> <span>Inside</span>';
+      '<input id="wizWinInside" class="form-checkbox" type="checkbox" checked /> <span>Inside</span>';
     html +=
-      '<input id="wizWinOutside" type="checkbox" checked style="margin-left:10px;" /> <span>Outside</span>';
+      '<input id="wizWinOutside" class="form-checkbox" type="checkbox" checked style="margin-left:10px;" /> <span>Outside</span>';
     html += "</div>";
     html += "</label>";
 
     html += '<label class="field">';
     html += '<span class="field-label">High Reach</span>';
     html += '<div class="toggle">';
-    html += '<input id="wizWinHigh" type="checkbox" /> <span>High reach</span>';
+    html += '<input id="wizWinHigh" class="form-checkbox" type="checkbox" /> <span>High reach</span>';
     html += "</div>";
     html += "</label>";
 
