@@ -53,6 +53,7 @@
 	<link rel="stylesheet" href="theme-customizer.css" />
 	<link rel="stylesheet" href="analytics.css" />
 	<link rel="stylesheet" href="photos.css" />
+	<link rel="stylesheet" href="css/messages.css" />
 	<link rel="stylesheet" href="mobile.css" />
 	<link rel="stylesheet" href="quote-pdf.css" />
 	<link rel="stylesheet" href="print.css" media="print" />
@@ -375,6 +376,83 @@
 					</div>
 				</section>
 
+				<!-- MESSAGES PANEL -->
+				<section class="section" id="messagesPanel">
+					<header class="sec-h">
+						<h2 class="sec-title">💬 Messages & Communication</h2>
+						<button class="card-toggle" type="button" data-target="messagesBody">▾</button>
+					</header>
+					<div class="sec-b" id="messagesBody">
+						<!-- Unread Count Banner -->
+						<div id="unread-banner" style="display: none; margin-bottom: 1rem;">
+							<div class="card-body" style="background: #dbeafe; border-left: 4px solid #3b82f6; display: flex; justify-content: space-between; align-items: center; padding: 0.75rem 1rem;">
+								<div>
+									<strong id="unread-count">0</strong> unread message(s)
+								</div>
+								<button class="btn btn-secondary btn-sm" onclick="markAllAsRead()">
+									Mark All Read
+								</button>
+							</div>
+						</div>
+
+						<!-- Message Controls -->
+						<div class="config-footer-row" style="margin-bottom: 15px;">
+							<button type="button" class="btn btn-sm" id="viewMessagesBtn" onclick="toggleMessagesView()">
+								View Messages
+							</button>
+							<button type="button" class="btn btn-sm btn-secondary" onclick="exportMessages()">
+								Export History
+							</button>
+						</div>
+
+						<!-- Messages Container (Initially Hidden) -->
+						<div id="messagesContainer" style="display: none;">
+							<!-- Message Filters -->
+							<div style="margin-bottom: 1rem;">
+								<div class="message-filters">
+									<select class="form-select" id="message-type-filter" onchange="filterMessages()">
+										<option value="all">All Types</option>
+										<option value="sms">SMS Only</option>
+										<option value="email">Email Only</option>
+									</select>
+
+									<select class="form-select" id="message-direction-filter" onchange="filterMessages()">
+										<option value="all">All Messages</option>
+										<option value="outbound">Sent</option>
+										<option value="inbound">Received</option>
+									</select>
+
+									<input
+										type="search"
+										class="form-input"
+										id="message-search"
+										placeholder="Search messages..."
+										oninput="filterMessages()"
+									/>
+								</div>
+							</div>
+
+							<!-- Message List -->
+							<div id="message-list">
+								<!-- Populated by JavaScript -->
+							</div>
+
+							<!-- Empty State -->
+							<div id="messages-empty-state" class="empty-state" style="display: flex;">
+								<svg class="empty-state-icon" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+									<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 10h.01M12 10h.01M16 10h.01M9 16H5a2 2 0 01-2-2V6a2 2 0 012-2h14a2 2 0 012 2v8a2 2 0 01-2 2h-5l-5 5v-5z"/>
+								</svg>
+								<h3 class="empty-state-title">No Messages</h3>
+								<p class="empty-state-message">Message history will appear here once you start communicating with clients.</p>
+							</div>
+						</div>
+
+						<p class="saved-quotes-help">
+							Automated SMS and email communication with clients. Messages are sent through GoHighLevel integration.
+						</p>
+					</div>
+				</section>
+
 				<!-- SAVED QUOTES PANEL -->
 				<section class="section" id="savedQuotesPanel">
 					<header class="sec-h">
@@ -469,6 +547,12 @@
 	<script src="accessibility.js" defer></script>
 	<script src="client-database.js" defer></script>
 	<script src="quote-workflow.js" defer></script>
+	<!-- Communication & Messaging System -->
+	<script src="message-templates.js" defer></script>
+	<script src="communication-manager.js" defer></script>
+	<script src="message-sequences.js" defer></script>
+	<script src="messages-ui.js" defer></script>
+	<script src="workflow-integration.js" defer></script>
 	<script src="import-export.js" defer></script>
 	<script src="invoice.js" defer></script>
 	<script src="theme.js" defer></script>
