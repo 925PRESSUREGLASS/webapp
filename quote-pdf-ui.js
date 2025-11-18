@@ -421,8 +421,27 @@
 
       UIComponents.showToast('Email client opened. Please attach the PDF manually.', 'info');
 
-      // TODO: Implement backend email sending with attachment
-      // This would require a server-side endpoint to handle PDF attachment
+      // TODO: Implement backend email sending with attachment (Phase 3+)
+      // This would require:
+      // 1. Server-side endpoint (e.g., /api/send-quote-email)
+      // 2. Email service integration (SendGrid, AWS SES, etc.)
+      // 3. PDF blob conversion to base64 or multipart/form-data
+      // 4. Template engine for email HTML body
+      // 5. Security: Rate limiting, authentication, input sanitization
+      // Example implementation:
+      //   var formData = new FormData();
+      //   formData.append('pdf', pdfBlob, 'quote.pdf');
+      //   formData.append('to', email);
+      //   formData.append('subject', subject);
+      //   formData.append('body', body);
+      //   fetch('/api/send-quote-email', { method: 'POST', body: formData })
+      //     .then(function(response) { return response.json(); })
+      //     .then(function(data) {
+      //       UIComponents.showToast('Email sent successfully!', 'success');
+      //     })
+      //     .catch(function(error) {
+      //       UIComponents.showToast('Failed to send email', 'error');
+      //     });
     },
 
     /**

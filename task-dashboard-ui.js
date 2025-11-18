@@ -388,6 +388,42 @@
   }
 
   /**
+   * Show task dashboard page
+   */
+  function show() {
+    console.log('[TASK-DASHBOARD] Showing task dashboard');
+
+    // Hide all other pages
+    var pages = document.querySelectorAll('.page');
+    for (var i = 0; i < pages.length; i++) {
+      pages[i].style.display = 'none';
+    }
+
+    // Show tasks page
+    var taskPage = document.getElementById('page-tasks');
+    if (taskPage) {
+      taskPage.style.display = 'block';
+
+      // Refresh dashboard
+      loadTaskDashboard();
+    } else {
+      console.warn('[TASK-DASHBOARD] Task page not found');
+    }
+  }
+
+  /**
+   * Hide task dashboard page
+   */
+  function hide() {
+    console.log('[TASK-DASHBOARD] Hiding task dashboard');
+
+    var taskPage = document.getElementById('page-tasks');
+    if (taskPage) {
+      taskPage.style.display = 'none';
+    }
+  }
+
+  /**
    * Show new task modal
    */
   function showNewTaskModal() {
@@ -419,6 +455,8 @@
   if (window.APP && window.APP.registerModule) {
     window.APP.registerModule('taskDashboard', {
       init: init,
+      show: show,
+      hide: hide,
       renderTaskList: renderTaskList,
       applyTaskFilters: applyTaskFilters,
       filterTasks: filterTasks,
@@ -429,8 +467,10 @@
   }
 
   // Global API
-  window.TaskDashboard = {
+  window.TaskDashboardUI = {
     init: init,
+    show: show,
+    hide: hide,
     renderTaskList: renderTaskList,
     applyTaskFilters: applyTaskFilters,
     filterTasks: filterTasks

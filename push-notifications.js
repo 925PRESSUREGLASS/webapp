@@ -89,7 +89,36 @@
         console.error('[PUSH] Failed to save token:', e);
       }
 
-      // TODO: Send token to backend server when implemented
+      // TODO: Send token to backend server when implemented (Phase 3+)
+      // This would require:
+      // 1. Backend API endpoint (e.g., /api/push-tokens)
+      // 2. User identification (userId, deviceId)
+      // 3. Token storage in database (with user association)
+      // 4. Push notification service (FCM for Android, APNS for iOS)
+      // 5. Token refresh handling (tokens can expire/change)
+      // 6. Security: Authenticate request, rate limiting
+      // Example implementation:
+      //   function sendTokenToServer(token) {
+      //     var userId = getUserId(); // Get current user ID
+      //     var deviceId = getDeviceId(); // Get unique device ID
+      //     fetch('/api/push-tokens', {
+      //       method: 'POST',
+      //       headers: { 'Content-Type': 'application/json' },
+      //       body: JSON.stringify({
+      //         token: token,
+      //         userId: userId,
+      //         deviceId: deviceId,
+      //         platform: window.Capacitor.getPlatform()
+      //       })
+      //     })
+      //     .then(function(response) { return response.json(); })
+      //     .then(function(data) {
+      //       console.log('[PUSH] Token registered with server:', data);
+      //     })
+      //     .catch(function(error) {
+      //       console.error('[PUSH] Failed to register token:', error);
+      //     });
+      //   }
       // sendTokenToServer(token.value);
     });
 
@@ -182,13 +211,13 @@
   function navigateTo(page, params) {
     console.log('[PUSH] Navigate to:', page, params);
 
-    // TODO: Implement navigation based on your app structure
-    // This is a placeholder implementation
+    var handled = false;
 
     // Show task dashboard
     if (page === 'tasks') {
       if (window.TaskDashboardUI && window.TaskDashboardUI.show) {
         window.TaskDashboardUI.show();
+        handled = true;
       }
     }
 
@@ -196,6 +225,7 @@
     if (page === 'quote-detail' && params && params.id) {
       if (window.QuoteManager && window.QuoteManager.showQuote) {
         window.QuoteManager.showQuote(params.id);
+        handled = true;
       }
     }
 
@@ -203,11 +233,47 @@
     if (page === 'invoices') {
       if (window.InvoiceSystem && window.InvoiceSystem.showInvoiceList) {
         window.InvoiceSystem.showInvoiceList();
+        handled = true;
       }
     }
 
-    // Fallback: log to console
-    console.log('[PUSH] Navigation not fully implemented for:', page);
+    // Show contract detail
+    if (page === 'contract-detail' && params && params.id) {
+      if (window.ContractWizard && window.ContractWizard.showContract) {
+        window.ContractWizard.showContract(params.id);
+        handled = true;
+      }
+    }
+
+    // Show client detail in CRM
+    if (page === 'client-detail' && params && params.id) {
+      if (window.ClientDatabase && window.ClientDatabase.showClient) {
+        window.ClientDatabase.showClient(params.id);
+        handled = true;
+      }
+    }
+
+    // Navigate to home/main quote page
+    if (page === 'home') {
+      // Hide all pages, show main quote interface
+      var pages = document.querySelectorAll('.page');
+      for (var i = 0; i < pages.length; i++) {
+        pages[i].style.display = 'none';
+      }
+      handled = true;
+    }
+
+    // Provide user feedback
+    if (handled) {
+      if (window.UIComponents && window.UIComponents.showToast) {
+        window.UIComponents.showToast('Navigated to ' + page, 'success', 2000);
+      }
+    } else {
+      console.warn('[PUSH] Navigation not implemented for page:', page);
+      if (window.UIComponents && window.UIComponents.showToast) {
+        window.UIComponents.showToast('Could not navigate to ' + page, 'warning');
+      }
+    }
   }
 
   // ============================================

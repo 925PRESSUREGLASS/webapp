@@ -389,7 +389,30 @@
    */
   function emailBackup(email) {
     console.log('[BACKUP] Email backup not yet implemented');
-    // TODO: Integrate with email service or backend
+
+    // TODO: Integrate with email service or backend (Phase 3+)
+    // This would require:
+    // 1. Backend endpoint (e.g., /api/send-backup-email)
+    // 2. Email service (SendGrid, AWS SES, Mailgun, etc.)
+    // 3. Secure email validation on server side
+    // 4. Attachment size limits (typical: 10-25 MB)
+    // 5. Optional: Cloud storage integration (S3, GCS) with download link
+    // Example implementation:
+    //   var backupData = generateBackup();
+    //   var blob = new Blob([backupData], { type: 'application/json' });
+    //   var formData = new FormData();
+    //   formData.append('backup', blob, 'tictacstick-backup.json');
+    //   formData.append('email', email);
+    //   fetch('/api/send-backup-email', { method: 'POST', body: formData })
+    //     .then(function(response) { return response.json(); })
+    //     .then(function(data) {
+    //       UIComponents.showToast('Backup emailed to ' + email, 'success');
+    //     })
+    //     .catch(function(error) {
+    //       console.error('[BACKUP] Email failed:', error);
+    //       UIComponents.showToast('Failed to email backup', 'error');
+    //     });
+
     // For now, just download the backup
     downloadBackup();
 
