@@ -40,8 +40,34 @@
   // Apply theme to document
   function applyTheme(theme) {
     currentTheme = theme;
-    document.documentElement.setAttribute('data-theme', theme);
-    document.body.setAttribute('data-theme', theme);
+
+    // Handle custom theme
+    if (theme === 'custom') {
+      // Apply custom theme if ThemeCustomizer is available
+      if (window.ThemeCustomizer && window.ThemeCustomizer.load) {
+        var customTheme = window.ThemeCustomizer.load();
+        if (customTheme) {
+          // Set base theme first
+          var baseTheme = customTheme.baseTheme || 'dark';
+          document.documentElement.setAttribute('data-theme', baseTheme);
+          document.body.setAttribute('data-theme', baseTheme);
+
+          // Apply custom theme
+          window.ThemeCustomizer.apply(customTheme);
+        } else {
+          // No custom theme found, fall back to dark
+          console.warn('[THEME] No custom theme found, falling back to dark');
+          theme = 'dark';
+          currentTheme = 'dark';
+          document.documentElement.setAttribute('data-theme', 'dark');
+          document.body.setAttribute('data-theme', 'dark');
+        }
+      }
+    } else {
+      // Apply standard light/dark theme
+      document.documentElement.setAttribute('data-theme', theme);
+      document.body.setAttribute('data-theme', theme);
+    }
 
     // Update toggle button if exists
     updateToggleButton();
@@ -50,13 +76,33 @@
     saveTheme(theme);
   }
 
-  // Toggle between themes
+  // Toggle between themes (light -> dark -> custom -> light)
   function toggleTheme() {
-    var newTheme = currentTheme === 'dark' ? 'light' : 'dark';
+    var newTheme;
+
+    // Check if custom theme exists
+    var hasCustomTheme = false;
+    try {
+      var customThemeData = localStorage.getItem('quote-engine-custom-theme');
+      hasCustomTheme = !!customThemeData;
+    } catch (e) {
+      hasCustomTheme = false;
+    }
+
+    // Cycle through themes
+    if (currentTheme === 'light') {
+      newTheme = 'dark';
+    } else if (currentTheme === 'dark') {
+      newTheme = hasCustomTheme ? 'custom' : 'light';
+    } else {
+      newTheme = 'light';
+    }
+
     applyTheme(newTheme);
 
     if (window.ErrorHandler) {
-      window.ErrorHandler.showInfo('Switched to ' + newTheme + ' theme');
+      var themeName = newTheme === 'custom' ? 'custom' : newTheme;
+      window.ErrorHandler.showInfo('Switched to ' + themeName + ' theme');
     }
   }
 
@@ -65,12 +111,29 @@
     var btn = document.getElementById('themeToggleBtn');
     if (!btn) return;
 
+    // Check if custom theme exists
+    var hasCustomTheme = false;
+    try {
+      var customThemeData = localStorage.getItem('quote-engine-custom-theme');
+      hasCustomTheme = !!customThemeData;
+    } catch (e) {
+      hasCustomTheme = false;
+    }
+
     if (currentTheme === 'dark') {
-      btn.innerHTML = '☀️ Light';
-      btn.setAttribute('aria-label', 'Switch to light theme');
-    } else {
+      if (hasCustomTheme) {
+        btn.innerHTML = '🎨 Custom';
+        btn.setAttribute('aria-label', 'Switch to custom theme');
+      } else {
+        btn.innerHTML = '☀️ Light';
+        btn.setAttribute('aria-label', 'Switch to light theme');
+      }
+    } else if (currentTheme === 'light') {
       btn.innerHTML = '🌙 Dark';
       btn.setAttribute('aria-label', 'Switch to dark theme');
+    } else if (currentTheme === 'custom') {
+      btn.innerHTML = '☀️ Light';
+      btn.setAttribute('aria-label', 'Switch to light theme');
     }
   }
 
@@ -124,7 +187,7 @@
     var btn = document.createElement('button');
     btn.id = 'themeToggleBtn';
     btn.type = 'button';
-    btn.className = 'btn btn-ghost btn-small theme-toggle-btn';
+    btn.className = 'btn btn-tertiary btn-sm theme-toggle-btn';
     btn.onclick = toggleTheme;
 
     // Insert before other buttons
