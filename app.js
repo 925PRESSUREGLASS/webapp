@@ -888,6 +888,31 @@ $("totalIncGstDisplay").textContent = formatMoney(totalIncGst);
     var savedQuotes = AppStorage.loadSavedQuotes() || [];
     renderSavedQuotesOptions(savedQuotes);
 
+    $("saveQuoteBtn").addEventListener("click", function () {
+      var quoteName = prompt("Enter a name for this quote:");
+      if (!quoteName || quoteName.trim() === "") {
+        return;
+      }
+
+      var currentState = buildStateFromUI(true);
+      var newQuote = {
+        id: "q" + Date.now(),
+        title: quoteName.trim(),
+        state: currentState,
+        savedAt: new Date().toISOString()
+      };
+
+      savedQuotes.push(newQuote);
+      AppStorage.saveSavedQuotes(savedQuotes);
+      renderSavedQuotesOptions(savedQuotes);
+
+      if (window.UIComponents && window.UIComponents.showToast) {
+        window.UIComponents.showToast('Quote "' + quoteName + '" saved successfully!', 'success');
+      } else if (window.showToast) {
+        window.showToast('Quote "' + quoteName + '" saved successfully!', 'success');
+      }
+    });
+
     $("loadSavedQuoteBtn").addEventListener("click", function () {
       var id = select.value;
       if (!id) return;
@@ -905,17 +930,44 @@ $("totalIncGstDisplay").textContent = formatMoney(totalIncGst);
 
       state = found.state || state;
       applyStateToUI();
+
+      if (window.UIComponents && window.UIComponents.showToast) {
+        window.UIComponents.showToast('Quote "' + found.title + '" loaded successfully!', 'success');
+      } else if (window.showToast) {
+        window.showToast('Quote "' + found.title + '" loaded successfully!', 'success');
+      }
     });
 
     $("deleteSavedQuoteBtn").addEventListener("click", function () {
       var id = select.value;
       if (!id) return;
 
+      var found = null;
+      var i;
+      for (i = 0; i < savedQuotes.length; i++) {
+        if (savedQuotes[i].id === id) {
+          found = savedQuotes[i];
+          break;
+        }
+      }
+
+      if (!found) return;
+
+      if (!confirm('Are you sure you want to delete "' + found.title + '"?')) {
+        return;
+      }
+
       savedQuotes = savedQuotes.filter(function (q) {
         return q.id !== id;
       });
       AppStorage.saveSavedQuotes(savedQuotes);
       renderSavedQuotesOptions(savedQuotes);
+
+      if (window.UIComponents && window.UIComponents.showToast) {
+        window.UIComponents.showToast('Quote "' + found.title + '" deleted!', 'info');
+      } else if (window.showToast) {
+        window.showToast('Quote "' + found.title + '" deleted!', 'info');
+      }
     });
 
     $("savePresetBtn").addEventListener("click", function () {
