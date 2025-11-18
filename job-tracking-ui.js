@@ -652,6 +652,226 @@
         }
     }
 
+    /**
+     * Take before photo - global function for quick action button
+     */
+    function takeBeforePhoto() {
+        if (!_currentJobId) {
+            alert('No active job');
+            return;
+        }
+
+        var input = document.createElement('input');
+        input.type = 'file';
+        input.accept = 'image/*';
+        input.capture = 'environment';
+
+        input.addEventListener('change', function(e) {
+            var file = e.target.files[0];
+            if (!file) return;
+
+            var reader = new FileReader();
+            reader.onload = function(event) {
+                var photo = window.JobManager.addPhoto(
+                    _currentJobId,
+                    'before',
+                    event.target.result,
+                    '',
+                    'Before photo'
+                );
+
+                if (photo) {
+                    if (window.UIComponents && window.UIComponents.showToast) {
+                        window.UIComponents.showToast('Before photo added', 'success');
+                    }
+                    var job = window.JobManager.getJob(_currentJobId);
+                    if (job) {
+                        renderPhotos(job);
+                    }
+                }
+            };
+            reader.readAsDataURL(file);
+        });
+
+        input.click();
+    }
+
+    /**
+     * Take after photo - global function for quick action button
+     */
+    function takeAfterPhoto() {
+        if (!_currentJobId) {
+            alert('No active job');
+            return;
+        }
+
+        var input = document.createElement('input');
+        input.type = 'file';
+        input.accept = 'image/*';
+        input.capture = 'environment';
+
+        input.addEventListener('change', function(e) {
+            var file = e.target.files[0];
+            if (!file) return;
+
+            var reader = new FileReader();
+            reader.onload = function(event) {
+                var photo = window.JobManager.addPhoto(
+                    _currentJobId,
+                    'after',
+                    event.target.result,
+                    '',
+                    'After photo'
+                );
+
+                if (photo) {
+                    if (window.UIComponents && window.UIComponents.showToast) {
+                        window.UIComponents.showToast('After photo added', 'success');
+                    }
+                    var job = window.JobManager.getJob(_currentJobId);
+                    if (job) {
+                        renderPhotos(job);
+                    }
+                }
+            };
+            reader.readAsDataURL(file);
+        });
+
+        input.click();
+    }
+
+    /**
+     * Record job issue - global function for quick action button
+     */
+    function recordJobIssue() {
+        if (!_currentJobId) {
+            alert('No active job');
+            return;
+        }
+
+        var description = prompt('Describe the issue:');
+        if (!description) return;
+
+        var severityInput = prompt('Severity (low, medium, high):');
+        var severity = severityInput || 'medium';
+
+        var issue = window.JobManager.recordIssue(_currentJobId, {
+            type: 'other',
+            severity: severity,
+            description: description,
+            impact: '',
+            resolution: ''
+        });
+
+        if (issue) {
+            if (window.UIComponents && window.UIComponents.showToast) {
+                window.UIComponents.showToast('Issue recorded', 'info');
+            }
+            var job = window.JobManager.getJob(_currentJobId);
+            if (job) {
+                renderIssuesAndNotes(job);
+            }
+        }
+    }
+
+    /**
+     * Add job note - global function for quick action button
+     */
+    function addJobNote() {
+        if (!_currentJobId) {
+            alert('No active job');
+            return;
+        }
+
+        var noteText = prompt('Enter note:');
+        if (!noteText) return;
+
+        var note = window.JobManager.addNote(_currentJobId, noteText, 'general');
+
+        if (note) {
+            if (window.UIComponents && window.UIComponents.showToast) {
+                window.UIComponents.showToast('Note added', 'success');
+            }
+            var job = window.JobManager.getJob(_currentJobId);
+            if (job) {
+                renderIssuesAndNotes(job);
+            }
+        }
+    }
+
+    /**
+     * Add scope change (extra work) - global function for quick action button
+     */
+    function addScopeChange() {
+        if (!_currentJobId) {
+            alert('No active job');
+            return;
+        }
+
+        var description = prompt('Describe additional work:');
+        if (!description) return;
+
+        var priceInput = prompt('Additional price ($):');
+        var price = parseFloat(priceInput) || 0;
+
+        var timeInput = prompt('Additional time (minutes):');
+        var time = parseInt(timeInput) || 0;
+
+        var workItem = window.JobManager.addAdditionalWork(_currentJobId, {
+            description: description,
+            price: price,
+            estimatedTime: time
+        });
+
+        if (workItem) {
+            if (window.UIComponents && window.UIComponents.showToast) {
+                window.UIComponents.showToast('Extra work added: +$' + price.toFixed(2), 'success');
+            }
+            var job = window.JobManager.getJob(_currentJobId);
+            if (job) {
+                renderWorkItems(job);
+                updatePricingDisplay(job);
+            }
+        }
+    }
+
+    /**
+     * Update difficulty rating - global function for quick action button
+     */
+    function updateDifficulty() {
+        if (!_currentJobId) {
+            alert('No active job');
+            return;
+        }
+
+        var difficultyInput = prompt('Rate job difficulty (easy, normal, hard, very_hard):');
+        if (!difficultyInput) return;
+
+        var difficulty = difficultyInput.toLowerCase();
+        var validDifficulties = ['easy', 'normal', 'hard', 'very_hard'];
+
+        if (validDifficulties.indexOf(difficulty) === -1) {
+            alert('Invalid difficulty. Please use: easy, normal, hard, or very_hard');
+            return;
+        }
+
+        var job = window.JobManager.getJob(_currentJobId);
+        if (!job) return;
+
+        // Update all work items with new difficulty
+        for (var i = 0; i < job.actual.items.length; i++) {
+            job.actual.items[i].actualDifficulty = difficulty;
+        }
+
+        window.JobManager.saveJob(job);
+
+        if (window.UIComponents && window.UIComponents.showToast) {
+            window.UIComponents.showToast('Difficulty updated to: ' + difficulty, 'success');
+        }
+
+        renderWorkItems(job);
+    }
+
     // Register module
     if (window.APP && window.APP.registerModule) {
         window.APP.registerModule('jobTrackingUI', {
@@ -677,6 +897,14 @@
         setRating: setRating,
         finalizeJobCompletion: finalizeJobCompletion
     };
+
+    // Export job function buttons globally for HTML onclick handlers
+    window.takeBeforePhoto = takeBeforePhoto;
+    window.takeAfterPhoto = takeAfterPhoto;
+    window.recordJobIssue = recordJobIssue;
+    window.addJobNote = addJobNote;
+    window.addScopeChange = addScopeChange;
+    window.updateDifficulty = updateDifficulty;
 
     // Auto-init
     if (document.readyState === 'loading') {
