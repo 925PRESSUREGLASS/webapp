@@ -840,7 +840,7 @@
 
       html += '<div class="invoice-card">';
       html += '<div class="invoice-card-header">';
-      html += '<div class="invoice-number">' + invoice.invoiceNumber + '</div>';
+      html += '<div class="invoice-number">' + escapeHtml(invoice.invoiceNumber) + '</div>';
       html += '<div class="invoice-status" style="background-color: ' + statusData.color + ';">';
       html += statusData.icon + ' ' + statusData.label;
       html += '</div>';
@@ -1068,7 +1068,7 @@
 
     var html = '<div class="invoice-modal-content">';
     html += '<div class="invoice-modal-header">';
-    html += '<h2>Invoice ' + invoice.invoiceNumber + '</h2>';
+    html += '<h2>Invoice ' + escapeHtml(invoice.invoiceNumber) + '</h2>';
     html += '<button type="button" class="invoice-modal-close" aria-label="Close">&times;</button>';
     html += '</div>';
     html += '<div class="invoice-modal-body">';
@@ -1210,7 +1210,7 @@
         '</div>' +
         '<div class="invoice-modal-body">' +
           '<div class="payment-summary">' +
-            '<div>Invoice: <strong>' + invoice.invoiceNumber + '</strong></div>' +
+            '<div>Invoice: <strong>' + escapeHtml(invoice.invoiceNumber) + '</strong></div>' +
             '<div>Balance Due: <strong>$' + invoice.balance.toFixed(2) + '</strong></div>' +
           '</div>' +
           '<form id="paymentForm" class="payment-form">' +
@@ -1859,7 +1859,7 @@
     modal.innerHTML =
       '<div class="invoice-modal-content invoice-modal-medium">' +
         '<div class="invoice-modal-header">' +
-          '<h2>Edit Invoice ' + invoice.invoiceNumber + '</h2>' +
+          '<h2>Edit Invoice ' + escapeHtml(invoice.invoiceNumber) + '</h2>' +
           '<button type="button" class="invoice-modal-close" aria-label="Close">&times;</button>' +
         '</div>' +
         '<div class="invoice-modal-body">' +
@@ -1974,7 +1974,7 @@
     subtotalInput.oninput = debounce(function() {
       // Auto-calculate GST when subtotal changes
       var subtotal = parseFloat(subtotalInput.value) || 0;
-      gstInput.value = (subtotal * 0.1).toFixed(2);
+      gstInput.value = Money.calculateGST(subtotal).toFixed(2);
       updateTotal();
     }, 300);
 

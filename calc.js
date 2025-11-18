@@ -27,12 +27,14 @@ throw new Error('Invalid cents amount: ' + cents);
 return cents / CENTS_PER_DOLLAR;
 },
 
-// Round to 2 decimals (float)
+// Round to 2 decimals using integer arithmetic
 round: function(dollars) {
 if (typeof dollars !== 'number' || !isFinite(dollars)) {
 throw new Error('Invalid dollar amount in round: ' + dollars);
 }
-return Math.round(dollars * 100) / 100;
+// Use integer arithmetic: convert to cents, round, convert back
+// This avoids floating-point errors
+return Money.fromCents(Money.toCents(dollars));
 },
 
 // Add multiple cents values safely
@@ -75,6 +77,79 @@ return Money.fromCents(appliedCents);
 // Apply minimum charge
 applyMinimum: function(amountCents, minimumCents) {
   return Math.max(amountCents, minimumCents);
+},
+
+// ============================================
+// GST (Goods and Services Tax) CALCULATIONS
+// ============================================
+// Australia GST is 10% (0.1)
+// All calculations use integer arithmetic to avoid floating-point errors
+
+/**
+ * Calculate 10% GST on a subtotal amount
+ * Uses integer arithmetic (cents) to avoid floating-point errors
+ * @param {number} subtotal - Amount in dollars
+ * @returns {number} GST amount in dollars (rounded to 2 decimals)
+ */
+calculateGST: function(subtotal) {
+  if (typeof subtotal !== 'number' || !isFinite(subtotal) || subtotal < 0) {
+    return 0;
+  }
+
+  // Convert to cents for integer arithmetic
+  var subtotalCents = Money.toCents(subtotal);
+
+  // Calculate 10% GST in cents (integer math)
+  var gstCents = Math.round(subtotalCents * 0.1);
+
+  // Convert back to dollars
+  return Money.fromCents(gstCents);
+},
+
+/**
+ * Calculate total including 10% GST
+ * @param {number} subtotal - Amount in dollars (ex-GST)
+ * @returns {number} Total including GST in dollars
+ */
+addGST: function(subtotal) {
+  var gst = Money.calculateGST(subtotal);
+  return Money.round(subtotal + gst);
+},
+
+/**
+ * Extract GST component from a GST-inclusive amount
+ * Calculation: GST = Total / 11 (because Total = Subtotal * 1.1)
+ * Uses integer arithmetic for precision
+ * @param {number} totalInclGST - Total including GST in dollars
+ * @returns {number} GST component only in dollars
+ */
+extractGST: function(totalInclGST) {
+  if (typeof totalInclGST !== 'number' || !isFinite(totalInclGST) || totalInclGST < 0) {
+    return 0;
+  }
+
+  // Convert to cents
+  var totalCents = Money.toCents(totalInclGST);
+
+  // GST = Total / 11 (integer division)
+  var gstCents = Math.round(totalCents / 11);
+
+  return Money.fromCents(gstCents);
+},
+
+/**
+ * Calculate subtotal from GST-inclusive amount
+ * Calculation: Subtotal = Total - GST = Total - (Total / 11) = Total * (10/11)
+ * @param {number} totalInclGST - Total including GST in dollars
+ * @returns {number} Subtotal (ex-GST) in dollars
+ */
+extractSubtotal: function(totalInclGST) {
+  if (typeof totalInclGST !== 'number' || !isFinite(totalInclGST) || totalInclGST < 0) {
+    return 0;
+  }
+
+  var gst = Money.extractGST(totalInclGST);
+  return Money.round(totalInclGST - gst);
 }
 
 
