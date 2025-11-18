@@ -705,6 +705,61 @@
   }
 
   /**
+   * Build descriptive identifier for line item to help users locate it
+   * @param {object} lineItem - Line item to identify
+   * @param {number} index - Line item index (0-based)
+   * @param {string} type - Line item type (window, pressure)
+   * @returns {string} - Human-readable identifier
+   */
+  function buildLineItemIdentifier(lineItem, index, type) {
+    var parts = [];
+
+    // Type prefix
+    if (type === 'window') {
+      parts.push('Window line #' + (index + 1));
+    } else if (type === 'pressure') {
+      parts.push('Pressure line #' + (index + 1));
+    } else {
+      parts.push('Line item #' + (index + 1));
+    }
+
+    // Add identifying details if available
+    if (lineItem.title && lineItem.title !== 'Window Line' && lineItem.title !== 'Pressure Line') {
+      parts.push('"' + lineItem.title + '"');
+    }
+
+    // For window lines: show window type
+    if (type === 'window') {
+      if (lineItem.windowTypeId) {
+        parts.push('(' + lineItem.windowTypeId + ')');
+      }
+      if (lineItem.panes) {
+        parts.push(lineItem.panes + ' panes');
+      }
+    }
+
+    // For pressure lines: show surface type
+    if (type === 'pressure') {
+      if (lineItem.surfaceId) {
+        parts.push('(' + lineItem.surfaceId + ')');
+      }
+      if (lineItem.areaSqm) {
+        parts.push(lineItem.areaSqm + ' sqm');
+      }
+    }
+
+    // For invoice line items with description
+    if (lineItem.description && lineItem.description.length > 0) {
+      var shortDesc = lineItem.description.length > 30
+        ? lineItem.description.substring(0, 30) + '...'
+        : lineItem.description;
+      parts.push('"' + shortDesc + '"');
+    }
+
+    return parts.join(' ');
+  }
+
+  /**
    * Validate line item
    * @param {object} lineItem - Line item to validate
    * @param {number} index - Line item index
@@ -715,11 +770,14 @@
     var errors = [];
     var prefix = type + 'LineItem[' + index + ']';
 
+    // Build human-readable identifier for this line item
+    var identifier = buildLineItemIdentifier(lineItem, index, type);
+
     // Description
     if (!lineItem.description || lineItem.description.trim() === '') {
       errors.push(createError(
         prefix + '.description',
-        'Line item ' + (index + 1) + ' description is required',
+        identifier + ': description is required',
         'error',
         'LINE001'
       ));
@@ -733,7 +791,7 @@
       if (descLength) {
         errors.push(createError(
           prefix + '.description',
-          'Line item ' + (index + 1) + ' description must be 1-500 characters',
+          identifier + ': description must be 1-500 characters',
           'error',
           'LINE002'
         ));
@@ -747,14 +805,14 @@
       if (!isValidNumber(lineItem.price) || lineItem.price < 0) {
         errors.push(createError(
           prefix + '.price',
-          'Line item ' + (index + 1) + ' price cannot be negative',
+          identifier + ': price cannot be negative',
           'error',
           'LINE007'
         ));
       } else if (lineItem.price > MAX_AMOUNT) {
         errors.push(createError(
           prefix + '.price',
-          'Line item ' + (index + 1) + ' price cannot exceed $' + MAX_AMOUNT.toFixed(2),
+          identifier + ': price cannot exceed $' + MAX_AMOUNT.toFixed(2),
           'error',
           'LINE008'
         ));
@@ -765,14 +823,14 @@
         if (!isValidNumber(lineItem.quantity) || lineItem.quantity <= 0) {
           errors.push(createError(
             prefix + '.quantity',
-            'Line item ' + (index + 1) + ' quantity must be greater than zero',
+            identifier + ': quantity must be greater than zero',
             'error',
             'LINE004'
           ));
         } else if (lineItem.quantity > MAX_LINE_ITEM_QUANTITY) {
           errors.push(createError(
             prefix + '.quantity',
-            'Line item ' + (index + 1) + ' quantity cannot exceed ' + MAX_LINE_ITEM_QUANTITY,
+            identifier + ': quantity cannot exceed ' + MAX_LINE_ITEM_QUANTITY,
             'error',
             'LINE005'
           ));
@@ -783,14 +841,14 @@
         if (!isValidNumber(lineItem.rate) || lineItem.rate < 0) {
           errors.push(createError(
             prefix + '.rate',
-            'Line item ' + (index + 1) + ' rate cannot be negative',
+            identifier + ': rate cannot be negative',
             'error',
             'LINE007'
           ));
         } else if (lineItem.rate > MAX_AMOUNT) {
           errors.push(createError(
             prefix + '.rate',
-            'Line item ' + (index + 1) + ' rate cannot exceed $' + MAX_AMOUNT.toFixed(2),
+            identifier + ': rate cannot exceed $' + MAX_AMOUNT.toFixed(2),
             'error',
             'LINE008'
           ));
@@ -803,7 +861,7 @@
         if (!compareAmounts(lineItem.total, expectedTotal)) {
           errors.push(createError(
             prefix + '.total',
-            'Line item ' + (index + 1) + ' total must equal quantity × rate',
+            identifier + ': total must equal quantity × rate (expected: $' + expectedTotal.toFixed(2) + ')',
             'error',
             'LINE009'
           ));

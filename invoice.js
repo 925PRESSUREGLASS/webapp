@@ -188,6 +188,90 @@
     return highest;
   }
 
+  /**
+   * Generate description for window line item
+   * @param {object} line - Window line item from quote
+   * @returns {string} - Description for invoice
+   */
+  function generateWindowLineDescription(line) {
+    var parts = [];
+
+    // Window type
+    if (line.windowTypeId) {
+      parts.push(line.windowTypeId.charAt(0).toUpperCase() + line.windowTypeId.slice(1) + ' windows');
+    } else {
+      parts.push('Window cleaning');
+    }
+
+    // Panes
+    if (line.panes) {
+      parts.push('(' + line.panes + ' panes)');
+    }
+
+    // Inside/outside
+    var sides = [];
+    if (line.inside) sides.push('inside');
+    if (line.outside) sides.push('outside');
+    if (sides.length > 0) {
+      parts.push('- ' + sides.join(' & '));
+    }
+
+    // High reach
+    if (line.highReach) {
+      parts.push('- high reach');
+    }
+
+    // Location
+    if (line.location && line.location.trim() !== '') {
+      parts.push('at ' + line.location);
+    }
+
+    // Use custom title if provided
+    if (line.title && line.title !== 'Window Line') {
+      return line.title + ' - ' + parts.join(' ');
+    }
+
+    return parts.join(' ');
+  }
+
+  /**
+   * Generate description for pressure line item
+   * @param {object} line - Pressure line item from quote
+   * @returns {string} - Description for invoice
+   */
+  function generatePressureLineDescription(line) {
+    var parts = [];
+
+    // Surface type
+    if (line.surfaceId) {
+      parts.push(line.surfaceId.charAt(0).toUpperCase() + line.surfaceId.slice(1) + ' pressure cleaning');
+    } else {
+      parts.push('Pressure cleaning');
+    }
+
+    // Area
+    if (line.areaSqm) {
+      parts.push('(' + line.areaSqm + ' sqm)');
+    }
+
+    // Access
+    if (line.access && line.access !== 'easy') {
+      parts.push('- ' + line.access + ' access');
+    }
+
+    // Notes
+    if (line.notes && line.notes.trim() !== '') {
+      parts.push('- ' + line.notes);
+    }
+
+    // Use custom title if provided
+    if (line.title && line.title !== 'Pressure Line') {
+      return line.title + ' - ' + parts.join(' ');
+    }
+
+    return parts.join(' ');
+  }
+
   // Convert current quote to invoice
   function convertQuoteToInvoice() {
     if (!window.APP || !window.APP.getState) {
@@ -243,9 +327,23 @@
       quoteTitle: state.quoteTitle || 'Untitled Invoice',
       jobType: state.jobType || '',
 
-      // Line items
-      windowLines: state.windowLines || [],
-      pressureLines: state.pressureLines || [],
+      // Line items - add descriptions for validation
+      windowLines: (state.windowLines || []).map(function(line) {
+        var invoiceLine = JSON.parse(JSON.stringify(line)); // Deep copy
+        // Add description field if missing
+        if (!invoiceLine.description || invoiceLine.description.trim() === '') {
+          invoiceLine.description = generateWindowLineDescription(line);
+        }
+        return invoiceLine;
+      }),
+      pressureLines: (state.pressureLines || []).map(function(line) {
+        var invoiceLine = JSON.parse(JSON.stringify(line)); // Deep copy
+        // Add description field if missing
+        if (!invoiceLine.description || invoiceLine.description.trim() === '') {
+          invoiceLine.description = generatePressureLineDescription(line);
+        }
+        return invoiceLine;
+      }),
 
       // Totals
       subtotal: subtotal,
