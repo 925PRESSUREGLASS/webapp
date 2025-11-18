@@ -52,6 +52,7 @@
 	<link rel="stylesheet" href="theme-light.css" />
 	<link rel="stylesheet" href="theme-customizer.css" />
 	<link rel="stylesheet" href="analytics.css" />
+	<link rel="stylesheet" href="css/analytics-dashboard.css" />
 	<link rel="stylesheet" href="photos.css" />
 	<link rel="stylesheet" href="css/tasks.css" />
 	<link rel="stylesheet" href="mobile.css" />
@@ -365,16 +366,211 @@
 						<button class="card-toggle" type="button" data-target="analyticsBody">▾</button>
 					</header>
 					<div class="sec-b" id="analyticsBody">
+						<!-- Analytics Dashboard Controls -->
 						<div class="config-footer-row" style="margin-bottom: 15px;">
-							<button type="button" class="btn btn-sm" id="viewAnalyticsBtn">
-								View Analytics
-							</button>
-							<button type="button" class="btn btn-sm btn-secondary" id="exportHistoryBtn">
-								Export History
+							<select class="form-select" id="analytics-date-range-selector" aria-label="Select date range">
+								<option value="last_7_days">Last 7 Days</option>
+								<option value="last_30_days" selected>Last 30 Days</option>
+								<option value="last_90_days">Last 90 Days</option>
+								<option value="this_month">This Month</option>
+								<option value="last_month">Last Month</option>
+								<option value="this_year">This Year</option>
+							</select>
+							<button type="button" class="btn btn-sm btn-secondary" onclick="exportAnalyticsDashboard()" aria-label="Export analytics report">
+								Export Report
 							</button>
 						</div>
-						<div id="analyticsContainer">
-							<p style="color: #94a3b8; font-style: italic;">Click "View Analytics" to see your quote history and business stats.</p>
+
+						<!-- KPI Cards -->
+						<div class="kpi-grid">
+							<!-- Revenue Card -->
+							<div class="card kpi-card">
+								<div class="card-body">
+									<div class="kpi-header">
+										<span class="kpi-label">Total Revenue</span>
+										<span class="kpi-trend kpi-trend-flat" id="revenue-trend">-</span>
+									</div>
+									<div class="kpi-value" id="kpi-revenue">$0.00</div>
+									<div class="kpi-footer">
+										<div class="kpi-progress">
+											<div class="kpi-progress-bar" id="revenue-progress" style="width: 0%"></div>
+										</div>
+										<span class="kpi-target" id="revenue-target">Target: $20,000</span>
+									</div>
+								</div>
+							</div>
+
+							<!-- Quotes Card -->
+							<div class="card kpi-card">
+								<div class="card-body">
+									<div class="kpi-header">
+										<span class="kpi-label">Quotes Generated</span>
+										<span class="kpi-trend kpi-trend-flat" id="quotes-trend">-</span>
+									</div>
+									<div class="kpi-value" id="kpi-quotes">0</div>
+									<div class="kpi-footer">
+										<div class="kpi-progress">
+											<div class="kpi-progress-bar" id="quotes-progress" style="width: 0%"></div>
+										</div>
+										<span class="kpi-target" id="quotes-target">Target: 30</span>
+									</div>
+								</div>
+							</div>
+
+							<!-- Conversion Rate Card -->
+							<div class="card kpi-card">
+								<div class="card-body">
+									<div class="kpi-header">
+										<span class="kpi-label">Conversion Rate</span>
+										<span class="kpi-trend kpi-trend-flat" id="conversion-trend">-</span>
+									</div>
+									<div class="kpi-value" id="kpi-conversion">0%</div>
+									<div class="kpi-footer">
+										<div class="kpi-progress">
+											<div class="kpi-progress-bar" id="conversion-progress" style="width: 0%"></div>
+										</div>
+										<span class="kpi-target" id="conversion-target">Target: 35%</span>
+									</div>
+								</div>
+							</div>
+
+							<!-- Avg Quote Value Card -->
+							<div class="card kpi-card">
+								<div class="card-body">
+									<div class="kpi-header">
+										<span class="kpi-label">Avg Quote Value</span>
+										<span class="kpi-trend kpi-trend-flat" id="avg-value-trend">-</span>
+									</div>
+									<div class="kpi-value" id="kpi-avg-value">$0.00</div>
+									<div class="kpi-footer">
+										<div class="kpi-progress">
+											<div class="kpi-progress-bar" id="avg-value-progress" style="width: 0%"></div>
+										</div>
+										<span class="kpi-target" id="avg-value-target">Target: $850</span>
+									</div>
+								</div>
+							</div>
+						</div>
+
+						<!-- Revenue Trend Chart -->
+						<div class="card" style="margin-top: 1.5rem;">
+							<div class="card-header">
+								<h3 class="card-title">Revenue Trend</h3>
+								<div class="card-actions">
+									<select class="form-select-sm" id="revenue-chart-grouping" aria-label="Select chart grouping">
+										<option value="day">Daily</option>
+										<option value="week">Weekly</option>
+										<option value="month">Monthly</option>
+									</select>
+								</div>
+							</div>
+							<div class="card-body">
+								<canvas id="revenue-trend-chart" height="80" aria-label="Revenue trend chart"></canvas>
+							</div>
+						</div>
+
+						<!-- Two Column Layout -->
+						<div class="analytics-grid">
+							<!-- Conversion Funnel -->
+							<div class="card">
+								<div class="card-header">
+									<h3 class="card-title">Conversion Funnel</h3>
+								</div>
+								<div class="card-body">
+									<canvas id="conversion-funnel-chart" height="120" aria-label="Conversion funnel chart"></canvas>
+								</div>
+							</div>
+
+							<!-- Service Breakdown -->
+							<div class="card">
+								<div class="card-header">
+									<h3 class="card-title">Revenue by Service</h3>
+								</div>
+								<div class="card-body">
+									<canvas id="service-breakdown-chart" height="120" aria-label="Service breakdown chart"></canvas>
+								</div>
+							</div>
+						</div>
+
+						<!-- Detailed Metrics Tables -->
+						<div class="card" style="margin-top: 1.5rem;">
+							<div class="card-header">
+								<h3 class="card-title">Detailed Metrics</h3>
+							</div>
+							<div class="card-body">
+								<div class="metrics-tabs">
+									<button class="tab-btn active" onclick="showAnalyticsMetricsTab('financial')" aria-label="Financial metrics">Financial</button>
+									<button class="tab-btn" onclick="showAnalyticsMetricsTab('sales')" aria-label="Sales metrics">Sales</button>
+									<button class="tab-btn" onclick="showAnalyticsMetricsTab('operations')" aria-label="Operations metrics">Operations</button>
+									<button class="tab-btn" onclick="showAnalyticsMetricsTab('customers')" aria-label="Customer metrics">Customers</button>
+								</div>
+
+								<div class="metrics-content">
+									<div id="metrics-financial" class="metrics-tab-content active">
+										<table class="metrics-table">
+											<thead>
+												<tr>
+													<th>Metric</th>
+													<th>Current</th>
+													<th>Target</th>
+													<th>Change</th>
+												</tr>
+											</thead>
+											<tbody id="financial-metrics-body">
+												<!-- Populated by JavaScript -->
+											</tbody>
+										</table>
+									</div>
+
+									<div id="metrics-sales" class="metrics-tab-content">
+										<table class="metrics-table">
+											<thead>
+												<tr>
+													<th>Metric</th>
+													<th>Current</th>
+													<th>Target</th>
+													<th>Change</th>
+												</tr>
+											</thead>
+											<tbody id="sales-metrics-body">
+												<!-- Populated by JavaScript -->
+											</tbody>
+										</table>
+									</div>
+
+									<div id="metrics-operations" class="metrics-tab-content">
+										<table class="metrics-table">
+											<thead>
+												<tr>
+													<th>Metric</th>
+													<th>Current</th>
+													<th>Target</th>
+													<th>Change</th>
+												</tr>
+											</thead>
+											<tbody id="operations-metrics-body">
+												<!-- Populated by JavaScript -->
+											</tbody>
+										</table>
+									</div>
+
+									<div id="metrics-customers" class="metrics-tab-content">
+										<table class="metrics-table">
+											<thead>
+												<tr>
+													<th>Metric</th>
+													<th>Current</th>
+													<th>Target</th>
+													<th>Change</th>
+												</tr>
+											</thead>
+											<tbody id="customers-metrics-body">
+												<!-- Populated by JavaScript -->
+											</tbody>
+										</table>
+									</div>
+								</div>
+							</div>
 						</div>
 					</div>
 				</section>
@@ -775,7 +971,11 @@
 	<script src="quote-pdf.js" defer></script>
 	<script src="quote-pdf-ui.js" defer></script>
 	<!-- Lazy-loaded modules (loaded on demand via LazyLoader) -->
-	<!-- <script src="analytics.js" defer></script> -->
+	<!-- Analytics System -->
+	<script src="analytics-config.js" defer></script>
+	<script src="analytics-engine.js" defer></script>
+	<script src="analytics-dashboard.js" defer></script>
+	<script src="analytics.js" defer></script>
 	<!-- <script src="charts.js" defer></script> -->
 	<!-- <script src="photo-modal.js" defer></script> -->
 	<script src="photos.js" defer></script>
