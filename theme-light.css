@@ -16,15 +16,16 @@
   --border-color: #e2e8f0;
   --border-hover: #cbd5e1;
 
-  /* ACCESSIBILITY FIX: Improved contrast from 3.2:1 to 4.5:1 for WCAG AA compliance */
-  --accent-primary: #0284c7;  /* Was: #0ea5e9 - Better contrast for links/text */
-  --accent-secondary: #38bdf8;
-  --accent-hover: #0ea5e9;    /* Was: #0284c7 - Lighter shade for hover states */
+  /* Vibrant Purple & Orange Theme */
+  --accent-primary: #7c3aed;  /* Vibrant purple for primary actions */
+  --accent-secondary: #14b8a6; /* Teal complement */
+  --accent-hover: #a78bfa;    /* Lighter purple for hover states */
+  --accent-orange: #f97316;   /* Vibrant orange accent */
 
-  --success: #10b981;
-  --warning: #f59e0b;
+  --success: #14b8a6;
+  --warning: #f97316;
   --error: #ef4444;
-  --info: #3b82f6;
+  --info: #8b5cf6;
 
   --shadow-sm: 0 1px 2px 0 rgba(0, 0, 0, 0.05);
   --shadow-md: 0 4px 6px -1px rgba(0, 0, 0, 0.1);

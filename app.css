@@ -20,16 +20,17 @@
   --border-color: #334155;
   --border-hover: #475569;
 
-  /* Accent colors */
-  --accent-primary: #38bdf8;
-  --accent-secondary: #0ea5e9;
-  --accent-hover: #0ea5e9;
+  /* Accent colors - Vibrant Purple & Orange */
+  --accent-primary: #7c3aed;
+  --accent-secondary: #14b8a6;
+  --accent-hover: #a78bfa;
+  --accent-orange: #f97316;
 
   /* Semantic colors */
-  --success: #22c55e;
-  --warning: #f59e0b;
+  --success: #14b8a6;
+  --warning: #f97316;
   --error: #ef4444;
-  --info: #3b82f6;
+  --info: #8b5cf6;
 
   /* Shadows */
   --shadow-sm: 0 1px 2px 0 rgba(0, 0, 0, 0.3);
@@ -123,7 +124,7 @@ body.accordion-mode .card-body.card-body-open {
   display: flex;
   align-items: center;
   justify-content: center;
-  background: radial-gradient(circle at 30% 20%, #38bdf8, #0ea5e9 40%, #0f172a);
+  background: radial-gradient(circle at 30% 20%, #a78bfa, #7c3aed 40%, #0f172a);
   font-size: 22px;
 }
 
@@ -309,9 +310,9 @@ body.accordion-mode .card-body.card-body-open {
 }
 
 .btn-secondary {
-  background: linear-gradient(135deg, #38bdf8, #0ea5e9);
-  color: #0b1120;
-  box-shadow: 0 10px 30px rgba(56, 189, 248, 0.7);
+  background: linear-gradient(135deg, #2dd4bf, #14b8a6);
+  color: #ffffff;
+  box-shadow: 0 10px 30px rgba(20, 184, 166, 0.5);
 }
 
 .btn-ghost {
