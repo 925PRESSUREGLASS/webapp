@@ -24,10 +24,14 @@
     if (!body) return;
 
     var isOpen = body.classList.contains("card-body-open");
+    var toggleBtn = e.currentTarget;
+
     if (isOpen) {
       body.classList.remove("card-body-open");
+      toggleBtn.setAttribute("aria-expanded", "false");
     } else {
       body.classList.add("card-body-open");
+      toggleBtn.setAttribute("aria-expanded", "true");
     }
   }
 

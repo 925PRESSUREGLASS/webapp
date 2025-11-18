@@ -268,7 +268,7 @@
             '<div class="theme-logo-upload">' +
               '<input type="file" id="logoUpload" accept="image/*" style="display: none;" />' +
               '<button type="button" class="btn btn-secondary" onclick="document.getElementById(\'logoUpload\').click()">📁 Upload Logo</button>' +
-              '<button type="button" class="btn btn-ghost" id="removeLogoBtn">🗑️ Remove Logo</button>' +
+              '<button type="button" class="btn btn-tertiary" id="removeLogoBtn">🗑️ Remove Logo</button>' +
               '<div class="theme-logo-preview" id="logoPreview">' +
                 (currentTheme.logo ? '<img src="' + currentTheme.logo + '" alt="Custom logo" />' : '<div class="theme-logo-placeholder">No logo uploaded</div>') +
               '</div>' +

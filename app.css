@@ -718,3 +718,147 @@ body.accordion-mode .card-body.card-body-open {
   position: relative;
   z-index: 1;
 }
+
+/* ====================================== */
+/* UTILITY CLASSES */
+/* ====================================== */
+
+/* Wizard button container */
+.wizard-button-group {
+  margin-top: 8px;
+  display: flex;
+  justify-content: space-between;
+  gap: 6px;
+}
+
+/* Checkbox spacing */
+.checkbox-inline-spaced {
+  margin-left: 10px;
+}
+
+/* Quick add quantity display */
+.quick-add-quantity-container {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin: 12px 0;
+}
+
+.quick-add-display {
+  font-size: 18px;
+  font-weight: 600;
+  padding: 12px;
+  background: var(--bg-card);
+  border: 2px solid var(--border-color);
+  border-radius: 8px;
+  text-align: center;
+  margin-top: 8px;
+}
+
+.quick-add-button-grid {
+  display: grid;
+  grid-template-columns: repeat(5, 1fr);
+  gap: 8px;
+  margin-top: 12px;
+}
+
+.quick-add-btn {
+  padding: 12px;
+  background: var(--bg-card);
+  border: 2px solid var(--border-color);
+  border-radius: 6px;
+  font-size: 16px;
+  font-weight: 600;
+  color: var(--text-primary);
+  cursor: pointer;
+  transition: all 0.15s ease;
+  user-select: none;
+}
+
+.quick-add-btn:hover {
+  background: #f1f5f9;
+  border-color: #64748b;
+  transform: translateY(-1px);
+}
+
+.quick-add-btn:active {
+  background: #e2e8f0;
+  transform: scale(0.95);
+}
+
+/* Dark theme adjustments for quick-add */
+[data-theme="dark"] .quick-add-btn:hover {
+  background: var(--bg-card-hover);
+  border-color: var(--border-hover);
+}
+
+[data-theme="dark"] .quick-add-btn:active {
+  background: #374151;
+}
+
+/* Success feedback animation */
+.quick-add-btn-success {
+  background: #10b981 !important;
+  border-color: #059669 !important;
+  color: white !important;
+}
+
+/* Custom quantity input */
+.quick-add-custom-wrapper {
+  display: flex;
+  gap: 4px;
+  flex: 1;
+  min-width: 140px;
+}
+
+.quick-add-custom-input {
+  flex: 1;
+  min-height: 60px;
+  font-size: 18px;
+  padding: 0 12px;
+  border: 2px solid var(--border-color);
+  border-radius: 8px;
+  text-align: center;
+  background: var(--bg-card);
+  color: var(--text-primary);
+}
+
+.quick-add-custom-btn {
+  min-width: 60px;
+  min-height: 60px;
+  font-size: 24px;
+  font-weight: 600;
+  border: 2px solid #3b82f6;
+  border-radius: 8px;
+  background: #3b82f6;
+  color: white;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.quick-add-custom-btn:hover {
+  background: #2563eb;
+  border-color: #2563eb;
+}
+
+.quick-add-custom-btn:active {
+  transform: scale(0.95);
+}
+
+.quick-add-custom-btn-success {
+  background: #10b981 !important;
+  border-color: #059669 !important;
+}
+
+/* Readonly form inputs */
+.form-input-readonly {
+  background: rgba(31, 41, 55, 0.3);
+  cursor: not-allowed;
+  opacity: 0.7;
+}
+
+/* Light theme readonly inputs */
+[data-theme="light"] .form-input-readonly {
+  background: rgba(226, 232, 240, 0.5);
+  color: #475569;
+}

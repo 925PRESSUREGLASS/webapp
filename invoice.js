@@ -863,12 +863,12 @@
       html += '</div>';
 
       html += '<div class="invoice-card-actions">';
-      html += '<button type="button" class="btn btn-small btn-secondary" onclick="window.InvoiceManager.viewInvoice(\'' + invoice.id + '\')" aria-label="View invoice ' + escapeHtml(invoice.invoiceNumber) + ' for ' + escapeHtml(invoice.clientName || 'unknown client') + '">View</button>';
-      html += '<button type="button" class="btn btn-small btn-primary" onclick="window.InvoiceManager.editInvoice(\'' + invoice.id + '\')" aria-label="Edit invoice ' + escapeHtml(invoice.invoiceNumber) + ' for ' + escapeHtml(invoice.clientName || 'unknown client') + '">Edit</button>';
+      html += '<button type="button" class="btn btn-sm btn-secondary" onclick="window.InvoiceManager.viewInvoice(\'' + invoice.id + '\')" aria-label="View invoice ' + escapeHtml(invoice.invoiceNumber) + ' for ' + escapeHtml(invoice.clientName || 'unknown client') + '">View</button>';
+      html += '<button type="button" class="btn btn-sm btn-primary" onclick="window.InvoiceManager.editInvoice(\'' + invoice.id + '\')" aria-label="Edit invoice ' + escapeHtml(invoice.invoiceNumber) + ' for ' + escapeHtml(invoice.clientName || 'unknown client') + '">Edit</button>';
       if (invoice.balance > 0 && invoice.status !== 'cancelled') {
-        html += '<button type="button" class="btn btn-small btn-primary" onclick="window.InvoiceManager.recordPayment(\'' + invoice.id + '\')" aria-label="Record payment for invoice ' + escapeHtml(invoice.invoiceNumber) + ' for ' + escapeHtml(invoice.clientName || 'unknown client') + '">Record Payment</button>';
+        html += '<button type="button" class="btn btn-sm btn-primary" onclick="window.InvoiceManager.recordPayment(\'' + invoice.id + '\')" aria-label="Record payment for invoice ' + escapeHtml(invoice.invoiceNumber) + ' for ' + escapeHtml(invoice.clientName || 'unknown client') + '">Record Payment</button>';
       }
-      html += '<button type="button" class="btn btn-small btn-ghost" onclick="window.InvoiceManager.deleteInvoice(\'' + invoice.id + '\')" aria-label="Delete invoice ' + escapeHtml(invoice.invoiceNumber) + ' for ' + escapeHtml(invoice.clientName || 'unknown client') + '">Delete</button>';
+      html += '<button type="button" class="btn btn-sm btn-tertiary" onclick="window.InvoiceManager.deleteInvoice(\'' + invoice.id + '\')" aria-label="Delete invoice ' + escapeHtml(invoice.invoiceNumber) + ' for ' + escapeHtml(invoice.clientName || 'unknown client') + '">Delete</button>';
       html += '</div>';
 
       html += '</div>';
@@ -1147,7 +1147,7 @@
       html += '<button type="button" class="btn btn-primary" onclick="window.InvoiceManager.showPaymentModal(\'' + invoice.id + '\')" aria-label="Record payment for invoice ' + escapeHtml(invoice.invoiceNumber) + '">Record Payment</button>';
     }
     html += '<button type="button" class="btn btn-secondary" onclick="window.InvoiceManager.changeStatus(\'' + invoice.id + '\')" aria-label="Change status of invoice ' + escapeHtml(invoice.invoiceNumber) + '">Change Status</button>';
-    html += '<button type="button" class="btn btn-ghost" onclick="window.InvoiceManager.printInvoice(\'' + invoice.id + '\')" aria-label="Print invoice ' + escapeHtml(invoice.invoiceNumber) + '">Print Invoice</button>';
+    html += '<button type="button" class="btn btn-tertiary" onclick="window.InvoiceManager.printInvoice(\'' + invoice.id + '\')" aria-label="Print invoice ' + escapeHtml(invoice.invoiceNumber) + '">Print Invoice</button>';
     html += '</div>';
 
     html += '</div>';
@@ -1902,12 +1902,12 @@
               '</div>' +
               '<div class="form-group">' +
                 '<label for="editGST">GST (10%) *</label>' +
-                '<input type="number" id="editGST" step="0.01" value="' + invoice.gst.toFixed(2) + '" readonly style="background: rgba(31, 41, 55, 0.3);" title="GST is automatically calculated as 10% of subtotal" />' +
-                '<small style="display: block; margin-top: 4px; color: #9ca3af;">Automatically calculated as 10% of subtotal</small>' +
+                '<input type="number" id="editGST" class="form-input-readonly" step="0.01" value="' + invoice.gst.toFixed(2) + '" readonly title="GST is automatically calculated as 10% of subtotal" aria-describedby="gst-help" />' +
+                '<small id="gst-help" class="form-hint">Automatically calculated as 10% of subtotal</small>' +
               '</div>' +
               '<div class="form-group">' +
                 '<label for="editTotal">Total *</label>' +
-                '<input type="number" id="editTotal" step="0.01" value="' + invoice.total.toFixed(2) + '" readonly style="background: rgba(31, 41, 55, 0.3);" />' +
+                '<input type="number" id="editTotal" class="form-input-readonly" step="0.01" value="' + invoice.total.toFixed(2) + '" readonly />' +
               '</div>' +
             '</div>' +
             '<div class="form-group">' +
@@ -1917,7 +1917,7 @@
             (invoice.quoteId ?
               '<div class="form-group">' +
                 '<label>Quote ID</label>' +
-                '<input type="text" value="' + escapeHtml(invoice.quoteId) + '" readonly style="background: rgba(31, 41, 55, 0.3); font-family: monospace;" title="Original quote identifier" />' +
+                '<input type="text" class="form-input-readonly" style="font-family: monospace;" value="' + escapeHtml(invoice.quoteId) + '" readonly title="Original quote identifier" aria-label="Quote ID" />' +
               '</div>' : '') +
             '<div class="form-group">' +
               '<label for="editInvoiceStatus">Status</label>' +

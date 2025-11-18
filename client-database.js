@@ -288,9 +288,9 @@
       html += '<div class="client-card-header">';
       html += '<h3>' + escapeHtml(client.name) + '</h3>';
       html += '<div class="client-card-actions">';
-      html += '<button type="button" class="btn-icon" onclick="window.ClientDatabase.selectClient(\'' + client.id + '\')" title="Use Client">✓</button>';
-      html += '<button type="button" class="btn-icon" onclick="window.ClientDatabase.editClient(\'' + client.id + '\')" title="Edit">✎</button>';
-      html += '<button type="button" class="btn-icon btn-danger" onclick="window.ClientDatabase.deleteClient(\'' + client.id + '\')" title="Delete">×</button>';
+      html += '<button type="button" class="btn-icon" onclick="window.ClientDatabase.selectClient(\'' + client.id + '\')" title="Use Client" aria-label="Select client ' + escapeHtml(client.name) + '">✓</button>';
+      html += '<button type="button" class="btn-icon" onclick="window.ClientDatabase.editClient(\'' + client.id + '\')" title="Edit" aria-label="Edit client ' + escapeHtml(client.name) + '">✎</button>';
+      html += '<button type="button" class="btn-icon btn-danger" onclick="window.ClientDatabase.deleteClient(\'' + client.id + '\')" title="Delete" aria-label="Delete client ' + escapeHtml(client.name) + '">×</button>';
       html += '</div>';
       html += '</div>';
 

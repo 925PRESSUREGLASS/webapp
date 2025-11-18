@@ -18,8 +18,7 @@
       var onChange = config.onChange || function() {};
 
       var container = document.createElement('div');
-      container.className = 'quick-add-quantity';
-      container.style.cssText = 'display: flex; flex-wrap: wrap; gap: 8px; margin: 12px 0;';
+      container.className = 'quick-add-quantity-container';
 
       // Create quantity buttons
       for (var i = 0; i < quantities.length; i++) {
@@ -45,16 +44,14 @@
       // Create display area
       var display = document.createElement('div');
       display.className = 'quick-add-display';
-      display.style.cssText = 'width: 100%; padding: 12px; background: #f1f5f9; border-radius: 6px; margin-top: 8px; font-size: 16px; font-weight: 500;';
       display.textContent = 'Quantity: 0';
       container.appendChild(display);
 
       // Create reset button
       var resetBtn = document.createElement('button');
       resetBtn.type = 'button';
-      resetBtn.className = 'btn btn-ghost btn-small';
+      resetBtn.className = 'btn btn-tertiary btn-sm';
       resetBtn.textContent = 'Reset';
-      resetBtn.style.cssText = 'margin-top: 8px;';
       resetBtn.addEventListener('click', function() {
         currentQty = 0;
         updateDisplay(0);
@@ -86,67 +83,17 @@
       btn.className = 'quick-add-btn';
       btn.textContent = '+' + quantity;
       btn.setAttribute('data-qty', quantity);
+      btn.setAttribute('aria-label', 'Add ' + quantity + ' to quantity');
 
-      // Large touch target - 60x60px minimum
-      btn.style.cssText =
-        'min-width: 60px; ' +
-        'min-height: 60px; ' +
-        'font-size: 18px; ' +
-        'font-weight: 600; ' +
-        'border: 2px solid #cbd5e1; ' +
-        'border-radius: 8px; ' +
-        'background: white; ' +
-        'cursor: pointer; ' +
-        'transition: all 0.2s; ' +
-        'user-select: none; ' +
-        '-webkit-user-select: none; ' +
-        '-webkit-tap-highlight-color: transparent;';
-
-      // Hover/active states
-      btn.addEventListener('mouseenter', function() {
-        btn.style.background = '#f1f5f9';
-        btn.style.borderColor = '#64748b';
-      });
-
-      btn.addEventListener('mouseleave', function() {
-        btn.style.background = 'white';
-        btn.style.borderColor = '#cbd5e1';
-      });
-
-      btn.addEventListener('mousedown', function() {
-        btn.style.transform = 'scale(0.95)';
-        btn.style.background = '#e2e8f0';
-      });
-
-      btn.addEventListener('mouseup', function() {
-        btn.style.transform = 'scale(1)';
-        btn.style.background = '#f1f5f9';
-      });
-
-      // Touch feedback
-      btn.addEventListener('touchstart', function() {
-        btn.style.transform = 'scale(0.95)';
-        btn.style.background = '#e2e8f0';
-      });
-
-      btn.addEventListener('touchend', function() {
-        btn.style.transform = 'scale(1)';
-        btn.style.background = 'white';
-      });
-
+      // Click handler with visual feedback
       btn.addEventListener('click', function(e) {
         e.preventDefault();
         onClick(quantity);
 
-        // Visual feedback
-        btn.style.background = '#10b981';
-        btn.style.borderColor = '#059669';
-        btn.style.color = 'white';
-
+        // Brief visual feedback for successful action
+        btn.classList.add('quick-add-btn-success');
         setTimeout(function() {
-          btn.style.background = 'white';
-          btn.style.borderColor = '#cbd5e1';
-          btn.style.color = '';
+          btn.classList.remove('quick-add-btn-success');
         }, 200);
       });
 
@@ -156,36 +103,21 @@
     // Create custom quantity input
     createCustomInput: function(onSubmit) {
       var wrapper = document.createElement('div');
-      wrapper.style.cssText = 'display: flex; gap: 4px; flex: 1; min-width: 140px;';
+      wrapper.className = 'quick-add-custom-wrapper';
 
       var input = document.createElement('input');
       input.type = 'number';
+      input.className = 'quick-add-custom-input';
       input.placeholder = 'Custom';
       input.min = '1';
       input.max = '999';
-      input.style.cssText =
-        'flex: 1; ' +
-        'min-height: 60px; ' +
-        'font-size: 18px; ' +
-        'padding: 0 12px; ' +
-        'border: 2px solid #cbd5e1; ' +
-        'border-radius: 8px; ' +
-        'text-align: center;';
+      input.setAttribute('aria-label', 'Enter custom quantity');
 
       var addBtn = document.createElement('button');
       addBtn.type = 'button';
+      addBtn.className = 'quick-add-custom-btn';
       addBtn.textContent = '+';
-      addBtn.style.cssText =
-        'min-width: 60px; ' +
-        'min-height: 60px; ' +
-        'font-size: 24px; ' +
-        'font-weight: 600; ' +
-        'border: 2px solid #3b82f6; ' +
-        'border-radius: 8px; ' +
-        'background: #3b82f6; ' +
-        'color: white; ' +
-        'cursor: pointer; ' +
-        'transition: all 0.2s;';
+      addBtn.setAttribute('aria-label', 'Add custom quantity');
 
       addBtn.addEventListener('click', function() {
         var val = parseInt(input.value, 10);
@@ -194,12 +126,9 @@
           input.value = '';
 
           // Visual feedback
-          addBtn.style.background = '#10b981';
-          addBtn.style.borderColor = '#059669';
-
+          addBtn.classList.add('quick-add-custom-btn-success');
           setTimeout(function() {
-            addBtn.style.background = '#3b82f6';
-            addBtn.style.borderColor = '#3b82f6';
+            addBtn.classList.remove('quick-add-custom-btn-success');
           }, 200);
         }
       });

@@ -61,6 +61,14 @@
     if (!isReady) initOverlay();
     if (!overlay) return;
     overlay.classList.add("wizard-open");
+
+    // Set focus to first focusable element for accessibility
+    setTimeout(function() {
+      var firstInput = overlay.querySelector('input, select, textarea, button');
+      if (firstInput) {
+        firstInput.focus();
+      }
+    }, 100);
   }
 
   function closeOverlay() {
@@ -172,19 +180,19 @@
     html += '<label class="field">';
     html += '<span class="field-label">Line Title</span>';
     html +=
-      '<input id="wizWinTitle" type="text" placeholder="e.g. Balcony sliders / Front windows" />';
+      '<input id="wizWinTitle" type="text" placeholder="e.g. Balcony sliders / Front windows" aria-label="Window line title" />';
     html += "</label>";
 
     html += '<label class="field">';
     html += '<span class="field-label">Location / Notes</span>';
     html +=
-      '<input id="wizWinLocation" type="text" placeholder="e.g. Balcony, street-facing, etc." />';
+      '<input id="wizWinLocation" type="text" placeholder="e.g. Balcony, street-facing, etc." aria-label="Window location or notes" />';
     html += "</label>";
 
     // Type + panes
     html += '<label class="field">';
     html += '<span class="field-label">Window Type</span>';
-    html += '<select id="wizWinType">';
+    html += '<select id="wizWinType" aria-label="Select window type">';
     html += optionsHtml || '<option value="">(No types configured)</option>';
     html += "</select>";
     html += "</label>";
@@ -192,7 +200,7 @@
     html += '<label class="field">';
     html += '<span class="field-label">Approx. Panes</span>';
     html +=
-      '<input id="wizWinPanes" type="number" min="1" step="1" value="4" />';
+      '<input id="wizWinPanes" type="number" min="1" step="1" value="4" aria-label="Approximate number of panes" />';
     html += "</label>";
 
     // Flags
@@ -200,23 +208,23 @@
     html += '<span class="field-label">Inside / Outside</span>';
     html += '<div class="toggle">';
     html +=
-      '<input id="wizWinInside" class="form-checkbox" type="checkbox" checked /> <span>Inside</span>';
+      '<input id="wizWinInside" class="form-checkbox" type="checkbox" checked aria-label="Clean inside of windows" /> <span>Inside</span>';
     html +=
-      '<input id="wizWinOutside" class="form-checkbox" type="checkbox" checked style="margin-left:10px;" /> <span>Outside</span>';
+      '<input id="wizWinOutside" class="form-checkbox checkbox-inline-spaced" type="checkbox" checked aria-label="Clean outside of windows" /> <span>Outside</span>';
     html += "</div>";
     html += "</label>";
 
     html += '<label class="field">';
     html += '<span class="field-label">High Reach</span>';
     html += '<div class="toggle">';
-    html += '<input id="wizWinHigh" class="form-checkbox" type="checkbox" /> <span>High reach</span>';
+    html += '<input id="wizWinHigh" class="form-checkbox" type="checkbox" aria-label="High reach required" /> <span>High reach</span>';
     html += "</div>";
     html += "</label>";
 
     // Condition (soil) - use enhanced conditions if available
     html += '<label class="field">';
     html += '<span class="field-label">Condition</span>';
-    html += '<select id="wizWinCondition">';
+    html += '<select id="wizWinCondition" aria-label="Window condition or soil level">';
 
     if (window.WINDOW_CONDITIONS_ARRAY && WINDOW_CONDITIONS_ARRAY.length > 0) {
       // Use enhanced conditions
@@ -240,7 +248,7 @@
     // Access modifier - use enhanced modifiers if available
     html += '<label class="field">';
     html += '<span class="field-label">Access</span>';
-    html += '<select id="wizWinAccess">';
+    html += '<select id="wizWinAccess" aria-label="Access difficulty level">';
 
     if (window.ACCESS_MODIFIERS_ARRAY && ACCESS_MODIFIERS_ARRAY.length > 0) {
       // Use enhanced access modifiers
@@ -274,12 +282,11 @@
     html += "</div>"; // .wizard-grid
 
     // Buttons
+    html += '<div class="wizard-button-group">';
     html +=
-      '<div style="margin-top:8px;display:flex;justify-content:space-between;gap:6px;">';
+      '<button id="wizWinCancel" type="button" class="btn btn-tertiary btn-sm">Cancel</button>';
     html +=
-      '<button id="wizWinCancel" type="button" class="btn btn-ghost btn-small">Cancel</button>';
-    html +=
-      '<button id="wizWinApply" type="button" class="btn btn-small">Add to Window List</button>';
+      '<button id="wizWinApply" type="button" class="btn btn-sm btn-primary">Add to Window List</button>';
     html += "</div>";
 
     contentEl.innerHTML = html;
@@ -424,19 +431,19 @@
     html += '<label class="field">';
     html += '<span class="field-label">Line Title</span>';
     html +=
-      '<input id="wizPrTitle" type="text" placeholder="e.g. Front driveway / Rear paving" />';
+      '<input id="wizPrTitle" type="text" placeholder="e.g. Front driveway / Rear paving" aria-label="Pressure cleaning line title" />';
     html += "</label>";
 
     html += '<label class="field">';
     html += '<span class="field-label">Extra Notes</span>';
     html +=
-      '<input id="wizPrNotes" type="text" placeholder="e.g. Oil stains on centre, heavy moss" />';
+      '<input id="wizPrNotes" type="text" placeholder="e.g. Oil stains on centre, heavy moss" aria-label="Extra notes about surface condition" />';
     html += "</label>";
 
     // Surface + area
     html += '<label class="field">';
     html += '<span class="field-label">Surface Type</span>';
-    html += '<select id="wizPrSurface">';
+    html += '<select id="wizPrSurface" aria-label="Select surface type">';
     html += optionsHtml || '<option value="">(No surfaces configured)</option>';
     html += "</select>";
     html += "</label>";
@@ -444,13 +451,13 @@
     html += '<label class="field">';
     html += '<span class="field-label">Area (sqm)</span>';
     html +=
-      '<input id="wizPrArea" type="number" min="5" step="1" value="30" />';
+      '<input id="wizPrArea" type="number" min="5" step="1" value="30" aria-label="Area in square meters" />';
     html += "</label>";
 
     // Soil / access
     html += '<label class="field">';
     html += '<span class="field-label">Soil Level</span>';
-    html += '<select id="wizPrSoil">';
+    html += '<select id="wizPrSoil" aria-label="Soil or dirt level">';
     html += '<option value="light">Light</option>';
     html += '<option value="medium" selected>Medium</option>';
     html += '<option value="heavy">Heavy</option>';
@@ -459,7 +466,7 @@
 
     html += '<label class="field">';
     html += '<span class="field-label">Access</span>';
-    html += '<select id="wizPrAccess">';
+    html += '<select id="wizPrAccess" aria-label="Access difficulty">';
     html += '<option value="easy" selected>Easy / open</option>';
     html += '<option value="ladder">Ladder / tricky</option>';
     html += '<option value="highReach">High reach / long hose</option>';
@@ -469,12 +476,11 @@
     html += "</div>"; // .wizard-grid
 
     // Buttons
+    html += '<div class="wizard-button-group">';
     html +=
-      '<div style="margin-top:8px;display:flex;justify-content:space-between;gap:6px;">';
+      '<button id="wizPrCancel" type="button" class="btn btn-tertiary btn-sm">Cancel</button>';
     html +=
-      '<button id="wizPrCancel" type="button" class="btn btn-ghost btn-small">Cancel</button>';
-    html +=
-      '<button id="wizPrApply" type="button" class="btn btn-small">Add to Pressure List</button>';
+      '<button id="wizPrApply" type="button" class="btn btn-sm btn-primary">Add to Pressure List</button>';
     html += "</div>";
 
     contentEl.innerHTML = html;

@@ -608,14 +608,14 @@
     var footer = createEl("div", "line-card-footer");
 
     var actions = createEl("div", "line-actions");
-    var dupBtn = createEl("button", "btn btn-small btn-ghost");
+    var dupBtn = createEl("button", "btn btn-sm btn-tertiary");
     dupBtn.type = "button";
     dupBtn.textContent = "Duplicate";
     dupBtn.addEventListener("click", function () {
       duplicateWindowLine(line.id);
     });
 
-    var delBtn = createEl("button", "btn btn-small btn-ghost");
+    var delBtn = createEl("button", "btn btn-sm btn-tertiary");
     delBtn.type = "button";
     delBtn.textContent = "Remove";
     delBtn.addEventListener("click", function () {
@@ -781,14 +781,14 @@
     var footer = createEl("div", "line-card-footer");
     var actions = createEl("div", "line-actions");
 
-    var dupBtn = createEl("button", "btn btn-small btn-ghost");
+    var dupBtn = createEl("button", "btn btn-sm btn-tertiary");
     dupBtn.type = "button";
     dupBtn.textContent = "Duplicate";
     dupBtn.addEventListener("click", function () {
       duplicatePressureLine(line.id);
     });
 
-    var delBtn = createEl("button", "btn btn-small btn-ghost");
+    var delBtn = createEl("button", "btn btn-sm btn-tertiary");
     delBtn.type = "button";
     delBtn.textContent = "Remove";
     delBtn.addEventListener("click", function () {

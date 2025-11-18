@@ -248,7 +248,7 @@
       // Add button
       var addBtn = document.createElement('button');
       addBtn.type = 'button';
-      addBtn.className = 'btn btn-secondary btn-small';
+      addBtn.className = 'btn btn-secondary btn-sm';
       addBtn.textContent = '📷 Add Photos';
       addBtn.onclick = function() {
         fileInput.click();
@@ -257,7 +257,7 @@
       // Clear button
       var clearBtn = document.createElement('button');
       clearBtn.type = 'button';
-      clearBtn.className = 'btn btn-ghost btn-small';
+      clearBtn.className = 'btn btn-tertiary btn-sm';
       clearBtn.textContent = 'Clear All';
       clearBtn.onclick = clearAllPhotos;
 

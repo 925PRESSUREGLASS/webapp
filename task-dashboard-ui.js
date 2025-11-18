@@ -56,11 +56,20 @@
    * Load task dashboard
    */
   function loadTaskDashboard() {
-    // Update summary cards
-    updateSummaryCards();
+    // Show loading state
+    var listContainer = document.getElementById('task-list');
+    if (listContainer) {
+      listContainer.innerHTML = '<div style="text-align: center; padding: 40px; color: var(--text-secondary);">Loading tasks...</div>';
+    }
 
-    // Render task list
-    renderTaskList();
+    // Use setTimeout to allow UI to update
+    setTimeout(function() {
+      // Update summary cards
+      updateSummaryCards();
+
+      // Render task list
+      renderTaskList();
+    }, 50);
   }
 
   /**
@@ -248,7 +257,15 @@
    * Apply task filters
    */
   function applyTaskFilters() {
-    renderTaskList();
+    // Show brief loading state during filtering
+    var listContainer = document.getElementById('task-list');
+    if (listContainer) {
+      listContainer.innerHTML = '<div style="text-align: center; padding: 20px; color: var(--text-secondary);">Filtering tasks...</div>';
+    }
+
+    setTimeout(function() {
+      renderTaskList();
+    }, 30);
   }
 
   /**

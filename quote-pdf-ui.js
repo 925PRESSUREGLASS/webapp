@@ -73,9 +73,23 @@
           return;
         }
 
-        QuotePDFGenerator.preview(quoteData);
+        UIComponents.showLoading('Generating PDF preview...');
+
+        var self = this;
+        setTimeout(function() {
+          try {
+            QuotePDFGenerator.preview(quoteData);
+            UIComponents.hideLoading();
+            UIComponents.showToast('PDF preview opened', 'success');
+          } catch (error) {
+            UIComponents.hideLoading();
+            console.error('[PDF-UI] Preview error:', error);
+            UIComponents.showToast('Failed to preview PDF: ' + error.message, 'error');
+          }
+        }, 100);
 
       } catch (error) {
+        UIComponents.hideLoading();
         console.error('[PDF-UI] Preview error:', error);
         UIComponents.showToast('Failed to preview PDF: ' + error.message, 'error');
       }
@@ -100,14 +114,35 @@
             confirmText: 'Yes, Download',
             cancelText: 'Cancel',
             onConfirm: function() {
-              QuotePDFGenerator.download(quoteData);
+              UIComponents.showLoading('Generating PDF...');
+              setTimeout(function() {
+                try {
+                  QuotePDFGenerator.download(quoteData);
+                  UIComponents.hideLoading();
+                  UIComponents.showToast('PDF downloaded successfully', 'success');
+                } catch (error) {
+                  UIComponents.hideLoading();
+                  UIComponents.showToast('Failed to download PDF: ' + error.message, 'error');
+                }
+              }, 100);
             }
           });
         } else {
-          QuotePDFGenerator.download(quoteData);
+          UIComponents.showLoading('Generating PDF...');
+          setTimeout(function() {
+            try {
+              QuotePDFGenerator.download(quoteData);
+              UIComponents.hideLoading();
+              UIComponents.showToast('PDF downloaded successfully', 'success');
+            } catch (error) {
+              UIComponents.hideLoading();
+              UIComponents.showToast('Failed to download PDF: ' + error.message, 'error');
+            }
+          }, 100);
         }
 
       } catch (error) {
+        UIComponents.hideLoading();
         console.error('[PDF-UI] Download error:', error);
         UIComponents.showToast('Failed to download PDF: ' + error.message, 'error');
       }
