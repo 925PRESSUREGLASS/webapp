@@ -371,20 +371,21 @@
     }
 
     var isEdit = !!customer;
-    var modal = document.createElement('div');
-    modal.id = 'customerFormModal';
-    modal.className = 'client-modal';
+    var modalOverlay = document.createElement('div');
+    modalOverlay.id = 'customerFormModal';
+    modalOverlay.className = 'modal-overlay';
+    modalOverlay.style.display = 'flex';
 
-    var html = '<div class="client-modal-content client-modal-small">';
-    html += '<div class="client-modal-header">';
-    html += '<h2>' + (isEdit ? 'Edit Customer' : 'Add Customer') + '</h2>';
-    html += '<button type="button" class="client-modal-close" aria-label="Close">&times;</button>';
+    var html = '<div class="modal">';
+    html += '<div class="modal-header">';
+    html += '<h2 class="modal-title">' + (isEdit ? 'Edit Customer' : 'Add Customer') + '</h2>';
+    html += '<button type="button" class="modal-close" aria-label="Close">&times;</button>';
     html += '</div>';
-    html += '<div class="client-modal-body">';
-    html += '<form id="customerForm" class="client-form">';
+    html += '<div class="modal-body">';
+    html += '<form id="customerForm">';
     html += '<div class="form-group">';
-    html += '<label class="form-label" for="customerFormName">Customer Name *</label>';
-    html += '<input type="text" id="customerFormName" class="form-input" required value="' + (customer ? escapeHtml(customer.name) : '') + '" />';
+    html += '<label class="form-label form-label-required" for="customerFormName">Customer Name</label>';
+    html += '<input type="text" id="customerFormName" class="form-input" required value="' + (customer ? escapeHtml(customer.name) : '') + '" aria-required="true" />';
     html += '</div>';
     html += '<div class="form-group">';
     html += '<label class="form-label" for="customerFormEmail">Email</label>';
@@ -396,7 +397,7 @@
     html += '</div>';
     html += '<div class="form-group">';
     html += '<label class="form-label" for="customerFormLocation">Location</label>';
-    html += '<input type="text" id="customerFormLocation" class="form-input" value="' + (customer ? escapeHtml(customer.location) : '') + '" />';
+    html += '<input type="text" id="customerFormLocation" class="form-input" value="' + (customer ? escapeHtml(customer.location) : '') + '" placeholder="e.g. Perth CBD, Subiaco" />';
     html += '</div>';
     html += '<div class="form-group">';
     html += '<label class="form-label" for="customerFormAddress">Full Address</label>';
@@ -404,39 +405,38 @@
     html += '</div>';
     html += '<div class="form-group">';
     html += '<label class="form-label" for="customerFormNotes">Notes</label>';
-    html += '<textarea id="customerFormNotes" class="form-textarea" rows="3">' + (customer ? escapeHtml(customer.notes) : '') + '</textarea>';
-    html += '</div>';
-    html += '<div style="display: flex; gap: 0.5rem; justify-content: flex-end; margin-top: 1.5rem;">';
-    html += '<button type="button" class="btn btn-secondary" id="cancelFormBtn">Cancel</button>';
-    html += '<button type="submit" class="btn btn-primary">' + (isEdit ? 'Update' : 'Add') + ' Customer</button>';
+    html += '<textarea id="customerFormNotes" class="form-textarea" rows="3" placeholder="Any special requirements or notes about the customer...">' + (customer ? escapeHtml(customer.notes) : '') + '</textarea>';
     html += '</div>';
     html += '</form>';
     html += '</div>';
+    html += '<div class="modal-footer">';
+    html += '<button type="button" class="btn btn-secondary" id="cancelFormBtn">Cancel</button>';
+    html += '<button type="button" class="btn btn-primary" id="submitFormBtn">' + (isEdit ? 'Update' : 'Add') + ' Customer</button>';
+    html += '</div>';
     html += '</div>';
 
-    modal.innerHTML = html;
+    modalOverlay.innerHTML = html;
 
     // Event listeners
-    modal.querySelector('.client-modal-close').onclick = function() {
-      modal.classList.remove('active');
-      setTimeout(function() { modal.remove(); }, 300);
+    modalOverlay.querySelector('.modal-close').onclick = function() {
+      modalOverlay.style.display = 'none';
+      setTimeout(function() { modalOverlay.remove(); }, 300);
     };
 
-    modal.querySelector('#cancelFormBtn').onclick = function() {
-      modal.classList.remove('active');
-      setTimeout(function() { modal.remove(); }, 300);
+    modalOverlay.querySelector('#cancelFormBtn').onclick = function() {
+      modalOverlay.style.display = 'none';
+      setTimeout(function() { modalOverlay.remove(); }, 300);
     };
 
-    modal.onclick = function(e) {
-      if (e.target === modal) {
-        modal.classList.remove('active');
-        setTimeout(function() { modal.remove(); }, 300);
+    modalOverlay.onclick = function(e) {
+      if (e.target === modalOverlay) {
+        modalOverlay.style.display = 'none';
+        setTimeout(function() { modalOverlay.remove(); }, 300);
       }
     };
 
-    modal.querySelector('#customerForm').onsubmit = function(e) {
-      e.preventDefault();
-
+    // Form submit handler
+    var submitHandler = function() {
       var customerData = {
         id: customer ? customer.id : null,
         name: document.getElementById('customerFormName').value,
@@ -448,6 +448,15 @@
         createdAt: customer ? customer.createdAt : null
       };
 
+      if (!customerData.name || customerData.name.trim() === '') {
+        if (window.UIComponents && window.UIComponents.showToast) {
+          window.UIComponents.showToast('Please enter a customer name', 'error');
+        } else {
+          alert('Please enter a customer name');
+        }
+        return;
+      }
+
       if (!window.ClientDatabase || !window.ClientDatabase.save) {
         console.error('[CUSTOMER-DIR] ClientDatabase.save not available');
         return;
@@ -455,13 +464,21 @@
 
       var savedCustomer = window.ClientDatabase.save(customerData);
       if (savedCustomer) {
-        modal.classList.remove('active');
-        setTimeout(function() { modal.remove(); }, 300);
+        modalOverlay.style.display = 'none';
+        setTimeout(function() { modalOverlay.remove(); }, 300);
         renderCustomerDirectory();
       }
     };
 
-    return modal;
+    modalOverlay.querySelector('#submitFormBtn').onclick = submitHandler;
+
+    // Handle Enter key in form
+    modalOverlay.querySelector('#customerForm').onsubmit = function(e) {
+      e.preventDefault();
+      submitHandler();
+    };
+
+    return modalOverlay;
   }
 
   // HTML escape helper

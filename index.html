@@ -1001,13 +1001,12 @@
 
 
 	<!-- TEST RUNNER MODAL -->
-	<div id="testRunnerModal" class="modal" style="display: none;">
-		<div class="modal-dialog" style="max-width: 1200px;">
-			<div class="modal-content">
-				<div class="modal-header">
-					<h2 class="modal-title">🧪 Test & QA Suite</h2>
-					<button class="modal-close" onclick="closeTestRunner()" aria-label="Close test runner">×</button>
-				</div>
+	<div id="testRunnerModal" class="modal-overlay" style="display: none;">
+		<div class="modal" style="max-width: 1200px;">
+			<div class="modal-header">
+				<h2 class="modal-title">🧪 Test & QA Suite</h2>
+				<button class="modal-close" onclick="closeTestRunner()" aria-label="Close test runner">×</button>
+			</div>
 
 				<div class="modal-body">
 					<!-- Test Actions -->
@@ -1139,7 +1138,6 @@
 				</div>
 			</div>
 		</div>
-	</div>
 
 	<!-- JOBS LIST PAGE (Hidden by default) -->
 	<div class="page" id="page-jobs" style="display: none;">
@@ -1201,25 +1199,25 @@
 	</div>
 
 	<!-- Create Job Modal -->
-	<div class="modal" id="create-job-modal" style="display: none;">
-		<div class="modal-dialog">
+	<div class="modal-overlay" id="create-job-modal" style="display: none;">
+		<div class="modal">
 			<div class="modal-header">
-				<h2>Create Job from Quote</h2>
-				<button class="modal-close" onclick="closeCreateJobDialog()">&times;</button>
+				<h2 class="modal-title">Create Job from Quote</h2>
+				<button class="modal-close" onclick="closeCreateJobDialog()" aria-label="Close">&times;</button>
 			</div>
 			<div class="modal-body">
 				<div class="form-group">
-					<label class="form-label">Select Quote</label>
-					<select id="create-job-quote-select" class="form-select">
+					<label class="form-label form-label-required" for="create-job-quote-select">Select Quote</label>
+					<select id="create-job-quote-select" class="form-select" aria-required="true">
 						<option value="">-- Select a quote --</option>
 					</select>
 				</div>
 				<div class="form-group">
-					<label class="form-label">Scheduled Date</label>
-					<input type="date" id="create-job-scheduled-date" class="form-input" />
+					<label class="form-label form-label-required" for="create-job-scheduled-date">Scheduled Date</label>
+					<input type="date" id="create-job-scheduled-date" class="form-input" aria-required="true" />
 				</div>
 				<div class="form-group">
-					<label class="form-label">Scheduled Time</label>
+					<label class="form-label" for="create-job-scheduled-time">Scheduled Time</label>
 					<input type="time" id="create-job-scheduled-time" class="form-input" value="09:00" />
 				</div>
 			</div>
@@ -1448,15 +1446,15 @@
 	</div>
 
 	<!-- Complete Job Modal -->
-	<div class="modal" id="complete-job-modal" style="display: none;">
-		<div class="modal-content">
+	<div class="modal-overlay" id="complete-job-modal" style="display: none;">
+		<div class="modal">
 			<div class="modal-header">
-				<h2>Complete Job</h2>
-				<button class="modal-close" onclick="JobTrackingUI.closeCompleteJobDialog()">&times;</button>
+				<h2 class="modal-title">Complete Job</h2>
+				<button class="modal-close" onclick="JobTrackingUI.closeCompleteJobDialog()" aria-label="Close">&times;</button>
 			</div>
 			<div class="modal-body">
 				<div class="form-group">
-					<label>Client Rating</label>
+					<label class="form-label">Client Rating</label>
 					<div class="rating-stars" id="client-rating">
 						<span class="star" data-rating="1" onclick="JobTrackingUI.setRating(1)">☆</span>
 						<span class="star" data-rating="2" onclick="JobTrackingUI.setRating(2)">☆</span>
@@ -1467,29 +1465,23 @@
 				</div>
 
 				<div class="form-group">
-					<label for="client-feedback">Client Feedback</label>
-					<textarea class="form-control" id="client-feedback" rows="3" placeholder="Any feedback from the client..."></textarea>
+					<label class="form-label" for="client-feedback">Client Feedback</label>
+					<textarea class="form-textarea" id="client-feedback" rows="3" placeholder="Any feedback from the client..."></textarea>
 				</div>
 
-				<div class="form-group">
-					<label>
-						<input type="checkbox" id="photos-shown">
-						Showed before/after photos to client
-					</label>
+				<div class="form-checkbox-wrapper">
+					<input type="checkbox" id="photos-shown" class="form-checkbox">
+					<label for="photos-shown">Showed before/after photos to client</label>
 				</div>
 
-				<div class="form-group">
-					<label>
-						<input type="checkbox" id="warranty-issued">
-						Issued service warranty
-					</label>
+				<div class="form-checkbox-wrapper">
+					<input type="checkbox" id="warranty-issued" class="form-checkbox">
+					<label for="warranty-issued">Issued service warranty</label>
 				</div>
 
-				<div class="form-group">
-					<label>
-						<input type="checkbox" id="followup-required">
-						Follow-up required
-					</label>
+				<div class="form-checkbox-wrapper">
+					<input type="checkbox" id="followup-required" class="form-checkbox">
+					<label for="followup-required">Follow-up required</label>
 				</div>
 			</div>
 			<div class="modal-footer">
