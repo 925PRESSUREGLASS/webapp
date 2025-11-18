@@ -1,0 +1,634 @@
+/* contracts.css - Contract Management UI Styling */
+/* Part of TicTacStick Quote Engine */
+/* Follows design system from css/design-system.css */
+
+/* ============================================ */
+/* CONTRACT TYPE CARDS */
+/* ============================================ */
+
+.contract-types-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+  gap: var(--spacing-lg);
+  margin-top: var(--spacing-lg);
+}
+
+.contract-type-card {
+  background: var(--color-neutral-50);
+  border: 2px solid var(--color-neutral-200);
+  border-radius: var(--radius-lg);
+  padding: var(--spacing-xl);
+  cursor: pointer;
+  transition: all 0.2s ease;
+  text-align: center;
+}
+
+.contract-type-card:hover {
+  border-color: var(--color-primary);
+  transform: translateY(-2px);
+  box-shadow: var(--shadow-md);
+}
+
+.contract-type-card.selected {
+  border-color: var(--color-primary);
+  background: var(--color-primary-light);
+  color: white;
+}
+
+.contract-type-icon {
+  font-size: 3rem;
+  margin-bottom: var(--spacing-md);
+}
+
+.contract-type-title {
+  font-size: var(--font-size-lg);
+  font-weight: var(--font-weight-semibold);
+  margin-bottom: var(--spacing-sm);
+}
+
+.contract-type-description {
+  font-size: var(--font-size-sm);
+  color: var(--color-neutral-600);
+}
+
+.contract-type-card.selected .contract-type-description {
+  color: rgba(255, 255, 255, 0.9);
+}
+
+/* ============================================ */
+/* WIZARD PROGRESS */
+/* ============================================ */
+
+.wizard-progress {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: var(--spacing-xl);
+  padding: var(--spacing-lg) 0;
+  border-bottom: 2px solid var(--color-neutral-200);
+}
+
+.wizard-progress-step {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  flex: 1;
+  position: relative;
+}
+
+.wizard-progress-step::after {
+  content: '';
+  position: absolute;
+  top: 20px;
+  left: 50%;
+  width: 100%;
+  height: 2px;
+  background: var(--color-neutral-200);
+  z-index: -1;
+}
+
+.wizard-progress-step:last-child::after {
+  display: none;
+}
+
+.wizard-progress-number {
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  background: var(--color-neutral-200);
+  color: var(--color-neutral-600);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-weight: var(--font-weight-bold);
+  margin-bottom: var(--spacing-sm);
+}
+
+.wizard-progress-step.active .wizard-progress-number {
+  background: var(--color-primary);
+  color: white;
+}
+
+.wizard-progress-step.completed .wizard-progress-number {
+  background: var(--color-success);
+  color: white;
+}
+
+.wizard-progress-label {
+  font-size: var(--font-size-sm);
+  color: var(--color-neutral-600);
+}
+
+.wizard-progress-step.active .wizard-progress-label {
+  color: var(--color-primary);
+  font-weight: var(--font-weight-semibold);
+}
+
+/* ============================================ */
+/* SERVICE LIST */
+/* ============================================ */
+
+.services-list {
+  margin-top: var(--spacing-md);
+}
+
+.service-item {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: var(--spacing-md);
+  background: var(--color-neutral-50);
+  border: 1px solid var(--color-neutral-200);
+  border-radius: var(--radius-md);
+  margin-bottom: var(--spacing-sm);
+}
+
+.service-description {
+  flex: 1;
+  font-weight: var(--font-weight-medium);
+}
+
+.service-price {
+  font-size: var(--font-size-lg);
+  font-weight: var(--font-weight-bold);
+  color: var(--color-primary);
+  margin: 0 var(--spacing-md);
+}
+
+/* ============================================ */
+/* CONTRACT REVIEW */
+/* ============================================ */
+
+.contract-review {
+  background: var(--color-neutral-50);
+  border-radius: var(--radius-lg);
+  padding: var(--spacing-xl);
+}
+
+.review-section {
+  margin-bottom: var(--spacing-xl);
+  padding-bottom: var(--spacing-lg);
+  border-bottom: 1px solid var(--color-neutral-200);
+}
+
+.review-section:last-child {
+  border-bottom: none;
+  margin-bottom: 0;
+}
+
+.review-section h4 {
+  color: var(--color-primary);
+  margin-bottom: var(--spacing-md);
+  font-size: var(--font-size-lg);
+}
+
+.review-section p {
+  margin-bottom: var(--spacing-sm);
+}
+
+.review-section ul {
+  list-style: none;
+  padding: 0;
+}
+
+.review-section li {
+  padding: var(--spacing-sm) 0;
+  border-bottom: 1px solid var(--color-neutral-200);
+}
+
+.review-section li:last-child {
+  border-bottom: none;
+}
+
+.pricing-table {
+  width: 100%;
+  border-collapse: collapse;
+}
+
+.pricing-table td {
+  padding: var(--spacing-sm) 0;
+}
+
+.pricing-table td:last-child {
+  text-align: right;
+  font-weight: var(--font-weight-semibold);
+}
+
+.pricing-table .total-row td {
+  padding-top: var(--spacing-md);
+  border-top: 2px solid var(--color-neutral-300);
+  font-size: var(--font-size-lg);
+}
+
+.pricing-table .highlight-row td {
+  background: var(--color-primary-light);
+  color: white;
+  padding: var(--spacing-md);
+  border-radius: var(--radius-sm);
+}
+
+/* ============================================ */
+/* CONTRACT DASHBOARD */
+/* ============================================ */
+
+.metrics-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+  gap: var(--spacing-lg);
+  margin-bottom: var(--spacing-xl);
+}
+
+.metrics-grid-large {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+  gap: var(--spacing-lg);
+}
+
+.metric-card {
+  background: var(--color-neutral-50);
+  border: 2px solid var(--color-neutral-200);
+  border-radius: var(--radius-lg);
+  padding: var(--spacing-lg);
+  display: flex;
+  align-items: center;
+  gap: var(--spacing-md);
+}
+
+.metric-card-primary {
+  border-color: var(--color-primary);
+  background: linear-gradient(135deg, var(--color-primary-light) 0%, var(--color-primary) 100%);
+  color: white;
+}
+
+.metric-card-success {
+  border-color: var(--color-success);
+  background: linear-gradient(135deg, #10b981 0%, #059669 100%);
+  color: white;
+}
+
+.metric-card-info {
+  border-color: var(--color-info);
+  background: linear-gradient(135deg, #3b82f6 0%, #2563eb 100%);
+  color: white;
+}
+
+.metric-card-warning {
+  border-color: var(--color-warning);
+  background: linear-gradient(135deg, #f59e0b 0%, #d97706 100%);
+  color: white;
+}
+
+.metric-icon {
+  font-size: 2.5rem;
+  opacity: 0.9;
+}
+
+.metric-content {
+  flex: 1;
+}
+
+.metric-label {
+  font-size: var(--font-size-sm);
+  font-weight: var(--font-weight-medium);
+  opacity: 0.9;
+  margin-bottom: var(--spacing-xs);
+}
+
+.metric-value {
+  font-size: 2rem;
+  font-weight: var(--font-weight-bold);
+}
+
+.metric-subtitle {
+  font-size: var(--font-size-xs);
+  opacity: 0.8;
+  margin-top: var(--spacing-xs);
+}
+
+/* ============================================ */
+/* FILTER ROW */
+/* ============================================ */
+
+.filter-row {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+  gap: var(--spacing-md);
+  align-items: end;
+}
+
+.filter-group {
+  display: flex;
+  flex-direction: column;
+  gap: var(--spacing-xs);
+}
+
+.filter-group label {
+  font-size: var(--font-size-sm);
+  font-weight: var(--font-weight-medium);
+  color: var(--color-neutral-600);
+}
+
+/* ============================================ */
+/* DATA TABLE */
+/* ============================================ */
+
+.data-table {
+  width: 100%;
+  border-collapse: collapse;
+}
+
+.data-table thead {
+  background: var(--color-neutral-100);
+  border-bottom: 2px solid var(--color-neutral-300);
+}
+
+.data-table th {
+  padding: var(--spacing-md);
+  text-align: left;
+  font-weight: var(--font-weight-semibold);
+  color: var(--color-neutral-700);
+  font-size: var(--font-size-sm);
+}
+
+.data-table td {
+  padding: var(--spacing-md);
+  border-bottom: 1px solid var(--color-neutral-200);
+}
+
+.data-table tbody tr:hover {
+  background: var(--color-neutral-50);
+}
+
+.data-table tbody tr:last-child td {
+  border-bottom: none;
+}
+
+/* ============================================ */
+/* STATUS BADGES */
+/* ============================================ */
+
+.status-badge {
+  display: inline-block;
+  padding: var(--spacing-xs) var(--spacing-sm);
+  border-radius: var(--radius-full);
+  font-size: var(--font-size-xs);
+  font-weight: var(--font-weight-semibold);
+  text-transform: uppercase;
+}
+
+.status-badge.active {
+  background: var(--color-success);
+  color: white;
+}
+
+.status-badge.pending {
+  background: var(--color-warning);
+  color: white;
+}
+
+.status-badge.suspended {
+  background: var(--color-neutral-400);
+  color: white;
+}
+
+.status-badge.cancelled {
+  background: var(--color-error);
+  color: white;
+}
+
+.status-badge.draft {
+  background: var(--color-neutral-300);
+  color: var(--color-neutral-700);
+}
+
+.status-badge.completed {
+  background: var(--color-info);
+  color: white;
+}
+
+/* ============================================ */
+/* UPCOMING SERVICES */
+/* ============================================ */
+
+.upcoming-service-item {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: var(--spacing-md);
+  border-bottom: 1px solid var(--color-neutral-200);
+}
+
+.upcoming-service-item:last-child {
+  border-bottom: none;
+}
+
+.upcoming-service-info {
+  flex: 1;
+}
+
+.upcoming-service-client {
+  font-weight: var(--font-weight-semibold);
+  margin-bottom: var(--spacing-xs);
+}
+
+.upcoming-service-details {
+  font-size: var(--font-size-sm);
+  color: var(--color-neutral-600);
+}
+
+.upcoming-service-date {
+  text-align: right;
+}
+
+.upcoming-service-day {
+  font-size: var(--font-size-lg);
+  font-weight: var(--font-weight-bold);
+  color: var(--color-primary);
+}
+
+.upcoming-service-countdown {
+  font-size: var(--font-size-xs);
+  color: var(--color-neutral-600);
+}
+
+.upcoming-service-urgent {
+  color: var(--color-error);
+  font-weight: var(--font-weight-bold);
+}
+
+/* ============================================ */
+/* ANALYTICS DASHBOARD */
+/* ============================================ */
+
+.analytics-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(400px, 1fr));
+  gap: var(--spacing-lg);
+}
+
+/* ============================================ */
+/* EMPTY STATES */
+/* ============================================ */
+
+.empty-state {
+  text-align: center;
+  padding: var(--spacing-xl) var(--spacing-lg);
+  color: var(--color-neutral-500);
+}
+
+.empty-state-icon {
+  font-size: 4rem;
+  margin-bottom: var(--spacing-md);
+  opacity: 0.5;
+}
+
+.empty-state-title {
+  font-size: var(--font-size-lg);
+  font-weight: var(--font-weight-semibold);
+  margin-bottom: var(--spacing-sm);
+}
+
+.empty-state-message {
+  font-size: var(--font-size-sm);
+  margin-bottom: var(--spacing-lg);
+}
+
+/* ============================================ */
+/* RESPONSIVE */
+/* ============================================ */
+
+@media (max-width: 768px) {
+  .contract-types-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .wizard-progress {
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
+  }
+
+  .filter-row {
+    grid-template-columns: 1fr;
+  }
+
+  .analytics-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .metric-card {
+    flex-direction: column;
+    text-align: center;
+  }
+
+  .data-table {
+    font-size: var(--font-size-sm);
+  }
+
+  .data-table th,
+  .data-table td {
+    padding: var(--spacing-sm);
+  }
+
+  /* Stack upcoming service items on mobile */
+  .upcoming-service-item {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: var(--spacing-sm);
+  }
+
+  .upcoming-service-date {
+    width: 100%;
+    text-align: left;
+  }
+}
+
+/* ============================================ */
+/* PRINT STYLES */
+/* ============================================ */
+
+@media print {
+  .wizard-progress,
+  .filter-row,
+  .page-actions,
+  .card-actions,
+  .btn,
+  button {
+    display: none !important;
+  }
+
+  .metric-card {
+    border: 1px solid #000;
+    break-inside: avoid;
+  }
+
+  .data-table {
+    page-break-inside: auto;
+  }
+
+  .data-table tr {
+    page-break-inside: avoid;
+    page-break-after: auto;
+  }
+}
+
+/* ============================================ */
+/* DARK THEME SUPPORT */
+/* ============================================ */
+
+body.dark-theme .contract-type-card {
+  background: var(--color-neutral-800);
+  border-color: var(--color-neutral-700);
+}
+
+body.dark-theme .contract-type-card:hover {
+  border-color: var(--color-primary);
+}
+
+body.dark-theme .contract-type-description {
+  color: var(--color-neutral-400);
+}
+
+body.dark-theme .service-item {
+  background: var(--color-neutral-800);
+  border-color: var(--color-neutral-700);
+}
+
+body.dark-theme .contract-review {
+  background: var(--color-neutral-800);
+}
+
+body.dark-theme .review-section {
+  border-color: var(--color-neutral-700);
+}
+
+body.dark-theme .metric-card {
+  background: var(--color-neutral-800);
+  border-color: var(--color-neutral-700);
+}
+
+body.dark-theme .data-table thead {
+  background: var(--color-neutral-800);
+  border-color: var(--color-neutral-700);
+}
+
+body.dark-theme .data-table td {
+  border-color: var(--color-neutral-700);
+}
+
+body.dark-theme .data-table tbody tr:hover {
+  background: var(--color-neutral-700);
+}
+
+body.dark-theme .wizard-progress {
+  border-color: var(--color-neutral-700);
+}
+
+body.dark-theme .wizard-progress-number {
+  background: var(--color-neutral-700);
+  color: var(--color-neutral-300);
+}
+
+body.dark-theme .wizard-progress-step.active .wizard-progress-number,
+body.dark-theme .wizard-progress-step.completed .wizard-progress-number {
+  color: white;
+}
