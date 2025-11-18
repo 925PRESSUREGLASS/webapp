@@ -9,9 +9,7 @@
 
   // Encryption configuration
   // NOTE: Encryption is disabled by default for backward compatibility
-  // Set ENABLE_ENCRYPTION = true to enable encrypted storage
-  // TODO: Make this user-configurable via settings UI in future version
-  var ENABLE_ENCRYPTION = false;
+  // Encryption can be enabled via the Invoice Settings UI
   var ENCRYPTION_KEY = 'tictacstick-2025-invoice-secure';
 
   var invoices = [];
@@ -24,13 +22,16 @@
     bsb: '',
     accountNumber: '',
     abn: '',
-    includeGST: true
+    includeGST: true,
+    enableEncryption: false  // User-configurable encryption setting
   };
 
   // Initialize encryption for secure storage (if enabled)
-  if (ENABLE_ENCRYPTION && window.Security && window.Security.SecureStorage) {
-    window.Security.SecureStorage.setKey(ENCRYPTION_KEY);
-    console.log('[INVOICE] Encryption enabled for invoice data');
+  function initializeEncryption() {
+    if (settings.enableEncryption && window.Security && window.Security.SecureStorage) {
+      window.Security.SecureStorage.setKey(ENCRYPTION_KEY);
+      console.log('[INVOICE] Encryption enabled for invoice data');
+    }
   }
 
   var INVOICE_STATUSES = {
@@ -44,7 +45,7 @@
   // Load invoices from storage (supports encrypted and unencrypted modes)
   function loadInvoices() {
     try {
-      if (ENABLE_ENCRYPTION && window.Security && window.Security.SecureStorage) {
+      if (settings.enableEncryption && window.Security && window.Security.SecureStorage) {
         // Try to load encrypted data first
         invoices = window.Security.SecureStorage.getItem(INVOICES_KEY, null);
 
@@ -81,7 +82,7 @@
   // Save invoices to storage (supports encrypted and unencrypted modes)
   function saveInvoices() {
     try {
-      if (ENABLE_ENCRYPTION && window.Security && window.Security.SecureStorage) {
+      if (settings.enableEncryption && window.Security && window.Security.SecureStorage) {
         window.Security.SecureStorage.setItem(INVOICES_KEY, invoices);
       } else {
         // Save unencrypted (default mode)
@@ -101,35 +102,22 @@
   function loadSettings() {
     try {
       var loadedSettings = null;
-      if (ENABLE_ENCRYPTION && window.Security && window.Security.SecureStorage) {
-        // Try to load encrypted data first
-        loadedSettings = window.Security.SecureStorage.getItem(INVOICE_SETTINGS_KEY, null);
+      // Always try unencrypted first to read the encryption preference
+      loadedSettings = window.Security.safeJSONParse(
+        localStorage.getItem(INVOICE_SETTINGS_KEY),
+        null,
+        null
+      );
 
-        // If no encrypted data, try to migrate from unencrypted
-        if (loadedSettings === null || loadedSettings === undefined) {
-          var unencryptedData = localStorage.getItem(INVOICE_SETTINGS_KEY);
-          if (unencryptedData) {
-            // Migrate unencrypted data to encrypted
-            loadedSettings = window.Security.safeJSONParse(unencryptedData, null, null);
-            if (loadedSettings) {
-              // Save as encrypted
-              window.Security.SecureStorage.setItem(INVOICE_SETTINGS_KEY, loadedSettings);
-              console.log('[INVOICE] Migrated settings to encrypted storage');
-            }
-          }
-        }
-      } else {
-        // Load unencrypted data (default mode)
-        loadedSettings = window.Security.safeJSONParse(
-          localStorage.getItem(INVOICE_SETTINGS_KEY),
-          null,
-          null
-        );
-      }
       if (loadedSettings) {
         Object.keys(loadedSettings).forEach(function(key) {
           settings[key] = loadedSettings[key];
         });
+
+        // Now that we know the encryption preference, initialize encryption if needed
+        if (settings.enableEncryption) {
+          initializeEncryption();
+        }
       }
       return settings;
     } catch (e) {
@@ -141,12 +129,15 @@
   // Save settings (supports encrypted and unencrypted modes)
   function saveSettings() {
     try {
-      if (ENABLE_ENCRYPTION && window.Security && window.Security.SecureStorage) {
-        window.Security.SecureStorage.setItem(INVOICE_SETTINGS_KEY, settings);
-      } else {
-        // Save unencrypted (default mode)
-        localStorage.setItem(INVOICE_SETTINGS_KEY, JSON.stringify(settings));
+      // Always save settings unencrypted so we can read encryption preference on load
+      // (Invoice data can be encrypted, but settings must be readable to know if encryption is enabled)
+      localStorage.setItem(INVOICE_SETTINGS_KEY, JSON.stringify(settings));
+
+      // Re-initialize encryption if the setting changed
+      if (settings.enableEncryption) {
+        initializeEncryption();
       }
+
       return true;
     } catch (e) {
       console.error('[INVOICE] Failed to save settings:', e);
@@ -802,6 +793,13 @@
               '<label for="abn">ABN</label>' +
               '<input type="text" id="abn" value="' + escapeHtml(settings.abn) + '" placeholder="12 345 678 901" />' +
             '</div>' +
+            '<div class="form-group">' +
+              '<div class="form-checkbox-wrapper">' +
+                '<input type="checkbox" id="enableEncryption" ' + (settings.enableEncryption ? 'checked' : '') + ' />' +
+                '<label for="enableEncryption">Enable Encryption</label>' +
+              '</div>' +
+              '<p class="form-hint">Encrypt invoice data in browser storage for enhanced security. Note: This only affects new data; existing data remains in its current format.</p>' +
+            '</div>' +
             '<div class="form-actions">' +
               '<button type="button" class="btn btn-secondary" id="cancelSettingsBtn">Cancel</button>' +
               '<button type="submit" class="btn btn-primary">Save Settings</button>' +
@@ -869,6 +867,7 @@
       settings.bsb = bsbValue;
       settings.accountNumber = document.getElementById('accountNumber').value;
       settings.abn = abnValue;
+      settings.enableEncryption = document.getElementById('enableEncryption').checked;
 
       saveSettings();
 
