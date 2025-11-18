@@ -296,6 +296,16 @@
 							</div>
 						</div>
 
+						<!-- QUOTE ACTION BUTTONS -->
+						<div class="notes-footer" style="margin-top: 1.5rem;">
+							<button id="generatePdfBtn" type="button" class="btn btn-accent">
+								📄 Export PDF
+							</button>
+							<button id="copySummaryBtn" type="button" class="btn btn-secondary">
+								📋 Copy Summary
+							</button>
+						</div>
+
 						<div class="summary-sub">
 							<div class="summary-sub-col">
 								<h3>Time Estimate</h3>
@@ -326,23 +336,10 @@
 					</div>
 				</section>
 
-				<!-- PHOTOS PANEL -->
-				<section class="section" id="photosSection">
-					<header class="sec-h">
-						<h2 class="sec-title">📷 Photos</h2>
-						<button class="card-toggle" type="button" data-target="photosBody">▾</button>
-					</header>
-					<div class="sec-b" id="photosBody">
-						<div id="photoGallery">
-							<p class="photo-gallery-empty">No photos attached</p>
-						</div>
-					</div>
-				</section>
-
 				<!-- NOTES PANEL -->
 				<section class="section" id="notesPanel">
 					<header class="sec-h">
-						<h2 class="sec-title">📝 Notes & Actions</h2>
+						<h2 class="sec-title">📝 Notes</h2>
 						<button class="card-toggle" type="button" data-target="notesBody">▾</button>
 					</header>
 					<div class="sec-b" id="notesBody">
@@ -355,14 +352,18 @@
 							<span class="field-label">Client-Facing Notes</span>
 							<textarea id="clientNotesInput" rows="4" placeholder="E.g. Quote excludes flyscreen removal, valid for 14 days."></textarea>
 						</label>
+					</div>
+				</section>
 
-						<div class="notes-footer">
-							<button id="generatePdfBtn" type="button" class="btn btn-accent">
-								📄 Export PDF
-							</button>
-							<button id="copySummaryBtn" type="button" class="btn btn-secondary">
-								📋 Copy Summary
-							</button>
+				<!-- PHOTOS PANEL -->
+				<section class="section" id="photosSection">
+					<header class="sec-h">
+						<h2 class="sec-title">📷 Photos</h2>
+						<button class="card-toggle" type="button" data-target="photosBody">▾</button>
+					</header>
+					<div class="sec-b" id="photosBody">
+						<div id="photoGallery">
+							<p class="photo-gallery-empty">No photos attached</p>
 						</div>
 					</div>
 				</section>
