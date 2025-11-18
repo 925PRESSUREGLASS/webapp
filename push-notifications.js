@@ -182,32 +182,118 @@
   function navigateTo(page, params) {
     console.log('[PUSH] Navigate to:', page, params);
 
-    // TODO: Implement navigation based on your app structure
-    // This is a placeholder implementation
+    // Get main app and page elements
+    var mainApp = document.querySelector('.app');
+    var taskPage = document.getElementById('page-tasks');
 
-    // Show task dashboard
-    if (page === 'tasks') {
-      if (window.TaskDashboardUI && window.TaskDashboardUI.show) {
-        window.TaskDashboardUI.show();
-      }
+    // Hide all pages first
+    if (taskPage) {
+      taskPage.style.display = 'none';
     }
 
-    // Show specific quote
-    if (page === 'quote-detail' && params && params.id) {
-      if (window.QuoteManager && window.QuoteManager.showQuote) {
-        window.QuoteManager.showQuote(params.id);
-      }
+    // Show main app by default
+    if (mainApp) {
+      mainApp.style.display = 'block';
     }
 
-    // Show invoices
-    if (page === 'invoices') {
-      if (window.InvoiceSystem && window.InvoiceSystem.showInvoiceList) {
-        window.InvoiceSystem.showInvoiceList();
-      }
-    }
+    // Handle different navigation targets
+    switch (page) {
+      case 'home':
+        // Main app is already visible, just ensure we're on the quote view
+        if (mainApp) {
+          mainApp.style.display = 'block';
+        }
+        if (taskPage) {
+          taskPage.style.display = 'none';
+        }
+        console.log('[PUSH] Navigated to home');
+        break;
 
-    // Fallback: log to console
-    console.log('[PUSH] Navigation not fully implemented for:', page);
+      case 'tasks':
+        // Show task dashboard page
+        if (taskPage) {
+          taskPage.style.display = 'block';
+          if (mainApp) {
+            mainApp.style.display = 'none';
+          }
+          // Refresh task list if available
+          if (window.TaskDashboard && window.TaskDashboard.renderTaskList) {
+            window.TaskDashboard.renderTaskList();
+          }
+          console.log('[PUSH] Navigated to tasks');
+        } else {
+          console.warn('[PUSH] Task page element not found');
+        }
+        break;
+
+      case 'invoices':
+        // Show invoice list modal
+        if (window.InvoiceSystem && window.InvoiceSystem.showList) {
+          window.InvoiceSystem.showList();
+          console.log('[PUSH] Opened invoice list');
+        } else {
+          console.warn('[PUSH] InvoiceSystem.showList not available');
+        }
+        break;
+
+      case 'quote-detail':
+        // Load specific quote if ID provided
+        if (params && params.id) {
+          // Load the quote data
+          if (window.APP && window.APP.loadQuote) {
+            window.APP.loadQuote(params.id);
+            console.log('[PUSH] Loaded quote:', params.id);
+          } else {
+            console.warn('[PUSH] APP.loadQuote not available');
+          }
+        }
+        break;
+
+      case 'contract-detail':
+        // Show contract detail if available
+        if (params && params.id) {
+          if (window.ContractManager && window.ContractManager.viewContract) {
+            window.ContractManager.viewContract(params.id);
+            console.log('[PUSH] Opened contract:', params.id);
+          } else {
+            console.warn('[PUSH] ContractManager not available');
+          }
+        }
+        break;
+
+      case 'contracts':
+        // Show contracts list if available
+        if (window.ContractManager && window.ContractManager.showContractList) {
+          window.ContractManager.showContractList();
+          console.log('[PUSH] Opened contracts list');
+        } else {
+          console.warn('[PUSH] ContractManager not available');
+        }
+        break;
+
+      case 'client-detail':
+        // Show client details if available
+        if (params && params.id) {
+          if (window.ClientDatabase && window.ClientDatabase.viewClient) {
+            window.ClientDatabase.viewClient(params.id);
+            console.log('[PUSH] Opened client:', params.id);
+          } else {
+            console.warn('[PUSH] ClientDatabase.viewClient not available');
+          }
+        }
+        break;
+
+      default:
+        console.warn('[PUSH] Unknown navigation target:', page);
+        // Default to home
+        if (mainApp) {
+          mainApp.style.display = 'block';
+        }
+        if (taskPage) {
+          taskPage.style.display = 'none';
+        }
+        break;
+    }
   }
 
   // ============================================
