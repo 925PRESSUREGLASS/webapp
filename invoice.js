@@ -1308,29 +1308,88 @@
 
   // Change invoice status
   function changeInvoiceStatus(invoiceId) {
-    // Simple prompt for now - can be enhanced with a modal
     var invoice = getInvoice(invoiceId);
     if (!invoice) return;
 
-    var statusOptions = Object.keys(INVOICE_STATUSES).map(function(key) {
-      return key + ': ' + INVOICE_STATUSES[key].label;
-    }).join('\n');
+    // Create status change modal
+    var modal = document.createElement('div');
+    modal.className = 'modal active';
+    modal.id = 'changeStatusModal';
+    modal.setAttribute('role', 'dialog');
+    modal.setAttribute('aria-modal', 'true');
+    modal.setAttribute('aria-labelledby', 'changeStatusTitle');
 
-    var newStatus = prompt('Select new status:\n\n' + statusOptions + '\n\nEnter status:');
-    if (newStatus && INVOICE_STATUSES[newStatus]) {
-      updateInvoiceStatus(invoiceId, newStatus);
-      renderInvoiceList();
+    var content = '<div class="modal-content">';
+    content += '<div class="modal-header">';
+    content += '<h2 class="modal-title" id="changeStatusTitle">Change Invoice Status</h2>';
+    content += '<button class="modal-close" aria-label="Close" onclick="this.closest(\'.modal\').remove()">&times;</button>';
+    content += '</div>';
+    content += '<div class="modal-body">';
+    content += '<p>Current status: <strong>' + INVOICE_STATUSES[invoice.status].label + '</strong></p>';
+    content += '<div class="form-group">';
+    content += '<label class="form-label">Select new status:</label>';
 
-      // Refresh detail view
-      var detailModal = document.getElementById('invoiceDetailModal');
-      if (detailModal) {
-        detailModal.classList.remove('active');
-        setTimeout(function() {
-          detailModal.remove();
-          viewInvoice(invoiceId);
-        }, 300);
-      }
+    // Create radio button for each status
+    var statuses = Object.keys(INVOICE_STATUSES);
+    for (var i = 0; i < statuses.length; i++) {
+      var statusKey = statuses[i];
+      var statusInfo = INVOICE_STATUSES[statusKey];
+      var checked = statusKey === invoice.status ? 'checked' : '';
+
+      content += '<div class="form-checkbox-wrapper" style="margin: 8px 0;">';
+      content += '<input type="radio" id="status_' + statusKey + '" name="invoiceStatus" value="' + statusKey + '" class="form-checkbox" ' + checked + '>';
+      content += '<label for="status_' + statusKey + '" style="display: inline-flex; align-items: center; gap: 8px;">';
+      content += '<span style="font-size: 1.2em;">' + statusInfo.icon + '</span>';
+      content += '<span>' + statusInfo.label + '</span>';
+      content += '</label>';
+      content += '</div>';
     }
+
+    content += '</div>';
+    content += '</div>';
+    content += '<div class="modal-footer">';
+    content += '<button type="button" class="btn btn-secondary" onclick="this.closest(\'.modal\').remove()">Cancel</button>';
+    content += '<button type="button" class="btn btn-primary" id="confirmStatusChange">Update Status</button>';
+    content += '</div>';
+    content += '</div>';
+
+    modal.innerHTML = content;
+    document.body.appendChild(modal);
+
+    // Handle confirm button
+    document.getElementById('confirmStatusChange').addEventListener('click', function() {
+      var selectedRadio = document.querySelector('input[name="invoiceStatus"]:checked');
+      if (selectedRadio) {
+        var newStatus = selectedRadio.value;
+        if (newStatus !== invoice.status) {
+          updateInvoiceStatus(invoiceId, newStatus);
+          renderInvoiceList();
+
+          // Show success toast
+          if (window.UIComponents && window.UIComponents.showToast) {
+            window.UIComponents.showToast('Invoice status updated to ' + INVOICE_STATUSES[newStatus].label, 'success');
+          }
+
+          // Refresh detail view
+          var detailModal = document.getElementById('invoiceDetailModal');
+          if (detailModal) {
+            detailModal.classList.remove('active');
+            setTimeout(function() {
+              detailModal.remove();
+              viewInvoice(invoiceId);
+            }, 300);
+          }
+        }
+        modal.remove();
+      }
+    });
+
+    // Handle escape key
+    modal.addEventListener('keydown', function(e) {
+      if (e.key === 'Escape') {
+        modal.remove();
+      }
+    });
   }
 
   // Print invoice
