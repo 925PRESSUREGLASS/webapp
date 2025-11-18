@@ -1,0 +1,327 @@
+/* test-runner.css - Test Runner UI Styles */
+
+/* Test Results Summary */
+.test-results-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+  gap: 1rem;
+  margin-bottom: 1.5rem;
+}
+
+.test-result-item {
+  padding: 1rem;
+  border-radius: var(--radius-md);
+  background: var(--color-neutral-50);
+  border: 1px solid var(--color-neutral-200);
+  text-align: center;
+}
+
+.test-result-label {
+  font-size: var(--font-size-sm);
+  color: var(--color-neutral-600);
+  margin-bottom: 0.5rem;
+}
+
+.test-result-value {
+  font-size: 2rem;
+  font-weight: var(--font-weight-bold);
+  color: var(--color-neutral-900);
+}
+
+.test-result-success .test-result-value {
+  color: var(--color-success);
+}
+
+.test-result-danger .test-result-value {
+  color: var(--color-error);
+}
+
+.test-result-neutral .test-result-value {
+  color: var(--color-neutral-500);
+}
+
+/* Test Pass Rate */
+.test-pass-rate {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem;
+  padding-top: 1rem;
+  border-top: 1px solid var(--color-neutral-200);
+}
+
+.test-pass-rate-label {
+  font-size: var(--font-size-base);
+  color: var(--color-neutral-700);
+  font-weight: var(--font-weight-medium);
+}
+
+.test-pass-rate-value {
+  font-size: 1.5rem;
+  font-weight: var(--font-weight-bold);
+}
+
+/* Test Console */
+.test-console {
+  background: var(--color-neutral-900);
+  color: #e5e7eb;
+  font-family: 'Monaco', 'Menlo', 'Ubuntu Mono', 'Consolas', 'source-code-pro', monospace;
+  font-size: 0.875rem;
+  line-height: 1.5;
+  padding: 1rem;
+  border-radius: var(--radius-md);
+  max-height: 400px;
+  overflow-y: auto;
+  white-space: pre-wrap;
+  word-wrap: break-word;
+}
+
+.test-console::-webkit-scrollbar {
+  width: 8px;
+}
+
+.test-console::-webkit-scrollbar-track {
+  background: var(--color-neutral-800);
+  border-radius: var(--radius-sm);
+}
+
+.test-console::-webkit-scrollbar-thumb {
+  background: var(--color-neutral-600);
+  border-radius: var(--radius-sm);
+}
+
+.test-console::-webkit-scrollbar-thumb:hover {
+  background: var(--color-neutral-500);
+}
+
+/* Manual Test Checklist */
+.checklist-category {
+  margin-bottom: 1.5rem;
+  padding-bottom: 1.5rem;
+  border-bottom: 1px solid var(--color-neutral-200);
+}
+
+.checklist-category:last-child {
+  border-bottom: none;
+  margin-bottom: 0;
+  padding-bottom: 0;
+}
+
+.checklist-category-title {
+  margin: 0 0 1rem 0;
+  font-size: var(--font-size-lg);
+  font-weight: var(--font-weight-semibold);
+  color: var(--color-neutral-900);
+}
+
+.checklist-items {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+}
+
+.checklist-item {
+  display: flex;
+  align-items: flex-start;
+  gap: 0.75rem;
+  padding: 0.75rem;
+  border-radius: var(--radius-sm);
+  cursor: pointer;
+  transition: background-color 0.15s ease;
+}
+
+.checklist-item:hover {
+  background: var(--color-neutral-50);
+}
+
+.checklist-checkbox {
+  margin-top: 0.125rem;
+  width: 1.25rem;
+  height: 1.25rem;
+  flex-shrink: 0;
+  cursor: pointer;
+}
+
+.checklist-text {
+  flex: 1;
+  font-size: var(--font-size-base);
+  color: var(--color-neutral-700);
+  line-height: 1.5;
+}
+
+.checklist-item:has(.checklist-checkbox:checked) .checklist-text {
+  text-decoration: line-through;
+  color: var(--color-neutral-500);
+}
+
+/* Progress Bar */
+.checklist-progress {
+  margin-bottom: 1.5rem;
+}
+
+.checklist-progress-label {
+  font-size: var(--font-size-sm);
+  color: var(--color-neutral-600);
+  margin-bottom: 0.5rem;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.checklist-progress-bar-container {
+  width: 100%;
+  height: 8px;
+  background: var(--color-neutral-200);
+  border-radius: var(--radius-full);
+  overflow: hidden;
+}
+
+.checklist-progress-bar {
+  height: 100%;
+  background: var(--color-primary);
+  border-radius: var(--radius-full);
+  transition: width 0.3s ease, background-color 0.3s ease;
+}
+
+/* Production Readiness */
+.readiness-results {
+  margin-top: 1.5rem;
+}
+
+.readiness-score {
+  font-size: 3rem;
+  font-weight: var(--font-weight-bold);
+  text-align: center;
+  margin: 1.5rem 0;
+}
+
+.readiness-score.ready {
+  color: var(--color-success);
+}
+
+.readiness-score.mostly-ready {
+  color: var(--color-info);
+}
+
+.readiness-score.caution {
+  color: var(--color-warning);
+}
+
+.readiness-score.not-ready {
+  color: var(--color-error);
+}
+
+.readiness-section {
+  margin-bottom: 1.5rem;
+}
+
+.readiness-section-title {
+  font-size: var(--font-size-lg);
+  font-weight: var(--font-weight-semibold);
+  margin-bottom: 0.75rem;
+  color: var(--color-neutral-900);
+}
+
+.readiness-list {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+}
+
+.readiness-list li {
+  padding: 0.5rem;
+  margin-bottom: 0.25rem;
+  border-radius: var(--radius-sm);
+  background: var(--color-neutral-50);
+}
+
+.readiness-list li.passed {
+  color: var(--color-success);
+}
+
+.readiness-list li.warning {
+  color: var(--color-warning);
+}
+
+.readiness-list li.failed {
+  color: var(--color-error);
+}
+
+/* Test Actions */
+.test-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.75rem;
+  margin-bottom: 1.5rem;
+}
+
+.test-actions .btn {
+  flex: 0 0 auto;
+}
+
+/* Mobile Responsive */
+@media (max-width: 768px) {
+  .test-results-grid {
+    grid-template-columns: repeat(2, 1fr);
+  }
+
+  .test-result-value {
+    font-size: 1.5rem;
+  }
+
+  .test-console {
+    font-size: 0.75rem;
+    max-height: 300px;
+  }
+
+  .test-actions {
+    flex-direction: column;
+  }
+
+  .test-actions .btn {
+    width: 100%;
+  }
+
+  .readiness-score {
+    font-size: 2rem;
+  }
+}
+
+/* Dark Theme Support */
+[data-theme="dark"] .test-result-item {
+  background: var(--color-neutral-800);
+  border-color: var(--color-neutral-700);
+}
+
+[data-theme="dark"] .test-result-label {
+  color: var(--color-neutral-400);
+}
+
+[data-theme="dark"] .test-result-value {
+  color: var(--color-neutral-100);
+}
+
+[data-theme="dark"] .test-console {
+  background: #1a1a1a;
+  color: #e5e7eb;
+}
+
+[data-theme="dark"] .checklist-item:hover {
+  background: var(--color-neutral-800);
+}
+
+[data-theme="dark"] .checklist-text {
+  color: var(--color-neutral-300);
+}
+
+[data-theme="dark"] .checklist-item:has(.checklist-checkbox:checked) .checklist-text {
+  color: var(--color-neutral-600);
+}
+
+[data-theme="dark"] .checklist-category {
+  border-bottom-color: var(--color-neutral-700);
+}
+
+[data-theme="dark"] .readiness-list li {
+  background: var(--color-neutral-800);
+}

@@ -57,6 +57,7 @@
 	<link rel="stylesheet" href="css/tasks.css" />
 	<link rel="stylesheet" href="mobile.css" />
 	<link rel="stylesheet" href="quote-pdf.css" />
+	<link rel="stylesheet" href="css/test-runner.css" />
 	<link rel="stylesheet" href="print.css" media="print" />
 	<link rel="stylesheet" href="invoice-print.css" media="print" />
 	<link rel="stylesheet" href="photo-print-layout.css" media="print" />
@@ -112,6 +113,9 @@
 					<button id="webhookSettingsBtn" type="button" class="btn btn-tertiary" title="Webhook & Sync Settings" aria-label="Open webhook settings" onclick="openWebhookSettings()">
 						🔄 Sync
 					</button>
+				<button id="testRunnerBtn" type="button" class="btn btn-tertiary" title="Test & QA Suite" aria-label="Open test runner" onclick="openTestRunner()">
+					🧪 Tests
+				</button>
 				</div>
 			</div>
 		</header>
@@ -888,6 +892,147 @@
 		</div>
 	</div>
 
+
+	<!-- TEST RUNNER MODAL -->
+	<div id="testRunnerModal" class="modal" style="display: none;">
+		<div class="modal-dialog" style="max-width: 1200px;">
+			<div class="modal-content">
+				<div class="modal-header">
+					<h2 class="modal-title">🧪 Test & QA Suite</h2>
+					<button class="modal-close" onclick="closeTestRunner()" aria-label="Close test runner">×</button>
+				</div>
+
+				<div class="modal-body">
+					<!-- Test Actions -->
+					<div class="test-actions">
+						<button id="run-all-tests-btn" class="btn btn-primary" onclick="TestRunner.runAllTests()">
+							Run All Tests
+						</button>
+						<button id="run-unit-tests-btn" class="btn btn-secondary" onclick="TestRunner.runUnitTests()">
+							Unit Tests
+						</button>
+						<button id="run-integration-tests-btn" class="btn btn-secondary" onclick="TestRunner.runIntegrationTests()">
+							Integration Tests
+						</button>
+						<button id="run-performance-tests-btn" class="btn btn-secondary" onclick="TestRunner.runPerformanceTests()">
+							Performance Tests
+						</button>
+						<button id="clear-console-btn" class="btn btn-tertiary" onclick="TestRunner.clearTestConsole()">
+							Clear Console
+						</button>
+						<button id="download-results-btn" class="btn btn-tertiary" onclick="TestRunner.downloadTestResults()">
+							Download Results
+						</button>
+					</div>
+
+					<!-- Test Results Summary -->
+					<div class="card" id="test-results-summary" style="display: none; margin-bottom: 1.5rem;">
+						<div class="card-body">
+							<div class="test-results-grid">
+								<div class="test-result-item">
+									<div class="test-result-label">Total Tests</div>
+									<div class="test-result-value" id="test-total">0</div>
+								</div>
+								<div class="test-result-item test-result-success">
+									<div class="test-result-label">Passed</div>
+									<div class="test-result-value" id="test-passed">0</div>
+								</div>
+								<div class="test-result-item test-result-danger">
+									<div class="test-result-label">Failed</div>
+									<div class="test-result-value" id="test-failed">0</div>
+								</div>
+								<div class="test-result-item test-result-neutral">
+									<div class="test-result-label">Skipped</div>
+									<div class="test-result-value" id="test-skipped">0</div>
+								</div>
+							</div>
+							<div class="test-pass-rate">
+								<div class="test-pass-rate-label">Pass Rate:</div>
+								<div class="test-pass-rate-value" id="test-pass-rate">0%</div>
+							</div>
+						</div>
+					</div>
+
+					<!-- Test Console -->
+					<div class="card" style="margin-bottom: 1.5rem;">
+						<div class="card-header">
+							<h3 class="card-title">Test Console</h3>
+						</div>
+						<div class="card-body">
+							<pre id="test-console" class="test-console"></pre>
+						</div>
+					</div>
+
+					<!-- Tabs for Checklist and Production Readiness -->
+					<div class="tabs" style="margin-bottom: 1rem;">
+						<button class="tab-btn active" onclick="showTestTab('checklist')">Manual Checklist</button>
+						<button class="tab-btn" onclick="showTestTab('readiness')">Production Readiness</button>
+					</div>
+
+					<!-- Manual Test Checklist Tab -->
+					<div id="test-tab-checklist" class="tab-content">
+						<div class="card">
+							<div class="card-header">
+								<h3 class="card-title">Manual Test Checklist</h3>
+								<div class="card-actions">
+									<button id="export-checklist-btn" class="btn btn-tertiary btn-sm" onclick="TestChecklist.exportChecklistResults()">
+										Export
+									</button>
+									<button id="reset-checklist-btn" class="btn btn-tertiary btn-sm" onclick="TestChecklist.resetChecklist()">
+										Reset
+									</button>
+								</div>
+							</div>
+							<div class="card-body">
+								<!-- Progress Bar -->
+								<div class="checklist-progress">
+									<div class="checklist-progress-label">
+										<span>Progress</span>
+										<span id="checklist-progress-text">0 / 0 (0%)</span>
+									</div>
+									<div class="checklist-progress-bar-container">
+										<div id="checklist-progress-bar" class="checklist-progress-bar" style="width: 0%;" role="progressbar" aria-valuenow="0" aria-valuemin="0" aria-valuemax="100"></div>
+									</div>
+								</div>
+
+								<!-- Checklist Items -->
+								<div id="manual-test-checklist">
+									<!-- Populated by JavaScript -->
+								</div>
+							</div>
+						</div>
+					</div>
+
+					<!-- Production Readiness Tab -->
+					<div id="test-tab-readiness" class="tab-content" style="display: none;">
+						<div class="card">
+							<div class="card-header">
+								<h3 class="card-title">Production Readiness Check</h3>
+								<div class="card-actions">
+									<button class="btn btn-primary btn-sm" onclick="runProductionReadinessCheck()">
+										Run Check
+									</button>
+									<button class="btn btn-tertiary btn-sm" onclick="ProductionReadiness.exportReport()">
+										Export Report
+									</button>
+								</div>
+							</div>
+							<div class="card-body">
+								<p class="form-hint">
+									Comprehensive production deployment readiness validation
+								</p>
+								<div id="production-readiness-results">
+									<p style="text-align: center; color: var(--color-neutral-500); padding: 2rem;">
+										Click "Run Check" to start the production readiness validation
+									</p>
+								</div>
+							</div>
+						</div>
+					</div>
+				</div>
+			</div>
+		</div>
+	</div>
 	<!-- SCRIPTS -->
 	<!-- Bootstrap must load FIRST to create APP namespace -->
 	<script src="bootstrap.js"></script>
@@ -987,6 +1132,14 @@
 	<script src="health-check.js" defer></script>
 	<!-- Bug tracking and reporting system -->
 	<script src="bug-tracker.js" defer></script>
+	<!-- Test Framework & QA Tools -->
+	<script src="test-framework.js" defer></script>
+	<script src="test-suites.js" defer></script>
+	<script src="integration-tests.js" defer></script>
+	<script src="performance-tests.js" defer></script>
+	<script src="test-runner.js" defer></script>
+	<script src="test-checklist.js" defer></script>
+	<script src="production-readiness.js" defer></script>
 
 	<!-- MANUAL TEST SUITES (uncomment for testing, comment out for production) -->
 	<!-- Pricing calculation tests: PricingTests.runAll() -->
@@ -1076,6 +1229,151 @@
 				modal.addEventListener('click', function(e) {
 					if (e.target === modal) {
 						closeWebhookSettings();
+					}
+				});
+			}
+		});
+	</script>
+
+	<!-- Test Runner Functions -->
+	<script>
+		// Open test runner modal
+		function openTestRunner() {
+			var modal = document.getElementById('testRunnerModal');
+			if (modal) {
+				modal.style.display = 'flex';
+				document.body.classList.add('modal-open');
+			}
+		}
+
+		// Close test runner modal
+		function closeTestRunner() {
+			var modal = document.getElementById('testRunnerModal');
+			if (modal) {
+				modal.style.display = 'none';
+				document.body.classList.remove('modal-open');
+			}
+		}
+
+		// Show test tab
+		function showTestTab(tabName) {
+			// Hide all tabs
+			var tabs = document.querySelectorAll('.tab-content');
+			for (var i = 0; i < tabs.length; i++) {
+				tabs[i].style.display = 'none';
+			}
+
+			// Remove active class from all buttons
+			var btns = document.querySelectorAll('#testRunnerModal .tab-btn');
+			for (var i = 0; i < btns.length; i++) {
+				btns[i].classList.remove('active');
+			}
+
+			// Show selected tab
+			var selectedTab = document.getElementById('test-tab-' + tabName);
+			if (selectedTab) {
+				selectedTab.style.display = 'block';
+			}
+
+			// Add active class to clicked button
+			var clickedBtn = event.target;
+			if (clickedBtn) {
+				clickedBtn.classList.add('active');
+			}
+		}
+
+		// Run production readiness check and display results
+		function runProductionReadinessCheck() {
+			if (typeof ProductionReadiness === 'undefined') {
+				alert('Production readiness checker not loaded');
+				return;
+			}
+
+			if (typeof UIComponents !== 'undefined' && UIComponents.showLoading) {
+				UIComponents.showLoading('Running production readiness check...');
+			}
+
+			setTimeout(function() {
+				var results = ProductionReadiness.runCheck();
+
+				if (typeof UIComponents !== 'undefined' && UIComponents.hideLoading) {
+					UIComponents.hideLoading();
+				}
+
+				// Display results
+				displayReadinessResults(results);
+			}, 100);
+		}
+
+		// Display readiness results
+		function displayReadinessResults(results) {
+			var container = document.getElementById('production-readiness-results');
+			if (!container) return;
+
+			var scoreClass = 'not-ready';
+			var scoreLabel = 'NOT READY';
+			if (results.score === 100) {
+				scoreClass = 'ready';
+				scoreLabel = 'PRODUCTION READY ✓';
+			} else if (results.score >= 90) {
+				scoreClass = 'mostly-ready';
+				scoreLabel = 'MOSTLY READY';
+			} else if (results.score >= 75) {
+				scoreClass = 'caution';
+				scoreLabel = 'CAUTION';
+			}
+
+			var html = '';
+			html += '<div class="readiness-score ' + scoreClass + '">' + results.score + '/100</div>';
+			html += '<p style="text-align: center; font-size: 1.25rem; font-weight: 600; margin-bottom: 2rem;">' + scoreLabel + '</p>';
+
+			if (results.passed.length > 0) {
+				html += '<div class="readiness-section">';
+				html += '<h4 class="readiness-section-title">✓ Passed (' + results.passed.length + ')</h4>';
+				html += '<ul class="readiness-list">';
+				for (var i = 0; i < results.passed.length; i++) {
+					html += '<li class="passed">✓ ' + escapeHtml(results.passed[i]) + '</li>';
+				}
+				html += '</ul></div>';
+			}
+
+			if (results.warnings.length > 0) {
+				html += '<div class="readiness-section">';
+				html += '<h4 class="readiness-section-title">⚠️ Warnings (' + results.warnings.length + ')</h4>';
+				html += '<ul class="readiness-list">';
+				for (var i = 0; i < results.warnings.length; i++) {
+					html += '<li class="warning">⚠️ ' + escapeHtml(results.warnings[i]) + '</li>';
+				}
+				html += '</ul></div>';
+			}
+
+			if (results.failed.length > 0) {
+				html += '<div class="readiness-section">';
+				html += '<h4 class="readiness-section-title">✗ Failed (' + results.failed.length + ')</h4>';
+				html += '<ul class="readiness-list">';
+				for (var i = 0; i < results.failed.length; i++) {
+					html += '<li class="failed">✗ ' + escapeHtml(results.failed[i]) + '</li>';
+				}
+				html += '</ul></div>';
+			}
+
+			container.innerHTML = html;
+		}
+
+		// HTML escape helper
+		function escapeHtml(text) {
+			var div = document.createElement('div');
+			div.textContent = text;
+			return div.innerHTML;
+		}
+
+		// Close modal on overlay click
+		document.addEventListener('DOMContentLoaded', function() {
+			var modal = document.getElementById('testRunnerModal');
+			if (modal) {
+				modal.addEventListener('click', function(e) {
+					if (e.target === modal) {
+						closeTestRunner();
 					}
 				});
 			}
