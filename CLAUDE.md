@@ -2393,23 +2393,51 @@ ConditionsModifiers.getModifierList()
 ConditionsModifiers.calculateAdjustedPrice(basePrice, conditions)
 ```
 
-#### pressure-surfaces-extended.js (300 lines) **NEW v1.8.0**
+#### pressure-surfaces-extended.js (630 lines) **UPDATED v1.11.1**
 
-**Purpose:** Extended pressure cleaning surface types
+**Purpose:** Comprehensive pressure cleaning surface types and specialty services
 
 **Key Features:**
-- Additional surface types (sandstone, timber decking, roof tiles)
-- Surface-specific time calculations
-- Difficulty ratings
-- Equipment recommendations
-- Chemical requirements
+- 60+ surface types covering all common Perth cleaning scenarios
+- 11 categories: Driveways, Patios, Decking, Pathways, Walls, Fencing, Roofing, Pool Areas, Glass, Furniture, Specialty
+- Surface-specific time calculations and pricing
+- Difficulty ratings and safety warnings
+- Equipment and chemical recommendations
+- Multiple unit types (m², linear m, per panel, per item, etc.)
+
+**Surface Categories:**
+- **Driveways & Car Parks:** Concrete, exposed aggregate, pavers, asphalt, brick, carport
+- **Patios & Outdoor Living:** Concrete, limestone, tiles, travertine, sandstone, balconies
+- **Decking:** Timber, composite, bamboo
+- **Pathways & Steps:** Concrete, pavers, gravel, outdoor stairs
+- **Walls & Retaining:** Brick, render, Hebel, limestone, sandstone, cladding, retaining walls (concrete, stone, timber)
+- **Fencing:** Timber, Colorbond, brick, vinyl/PVC, screen enclosures, chain link
+- **Roofing & Gutters:** Tile roofs, Colorbond roofs, asbestos survey, gutter cleaning, gutter guard cleaning
+- **Pool Areas:** Pool paving, pool tiles/waterline, tennis courts
+- **Glass Surfaces:** Glass balustrades, pool fencing, outdoor shower screens, skylights
+- **Outdoor Furniture & Features:** Furniture sets, BBQ areas, pergolas, awnings/shade sails
+- **Specialty Services:** Solar panels, wheelie bins, caravans/RVs, boats, trailers, playground equipment, statues/features, shop fronts, signage, graffiti removal, moss/algae treatment, rust removal, concrete sealing
 
 **Key Functions:**
 ```javascript
 PressureSurfacesExtended.getSurface(surfaceId)
-PressureSurfacesExtended.calculateTime(surface, area)
+PressureSurfacesExtended.calculateTime(surfaceId, quantity)
+PressureSurfacesExtended.calculateBasePrice(surfaceId, quantity)
 PressureSurfacesExtended.getAllSurfaces()
+PressureSurfacesExtended.getSurfacesByCategory(category)
+PressureSurfacesExtended.searchSurfaces(query)
+PressureSurfacesExtended.getDifficulty(surfaceId)
+PressureSurfacesExtended.getDifficultyMultiplier(difficulty)
+PressureSurfacesExtended.getSurfaceByCode(code)
 ```
+
+**Wizard Integration:**
+The pressure cleaning wizard now features:
+- Grouped surface selection by category
+- Dynamic quantity labels based on unit type
+- Context-appropriate hints and defaults
+- Support for area (m²), length (linear m), count (per panel/bin/item)
+- 60+ surface options organized in 11 categories
 
 #### quote-migration.js (262 lines) **NEW v1.8.0**
 
