@@ -11,6 +11,165 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Added
 
+#### Testing & Production Polish
+
+- **Manual Test Suites** - Browser-based testing for production readiness
+  - `pricing-tests.js` - Pricing calculation accuracy tests (40+ assertions)
+    * Money.toCents() / fromCents() conversions
+    * Money.sumCents() calculations
+    * Money.multiplyDollars() accuracy
+    * Time conversions (hours ↔ minutes)
+    * GST calculations (10%)
+    * Minimum charge application
+    * Floating-point edge case handling
+  - `storage-tests.js` - LocalStorage operations tests (7 scenarios)
+    * LocalStorage availability
+    * Save/retrieve operations
+    * Storage quota monitoring
+    * Data corruption handling
+    * Large data handling
+    * Concurrent access
+  - `performance-tests.js` - Performance benchmarking (8 benchmarks)
+    * Money/Time calculation speed
+    * LocalStorage read/write speed
+    * DOM manipulation performance
+    * Array operations
+    * JSON stringify/parse
+    * Memory usage tracking (Chrome/Edge)
+  - Test execution: `PricingTests.runAll()`, `StorageTests.runAll()`, `PerformanceTests.runAll()`
+  - CSV export functionality for all test results
+  - ES5 compatible, iOS Safari 12+ friendly
+  - Files: `tests/manual/pricing-tests.js`, `storage-tests.js`, `performance-tests.js`, `README.md`
+
+- **Deployment Helper** - Pre-deployment verification system
+  - Version number validation
+  - Company configuration checks (ABN, email, phone, logo)
+  - Debug code detection (console.log, debugger)
+  - Required modules verification
+  - Required pages existence check
+  - LocalStorage availability check
+  - External libraries check (jsPDF, Chart.js)
+  - Service Worker registration check
+  - PWA manifest validation
+  - Comprehensive deployment checklist export
+  - Usage: `DeploymentHelper.runPreDeploymentChecks()`
+  - Auto-runs when URL includes `?deployment-check`
+  - File: `deployment-helper.js` (~430 lines)
+
+- **Health Check System** - Post-deployment monitoring
+  - LocalStorage health monitoring
+  - Data integrity verification
+  - Storage capacity tracking (warns at 75%, critical at 90%)
+  - Calculation performance benchmarking
+  - Memory usage tracking
+  - Error rate monitoring
+  - Module loading verification
+  - Service Worker status check
+  - Scheduled health checks (default: hourly)
+  - Health report export functionality
+  - Usage: `HealthCheck.runHealthCheck()`, `HealthCheck.scheduleHealthChecks(60)`
+  - Auto-schedules on production environment (non-localhost)
+  - File: `health-check.js` (~380 lines)
+
+- **Bug Tracking System** - Issue reporting and management
+  - Bug report creation with severity levels (critical, high, medium, low)
+  - Status tracking (open, in-progress, resolved, closed, won't-fix)
+  - Device and environment capture (user agent, viewport, app version)
+  - Steps to reproduce recording
+  - Bug notes and updates
+  - Bug statistics and filtering
+  - CSV export for bug reports
+  - Quick report UI via prompts
+  - Usage: `BugTracker.report()`, `BugTracker.quickReport()`, `BugTracker.listAll()`
+  - LocalStorage persistence (key: `tts_bug_reports`)
+  - File: `bug-tracker.js` (~350 lines)
+
+- **Production Readiness Documentation** - Comprehensive testing guides
+  - **iOS Safari Testing Checklist** (`docs/iOS-SAFARI-TESTING-CHECKLIST.md`)
+    * Device setup requirements (iPhone SE, 12/13/14, Pro Max, iPad)
+    * iOS version testing (15.x, 16.x, 17.x)
+    * Display & layout verification (safe areas, notch handling)
+    * Input behavior testing (keyboard types, autocomplete)
+    * Modal & overlay behavior
+    * Scrolling & touch gestures
+    * Performance benchmarks
+    * Offline & PWA functionality
+    * Feature testing (quotes, PDFs, analytics)
+    * Edge cases & error handling
+    * Accessibility (VoiceOver, contrast)
+    * iOS-specific quirks checklist
+    * ~650 lines with detailed checklists
+  - **User Acceptance Testing Script** (`docs/UAT-SCRIPT.md`)
+    * Real-world quote scenarios (residential, commercial, mixed)
+    * Quote management workflows
+    * Analytics review
+    * Mobile experience testing
+    * Error recovery scenarios
+    * PDF quality assessment
+    * Overall assessment forms
+    * Ratings and sign-off sections
+    * ~700 lines, 2-hour test session
+  - **Production Readiness Checklist** (`docs/PRODUCTION-READINESS-CHECKLIST.md`)
+    * Code quality verification (JS, HTML, CSS)
+    * Performance benchmarks
+    * Security checklist
+    * Testing requirements
+    * Browser compatibility
+    * Configuration verification
+    * Assets & resources
+    * PWA & offline features
+    * Documentation completeness
+    * Deployment preparation
+    * Post-deployment monitoring
+    * Pre-launch timeline (7 days, 3 days, 1 day, launch, post-launch)
+    * Success metrics (30-day tracking)
+    * ~850 lines, comprehensive production checklist
+
+### Changed
+
+- **index.html** - Integrated production polish tools
+  - Added `deployment-helper.js` (production checks)
+  - Added `health-check.js` (monitoring)
+  - Added `bug-tracker.js` (issue tracking)
+  - Added commented-out manual test suite includes (easy to enable for testing)
+
+### Technical Details (Testing & Production Polish)
+
+**New Files (11):**
+- `tests/manual/pricing-tests.js` - Pricing tests (~280 lines)
+- `tests/manual/storage-tests.js` - Storage tests (~340 lines)
+- `tests/manual/performance-tests.js` - Performance tests (~420 lines)
+- `tests/manual/README.md` - Test suite documentation (~380 lines)
+- `deployment-helper.js` - Deployment checks (~430 lines)
+- `health-check.js` - Health monitoring (~380 lines)
+- `bug-tracker.js` - Bug tracking (~350 lines)
+- `docs/iOS-SAFARI-TESTING-CHECKLIST.md` - iOS testing guide (~650 lines)
+- `docs/UAT-SCRIPT.md` - User acceptance testing (~700 lines)
+- `docs/PRODUCTION-READINESS-CHECKLIST.md` - Production checklist (~850 lines)
+
+**Modified Files (1):**
+- `index.html` - Added production polish scripts (lines 491-505)
+
+**Total:** ~4,780 lines of testing and production polish infrastructure
+
+**Testing Coverage:**
+- 40+ pricing calculation assertions
+- 7 storage operation test scenarios
+- 8 performance benchmarks
+- 9 deployment verification checks
+- 8 health check monitors
+- Comprehensive iOS Safari checklist (100+ items)
+- Complete UAT workflow (6 major scenarios)
+- Production readiness (150+ verification items)
+
+**Deployment Support:**
+- Pre-deployment verification (9 automated checks)
+- Post-deployment monitoring (8 health checks)
+- Bug tracking and reporting
+- iOS Safari-specific testing
+- User acceptance testing protocol
+- Complete production checklist
+
 #### Business Management Foundations
 
 - **Client Database System** - Centralized client registry
