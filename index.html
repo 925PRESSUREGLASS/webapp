@@ -11,11 +11,11 @@
 	<!-- Content Security Policy -->
 	<meta http-equiv="Content-Security-Policy" content="
 		default-src 'self';
-		script-src 'self' 'unsafe-inline' https://cdn.jsdelivr.net;
+		script-src 'self' 'unsafe-inline' https://cdn.jsdelivr.net https://cdnjs.cloudflare.com;
 		style-src 'self' 'unsafe-inline';
 		img-src 'self' data: blob:;
 		font-src 'self';
-		connect-src 'self';
+		connect-src 'self' https://*.workers.dev https://services.leadconnectorhq.com https://rest.gohighlevel.com;
 		object-src 'none';
 		base-uri 'self';
 		form-action 'self';
@@ -106,6 +106,9 @@
 					</button>
 					<button id="keyboardShortcutsBtn" type="button" class="btn btn-tertiary" title="Keyboard Shortcuts (Press ?)" aria-label="View keyboard shortcuts">
 						⌨️ Help
+					</button>
+					<button id="webhookSettingsBtn" type="button" class="btn btn-tertiary" title="Webhook & Sync Settings" aria-label="Open webhook settings" onclick="openWebhookSettings()">
+						🔄 Sync
 					</button>
 				</div>
 			</div>
@@ -416,6 +419,189 @@
 		</div>
 	</div>
 
+	<!-- WEBHOOK SETTINGS MODAL -->
+	<div id="webhookSettingsModal" class="wizard-overlay" style="display: none;">
+		<div class="wizard-dialog" style="max-width: 800px;">
+			<div class="wizard-header">
+				<h2>Webhook Settings</h2>
+				<button id="webhookSettingsCloseBtn" type="button" class="wizard-close" onclick="closeWebhookSettings()">×</button>
+			</div>
+			<div class="wizard-content">
+				<!-- Sync Status Card -->
+				<div class="card" style="margin-bottom: 1.5rem;">
+					<div class="card-header">
+						<h3 class="card-title">Sync Status</h3>
+					</div>
+					<div class="card-body">
+						<div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); gap: 1rem;">
+							<div>
+								<div style="color: #6b7280; font-size: 0.875rem; margin-bottom: 0.25rem;">Status</div>
+								<div id="sync-status" style="font-weight: 500;">
+									<span class="status-dot status-dot-neutral"></span> Disabled
+								</div>
+							</div>
+							<div>
+								<div style="color: #6b7280; font-size: 0.875rem; margin-bottom: 0.25rem;">Last Sync</div>
+								<div id="last-sync-time" style="font-weight: 500;">Never</div>
+							</div>
+							<div>
+								<div style="color: #6b7280; font-size: 0.875rem; margin-bottom: 0.25rem;">Pending Events</div>
+								<div id="pending-events" style="font-weight: 500;">0</div>
+							</div>
+							<div>
+								<button class="btn btn-primary btn-block" onclick="triggerManualSync()" style="margin-top: 1.25rem;">
+									Sync Now
+								</button>
+							</div>
+						</div>
+					</div>
+				</div>
+
+				<!-- Webhook Configuration -->
+				<div class="card" style="margin-bottom: 1.5rem;">
+					<div class="card-header">
+						<h3 class="card-title">Webhook Configuration</h3>
+					</div>
+					<div class="card-body">
+						<div class="form-group">
+							<label class="form-label" for="webhook-url">Webhook URL</label>
+							<input
+								type="url"
+								class="form-input"
+								id="webhook-url"
+								placeholder="https://your-worker.workers.dev"
+							>
+							<span class="form-hint">Your Cloudflare Worker or backend webhook endpoint</span>
+						</div>
+
+						<div class="form-group">
+							<label class="form-label" for="webhook-secret">Webhook Secret</label>
+							<input
+								type="password"
+								class="form-input"
+								id="webhook-secret"
+								placeholder="Enter webhook secret"
+							>
+							<span class="form-hint">Secret key for webhook signature verification</span>
+						</div>
+
+						<div class="form-group">
+							<label class="form-checkbox-wrapper">
+								<input
+									type="checkbox"
+									class="form-checkbox"
+									id="webhook-enabled"
+									checked
+								>
+								<span>Enable real-time sync</span>
+							</label>
+						</div>
+
+						<div class="form-group">
+							<label class="form-checkbox-wrapper">
+								<input
+									type="checkbox"
+									class="form-checkbox"
+									id="bidirectional-sync"
+									checked
+								>
+								<span>Bidirectional sync (sync changes both ways)</span>
+							</label>
+						</div>
+
+						<div class="form-group">
+							<label class="form-label" for="conflict-resolution">Conflict Resolution</label>
+							<select class="form-select" id="conflict-resolution">
+								<option value="timestamp">Most recent wins (recommended)</option>
+								<option value="ghl-wins">GoHighLevel always wins</option>
+								<option value="local-wins">Local always wins</option>
+								<option value="manual">Manual resolution</option>
+							</select>
+						</div>
+
+						<button class="btn btn-primary" onclick="saveWebhookSettings()">
+							Save Settings
+						</button>
+						<button class="btn btn-secondary" onclick="testWebhookEndpoint()" style="margin-left: 0.5rem;">
+							Test Endpoint
+						</button>
+					</div>
+				</div>
+
+				<!-- Event Subscriptions -->
+				<div class="card" style="margin-bottom: 1.5rem;">
+					<div class="card-header">
+						<h3 class="card-title">Event Subscriptions</h3>
+					</div>
+					<div class="card-body">
+						<p class="form-hint" style="margin-bottom: 1rem;">
+							Select which events should trigger sync updates
+						</p>
+
+						<div class="event-subscriptions-grid" style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 0.75rem;">
+							<label class="form-checkbox-wrapper">
+								<input type="checkbox" class="form-checkbox" value="ContactUpdate" checked>
+								<span>Contact Updates</span>
+							</label>
+
+							<label class="form-checkbox-wrapper">
+								<input type="checkbox" class="form-checkbox" value="OpportunityUpdate" checked>
+								<span>Opportunity Updates</span>
+							</label>
+
+							<label class="form-checkbox-wrapper">
+								<input type="checkbox" class="form-checkbox" value="TaskUpdate" checked>
+								<span>Task Updates</span>
+							</label>
+
+							<label class="form-checkbox-wrapper">
+								<input type="checkbox" class="form-checkbox" value="NoteCreate" checked>
+								<span>New Notes</span>
+							</label>
+
+							<label class="form-checkbox-wrapper">
+								<input type="checkbox" class="form-checkbox" value="InboundMessage">
+								<span>Inbound Messages (SMS/Email)</span>
+							</label>
+
+							<label class="form-checkbox-wrapper">
+								<input type="checkbox" class="form-checkbox" value="AppointmentUpdate">
+								<span>Appointment Updates</span>
+							</label>
+						</div>
+					</div>
+				</div>
+
+				<!-- GHL Registration -->
+				<div class="card">
+					<div class="card-header">
+						<h3 class="card-title">GoHighLevel Registration</h3>
+					</div>
+					<div class="card-body">
+						<p class="form-hint" style="margin-bottom: 1rem;">
+							Register your webhook endpoint with GoHighLevel to start receiving real-time updates.
+						</p>
+
+						<div style="display: flex; gap: 0.5rem;">
+							<button class="btn btn-primary" onclick="registerWebhookWithGHL()">
+								Register Webhook
+							</button>
+							<button class="btn btn-tertiary" onclick="unregisterWebhookFromGHL()">
+								Unregister
+							</button>
+							<button class="btn btn-secondary" onclick="viewEventQueue()">
+								View Queue
+							</button>
+							<button class="btn btn-tertiary" onclick="clearEventQueue()">
+								Clear Queue
+							</button>
+						</div>
+					</div>
+				</div>
+			</div>
+		</div>
+	</div>
+
 	<!-- SCRIPTS -->
 	<!-- Bootstrap must load FIRST to create APP namespace -->
 	<script src="bootstrap.js"></script>
@@ -471,6 +657,15 @@
 	<script src="quote-workflow.js" defer></script>
 	<script src="import-export.js" defer></script>
 	<script src="invoice.js" defer></script>
+	<!-- GoHighLevel Integration & Webhook Modules -->
+	<script src="ghl-client.js" defer></script>
+	<script src="ghl-integration.js" defer></script>
+	<script src="task-manager.js" defer></script>
+	<script src="followup-automation.js" defer></script>
+	<script src="webhook-processor.js" defer></script>
+	<script src="ghl-webhook-setup.js" defer></script>
+	<script src="webhook-settings.js" defer></script>
+	<script src="webhook-debug.js" defer></script>
 	<script src="theme.js" defer></script>
 	<script src="theme-customizer.js" defer></script>
 	<script src="shortcuts.js" defer></script>
@@ -503,6 +698,92 @@
 	<!-- <script src="tests/manual/storage-tests.js" defer></script> -->
 	<!-- Performance benchmarks: PerformanceTests.runAll() -->
 	<!-- <script src="tests/manual/performance-tests.js" defer></script> -->
+
+	<!-- Webhook Settings Modal Functions -->
+	<script>
+		// Open webhook settings modal
+		function openWebhookSettings() {
+			var modal = document.getElementById('webhookSettingsModal');
+			if (modal) {
+				modal.style.display = 'flex';
+				if (window.WebhookSettings && window.WebhookSettings.init) {
+					window.WebhookSettings.init();
+				}
+			}
+		}
+
+		// Close webhook settings modal
+		function closeWebhookSettings() {
+			var modal = document.getElementById('webhookSettingsModal');
+			if (modal) {
+				modal.style.display = 'none';
+				if (window.WebhookSettings && window.WebhookSettings.cleanup) {
+					window.WebhookSettings.cleanup();
+				}
+			}
+		}
+
+		// Trigger manual sync
+		function triggerManualSync() {
+			if (window.WebhookSettings && window.WebhookSettings.triggerManualSync) {
+				window.WebhookSettings.triggerManualSync();
+			}
+		}
+
+		// Save webhook settings
+		function saveWebhookSettings() {
+			if (window.WebhookSettings && window.WebhookSettings.saveSettings) {
+				window.WebhookSettings.saveSettings();
+			}
+		}
+
+		// Test webhook endpoint
+		function testWebhookEndpoint() {
+			if (window.WebhookSettings && window.WebhookSettings.testWebhookEndpoint) {
+				window.WebhookSettings.testWebhookEndpoint();
+			}
+		}
+
+		// Register webhook with GHL
+		function registerWebhookWithGHL() {
+			if (window.WebhookSettings && window.WebhookSettings.registerWebhookWithGHL) {
+				window.WebhookSettings.registerWebhookWithGHL();
+			}
+		}
+
+		// Unregister webhook from GHL
+		function unregisterWebhookFromGHL() {
+			if (window.WebhookSettings && window.WebhookSettings.unregisterWebhookFromGHL) {
+				window.WebhookSettings.unregisterWebhookFromGHL();
+			}
+		}
+
+		// View event queue
+		function viewEventQueue() {
+			if (window.WebhookSettings && window.WebhookSettings.viewEventQueue) {
+				window.WebhookSettings.viewEventQueue();
+			}
+		}
+
+		// Clear event queue
+		function clearEventQueue() {
+			if (window.WebhookSettings && window.WebhookSettings.clearEventQueue) {
+				window.WebhookSettings.clearEventQueue();
+			}
+		}
+
+		// Close modal on overlay click
+		document.addEventListener('DOMContentLoaded', function() {
+			var modal = document.getElementById('webhookSettingsModal');
+			if (modal) {
+				modal.addEventListener('click', function(e) {
+					if (e.target === modal) {
+						closeWebhookSettings();
+					}
+				});
+			}
+		});
+	</script>
 
 	<!-- Service Worker Registration -->
 	<script>
