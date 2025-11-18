@@ -604,11 +604,107 @@
    * Show conflict resolution UI
    */
   function showConflictResolutionUI(localData, remoteData, callback) {
-    // Would show modal with both versions
-    // User selects which to keep
-    // For now, default to remote
-    console.log('[WEBHOOK] Manual conflict resolution not implemented, using remote');
-    callback(localData);
+    console.log('[WEBHOOK] Showing conflict resolution UI');
+
+    // Helper function to escape HTML
+    function escapeHtml(text) {
+      if (!text) return '';
+      var div = document.createElement('div');
+      div.textContent = text;
+      return div.innerHTML;
+    }
+
+    // Helper function to format date
+    function formatDate(dateStr) {
+      if (!dateStr) return 'Unknown';
+      var date = new Date(dateStr);
+      return date.toLocaleString();
+    }
+
+    // Create modal HTML
+    var modalHTML = '<div class="modal-overlay" id="conflict-resolution-overlay">' +
+      '<div class="modal" role="dialog" aria-modal="true" aria-labelledby="conflict-title" style="max-width: 700px;">' +
+      '  <div class="modal-header">' +
+      '    <h3 class="modal-title" id="conflict-title">Data Conflict Detected</h3>' +
+      '  </div>' +
+      '  <div class="modal-body">' +
+      '    <p style="margin-bottom: 16px;">The data has been modified in both locations. Please choose which version to keep:</p>' +
+      '    <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 16px; margin-bottom: 16px;">' +
+      '      <div style="border: 2px solid #e5e7eb; border-radius: 8px; padding: 12px; background: #f9fafb;">' +
+      '        <h4 style="margin: 0 0 12px 0; font-weight: 600;">Local Version</h4>' +
+      '        <div style="font-size: 14px; line-height: 1.6;">' +
+      '          <div style="margin-bottom: 8px;"><strong>Name:</strong> ' + escapeHtml(localData.name) + '</div>' +
+      '          <div style="margin-bottom: 8px;"><strong>Email:</strong> ' + escapeHtml(localData.email) + '</div>' +
+      '          <div style="margin-bottom: 8px;"><strong>Phone:</strong> ' + escapeHtml(localData.phone) + '</div>' +
+      '          <div style="margin-bottom: 8px;"><strong>Address:</strong> ' + escapeHtml(localData.address) + '</div>' +
+      '          <div style="margin-top: 12px; padding-top: 8px; border-top: 1px solid #e5e7eb; font-size: 12px; color: #6b7280;">' +
+      '            Last modified: ' + formatDate(localData.lastModified || localData.lastSync) +
+      '          </div>' +
+      '        </div>' +
+      '        <button type="button" class="btn btn-primary" id="choose-local-version" style="margin-top: 12px; width: 100%;">Keep Local</button>' +
+      '      </div>' +
+      '      <div style="border: 2px solid #e5e7eb; border-radius: 8px; padding: 12px; background: #f9fafb;">' +
+      '        <h4 style="margin: 0 0 12px 0; font-weight: 600;">Remote Version (GHL)</h4>' +
+      '        <div style="font-size: 14px; line-height: 1.6;">' +
+      '          <div style="margin-bottom: 8px;"><strong>Name:</strong> ' + escapeHtml(remoteData.name) + '</div>' +
+      '          <div style="margin-bottom: 8px;"><strong>Email:</strong> ' + escapeHtml(remoteData.email) + '</div>' +
+      '          <div style="margin-bottom: 8px;"><strong>Phone:</strong> ' + escapeHtml(remoteData.phone) + '</div>' +
+      '          <div style="margin-bottom: 8px;"><strong>Address:</strong> ' + escapeHtml(remoteData.address) + '</div>' +
+      '          <div style="margin-top: 12px; padding-top: 8px; border-top: 1px solid #e5e7eb; font-size: 12px; color: #6b7280;">' +
+      '            Last modified: ' + formatDate(remoteData.updatedAt || remoteData.dateUpdated) +
+      '          </div>' +
+      '        </div>' +
+      '        <button type="button" class="btn btn-primary" id="choose-remote-version" style="margin-top: 12px; width: 100%;">Keep Remote</button>' +
+      '      </div>' +
+      '    </div>' +
+      '    <div style="padding: 12px; background: #fef3c7; border: 1px solid #fbbf24; border-radius: 6px; font-size: 14px;">' +
+      '      <strong>Note:</strong> The version you choose will be saved and synchronized. The other version will be discarded.' +
+      '    </div>' +
+      '  </div>' +
+      '  <div class="modal-footer">' +
+      '    <button type="button" class="btn btn-secondary" id="cancel-conflict-resolution">Cancel</button>' +
+      '  </div>' +
+      '</div>' +
+      '</div>';
+
+    // Add to body
+    var modalContainer = document.createElement('div');
+    modalContainer.innerHTML = modalHTML;
+    document.body.appendChild(modalContainer.firstChild);
+
+    // Prevent background scroll
+    document.body.classList.add('modal-open');
+
+    // Store callback reference
+    var resolveCallback = callback;
+
+    // Set up event listeners
+    document.getElementById('choose-local-version').addEventListener('click', function() {
+      console.log('[WEBHOOK] User chose local version');
+      closeConflictModal();
+      resolveCallback(null); // null means keep local (no update)
+    });
+
+    document.getElementById('choose-remote-version').addEventListener('click', function() {
+      console.log('[WEBHOOK] User chose remote version');
+      closeConflictModal();
+      resolveCallback(localData); // Return localData to be updated with remote
+    });
+
+    document.getElementById('cancel-conflict-resolution').addEventListener('click', function() {
+      console.log('[WEBHOOK] User cancelled conflict resolution, defaulting to local');
+      closeConflictModal();
+      resolveCallback(null); // Default to local on cancel
+    });
+
+    // Helper function to close modal
+    function closeConflictModal() {
+      var overlay = document.getElementById('conflict-resolution-overlay');
+      if (overlay) {
+        overlay.remove();
+      }
+      document.body.classList.remove('modal-open');
+    }
   }
 
   /**
