@@ -50,7 +50,7 @@
   // Load invoices from storage (supports encrypted and unencrypted modes)
   function loadInvoices() {
     try {
-      if (ENABLE_ENCRYPTION && window.Security && window.Security.SecureStorage) {
+      if (settings.enableEncryption && window.Security && window.Security.SecureStorage) {
         // Try to load encrypted data first
         invoices = window.Security.SecureStorage.getItem(INVOICES_KEY, null);
 
@@ -87,7 +87,7 @@
   // Save invoices to storage (supports encrypted and unencrypted modes)
   function saveInvoices() {
     try {
-      if (ENABLE_ENCRYPTION && window.Security && window.Security.SecureStorage) {
+      if (settings.enableEncryption && window.Security && window.Security.SecureStorage) {
         window.Security.SecureStorage.setItem(INVOICES_KEY, invoices);
       } else {
         // Save unencrypted (default mode)
@@ -147,7 +147,7 @@
   // Save settings (supports encrypted and unencrypted modes)
   function saveSettings() {
     try {
-      if (ENABLE_ENCRYPTION && window.Security && window.Security.SecureStorage) {
+      if (settings.enableEncryption && window.Security && window.Security.SecureStorage) {
         window.Security.SecureStorage.setItem(INVOICE_SETTINGS_KEY, settings);
       } else {
         // Save unencrypted (default mode)
@@ -882,6 +882,7 @@
       settings.bsb = bsbValue;
       settings.accountNumber = document.getElementById('accountNumber').value;
       settings.abn = abnValue;
+      settings.enableEncryption = document.getElementById('enableEncryption').checked;
 
       // Get encryption setting
       var previousEncryptionSetting = settings.enableEncryption;
