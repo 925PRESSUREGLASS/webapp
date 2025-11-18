@@ -133,11 +133,17 @@
   function applyCustomColors(colors) {
     var root = document.documentElement;
 
-    // Apply each color as a CSS variable with !important to override base theme
+    console.log('[THEME-CUSTOMIZER] Applying custom colors:', colors);
+
+    // Apply each color as a CSS variable
+    // We use inline styles on documentElement which have higher specificity than :root
     for (var key in colors) {
       if (colors.hasOwnProperty(key)) {
         var cssVarName = '--' + key.replace(/([A-Z])/g, '-$1').toLowerCase();
+        // Set property with important flag to override base theme
         root.style.setProperty(cssVarName, colors[key], 'important');
+
+        console.log('[THEME-CUSTOMIZER] Set', cssVarName, '=', colors[key]);
       }
     }
   }
@@ -164,27 +170,23 @@
   function applyCustomTheme(theme) {
     if (!theme) return;
 
-    // Apply base theme first
-    if (window.ThemeManager && theme.baseTheme) {
-      window.ThemeManager.set(theme.baseTheme);
+    // IMPORTANT: Do NOT call ThemeManager.set() here as it creates a circular reference
+    // The base theme is already set by theme.js before calling this function
+
+    // Apply custom colors immediately
+    if (theme.colors) {
+      applyCustomColors(theme.colors);
     }
 
-    // Apply custom colors after a short delay to ensure base theme is loaded
-    setTimeout(function() {
-      if (theme.colors) {
-        applyCustomColors(theme.colors);
-      }
+    // Apply custom logo
+    if (theme.logo) {
+      applyCustomLogo(theme.logo);
+    }
 
-      // Apply custom logo
-      if (theme.logo) {
-        applyCustomLogo(theme.logo);
-      }
+    // Mark as custom theme
+    document.documentElement.setAttribute('data-custom-theme', 'true');
 
-      // Mark as custom theme
-      document.documentElement.setAttribute('data-custom-theme', 'true');
-
-      console.log('[THEME-CUSTOMIZER] Custom theme applied:', theme);
-    }, 100);
+    console.log('[THEME-CUSTOMIZER] Custom theme applied:', theme);
   }
 
   // Reset to default theme
@@ -382,8 +384,13 @@
         // Repopulate grid
         populateColorGrid(currentTheme.colors);
 
-        // Apply preview
+        // Apply base theme and then custom colors for preview
         if (isPreviewMode) {
+          // Set base theme attribute
+          document.documentElement.setAttribute('data-theme', newBase);
+          document.body.setAttribute('data-theme', newBase);
+
+          // Apply custom colors on top
           applyCustomTheme(currentTheme);
         }
       };
