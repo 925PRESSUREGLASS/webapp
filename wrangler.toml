@@ -1,0 +1,44 @@
+# Cloudflare Worker Configuration for TicTacStick Webhooks
+# Deploy with: wrangler deploy
+
+name = "tictacstick-webhooks"
+main = "cloudflare/worker.js"
+compatibility_date = "2025-01-01"
+
+# Worker will be deployed to tictacstick-webhooks.your-subdomain.workers.dev
+# Or configure custom domain: webhooks.tictacstick.com.au
+
+# Production environment
+[env.production]
+name = "tictacstick-webhooks"
+# Add custom route when you have a domain:
+# route = "webhooks.tictacstick.com.au/*"
+
+# Development environment
+[env.development]
+name = "tictacstick-webhooks-dev"
+
+# Environment variables (set via wrangler secret)
+# WEBHOOK_SECRET - Your GoHighLevel webhook secret
+# ALLOWED_ORIGINS - Comma-separated list of allowed origins
+#
+# To set secrets:
+# wrangler secret put WEBHOOK_SECRET
+# wrangler secret put ALLOWED_ORIGINS
+
+# Optional: KV namespace for event storage
+# Uncomment and create KV namespace for persistent event storage
+# kv_namespaces = [
+#   { binding = "WEBHOOK_EVENTS", id = "your-kv-namespace-id", preview_id = "preview-kv-namespace-id" }
+# ]
+
+# Limits
+[limits]
+cpu_ms = 50  # 50ms execution time (free tier: 10ms-50ms)
+
+# Build configuration
+[build]
+command = ""  # No build step needed
+
+# Account info (get from dashboard)
+# account_id = "your-cloudflare-account-id"

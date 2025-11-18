@@ -3,16 +3,45 @@
 // iOS Safari compatible - no ES6+ features
 // SECURITY HARDENED - Version 1.3
 
-var CACHE_VERSION = '1.3';
+var CACHE_VERSION = '1.8.0';
 var CACHE_NAME = 'quote-engine-v' + CACHE_VERSION;
 
 // SECURITY: Explicit whitelist of allowed files to cache
 // Only cache files from our own origin - prevents cache poisoning
 var urlsToCache = [
+  // HTML
   '/index.html',
+
+  // Core CSS
   '/app.css',
-  '/app.js',
+  '/css/design-system.css',
+  '/toast.css',
+  '/loading.css',
+  '/validation.css',
+  '/theme-light.css',
+  '/mobile.css',
+  '/print.css',
+
+  // Feature CSS
+  '/photo-modal.css',
+  '/photos.css',
+  '/client-database.css',
+  '/quote-workflow.css',
+  '/import-export.css',
+  '/invoice.css',
+  '/invoice-print.css',
+  '/letterhead.css',
+  '/photo-print-layout.css',
+  '/theme-customizer.css',
+  '/analytics.css',
+  '/css/analytics-dashboard.css',
+  '/css/tasks.css',
+  '/shortcuts.css',
+  '/quote-pdf.css',
+
+  // Core JS
   '/bootstrap.js',
+  '/app.js',
   '/calc.js',
   '/data.js',
   '/storage.js',
@@ -20,49 +49,91 @@ var urlsToCache = [
   '/wizard.js',
   '/security.js',
   '/validation.js',
-  '/validation.css',
-  '/toast.css',
-  '/loading.css',
-  '/loading.js',
-  '/photo-modal.css',
-  '/client-database.css',
-  '/client-database.js',
-  '/quote-workflow.css',
-  '/quote-workflow.js',
-  '/import-export.css',
-  '/import-export.js',
-  '/invoice.css',
-  '/invoice.js',
-  '/theme-light.css',
-  '/theme.js',
-  '/theme-customizer.css',
-  '/theme-customizer.js',
-  '/analytics.css',
-  '/analytics.js',
-  '/charts.js',
-  '/photos.css',
-  '/photos.js',
-  '/photo-modal.js',
-  '/shortcuts.js',
-  '/error-handler.js',
-  '/export.js',
-  '/templates.js',
-  '/accessibility.js',
+  '/ui-components.js',
   '/debug.js',
+  '/error-handler.js',
+  '/accessibility.js',
+  '/loading.js',
+
+  // Extended Data
   '/window-types-extended.js',
   '/conditions-modifiers.js',
   '/pressure-surfaces-extended.js',
   '/quote-migration.js',
+
+  // Feature JS
+  '/client-database.js',
+  '/quote-workflow.js',
+  '/import-export.js',
+  '/invoice.js',
+  '/theme.js',
+  '/theme-customizer.js',
+  '/analytics.js',
+  '/analytics-engine.js',
+  '/analytics-config.js',
+  '/analytics-dashboard.js',
+  '/charts.js',
+  '/photos.js',
+  '/photo-modal.js',
+  '/image-compression.js',
+  '/shortcuts.js',
+  '/export.js',
+  '/templates.js',
+
+  // Mobile & Business Intelligence
   '/quick-add-ui.js',
   '/custom-window-calculator.js',
   '/travel-calculator.js',
   '/profitability-analyzer.js',
   '/job-presets.js',
-  '/print.css',
+
+  // PDF Generation
+  '/pdf-config.js',
+  '/pdf-components.js',
+  '/quote-pdf.js',
+  '/quote-pdf-ui.js',
+
+  // Task Management
+  '/task-manager.js',
+  '/task-dashboard-ui.js',
+
+  // GoHighLevel Integration
+  '/ghl-webhook-setup.js',
+  '/ghl-task-sync.js',
+  '/webhook-processor.js',
+  '/webhook-settings.js',
+  '/webhook-debug.js',
+  '/followup-automation.js',
+  '/followup-config.js',
+
+  // Production Tools
+  '/deployment-helper.js',
+  '/health-check.js',
+  '/bug-tracker.js',
+  '/backup-manager.js',
+
+  // Lazy Loading
+  '/lazy-loader.js',
+  '/lazy-loader-init.js',
+
+  // Performance
+  '/performance-monitor.js',
+  '/performance-utils.js',
+
+  // PWA
   '/manifest.json',
   '/favicon.png',
   '/icon.svg',
-  '/icon-192.png'
+  '/icon-72.png',
+  '/icon-96.png',
+  '/icon-128.png',
+  '/icon-144.png',
+  '/icon-152.png',
+  '/icon-192.png',
+  '/icon-384.png',
+  '/icon-512.png',
+  '/icon-192-maskable.png',
+  '/icon-512-maskable.png'
 ];
 
 // SECURITY: Allowed path patterns for dynamic caching
