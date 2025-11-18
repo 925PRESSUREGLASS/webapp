@@ -1294,6 +1294,309 @@ var residential = JobPresets.getPresetsByCategory('residential');
 var commercial = JobPresets.getPresetsByCategory('commercial');
 ```
 
+### How to Set Up GoHighLevel CRM Integration
+
+**NEW v2.0.0** - Complete CRM integration for lead-to-cash workflow
+
+#### 1. Configure GHL App (One-Time Setup)
+
+1. **Create GHL App:**
+   - Log in to GoHighLevel
+   - Go to Settings → Integrations → Custom Apps
+   - Click "Create App"
+   - Set Redirect URI: `https://yourapp.com/ghl-oauth-callback.html`
+   - Copy Client ID and Client Secret
+
+2. **Get Location ID:**
+   - In GHL, go to Settings → Business Profile
+   - Copy your Location ID
+
+3. **Create Sales Pipeline (Optional):**
+   - Go to Opportunities → Pipelines
+   - Create pipeline "TicTacStick Sales"
+   - Add stages: Quote, Follow Up, Won, Lost
+   - Copy Pipeline ID and Stage IDs
+
+#### 2. Configure TicTacStick
+
+1. **Open GHL Settings:**
+```javascript
+// Click GHL button in header
+document.getElementById('ghlSettingsBtn').click();
+
+// Or programmatically
+window.GHLUI.openSettings();
+```
+
+2. **Enter Credentials (Connection Tab):**
+   - Client ID: `[Your GHL App Client ID]`
+   - Client Secret: `[Your GHL App Client Secret]`
+   - Location ID: `[Your GHL Location ID]`
+   - Pipeline ID: `[Your Pipeline ID]` (optional)
+   - Click "Save Configuration"
+
+3. **Authenticate with GHL:**
+   - Click "Authenticate with GHL"
+   - OAuth popup opens
+   - Select location and authorize
+   - Popup closes automatically
+   - You're now connected!
+
+4. **Test Connection:**
+   - Click "Test Connection"
+   - Should show "Connection successful!"
+
+#### 3. Configure Sync Settings (Settings Tab)
+
+```javascript
+// Or configure programmatically
+GHL_CONFIG.syncSettings.autoSync = true;
+GHL_CONFIG.syncSettings.syncOnQuoteCreate = true;
+GHL_CONFIG.syncSettings.syncOnQuoteUpdate = true;
+GHL_CONFIG.syncSettings.offlineQueue = true;
+GHL_CONFIG.syncSettings.syncInterval = 300000; // 5 minutes
+
+// Enable features
+GHL_CONFIG.features.contactSync = true;
+GHL_CONFIG.features.opportunitySync = true;
+GHL_CONFIG.features.taskSync = true;
+
+window.GHLConfig.save();
+```
+
+#### 4. Initial Data Sync
+
+1. **Sync Clients (Sync Tab):**
+```javascript
+// Manual sync via UI
+document.getElementById('ghlSyncClientsBtn').click();
+
+// Or programmatically
+window.GHLContactSync.syncAllClients(function(error, result) {
+  if (!error) {
+    console.log('Synced:', result.synced, 'of', result.total);
+  }
+});
+```
+
+2. **Sync Quotes:**
+```javascript
+// Manual sync via UI
+document.getElementById('ghlSyncQuotesBtn').click();
+
+// Or programmatically
+window.GHLOpportunitySync.syncAllQuotes(function(error, result) {
+  if (!error) {
+    console.log('Synced:', result.synced, 'of', result.total);
+  }
+});
+```
+
+#### 5. Usage - Automatic Sync
+
+Once configured, TicTacStick automatically syncs:
+
+**When creating a client:**
+```javascript
+// Client is automatically synced to GHL
+var client = {
+  name: 'John Smith',
+  email: 'john@example.com',
+  phone: '0400123456',
+  location: 'Perth, WA',
+  clientType: 'residential'
+};
+
+window.ClientDatabase.addClient(client);
+
+// Behind the scenes (if autoSync enabled):
+// - Creates GHL contact
+// - Stores GHL contact ID with client
+// - Adds tags based on client type
+```
+
+**When creating a quote:**
+```javascript
+// Quote is automatically synced to GHL
+var quote = window.APP.getState();
+
+// Behind the scenes (if syncOnQuoteCreate enabled):
+// - Ensures client exists in GHL
+// - Creates GHL opportunity
+// - Links to contact
+// - Sets pipeline stage
+// - Adds quote details as notes
+```
+
+**When updating quote status:**
+```javascript
+// Update quote status (manual or via quote-workflow.js)
+quote.status = 'accepted';
+
+// Behind the scenes (if syncOnQuoteUpdate enabled):
+// - Updates GHL opportunity status to "won"
+// - Moves to "Won" pipeline stage
+// - Updates monetary value if changed
+```
+
+#### 6. Manual Sync Operations
+
+**Sync individual client:**
+```javascript
+window.GHLContactSync.syncClient(client, function(error, contact) {
+  if (!error) {
+    console.log('Client synced! GHL ID:', contact.id);
+  }
+});
+```
+
+**Sync individual quote:**
+```javascript
+window.GHLOpportunitySync.syncQuote(quote, client, function(error, opportunity) {
+  if (!error) {
+    console.log('Quote synced! GHL ID:', opportunity.id);
+  }
+});
+```
+
+**Add note to contact:**
+```javascript
+var noteText = 'Called client about quote. Interested but needs to check budget.';
+
+window.GHLContactSync.addNote(client, noteText, function(error) {
+  if (!error) {
+    console.log('Note added!');
+  }
+});
+```
+
+**Create follow-up task:**
+```javascript
+var taskDetails = {
+  title: 'Follow up on quote #1234',
+  body: 'Check if client has made decision',
+  dueDate: '2025-11-25T10:00:00Z'
+};
+
+window.GHLOpportunitySync.addFollowUpTask(quote, client, taskDetails, function(error, task) {
+  if (!error) {
+    console.log('Task created!');
+  }
+});
+```
+
+#### 7. Offline Support
+
+GHL integration works offline with request queuing:
+
+1. **When offline:**
+   - Sync requests are queued in localStorage
+   - Continues to work normally
+   - Queue icon shows pending requests
+
+2. **When back online:**
+   - Automatically processes queued requests
+   - Retries failed requests up to 3 times
+   - Shows sync progress
+
+3. **Manual queue processing:**
+```javascript
+// Check queue
+var pending = window.GHLClient.getQueueLength();
+console.log(pending, 'requests pending');
+
+// Process queue
+window.GHLClient.processQueue(function(error, result) {
+  console.log('Processed:', result.processed);
+  console.log('Failed:', result.failed);
+});
+
+// Clear queue (if needed)
+window.GHLClient.clearQueue();
+```
+
+#### 8. Custom Field Mapping
+
+Configure custom fields in GHL to match TicTacStick data:
+
+```javascript
+// Add custom fields to GHL_CONFIG
+GHL_CONFIG.customFields = {
+  quoteNumber: 'quote_number',
+  serviceTypes: 'service_types',
+  primaryService: 'primary_service',
+  quoteDate: 'quote_date',
+  quoteTotal: 'quote_total',
+  clientType: 'client_type',
+  lastJobDate: 'last_job_date'
+};
+
+window.GHLConfig.save();
+```
+
+Create matching custom fields in GHL:
+- Go to Settings → Custom Fields
+- Add fields with the same IDs
+- Field types: Text for all except `quoteTotal` (Number)
+
+#### 9. Troubleshooting
+
+**Connection Issues:**
+```javascript
+// Check configuration
+console.log(window.GHLConfig.isConfigured());  // Should be true
+console.log(window.GHLConfig.isAuthenticated()); // Should be true
+
+// Check token validity
+console.log(window.GHLClient.isTokenValid()); // Should be true
+
+// Refresh token manually
+window.GHLClient.refreshAccessToken(function(error) {
+  if (!error) console.log('Token refreshed!');
+});
+```
+
+**Sync Errors:**
+- Check browser console for detailed error messages
+- Verify GHL API credentials are correct
+- Ensure Location ID is accurate
+- Check rate limit status (120 requests/minute)
+
+**Queue Issues:**
+```javascript
+// View queue
+var queue = localStorage.getItem('tts_ghl_queue');
+console.log(JSON.parse(queue));
+
+// Clear stuck queue
+window.GHLClient.clearQueue();
+```
+
+**Reset Integration:**
+```javascript
+// Complete reset (danger!)
+window.GHLConfig.clear();
+window.GHLClient.clearQueue();
+location.reload();
+```
+
+#### 10. Best Practices
+
+✅ **DO:**
+- Test connection after initial setup
+- Sync existing data before going live
+- Monitor sync status regularly
+- Keep client data up-to-date
+- Use meaningful quote titles
+- Add notes for important client interactions
+
+❌ **DON'T:**
+- Share API credentials
+- Disable offline queue (unless necessary)
+- Set sync interval too low (< 5 minutes)
+- Delete contacts in GHL manually (breaks linking)
+- Modify GHL IDs stored in TicTacStick
+
 ### How to Debug Issues
 
 1. **Enable debug mode:**
@@ -1962,6 +2265,205 @@ JobPresets.getPresetsByCategory(category)
 JobPresets.exportPresets()
 JobPresets.importPresets(data)
 ```
+
+---
+
+### Integration Modules
+
+#### ghl-config.js (800+ lines) **NEW v2.0.0**
+
+**Purpose:** GoHighLevel CRM integration configuration
+
+**Key Features:**
+- OAuth 2.0 authentication configuration
+- API credentials management
+- Feature flags and sync settings
+- Pipeline and custom field mappings
+- Persistent configuration storage
+
+**Key Functions:**
+```javascript
+GHLConfig.save()                     // Save configuration to localStorage
+GHLConfig.load()                     // Load configuration from localStorage
+GHLConfig.clear()                    // Clear all configuration
+GHLConfig.isConfigured()             // Check if basic config exists
+GHLConfig.isAuthenticated()          // Check if authenticated
+GHLConfig.getConfig(key)             // Get config value by path
+GHLConfig.setConfig(key, value)      // Set config value by path
+GHLConfig.updateLastSync(type)       // Update sync timestamp
+```
+
+**Configuration Structure:**
+```javascript
+GHL_CONFIG = {
+  clientId: '',
+  clientSecret: '',
+  locationId: '',
+  accessToken: null,
+  refreshToken: null,
+  pipeline: { id: '', stages: {} },
+  features: { contactSync: true, opportunitySync: true },
+  syncSettings: { autoSync: true, syncInterval: 300000 }
+}
+```
+
+#### ghl-client.js (1,200+ lines) **NEW v2.0.0**
+
+**Purpose:** GoHighLevel API client with offline support
+
+**Key Features:**
+- RESTful API communication
+- Token refresh automation
+- Rate limiting (120 requests/minute)
+- Offline request queuing
+- Automatic retry logic
+- Network status monitoring
+
+**Key Functions:**
+```javascript
+GHLClient.makeRequest(method, endpoint, data, callback)
+GHLClient.refreshAccessToken(callback)
+GHLClient.processQueue(callback)
+GHLClient.clearQueue()
+GHLClient.getQueueLength()
+GHLClient.isConfigured()
+GHLClient.isTokenValid()
+```
+
+**API Endpoints:**
+- Contacts: create, update, get, delete, search
+- Opportunities: create, update, get, delete, status
+- Pipelines: list, get
+- Tasks: create, update, get, delete
+- Notes: create, list, update, delete
+- Custom Fields: list, create, update, delete
+
+#### ghl-contact-sync.js (900+ lines) **NEW v2.0.0**
+
+**Purpose:** Sync TicTacStick clients with GHL contacts
+
+**Key Features:**
+- Bidirectional client/contact mapping
+- Automatic duplicate detection
+- Custom field mapping
+- Tag management
+- Bulk sync operations
+- Note attachment
+
+**Key Functions:**
+```javascript
+GHLContactSync.syncClient(client, callback)
+GHLContactSync.syncAllClients(callback)
+GHLContactSync.createContact(client, callback)
+GHLContactSync.updateContact(client, callback)
+GHLContactSync.getContact(ghlId, callback)
+GHLContactSync.searchContacts(query, callback)
+GHLContactSync.deleteContact(client, callback)
+GHLContactSync.addNote(client, noteText, callback)
+```
+
+**Data Mapping:**
+- TicTacStick `name` → GHL `firstName` + `lastName`
+- TicTacStick `email` → GHL `email`
+- TicTacStick `phone` → GHL `phone`
+- TicTacStick `location` → GHL `address1`, `city`, `state`
+- TicTacStick `clientType` → GHL custom field + tags
+- Service history → GHL tags (window-cleaning, pressure-washing)
+
+#### ghl-opportunity-sync.js (1,100+ lines) **NEW v2.0.0**
+
+**Purpose:** Sync TicTacStick quotes with GHL opportunities
+
+**Key Features:**
+- Quote to opportunity conversion
+- Pipeline stage mapping
+- Monetary value sync
+- Status tracking
+- Automatic contact linking
+- Quote description as notes
+- Follow-up task creation
+
+**Key Functions:**
+```javascript
+GHLOpportunitySync.syncQuote(quote, client, callback)
+GHLOpportunitySync.syncAllQuotes(callback)
+GHLOpportunitySync.createOpportunity(quote, client, callback)
+GHLOpportunitySync.updateOpportunity(quote, client, callback)
+GHLOpportunitySync.updateOpportunityStatus(quote, status, callback)
+GHLOpportunitySync.deleteOpportunity(quote, callback)
+GHLOpportunitySync.addFollowUpTask(quote, client, taskDetails, callback)
+```
+
+**Status Mapping:**
+- `draft` → GHL pipeline stage "Quote"
+- `sent` → GHL pipeline stage "Quote"
+- `accepted` → GHL pipeline stage "Won"
+- `declined` → GHL pipeline stage "Lost"
+- `follow-up` → GHL pipeline stage "Follow Up"
+
+**Custom Fields:**
+- Quote number
+- Service types (Window Cleaning, Pressure Washing)
+- Primary service
+- Quote date
+- Quote total
+
+#### ghl-ui.js (1,400+ lines) **NEW v2.0.0**
+
+**Purpose:** User interface for GHL integration management
+
+**Key Features:**
+- Tabbed settings modal (Connection, Sync, Settings, Status)
+- OAuth authentication flow
+- Manual sync controls
+- Connection testing
+- Queue management
+- Real-time status updates
+- Feature flag toggles
+
+**Key Functions:**
+```javascript
+GHLUI.openSettings()              // Open GHL settings modal
+GHLUI.closeSettings()             // Close GHL settings modal
+```
+
+**UI Components:**
+- Connection configuration form
+- Authentication button
+- Sync controls (clients, quotes, queue)
+- Settings checkboxes (auto-sync, offline queue)
+- Status dashboard
+- Activity log
+- Danger zone (clear queue, disconnect)
+
+**Usage:**
+```javascript
+// Open GHL settings
+window.GHLUI.openSettings();
+
+// Or click GHL button in header
+document.getElementById('ghlSettingsBtn').click();
+```
+
+#### ghl-oauth-callback.html **NEW v2.0.0**
+
+**Purpose:** OAuth 2.0 callback handler for GHL authentication
+
+**Key Features:**
+- Processes OAuth authorization code
+- Exchanges code for access/refresh tokens
+- Stores tokens in parent window
+- Auto-closes after success
+- Error handling with user feedback
+
+**Flow:**
+1. User clicks "Authenticate with GHL"
+2. Popup opens to GHL OAuth page
+3. User authorizes app
+4. Redirects to callback page
+5. Callback exchanges code for tokens
+6. Tokens stored in main app
+7. Popup closes automatically
 
 ---
 

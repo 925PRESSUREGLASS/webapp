@@ -1,0 +1,166 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>GoHighLevel OAuth Callback</title>
+  <style>
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      min-height: 100vh;
+      margin: 0;
+      background: #f5f5f5;
+    }
+    .container {
+      background: white;
+      padding: 2rem;
+      border-radius: 8px;
+      box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+      max-width: 400px;
+      text-align: center;
+    }
+    .loading {
+      color: #2563eb;
+    }
+    .success {
+      color: #10b981;
+    }
+    .error {
+      color: #ef4444;
+    }
+    .spinner {
+      border: 3px solid #f3f3f3;
+      border-top: 3px solid #2563eb;
+      border-radius: 50%;
+      width: 40px;
+      height: 40px;
+      animation: spin 1s linear infinite;
+      margin: 1rem auto;
+    }
+    @keyframes spin {
+      0% { transform: rotate(0deg); }
+      100% { transform: rotate(360deg); }
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <div id="status">
+      <div class="spinner"></div>
+      <p class="loading">Processing authentication...</p>
+    </div>
+  </div>
+
+  <script>
+  (function() {
+    'use strict';
+
+    /**
+     * Extract OAuth code from URL
+     */
+    function getAuthCode() {
+      var params = new URLSearchParams(window.location.search);
+      return params.get('code');
+    }
+
+    /**
+     * Exchange auth code for tokens
+     */
+    function exchangeCodeForTokens(code) {
+      // Get config from opener window
+      var config = null;
+      try {
+        if (window.opener && window.opener.GHL_CONFIG) {
+          config = window.opener.GHL_CONFIG;
+        }
+      } catch (e) {
+        console.error('Cannot access opener config:', e);
+      }
+
+      if (!config) {
+        showError('Configuration not found. Please try again.');
+        return;
+      }
+
+      // Exchange code for token
+      var xhr = new XMLHttpRequest();
+      xhr.open('POST', 'https://services.leadconnectorhq.com/oauth/token', true);
+      xhr.setRequestHeader('Content-Type', 'application/x-www-form-urlencoded');
+
+      xhr.onload = function() {
+        if (xhr.status === 200) {
+          try {
+            var response = JSON.parse(xhr.responseText);
+
+            // Store tokens in opener window
+            if (window.opener && window.opener.GHL_CONFIG) {
+              window.opener.GHL_CONFIG.accessToken = response.access_token;
+              window.opener.GHL_CONFIG.refreshToken = response.refresh_token;
+              window.opener.GHL_CONFIG.tokenExpiry = new Date(Date.now() + (response.expires_in * 1000)).toISOString();
+
+              // Save config
+              if (window.opener.GHLConfig && window.opener.GHLConfig.save) {
+                window.opener.GHLConfig.save();
+              }
+
+              showSuccess('Authentication successful! You can close this window.');
+
+              // Close window after 2 seconds
+              setTimeout(function() {
+                window.close();
+              }, 2000);
+            } else {
+              showError('Cannot save tokens. Please try again.');
+            }
+          } catch (e) {
+            showError('Failed to parse response: ' + e.message);
+          }
+        } else {
+          showError('Authentication failed: ' + xhr.status);
+        }
+      };
+
+      xhr.onerror = function() {
+        showError('Network error during authentication');
+      };
+
+      var params = 'grant_type=authorization_code' +
+        '&client_id=' + encodeURIComponent(config.clientId) +
+        '&client_secret=' + encodeURIComponent(config.clientSecret) +
+        '&code=' + encodeURIComponent(code) +
+        '&redirect_uri=' + encodeURIComponent(config.redirectUri);
+
+      xhr.send(params);
+    }
+
+    /**
+     * Show success message
+     */
+    function showSuccess(message) {
+      document.getElementById('status').innerHTML =
+        '<p class="success">✓ ' + message + '</p>';
+    }
+
+    /**
+     * Show error message
+     */
+    function showError(message) {
+      document.getElementById('status').innerHTML =
+        '<p class="error">✗ ' + message + '</p>';
+    }
+
+    // Main execution
+    var code = getAuthCode();
+
+    if (code) {
+      exchangeCodeForTokens(code);
+    } else {
+      showError('No authorization code found. Authentication failed.');
+    }
+  })();
+  </script>
+</body>
+</html>
