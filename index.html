@@ -53,6 +53,7 @@
 	<link rel="stylesheet" href="theme-customizer.css" />
 	<link rel="stylesheet" href="analytics.css" />
 	<link rel="stylesheet" href="photos.css" />
+	<link rel="stylesheet" href="css/tasks.css" />
 	<link rel="stylesheet" href="mobile.css" />
 	<link rel="stylesheet" href="quote-pdf.css" />
 	<link rel="stylesheet" href="print.css" media="print" />
@@ -403,6 +404,95 @@
 		</main>
 	</div> <!-- /.app -->
 
+	<!-- TASK DASHBOARD PAGE (Hidden by default) -->
+	<div class="page" id="page-tasks" style="display: none;">
+		<div class="container">
+			<!-- Header -->
+			<div class="page-header">
+				<h1>Tasks & Follow-ups</h1>
+				<button class="btn btn-primary btn-sm" onclick="showNewTaskModal()" aria-label="Create new task">
+					+ New Task
+				</button>
+			</div>
+
+			<!-- Task Summary Cards -->
+			<div class="task-summary-grid">
+				<div class="card card-clickable" onclick="filterTasks('today')" role="button" tabindex="0" aria-label="View tasks due today">
+					<div class="card-body">
+						<div class="task-summary-label">Due Today</div>
+						<div class="task-summary-value" id="tasks-today">0</div>
+					</div>
+				</div>
+
+				<div class="card card-clickable" onclick="filterTasks('overdue')" role="button" tabindex="0" aria-label="View overdue tasks">
+					<div class="card-body">
+						<div class="task-summary-label">Overdue</div>
+						<div class="task-summary-value task-overdue" id="tasks-overdue">0</div>
+					</div>
+				</div>
+
+				<div class="card card-clickable" onclick="filterTasks('urgent')" role="button" tabindex="0" aria-label="View urgent tasks">
+					<div class="card-body">
+						<div class="task-summary-label">Urgent</div>
+						<div class="task-summary-value task-urgent" id="tasks-urgent">0</div>
+					</div>
+				</div>
+
+				<div class="card card-clickable" onclick="filterTasks('pending')" role="button" tabindex="0" aria-label="View pending tasks">
+					<div class="card-body">
+						<div class="task-summary-label">Pending</div>
+						<div class="task-summary-value" id="tasks-pending">0</div>
+					</div>
+				</div>
+			</div>
+
+			<!-- Task Filters -->
+			<div class="card" style="margin-bottom: 1.5rem;">
+				<div class="card-body">
+					<div class="task-filters">
+						<select class="form-select" id="task-status-filter" aria-label="Filter by status">
+							<option value="all">All Status</option>
+							<option value="pending">Pending</option>
+							<option value="in-progress">In Progress</option>
+							<option value="overdue">Overdue</option>
+							<option value="completed">Completed</option>
+						</select>
+
+						<select class="form-select" id="task-priority-filter" aria-label="Filter by priority">
+							<option value="all">All Priorities</option>
+							<option value="urgent">Urgent</option>
+							<option value="high">High</option>
+							<option value="normal">Normal</option>
+							<option value="low">Low</option>
+						</select>
+
+						<select class="form-select" id="task-type-filter" aria-label="Filter by type">
+							<option value="all">All Types</option>
+							<option value="follow-up">Follow-up</option>
+							<option value="phone-call">Phone Call</option>
+							<option value="email">Email</option>
+							<option value="sms">SMS</option>
+						</select>
+					</div>
+				</div>
+			</div>
+
+			<!-- Task List -->
+			<div id="task-list">
+				<!-- Populated by JavaScript -->
+			</div>
+
+			<!-- Empty State -->
+			<div id="tasks-empty-state" class="empty-state" style="display: none;">
+				<svg class="empty-state-icon" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" aria-hidden="true">
+					<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"/>
+				</svg>
+				<h3 class="empty-state-title">No Tasks</h3>
+				<p class="empty-state-message">All caught up! No pending tasks at the moment.</p>
+			</div>
+		</div>
+	</div>
+
 	<!-- WIZARD OVERLAY -->
 	<div id="wizardOverlay" class="wizard-overlay">
 		<div class="wizard-dialog">
@@ -461,6 +551,13 @@
 
 	<!-- Phase 5: Job Templates -->
 	<script src="job-presets.js" defer></script>
+
+	<!-- Task & Follow-up Automation (Prompt #29) -->
+	<script src="followup-config.js" defer></script>
+	<script src="task-manager.js" defer></script>
+	<script src="followup-automation.js" defer></script>
+	<script src="ghl-task-sync.js" defer></script>
+	<script src="task-dashboard-ui.js" defer></script>
 
 	<!-- UI and feature modules -->
 	<script src="ui.js" defer></script>
