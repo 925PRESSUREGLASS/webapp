@@ -86,7 +86,7 @@ async function handleWebhook(request) {
 
     // Verify webhook signature
     var signature = request.headers.get('X-GHL-Signature');
-    if (!verifySignature(payload, signature)) {
+    if (!await verifySignature(payload, signature)) {
       console.error('Invalid webhook signature');
       return new Response('Unauthorized', { status: 401 });
     }
@@ -190,31 +190,59 @@ async function handleHealth(request) {
 }
 
 /**
- * Verify webhook signature using HMAC
+ * Verify webhook signature using HMAC-SHA256
+ * @param {Object} payload - The webhook payload
+ * @param {string} signature - The signature from X-GHL-Signature header
+ * @returns {Promise<boolean>} True if signature is valid
  */
-function verifySignature(payload, signature) {
-  // GHL sends HMAC-SHA256 signature
-  // Implement signature verification here
-  // For now, return true for development
-  // TODO: Implement proper signature verification using WEBHOOK_SECRET
+async function verifySignature(payload, signature) {
+  try {
+    // If no signature provided, reject
+    if (!signature) {
+      console.warn('[WEBHOOK] No signature provided');
+      return false;
+    }
 
-  // Example implementation (requires crypto API):
-  // var encoder = new TextEncoder();
-  // var data = encoder.encode(JSON.stringify(payload));
-  // var key = await crypto.subtle.importKey(
-  //   'raw',
-  //   encoder.encode(CONFIG.WEBHOOK_SECRET),
-  //   { name: 'HMAC', hash: 'SHA-256' },
-  //   false,
-  //   ['sign']
-  // );
-  // var computedSignature = await crypto.subtle.sign('HMAC', key, data);
-  // var computedHex = Array.from(new Uint8Array(computedSignature))
-  //   .map(b => b.toString(16).padStart(2, '0'))
-  //   .join('');
-  // return computedHex === signature;
+    // Convert payload to string (canonical JSON representation)
+    var payloadString = JSON.stringify(payload);
 
-  return true;
+    // Encode the payload and secret
+    var encoder = new TextEncoder();
+    var data = encoder.encode(payloadString);
+    var keyData = encoder.encode(CONFIG.WEBHOOK_SECRET);
+
+    // Import the secret as a crypto key
+    var key = await crypto.subtle.importKey(
+      'raw',
+      keyData,
+      { name: 'HMAC', hash: 'SHA-256' },
+      false,
+      ['sign']
+    );
+
+    // Compute HMAC-SHA256 signature
+    var computedSignature = await crypto.subtle.sign('HMAC', key, data);
+
+    // Convert to hex string
+    var computedHex = Array.from(new Uint8Array(computedSignature))
+      .map(function(b) { return b.toString(16).padStart(2, '0'); })
+      .join('');
+
+    // Compare signatures (case-insensitive)
+    var isValid = computedHex.toLowerCase() === signature.toLowerCase();
+
+    if (!isValid) {
+      console.warn('[WEBHOOK] Signature mismatch');
+      console.warn('[WEBHOOK] Expected:', computedHex);
+      console.warn('[WEBHOOK] Received:', signature);
+    }
+
+    return isValid;
+
+  } catch (error) {
+    console.error('[WEBHOOK] Signature verification error:', error);
+    return false;
+  }
 }
 
 /**
