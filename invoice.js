@@ -9,9 +9,8 @@
 
   // Encryption configuration
   // NOTE: Encryption is disabled by default for backward compatibility
-  // Set ENABLE_ENCRYPTION = true to enable encrypted storage
-  // TODO: Make this user-configurable via settings UI in future version
-  var ENABLE_ENCRYPTION = false;
+  // This is now user-configurable via settings UI (see settings.enableEncryption)
+  var ENABLE_ENCRYPTION = false;  // Will be set from settings after loading
   var ENCRYPTION_KEY = 'tictacstick-2025-invoice-secure';
 
   var invoices = [];
@@ -24,13 +23,20 @@
     bsb: '',
     accountNumber: '',
     abn: '',
-    includeGST: true
+    includeGST: true,
+    enableEncryption: false
   };
 
-  // Initialize encryption for secure storage (if enabled)
-  if (ENABLE_ENCRYPTION && window.Security && window.Security.SecureStorage) {
-    window.Security.SecureStorage.setKey(ENCRYPTION_KEY);
-    console.log('[INVOICE] Encryption enabled for invoice data');
+  // Initialize encryption based on settings
+  // This is called after settings are loaded
+  function initializeEncryption() {
+    ENABLE_ENCRYPTION = settings.enableEncryption || false;
+    if (ENABLE_ENCRYPTION && window.Security && window.Security.SecureStorage) {
+      window.Security.SecureStorage.setKey(ENCRYPTION_KEY);
+      console.log('[INVOICE] Encryption enabled for invoice data');
+    } else {
+      console.log('[INVOICE] Encryption disabled (using unencrypted storage)');
+    }
   }
 
   var INVOICE_STATUSES = {
@@ -97,35 +103,35 @@
     }
   }
 
-  // Load settings (supports encrypted and unencrypted modes)
+  // Load settings (always loads from unencrypted storage first to check enableEncryption flag)
   function loadSettings() {
     try {
       var loadedSettings = null;
-      if (ENABLE_ENCRYPTION && window.Security && window.Security.SecureStorage) {
-        // Try to load encrypted data first
-        loadedSettings = window.Security.SecureStorage.getItem(INVOICE_SETTINGS_KEY, null);
 
-        // If no encrypted data, try to migrate from unencrypted
-        if (loadedSettings === null || loadedSettings === undefined) {
-          var unencryptedData = localStorage.getItem(INVOICE_SETTINGS_KEY);
-          if (unencryptedData) {
-            // Migrate unencrypted data to encrypted
-            loadedSettings = window.Security.safeJSONParse(unencryptedData, null, null);
-            if (loadedSettings) {
-              // Save as encrypted
-              window.Security.SecureStorage.setItem(INVOICE_SETTINGS_KEY, loadedSettings);
-              console.log('[INVOICE] Migrated settings to encrypted storage');
-            }
-          }
-        }
-      } else {
-        // Load unencrypted data (default mode)
-        loadedSettings = window.Security.safeJSONParse(
-          localStorage.getItem(INVOICE_SETTINGS_KEY),
-          null,
-          null
-        );
+      // Always try unencrypted storage first to get the enableEncryption flag
+      var unencryptedData = localStorage.getItem(INVOICE_SETTINGS_KEY);
+      if (unencryptedData) {
+        loadedSettings = window.Security.safeJSONParse(unencryptedData, null, null);
       }
+
+      // If enableEncryption flag is set in loaded settings, try encrypted storage
+      if (loadedSettings && loadedSettings.enableEncryption &&
+          window.Security && window.Security.SecureStorage) {
+        // Temporarily set encryption flag to load encrypted data
+        var tempEncryption = ENABLE_ENCRYPTION;
+        ENABLE_ENCRYPTION = true;
+        window.Security.SecureStorage.setKey(ENCRYPTION_KEY);
+
+        var encryptedSettings = window.Security.SecureStorage.getItem(INVOICE_SETTINGS_KEY, null);
+        if (encryptedSettings) {
+          loadedSettings = encryptedSettings;
+          console.log('[INVOICE] Loaded encrypted settings');
+        }
+
+        // Restore encryption flag (will be set properly in initializeEncryption)
+        ENABLE_ENCRYPTION = tempEncryption;
+      }
+
       if (loadedSettings) {
         Object.keys(loadedSettings).forEach(function(key) {
           settings[key] = loadedSettings[key];
@@ -802,6 +808,13 @@
               '<label for="abn">ABN</label>' +
               '<input type="text" id="abn" value="' + escapeHtml(settings.abn) + '" placeholder="12 345 678 901" />' +
             '</div>' +
+            '<div class="form-group">' +
+              '<label class="form-checkbox-label">' +
+                '<input type="checkbox" id="enableEncryption" ' + (settings.enableEncryption ? 'checked' : '') + ' />' +
+                ' Enable Encrypted Storage' +
+              '</label>' +
+              '<p class="form-hint">Enable encryption to store invoice data securely. Requires page reload to take effect.</p>' +
+            '</div>' +
             '<div class="form-actions">' +
               '<button type="button" class="btn btn-secondary" id="cancelSettingsBtn">Cancel</button>' +
               '<button type="submit" class="btn btn-primary">Save Settings</button>' +
@@ -870,10 +883,21 @@
       settings.accountNumber = document.getElementById('accountNumber').value;
       settings.abn = abnValue;
 
+      // Get encryption setting
+      var previousEncryptionSetting = settings.enableEncryption;
+      settings.enableEncryption = document.getElementById('enableEncryption').checked;
+
       saveSettings();
 
-      if (window.ErrorHandler) {
-        window.ErrorHandler.showSuccess('Settings saved');
+      // If encryption setting changed, notify user that reload is required
+      if (previousEncryptionSetting !== settings.enableEncryption) {
+        if (window.ErrorHandler) {
+          window.ErrorHandler.showSuccess('Settings saved. Please reload the page for encryption changes to take effect.');
+        }
+      } else {
+        if (window.ErrorHandler) {
+          window.ErrorHandler.showSuccess('Settings saved');
+        }
       }
 
       modal.classList.remove('active');
@@ -1916,8 +1940,9 @@
 
   // Initialize
   function init() {
-    loadInvoices();
     loadSettings();
+    initializeEncryption();
+    loadInvoices();
     addInvoiceButton();
 
     // Check for overdue invoices daily
