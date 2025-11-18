@@ -92,11 +92,11 @@
     // Business details
     name: '925 Pressure Glass',
     tagline: 'Window Cleaning & Pressure Washing Specialists',
-    abn: '12 345 678 901', // TODO: Replace with real ABN
+    abn: '12 345 678 901', // Placeholder - will be loaded from invoice settings if available
     acn: null, // Australian Company Number (if applicable)
 
     // Contact information
-    phone: '0400 000 000', // TODO: Replace with real phone
+    phone: '0400 000 000', // Placeholder - update via invoice settings if needed
     email: 'info@925pressureglass.com.au',
     website: 'www.925pressureglass.com.au',
 
@@ -149,9 +149,9 @@
       depositPercentage: 50,
       terms: '50% deposit required to secure booking. Balance due upon completion.',
       bankDetails: {
-        accountName: '925 Pressure Glass',
-        bsb: '123-456', // TODO: Replace with real BSB
-        accountNumber: '12345678', // TODO: Replace with real account number
+        accountName: '925 Pressure Glass', // Will be loaded from invoice settings if available
+        bsb: '123-456', // Placeholder - will be loaded from invoice settings if available
+        accountNumber: '12345678', // Placeholder - will be loaded from invoice settings if available
         reference: 'Quote number'
       }
     },
@@ -199,6 +199,43 @@
     // Emergency contact
     emergencyContact: null
   };
+
+  /**
+   * Load Invoice Settings and Update Company Config
+   * Integrates user-configured business details from invoice settings
+   * Falls back to placeholder values if settings not configured
+   */
+  (function loadInvoiceSettings() {
+    try {
+      var settingsData = localStorage.getItem('invoice-settings');
+      if (settingsData) {
+        var invoiceSettings = JSON.parse(settingsData);
+
+        // Update ABN if configured
+        if (invoiceSettings.abn && invoiceSettings.abn.trim() !== '') {
+          COMPANY_CONFIG.abn = invoiceSettings.abn;
+        }
+
+        // Update bank details if configured
+        if (invoiceSettings.bsb && invoiceSettings.bsb.trim() !== '') {
+          COMPANY_CONFIG.payment.bankDetails.bsb = invoiceSettings.bsb;
+        }
+
+        if (invoiceSettings.accountNumber && invoiceSettings.accountNumber.trim() !== '') {
+          COMPANY_CONFIG.payment.bankDetails.accountNumber = invoiceSettings.accountNumber;
+        }
+
+        if (invoiceSettings.accountName && invoiceSettings.accountName.trim() !== '') {
+          COMPANY_CONFIG.payment.bankDetails.accountName = invoiceSettings.accountName;
+        }
+
+        console.log('[PDF-CONFIG] Loaded business details from invoice settings');
+      }
+    } catch (e) {
+      console.warn('[PDF-CONFIG] Could not load invoice settings:', e);
+      console.log('[PDF-CONFIG] Using default placeholder values');
+    }
+  })();
 
   /**
    * PDF Template Definitions
