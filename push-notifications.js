@@ -178,36 +178,143 @@
    * Navigate to page (helper function)
    * @param {string} page - Page identifier
    * @param {Object} params - Navigation parameters
+   * @returns {boolean} True if navigation succeeded
    */
   function navigateTo(page, params) {
     console.log('[PUSH] Navigate to:', page, params);
 
-    // TODO: Implement navigation based on your app structure
-    // This is a placeholder implementation
+    params = params || {};
 
-    // Show task dashboard
+    // Navigate to tasks page
     if (page === 'tasks') {
-      if (window.TaskDashboardUI && window.TaskDashboardUI.show) {
-        window.TaskDashboardUI.show();
+      var tasksPage = document.getElementById('page-tasks');
+      if (tasksPage) {
+        tasksPage.style.display = 'block';
+        if (window.TaskDashboardUI && window.TaskDashboardUI.render) {
+          window.TaskDashboardUI.render();
+        }
+        console.log('[PUSH] Navigated to tasks page');
+        return true;
       }
     }
 
-    // Show specific quote
-    if (page === 'quote-detail' && params && params.id) {
-      if (window.QuoteManager && window.QuoteManager.showQuote) {
-        window.QuoteManager.showQuote(params.id);
+    // Navigate to specific quote
+    if (page === 'quote-detail' && params.id) {
+      // Load quote from saved quotes
+      if (window.AppStorage && window.AppStorage.loadSavedQuotes) {
+        var savedQuotes = window.AppStorage.loadSavedQuotes() || [];
+        var i;
+        var found = null;
+        for (i = 0; i < savedQuotes.length; i++) {
+          if (savedQuotes[i].id === params.id) {
+            found = savedQuotes[i];
+            break;
+          }
+        }
+
+        if (found && window.APP && window.APP.setState) {
+          window.APP.setState(found.state || {});
+          if (window.UIComponents && window.UIComponents.showToast) {
+            window.UIComponents.showToast('Quote loaded: ' + found.title, 'success');
+          } else if (window.showToast) {
+            window.showToast('Quote loaded: ' + found.title, 'success');
+          }
+          console.log('[PUSH] Navigated to quote:', found.title);
+          return true;
+        }
       }
     }
 
-    // Show invoices
+    // Navigate to invoices list
     if (page === 'invoices') {
-      if (window.InvoiceSystem && window.InvoiceSystem.showInvoiceList) {
-        window.InvoiceSystem.showInvoiceList();
+      if (window.InvoiceSystem) {
+        // Try showList first (exported name)
+        if (window.InvoiceSystem.showList) {
+          window.InvoiceSystem.showList();
+          console.log('[PUSH] Navigated to invoices');
+          return true;
+        }
+        // Fallback to showInvoiceList
+        if (window.InvoiceSystem.showInvoiceList) {
+          window.InvoiceSystem.showInvoiceList();
+          console.log('[PUSH] Navigated to invoices');
+          return true;
+        }
       }
     }
 
-    // Fallback: log to console
-    console.log('[PUSH] Navigation not fully implemented for:', page);
+    // Navigate to specific invoice
+    if (page === 'invoice-detail' && params.id) {
+      if (window.InvoiceSystem && window.InvoiceSystem.viewInvoice) {
+        window.InvoiceSystem.viewInvoice(params.id);
+        console.log('[PUSH] Navigated to invoice:', params.id);
+        return true;
+      }
+    }
+
+    // Navigate to contracts list or specific contract
+    if (page === 'contract-detail' && params.id) {
+      if (window.ContractManager && window.ContractManager.getContract) {
+        var contract = window.ContractManager.getContract(params.id);
+        if (contract) {
+          // Show contract details via modal or dedicated UI
+          if (window.UIComponents && window.UIComponents.showToast) {
+            window.UIComponents.showToast('Contract loaded: ' + contract.clientName, 'info');
+          } else if (window.showToast) {
+            window.showToast('Contract loaded: ' + contract.clientName, 'info');
+          }
+          console.log('[PUSH] Navigated to contract:', params.id);
+          return true;
+        }
+      }
+    }
+
+    // Navigate to client list or specific client
+    if (page === 'client-detail' && params.id) {
+      if (window.ClientDatabase) {
+        // Try to edit the specific client
+        if (window.ClientDatabase.editClient) {
+          window.ClientDatabase.editClient(params.id);
+          console.log('[PUSH] Navigated to client:', params.id);
+          return true;
+        }
+      }
+    }
+
+    // Navigate to clients list
+    if (page === 'clients') {
+      if (window.ClientDatabase) {
+        if (window.ClientDatabase.showList) {
+          window.ClientDatabase.showList();
+          console.log('[PUSH] Navigated to clients');
+          return true;
+        }
+      }
+    }
+
+    // Fallback: go to home/main view
+    if (page === 'home') {
+      // Hide all pages, show main quote form
+      var pages = document.querySelectorAll('.page');
+      var i;
+      for (i = 0; i < pages.length; i++) {
+        pages[i].style.display = 'none';
+      }
+      console.log('[PUSH] Navigated to home');
+      return true;
+    }
+
+    // Navigation not implemented or failed
+    console.warn('[PUSH] Navigation not implemented or failed for:', page);
+
+    // Show a user-friendly message
+    if (window.UIComponents && window.UIComponents.showToast) {
+      window.UIComponents.showToast('Unable to navigate to ' + page, 'warning');
+    } else if (window.showToast) {
+      window.showToast('Unable to navigate to ' + page, 'warning');
+    }
+
+    return false;
   }
 
   // ============================================

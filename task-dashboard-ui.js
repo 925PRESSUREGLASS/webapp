@@ -391,14 +391,206 @@
    * Show new task modal
    */
   function showNewTaskModal() {
-    // This would open a modal to create a new task
-    // For now, just log
-    console.log('[TASK-DASHBOARD] Show new task modal');
+    console.log('[TASK-DASHBOARD] Opening new task modal');
 
-    if (window.UIComponents && window.UIComponents.showToast) {
-      window.UIComponents.showToast('Manual task creation coming soon', 'info');
+    // Create modal HTML
+    var html = '<div class="modal-overlay" id="newTaskModal">';
+    html += '  <div class="modal-content" style="max-width: 600px;">';
+    html += '    <div class="modal-header">';
+    html += '      <h3 class="modal-title">Create New Task</h3>';
+    html += '      <button class="modal-close" id="closeNewTaskModal" aria-label="Close">&times;</button>';
+    html += '    </div>';
+    html += '    <div class="modal-body">';
+    html += '      <form id="newTaskForm">';
+
+    // Title field
+    html += '        <div class="form-group">';
+    html += '          <label class="form-label form-label-required" for="taskTitle">Task Title</label>';
+    html += '          <input type="text" id="taskTitle" class="form-input" required placeholder="e.g., Follow up with John about quote">';
+    html += '        </div>';
+
+    // Description field
+    html += '        <div class="form-group">';
+    html += '          <label class="form-label" for="taskDescription">Description</label>';
+    html += '          <textarea id="taskDescription" class="form-textarea" rows="3" placeholder="Optional task details..."></textarea>';
+    html += '        </div>';
+
+    // Type field
+    html += '        <div class="form-group">';
+    html += '          <label class="form-label form-label-required" for="taskType">Task Type</label>';
+    html += '          <select id="taskType" class="form-select" required>';
+    html += '            <option value="follow-up">Follow-up</option>';
+    html += '            <option value="phone-call">Phone Call</option>';
+    html += '            <option value="email">Email</option>';
+    html += '            <option value="sms">SMS</option>';
+    html += '            <option value="meeting">Meeting</option>';
+    html += '          </select>';
+    html += '        </div>';
+
+    // Priority field
+    html += '        <div class="form-group">';
+    html += '          <label class="form-label form-label-required" for="taskPriority">Priority</label>';
+    html += '          <select id="taskPriority" class="form-select" required>';
+    html += '            <option value="normal">Normal</option>';
+    html += '            <option value="low">Low</option>';
+    html += '            <option value="high">High</option>';
+    html += '            <option value="urgent">Urgent</option>';
+    html += '          </select>';
+    html += '        </div>';
+
+    // Due Date field
+    html += '        <div class="form-group">';
+    html += '          <label class="form-label" for="taskDueDate">Due Date</label>';
+    html += '          <input type="datetime-local" id="taskDueDate" class="form-input">';
+    html += '          <span class="form-hint">Optional - leave blank for no due date</span>';
+    html += '        </div>';
+
+    // Client selection (optional)
+    html += '        <div class="form-group">';
+    html += '          <label class="form-label" for="taskClientName">Client Name</label>';
+    html += '          <input type="text" id="taskClientName" class="form-input" placeholder="Optional - client this task relates to">';
+    html += '        </div>';
+
+    html += '      </form>';
+    html += '    </div>';
+    html += '    <div class="modal-footer">';
+    html += '      <button type="button" class="btn btn-tertiary" id="cancelNewTask">Cancel</button>';
+    html += '      <button type="button" class="btn btn-primary" id="saveNewTask">Create Task</button>';
+    html += '    </div>';
+    html += '  </div>';
+    html += '</div>';
+
+    // Add modal to DOM
+    var modalContainer = document.createElement('div');
+    modalContainer.innerHTML = html;
+    document.body.appendChild(modalContainer.firstChild);
+
+    // Set default due date to tomorrow at 9 AM
+    var tomorrow = new Date();
+    tomorrow.setDate(tomorrow.getDate() + 1);
+    tomorrow.setHours(9, 0, 0, 0);
+    var dateInput = document.getElementById('taskDueDate');
+    if (dateInput) {
+      // Format for datetime-local input: YYYY-MM-DDTHH:MM
+      var year = tomorrow.getFullYear();
+      var month = String(tomorrow.getMonth() + 1).padStart(2, '0');
+      var day = String(tomorrow.getDate()).padStart(2, '0');
+      var hours = String(tomorrow.getHours()).padStart(2, '0');
+      var minutes = String(tomorrow.getMinutes()).padStart(2, '0');
+      dateInput.value = year + '-' + month + '-' + day + 'T' + hours + ':' + minutes;
+    }
+
+    // Wire up event handlers
+    document.getElementById('closeNewTaskModal').addEventListener('click', closeNewTaskModal);
+    document.getElementById('cancelNewTask').addEventListener('click', closeNewTaskModal);
+    document.getElementById('saveNewTask').addEventListener('click', handleSaveNewTask);
+
+    // Close on overlay click
+    document.getElementById('newTaskModal').addEventListener('click', function(e) {
+      if (e.target.id === 'newTaskModal') {
+        closeNewTaskModal();
+      }
+    });
+
+    // Focus on title field
+    var titleInput = document.getElementById('taskTitle');
+    if (titleInput) {
+      titleInput.focus();
+    }
+
+    console.log('[TASK-DASHBOARD] New task modal opened');
+  }
+
+  /**
+   * Close new task modal
+   */
+  function closeNewTaskModal() {
+    var modal = document.getElementById('newTaskModal');
+    if (modal) {
+      modal.remove();
+    }
+  }
+
+  /**
+   * Handle save new task
+   */
+  function handleSaveNewTask() {
+    console.log('[TASK-DASHBOARD] Saving new task');
+
+    // Get form values
+    var title = document.getElementById('taskTitle').value.trim();
+    var description = document.getElementById('taskDescription').value.trim();
+    var type = document.getElementById('taskType').value;
+    var priority = document.getElementById('taskPriority').value;
+    var dueDateStr = document.getElementById('taskDueDate').value;
+    var clientName = document.getElementById('taskClientName').value.trim();
+
+    // Validate required fields
+    if (!title) {
+      if (window.UIComponents && window.UIComponents.showToast) {
+        window.UIComponents.showToast('Task title is required', 'error');
+      } else if (window.showToast) {
+        window.showToast('Task title is required', 'error');
+      } else {
+        alert('Task title is required');
+      }
+      return;
+    }
+
+    // Parse due date
+    var dueDate = dueDateStr ? new Date(dueDateStr).toISOString() : null;
+
+    // Create task config
+    var taskConfig = {
+      title: title,
+      description: description,
+      type: type,
+      priority: priority,
+      dueDate: dueDate,
+      assignedTo: 'Gerry'
+    };
+
+    // Add client name if provided
+    if (clientName) {
+      taskConfig.clientName = clientName;
+    }
+
+    // Create task via TaskManager
+    if (window.TaskManager && window.TaskManager.createTask) {
+      var newTask = window.TaskManager.createTask(taskConfig);
+
+      if (newTask) {
+        console.log('[TASK-DASHBOARD] Task created successfully:', newTask.id);
+
+        // Close modal
+        closeNewTaskModal();
+
+        // Refresh task list
+        render();
+
+        // Show success message
+        if (window.UIComponents && window.UIComponents.showToast) {
+          window.UIComponents.showToast('Task created successfully!', 'success');
+        } else if (window.showToast) {
+          window.showToast('Task created successfully!', 'success');
+        }
+      } else {
+        console.error('[TASK-DASHBOARD] Failed to create task');
+        if (window.UIComponents && window.UIComponents.showToast) {
+          window.UIComponents.showToast('Failed to create task', 'error');
+        } else if (window.showToast) {
+          window.showToast('Failed to create task', 'error');
+        } else {
+          alert('Failed to create task');
+        }
+      }
     } else {
-      alert('Manual task creation coming soon');
+      console.error('[TASK-DASHBOARD] TaskManager not available');
+      if (window.UIComponents && window.UIComponents.showToast) {
+        window.UIComponents.showToast('Task system not available', 'error');
+      } else {
+        alert('Task system not available');
+      }
     }
   }
 
