@@ -1,0 +1,340 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Workflow Fixes Verification</title>
+    <style>
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 20px;
+            background: #f5f5f5;
+        }
+        .test-section {
+            background: white;
+            padding: 20px;
+            margin: 20px 0;
+            border-radius: 8px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }
+        .test-section h2 {
+            margin-top: 0;
+            color: #333;
+        }
+        .pass {
+            color: #22c55e;
+            font-weight: bold;
+        }
+        .fail {
+            color: #ef4444;
+            font-weight: bold;
+        }
+        .test-result {
+            padding: 10px;
+            margin: 10px 0;
+            border-left: 4px solid #ccc;
+            background: #f9f9f9;
+        }
+        .test-result.pass {
+            border-left-color: #22c55e;
+            background: #f0fdf4;
+        }
+        .test-result.fail {
+            border-left-color: #ef4444;
+            background: #fef2f2;
+        }
+        button {
+            background: #2563eb;
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 6px;
+            cursor: pointer;
+            font-size: 16px;
+            margin: 5px;
+        }
+        button:hover {
+            background: #1d4ed8;
+        }
+        pre {
+            background: #f3f4f6;
+            padding: 10px;
+            border-radius: 4px;
+            overflow-x: auto;
+        }
+    </style>
+</head>
+<body>
+    <h1>🧪 Workflow Fixes Verification Tests</h1>
+    <p><strong>Purpose:</strong> Verify that workflow fixes don't break existing functionality</p>
+
+    <div class="test-section">
+        <h2>Test 1: Shared Counter Functions</h2>
+        <p>Verify that APP.getDefaultClientName() and APP.getDefaultQuoteTitle() exist</p>
+        <button onclick="testSharedCounters()">Run Test</button>
+        <div id="test1-results"></div>
+    </div>
+
+    <div class="test-section">
+        <h2>Test 2: Quote Status Integration</h2>
+        <p>Verify that QuoteWorkflow.getCurrentStatus() exists and works</p>
+        <button onclick="testQuoteStatus()">Run Test</button>
+        <div id="test2-results"></div>
+    </div>
+
+    <div class="test-section">
+        <h2>Test 3: Invoice Creation with Quote Status</h2>
+        <p>Verify that created invoices include quoteStatus field</p>
+        <button onclick="testInvoiceWithQuoteStatus()">Run Test</button>
+        <div id="test3-results"></div>
+    </div>
+
+    <div class="test-section">
+        <h2>Test 4: Default Values Still Work</h2>
+        <p>Verify that default customer/quote names are generated</p>
+        <button onclick="testDefaultValues()">Run Test</button>
+        <div id="test4-results"></div>
+    </div>
+
+    <div class="test-section">
+        <h2>Test All</h2>
+        <button onclick="runAllTests()">Run All Tests</button>
+        <div id="all-results"></div>
+    </div>
+
+    <script>
+        var testResults = [];
+
+        function addResult(containerId, testName, passed, message, data) {
+            var container = document.getElementById(containerId);
+            var div = document.createElement('div');
+            div.className = 'test-result ' + (passed ? 'pass' : 'fail');
+            var status = passed ? '✅ PASS' : '❌ FAIL';
+            div.innerHTML = '<strong>' + status + ':</strong> ' + testName + '<br>' + message;
+            if (data) {
+                div.innerHTML += '<pre>' + JSON.stringify(data, null, 2) + '</pre>';
+            }
+            container.appendChild(div);
+
+            testResults.push({
+                test: testName,
+                passed: passed,
+                message: message
+            });
+
+            return passed;
+        }
+
+        function testSharedCounters() {
+            var container = 'test1-results';
+            document.getElementById(container).innerHTML = '';
+
+            var test1 = typeof window.APP !== 'undefined';
+            addResult(container, 'APP object exists', test1, test1 ? 'window.APP is defined' : 'window.APP is missing');
+
+            var test2 = typeof window.APP.getDefaultClientName === 'function';
+            addResult(container, 'getDefaultClientName function exists', test2,
+                test2 ? 'Function is available' : 'Function is missing');
+
+            var test3 = typeof window.APP.getDefaultQuoteTitle === 'function';
+            addResult(container, 'getDefaultQuoteTitle function exists', test3,
+                test3 ? 'Function is available' : 'Function is missing');
+
+            if (test2) {
+                try {
+                    var clientName = window.APP.getDefaultClientName();
+                    var test4 = clientName && clientName.indexOf('customer_') === 0;
+                    addResult(container, 'getDefaultClientName generates valid name', test4,
+                        test4 ? 'Generated: ' + clientName : 'Invalid name: ' + clientName);
+                } catch (e) {
+                    addResult(container, 'getDefaultClientName execution', false, 'Error: ' + e.message);
+                }
+            }
+
+            if (test3) {
+                try {
+                    var quoteTitle = window.APP.getDefaultQuoteTitle();
+                    var test5 = quoteTitle && quoteTitle.indexOf('Quote_') === 0;
+                    addResult(container, 'getDefaultQuoteTitle generates valid name', test5,
+                        test5 ? 'Generated: ' + quoteTitle : 'Invalid name: ' + quoteTitle);
+                } catch (e) {
+                    addResult(container, 'getDefaultQuoteTitle execution', false, 'Error: ' + e.message);
+                }
+            }
+        }
+
+        function testQuoteStatus() {
+            var container = 'test2-results';
+            document.getElementById(container).innerHTML = '';
+
+            var test1 = typeof window.QuoteWorkflow !== 'undefined';
+            addResult(container, 'QuoteWorkflow object exists', test1,
+                test1 ? 'window.QuoteWorkflow is defined' : 'window.QuoteWorkflow is missing');
+
+            if (test1) {
+                var test2 = typeof window.QuoteWorkflow.getCurrentStatus === 'function';
+                addResult(container, 'getCurrentStatus function exists', test2,
+                    test2 ? 'Function is available' : 'Function is missing');
+
+                if (test2) {
+                    try {
+                        var status = window.QuoteWorkflow.getCurrentStatus();
+                        var validStatuses = ['draft', 'sent', 'accepted', 'declined', 'scheduled', 'completed'];
+                        var test3 = validStatuses.indexOf(status) !== -1;
+                        addResult(container, 'getCurrentStatus returns valid status', test3,
+                            test3 ? 'Current status: ' + status : 'Invalid status: ' + status);
+                    } catch (e) {
+                        addResult(container, 'getCurrentStatus execution', false, 'Error: ' + e.message);
+                    }
+                }
+            }
+        }
+
+        function testInvoiceWithQuoteStatus() {
+            var container = 'test3-results';
+            document.getElementById(container).innerHTML = '';
+
+            var test1 = typeof window.InvoiceSystem !== 'undefined';
+            addResult(container, 'InvoiceSystem exists', test1,
+                test1 ? 'window.InvoiceSystem is defined' : 'window.InvoiceSystem is missing');
+
+            if (!test1) return;
+
+            // Create a test quote
+            if (window.APP && window.APP.setState) {
+                try {
+                    // Set up test quote
+                    window.APP.setState({
+                        quoteTitle: 'Test Workflow Quote',
+                        clientName: 'Test Client',
+                        clientLocation: 'Test Location',
+                        windowLines: [{
+                            id: 'test1',
+                            windowTypeId: 'standard',
+                            panes: 10,
+                            inside: true,
+                            outside: true,
+                            highReach: false
+                        }],
+                        pressureLines: []
+                    });
+
+                    // Set quote status to "accepted"
+                    if (window.QuoteWorkflow && window.QuoteWorkflow.setStatus) {
+                        window.QuoteWorkflow.setStatus('accepted');
+                    }
+
+                    // Try to create invoice
+                    var invoice = window.InvoiceSystem.create();
+
+                    if (invoice) {
+                        var test2 = typeof invoice.quoteStatus !== 'undefined';
+                        addResult(container, 'Invoice has quoteStatus field', test2,
+                            test2 ? 'quoteStatus: ' + invoice.quoteStatus : 'quoteStatus field missing', invoice);
+
+                        var test3 = typeof invoice.quoteStatusAtConversion !== 'undefined';
+                        addResult(container, 'Invoice has quoteStatusAtConversion field', test3,
+                            test3 ? 'quoteStatusAtConversion: ' + invoice.quoteStatusAtConversion : 'quoteStatusAtConversion field missing');
+
+                        if (test2) {
+                            var test4 = invoice.quoteStatus === 'accepted';
+                            addResult(container, 'Invoice captured correct quote status', test4,
+                                test4 ? 'Correctly captured "accepted" status' : 'Wrong status: ' + invoice.quoteStatus);
+                        }
+
+                        // Clean up
+                        if (window.InvoiceSystem.delete) {
+                            window.InvoiceSystem.delete(invoice.id);
+                        }
+                    } else {
+                        addResult(container, 'Invoice creation', false, 'Failed to create invoice');
+                    }
+                } catch (e) {
+                    addResult(container, 'Invoice creation test', false, 'Error: ' + e.message);
+                }
+            } else {
+                addResult(container, 'APP.setState', false, 'APP.setState not available');
+            }
+        }
+
+        function testDefaultValues() {
+            var container = 'test4-results';
+            document.getElementById(container).innerHTML = '';
+
+            if (!window.APP || !window.InvoiceSystem) {
+                addResult(container, 'Required objects', false, 'APP or InvoiceSystem not available');
+                return;
+            }
+
+            try {
+                // Create quote with EMPTY client name and quote title
+                window.APP.setState({
+                    quoteTitle: '',  // Empty
+                    clientName: '',  // Empty
+                    clientLocation: 'Test Location',
+                    windowLines: [{
+                        id: 'test2',
+                        windowTypeId: 'standard',
+                        panes: 5,
+                        inside: true,
+                        outside: false
+                    }],
+                    pressureLines: []
+                });
+
+                // Create invoice
+                var invoice = window.InvoiceSystem.create();
+
+                if (invoice) {
+                    var test1 = invoice.clientName && invoice.clientName.indexOf('customer_') === 0;
+                    addResult(container, 'Default customer name generated', test1,
+                        test1 ? 'Generated: ' + invoice.clientName : 'Not generated or invalid: ' + invoice.clientName);
+
+                    var test2 = invoice.quoteTitle && invoice.quoteTitle.indexOf('Quote_') === 0;
+                    addResult(container, 'Default quote title generated', test2,
+                        test2 ? 'Generated: ' + invoice.quoteTitle : 'Not generated or invalid: ' + invoice.quoteTitle);
+
+                    // Clean up
+                    if (window.InvoiceSystem.delete) {
+                        window.InvoiceSystem.delete(invoice.id);
+                    }
+                } else {
+                    addResult(container, 'Invoice creation with defaults', false, 'Failed to create invoice');
+                }
+            } catch (e) {
+                addResult(container, 'Default values test', false, 'Error: ' + e.message);
+            }
+        }
+
+        function runAllTests() {
+            testResults = [];
+            document.getElementById('all-results').innerHTML = '<p>Running all tests...</p>';
+
+            testSharedCounters();
+            testQuoteStatus();
+            testInvoiceWithQuoteStatus();
+            testDefaultValues();
+
+            setTimeout(function() {
+                var passed = testResults.filter(function(r) { return r.passed; }).length;
+                var total = testResults.length;
+                var allPassed = passed === total;
+
+                var summary = document.createElement('div');
+                summary.className = 'test-result ' + (allPassed ? 'pass' : 'fail');
+                summary.innerHTML = '<h3>' + (allPassed ? '✅ ALL TESTS PASSED' : '⚠️ SOME TESTS FAILED') + '</h3>';
+                summary.innerHTML += '<p>Passed: ' + passed + ' / ' + total + '</p>';
+
+                document.getElementById('all-results').appendChild(summary);
+            }, 500);
+        }
+
+        // Auto-load scripts
+        window.addEventListener('load', function() {
+            console.log('Test page loaded. Click "Run All Tests" to verify workflow fixes.');
+        });
+    </script>
+</body>
+</html>

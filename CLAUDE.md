@@ -623,6 +623,45 @@ TicTacStick is a **Progressive Web App (PWA)** quote engine for 925 Pressure Gla
 5. Convert accepted quotes to invoices
 6. Track client history and revenue
 
+### Quote-to-Job-to-Invoice Workflow
+
+TicTacStick uses quote statuses to represent the complete business workflow from initial quote to final payment. Understanding this flow is critical for proper use:
+
+**1. Quote Phase (Preparation & Proposal)**
+- **Draft** - Quote being prepared on-site or in office
+- **Sent** - Quote emailed/SMS'd to client
+
+**2. Decision Phase (Client Response)**
+- **Accepted** - Client verbally or formally accepted quote
+- **Declined** - Client rejected quote (enters nurture sequence)
+
+**3. Job Phase (Work Execution)**
+- **Scheduled** - Job is scheduled (this IS the "job" step - no separate job entity needed)
+- **Completed** - Work is finished, ready to invoice
+
+**4. Billing Phase (Invoice & Payment)**
+- Create invoice from quote (any status, but typically from "completed" quotes)
+- Invoice statuses: draft → sent → paid (or overdue/cancelled)
+
+**Key Insights:**
+- The "Scheduled" status represents when a quote becomes a job
+- The "Completed" status indicates job work is done and ready to bill
+- There is no separate "Job" entity - quote statuses serve this purpose
+- Invoices track the `quoteStatus` at time of conversion for analytics
+- You CAN create invoices from any quote status (flexibility for various workflows)
+
+**Recommended Flow:**
+```
+Create Quote → Send to Client → Client Accepts → Mark as Scheduled →
+Complete Job → Mark as Completed → Create Invoice → Mark Invoice Sent →
+Record Payment → Invoice Auto-Updates to Paid
+```
+
+**Alternative Flows:**
+- Emergency jobs: Draft → Scheduled → Completed → Invoice (skip client approval)
+- Pre-payment: Draft → Sent → Accepted → Invoice → Wait for Payment → Scheduled
+- Recurring contracts: Use Contract Management system (v1.12.0+)
+
 ### Current Phase
 
 **Phase 3:** CRM Integration & Sales Automation

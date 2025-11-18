@@ -307,35 +307,29 @@
     // Generate quote ID for tracking
     var quoteId = 'quote_' + Date.now() + '_' + Math.random().toString(36).substr(2, 9);
 
-    // Helper function to get default customer name
-    function getDefaultCustomerName() {
-      try {
-        var counters = JSON.parse(localStorage.getItem('tictacstick_default_counters') || '{"customer":0,"quote":0}');
-        counters.customer++;
-        localStorage.setItem('tictacstick_default_counters', JSON.stringify(counters));
-        return 'customer_' + counters.customer;
-      } catch (e) {
-        return 'customer_' + Date.now();
-      }
-    }
+    // Apply defaults for missing fields using shared APP functions to avoid duplication
+    var clientName = state.clientName && state.clientName.trim() !== ''
+      ? state.clientName
+      : (window.APP && window.APP.getDefaultClientName
+          ? window.APP.getDefaultClientName()
+          : 'customer_' + Date.now());
 
-    // Helper function to get default quote title
-    function getDefaultQuoteName() {
-      try {
-        var counters = JSON.parse(localStorage.getItem('tictacstick_default_counters') || '{"customer":0,"quote":0}');
-        counters.quote++;
-        localStorage.setItem('tictacstick_default_counters', JSON.stringify(counters));
-        return 'Quote_' + counters.quote;
-      } catch (e) {
-        return 'Quote_' + Date.now();
-      }
-    }
+    var clientLocation = state.clientLocation && state.clientLocation.trim() !== ''
+      ? state.clientLocation
+      : 'Location pending';
 
-    // Apply defaults for missing fields
-    var clientName = state.clientName && state.clientName.trim() !== '' ? state.clientName : getDefaultCustomerName();
-    var clientLocation = state.clientLocation && state.clientLocation.trim() !== '' ? state.clientLocation : 'Location pending';
-    var quoteTitle = state.quoteTitle && state.quoteTitle.trim() !== '' ? state.quoteTitle : getDefaultQuoteName();
+    var quoteTitle = state.quoteTitle && state.quoteTitle.trim() !== ''
+      ? state.quoteTitle
+      : (window.APP && window.APP.getDefaultQuoteTitle
+          ? window.APP.getDefaultQuoteTitle()
+          : 'Quote_' + Date.now());
+
     var jobType = state.jobType && state.jobType !== '' ? state.jobType : 'residential';
+
+    // Get current quote status for tracking
+    var currentQuoteStatus = window.QuoteWorkflow && window.QuoteWorkflow.getCurrentStatus
+      ? window.QuoteWorkflow.getCurrentStatus()
+      : 'unknown';
 
     // Create invoice
     var invoice = {
@@ -356,6 +350,8 @@
       quoteId: quoteId,
       quoteTitle: quoteTitle,
       jobType: jobType,
+      quoteStatus: currentQuoteStatus,  // Track quote status at invoice creation
+      quoteStatusAtConversion: currentQuoteStatus,  // Historical record
 
       // Line items - add descriptions for validation
       windowLines: (state.windowLines || []).map(function(line) {
