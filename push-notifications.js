@@ -8,7 +8,133 @@
 
   // Storage key for push token
   var PUSH_TOKEN_KEY = 'tts_push_token';
+  var BACKEND_ENDPOINT_KEY = 'tts_backend_endpoint';
   var initialized = false;
+
+  // ============================================
+  // BACKEND INTEGRATION HELPERS
+  // ============================================
+
+  /**
+   * Send push token to backend server (for future implementation)
+   * This function prepares the infrastructure for backend integration
+   * @param {string} token - Push notification token
+   * @returns {Promise<void>}
+   */
+  function sendTokenToBackend(token) {
+    return new Promise(function(resolve, reject) {
+      // Check if backend endpoint is configured
+      var endpoint = null;
+      try {
+        endpoint = localStorage.getItem(BACKEND_ENDPOINT_KEY);
+      } catch (e) {
+        console.warn('[PUSH] Could not access localStorage for backend endpoint');
+      }
+
+      if (!endpoint) {
+        console.log('[PUSH] Backend endpoint not configured. Token stored locally only.');
+        resolve();
+        return;
+      }
+
+      // Prepare payload
+      var payload = {
+        token: token,
+        platform: getPlatform(),
+        timestamp: new Date().toISOString(),
+        appVersion: getAppVersion()
+      };
+
+      console.log('[PUSH] Sending token to backend:', endpoint);
+
+      // Send to backend (using XHR for ES5 compatibility)
+      var xhr = new XMLHttpRequest();
+      xhr.open('POST', endpoint + '/api/push-tokens', true);
+      xhr.setRequestHeader('Content-Type', 'application/json');
+
+      xhr.onload = function() {
+        if (xhr.status >= 200 && xhr.status < 300) {
+          console.log('[PUSH] Token sent to backend successfully');
+          resolve();
+        } else {
+          console.error('[PUSH] Backend returned error:', xhr.status, xhr.responseText);
+          reject(new Error('Backend error: ' + xhr.status));
+        }
+      };
+
+      xhr.onerror = function() {
+        console.error('[PUSH] Network error sending token to backend');
+        reject(new Error('Network error'));
+      };
+
+      xhr.ontimeout = function() {
+        console.error('[PUSH] Timeout sending token to backend');
+        reject(new Error('Request timeout'));
+      };
+
+      xhr.timeout = 10000; // 10 second timeout
+
+      try {
+        xhr.send(JSON.stringify(payload));
+      } catch (e) {
+        console.error('[PUSH] Error sending request:', e);
+        reject(e);
+      }
+    });
+  }
+
+  /**
+   * Get platform identifier
+   * @returns {string}
+   */
+  function getPlatform() {
+    if (typeof window.Capacitor !== 'undefined' && window.Capacitor.getPlatform) {
+      return window.Capacitor.getPlatform();
+    }
+    return 'web';
+  }
+
+  /**
+   * Get app version
+   * @returns {string}
+   */
+  function getAppVersion() {
+    if (window.APP && window.APP.version) {
+      return window.APP.version;
+    }
+    return '1.11.0'; // Default version
+  }
+
+  /**
+   * Configure backend endpoint for push token registration
+   * @param {string} endpoint - Backend URL (e.g., 'https://api.example.com')
+   */
+  function configureBackendEndpoint(endpoint) {
+    try {
+      if (endpoint) {
+        localStorage.setItem(BACKEND_ENDPOINT_KEY, endpoint);
+        console.log('[PUSH] Backend endpoint configured:', endpoint);
+      } else {
+        localStorage.removeItem(BACKEND_ENDPOINT_KEY);
+        console.log('[PUSH] Backend endpoint removed');
+      }
+    } catch (e) {
+      console.error('[PUSH] Error saving backend endpoint:', e);
+    }
+  }
+
+  /**
+   * Get configured backend endpoint
+   * @returns {string|null}
+   */
+  function getBackendEndpoint() {
+    try {
+      return localStorage.getItem(BACKEND_ENDPOINT_KEY);
+    } catch (e) {
+      console.error('[PUSH] Error reading backend endpoint:', e);
+      return null;
+    }
+  }
 
   // ============================================
   // AVAILABILITY CHECK
@@ -89,8 +215,11 @@
         console.error('[PUSH] Failed to save token:', e);
       }
 
-      // TODO: Send token to backend server when implemented
-      // sendTokenToServer(token.value);
+      // Send token to backend server (if endpoint configured)
+      sendTokenToBackend(token.value).catch(function(error) {
+        console.warn('[PUSH] Could not send token to backend:', error.message);
+        // Don't fail registration if backend sync fails
+      });
     });
 
     // Registration error
@@ -182,13 +311,86 @@
   function navigateTo(page, params) {
     console.log('[PUSH] Navigate to:', page, params);
 
-    // TODO: Implement navigation based on your app structure
-    // This is a placeholder implementation
+    // Home page - main quote form
+    if (page === 'home') {
+      // Scroll to top and ensure main app is visible
+      window.scrollTo(0, 0);
+
+      // Close any open modals
+      if (window.closeAllModals) {
+        window.closeAllModals();
+      }
+
+      // Hide any open pages (tasks, etc.)
+      var taskPage = document.getElementById('page-tasks');
+      if (taskPage) {
+        taskPage.style.display = 'none';
+      }
+
+      console.log('[PUSH] Navigated to home');
+      return;
+    }
 
     // Show task dashboard
     if (page === 'tasks') {
       if (window.TaskDashboardUI && window.TaskDashboardUI.show) {
         window.TaskDashboardUI.show();
+        console.log('[PUSH] Navigated to tasks');
+        return;
+      }
+    }
+
+    // Show analytics dashboard
+    if (page === 'analytics') {
+      if (window.QuoteAnalytics && window.QuoteAnalytics.renderDashboard) {
+        window.QuoteAnalytics.renderDashboard('all');
+        console.log('[PUSH] Navigated to analytics');
+        return;
+      } else if (window.LazyLoader && window.LazyLoader.load) {
+        // Try lazy loading analytics if not loaded yet
+        window.LazyLoader.load('analytics').then(function() {
+          if (window.QuoteAnalytics && window.QuoteAnalytics.renderDashboard) {
+            window.QuoteAnalytics.renderDashboard('all');
+            console.log('[PUSH] Navigated to analytics (lazy loaded)');
+          }
+        });
+        return;
+      }
+    }
+
+    // Show client database/list
+    if (page === 'clients') {
+      if (window.ClientDatabase && window.ClientDatabase.showList) {
+        window.ClientDatabase.showList();
+        console.log('[PUSH] Navigated to client list');
+        return;
+      }
+    }
+
+    // Show specific client detail
+    if (page === 'client-detail' && params && params.id) {
+      if (window.ClientDatabase && window.ClientDatabase.viewClient) {
+        window.ClientDatabase.viewClient(params.id);
+        console.log('[PUSH] Navigated to client detail:', params.id);
+        return;
+      }
+    }
+
+    // Show invoices list
+    if (page === 'invoices') {
+      if (window.InvoiceSystem && window.InvoiceSystem.showInvoiceList) {
+        window.InvoiceSystem.showInvoiceList();
+        console.log('[PUSH] Navigated to invoices');
+        return;
+      }
+    }
+
+    // Show specific invoice detail
+    if (page === 'invoice-detail' && params && params.id) {
+      if (window.InvoiceSystem && window.InvoiceSystem.editInvoice) {
+        window.InvoiceSystem.editInvoice(params.id);
+        console.log('[PUSH] Navigated to invoice detail:', params.id);
+        return;
       }
     }
 
@@ -196,18 +398,49 @@
     if (page === 'quote-detail' && params && params.id) {
       if (window.QuoteManager && window.QuoteManager.showQuote) {
         window.QuoteManager.showQuote(params.id);
+        console.log('[PUSH] Navigated to quote detail:', params.id);
+        return;
       }
     }
 
-    // Show invoices
-    if (page === 'invoices') {
-      if (window.InvoiceSystem && window.InvoiceSystem.showInvoiceList) {
-        window.InvoiceSystem.showInvoiceList();
+    // Show help/keyboard shortcuts
+    if (page === 'help') {
+      if (window.HelpSystem && window.HelpSystem.open) {
+        window.HelpSystem.open();
+        console.log('[PUSH] Navigated to help system');
+        return;
+      } else {
+        // Fallback to keyboard shortcuts if available
+        var helpBtn = document.getElementById('keyboardShortcutsBtn');
+        if (helpBtn) {
+          helpBtn.click();
+          console.log('[PUSH] Navigated to keyboard shortcuts');
+          return;
+        }
+      }
+    }
+
+    // Show webhook/sync settings
+    if (page === 'settings' || page === 'webhook-settings') {
+      if (window.openWebhookSettings) {
+        window.openWebhookSettings();
+        console.log('[PUSH] Navigated to webhook settings');
+        return;
+      }
+    }
+
+    // Show contracts page
+    if (page === 'contracts') {
+      var contractsPage = document.getElementById('page-contracts');
+      if (contractsPage) {
+        contractsPage.style.display = 'block';
+        console.log('[PUSH] Navigated to contracts');
+        return;
       }
     }
 
     // Fallback: log to console
-    console.log('[PUSH] Navigation not fully implemented for:', page);
+    console.warn('[PUSH] Navigation not implemented for page:', page);
   }
 
   // ============================================
@@ -436,7 +669,9 @@
       scheduleFollowUpReminder: scheduleFollowUpReminder,
       checkPermissions: checkPermissions,
       requestPermissions: requestPermissions,
-      getPushToken: getPushToken
+      getPushToken: getPushToken,
+      configureBackendEndpoint: configureBackendEndpoint,
+      getBackendEndpoint: getBackendEndpoint
     });
   }
 
@@ -451,7 +686,10 @@
     scheduleFollowUpReminder: scheduleFollowUpReminder,
     checkPermissions: checkPermissions,
     requestPermissions: requestPermissions,
-    getPushToken: getPushToken
+    getPushToken: getPushToken,
+    configureBackendEndpoint: configureBackendEndpoint,
+    getBackendEndpoint: getBackendEndpoint,
+    sendTokenToBackend: sendTokenToBackend
   };
 
   console.log('[PUSH-NOTIFICATIONS] Module loaded');
