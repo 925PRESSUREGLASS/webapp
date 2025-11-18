@@ -1,7 +1,7 @@
 # CLAUDE.md - AI Assistant Guide for TicTacStick Quote Engine
 
 **Last Updated:** 2025-11-18
-**Version:** 1.11.0
+**Version:** 1.12.0
 **Project:** TicTacStick Quote Engine for 925 Pressure Glass
 
 ---
@@ -19,6 +19,222 @@
 9. [Module Reference](#module-reference)
 10. [Design System](#design-system)
 11. [Troubleshooting](#troubleshooting)
+
+---
+
+## What's New in v1.12.0
+
+### Contract Management & Advanced Features (November 2025)
+
+This release adds comprehensive contract management for recurring services, enhanced analytics, mobile/native features, and production testing infrastructure:
+
+**New Contract Management System (4 files, ~2,240 lines):**
+- `contract-manager.js` - Core contract CRUD operations (660 lines)
+  - Contract types: residential, commercial, strata
+  - Recurring frequencies: weekly, fortnightly, monthly, quarterly, annual
+  - Automatic discount calculation based on frequency
+  - Contract status tracking (draft, active, paused, cancelled, expired)
+  - Revenue forecasting and projections
+  - Client contract history
+  - Contract renewal automation
+  - Integration with invoice system
+
+- `contract-wizard.js` - Contract creation wizard (663 lines)
+  - Guided contract setup process
+  - Client selection and validation
+  - Service scope definition
+  - Frequency and pricing configuration
+  - Terms and conditions builder
+  - Contract preview and generation
+  - Multi-step form with validation
+
+- `contract-automation.js` - Recurring service automation (470 lines)
+  - Automatic task generation for scheduled services
+  - Smart scheduling with business rules
+  - Service reminders and notifications
+  - Automatic invoice creation on service completion
+  - Contract renewal reminders
+  - Performance tracking per contract
+
+- `contract-forecasting.js` - Revenue forecasting engine (447 lines)
+  - Monthly recurring revenue (MRR) calculations
+  - Annual recurring revenue (ARR) projections
+  - Contract value lifetime calculations
+  - Churn rate analysis
+  - Growth trend projections
+  - What-if scenario modeling
+
+**Enhanced Analytics System (3 files, ~1,612 lines):**
+- `analytics-engine.js` - Core analytics processing (692 lines)
+  - Advanced data aggregation and calculations
+  - Time-series analysis
+  - Statistical functions (mean, median, percentiles)
+  - Conversion funnel tracking
+  - Customer lifetime value (CLV) calculation
+  - Cohort analysis
+  - Performance metrics calculation
+
+- `analytics-dashboard.js` - Interactive dashboard UI (644 lines)
+  - Real-time data visualization
+  - Chart.js integration for multiple chart types
+  - Revenue trend charts (line, bar, area)
+  - Conversion funnel visualization
+  - Service breakdown pie charts
+  - Client source attribution charts
+  - Exportable analytics reports
+  - Date range filtering
+
+- `analytics-config.js` - Analytics configuration (276 lines)
+  - Metrics definitions and calculations
+  - Dashboard layout configuration
+  - Chart color schemes
+  - KPI thresholds and targets
+  - Data retention policies
+  - Custom metric builders
+
+**Mobile & Native Features (4 files, ~1,819 lines):**
+- `camera-helper.js` - Camera integration (424 lines)
+  - Photo capture with camera
+  - Image preview and cropping
+  - Automatic EXIF data extraction
+  - GPS coordinates from photos
+  - Multiple photo selection
+  - Photo annotation tools
+  - iOS/Android camera API support
+
+- `geolocation-helper.js` - Location services (457 lines)
+  - Current location detection
+  - Address geocoding and reverse geocoding
+  - Distance calculations
+  - Travel time estimates
+  - Location-based client matching
+  - Service area validation
+  - Map integration support
+
+- `native-features.js` - Native device capabilities (428 lines)
+  - Contact list access
+  - Calendar integration
+  - Share functionality
+  - Clipboard operations
+  - Device vibration
+  - Screen wake lock
+  - Network status detection
+  - Battery status monitoring
+
+- `push-notifications.js` - Push notification system (544 lines)
+  - Service Worker based notifications
+  - Notification scheduling
+  - Rich notification support (images, actions)
+  - Notification permission handling
+  - Click handlers and deep linking
+  - Notification history
+  - iOS/Android compatibility
+
+**Backup & Recovery System (1 file, ~531 lines):**
+- `backup-manager.js` - Comprehensive backup/restore (531 lines)
+  - Full data export (quotes, clients, invoices, tasks, analytics)
+  - Selective restore options
+  - Automatic backup scheduling (24-hour intervals)
+  - Backup verification and integrity checks
+  - Cloud storage integration ready
+  - Import/export in JSON format
+  - Backup history tracking
+  - Storage quota monitoring
+
+**Testing Infrastructure (5 files, ~2,089 lines):**
+- `test-framework.js` - Test framework foundation (452 lines)
+  - Assertion library (expect-style API)
+  - Test suite organization
+  - Before/after hooks
+  - Async test support
+  - Test result reporting
+  - Browser-based test execution
+  - ES5 compatible test framework
+
+- `test-runner.js` - Test execution engine (388 lines)
+  - Automated test running
+  - Parallel test execution support
+  - Test filtering and selection
+  - Progress reporting
+  - Error handling and stack traces
+  - Performance timing
+  - CSV export of results
+
+- `test-suites.js` - Pre-built test suites (408 lines)
+  - Pricing calculation tests
+  - Storage operation tests
+  - UI interaction tests
+  - Security validation tests
+  - Performance benchmarks
+  - Integration tests
+  - Regression test suites
+
+- `test-checklist.js` - Manual testing checklists (362 lines)
+  - Feature checklist generator
+  - iOS Safari specific tests
+  - Cross-browser testing checklist
+  - Accessibility testing guide
+  - Performance checklist
+  - Security audit checklist
+  - UAT (User Acceptance Testing) templates
+
+- `integration-tests.js` - Integration testing (322 lines)
+  - End-to-end workflow tests
+  - Multi-module integration tests
+  - Data flow validation
+  - API integration tests
+  - Third-party service tests
+  - Error recovery tests
+
+- `production-readiness.js` - Production validation (459 lines)
+  - Pre-deployment checks
+  - Configuration validation
+  - Performance benchmarking
+  - Security audit
+  - Browser compatibility verification
+  - PWA requirements validation
+  - Production environment setup
+
+**Help System (1 file, ~579 lines):**
+- `help-system.js` - In-app contextual help (579 lines)
+  - Context-sensitive help content
+  - Interactive tutorials
+  - Tooltips and hints
+  - Video tutorial links
+  - Keyboard shortcut reference
+  - Feature walkthroughs
+  - FAQ system
+  - Search functionality
+
+**Production Configuration (1 file, ~312 lines):**
+- `config-production.js` - Production settings (312 lines)
+  - Environment-specific configuration
+  - API endpoints and keys
+  - Feature flags
+  - Performance tuning parameters
+  - Logging levels
+  - Cache configuration
+  - Third-party service credentials
+
+**Key Features:**
+- 📋 Recurring contract management with automated billing
+- 📊 Advanced analytics with interactive dashboards
+- 📱 Native mobile features (camera, location, notifications)
+- 💾 Comprehensive backup and restore system
+- 🧪 Complete testing infrastructure for production quality
+- ❓ In-app help system for user guidance
+- ⚙️ Production-ready configuration management
+
+**Total:** ~10,000 lines of new code across 19 new modules
+
+**Integration Highlights:**
+- Contract system integrates with existing invoice and client database
+- Analytics engine processes all quote, invoice, and task data
+- Mobile features enhance field work capabilities
+- Backup system protects all application data
+- Testing infrastructure ensures production quality
+- Help system provides user guidance throughout app
+- All modules maintain ES5 compatibility and offline-first architecture
 
 ---
 
@@ -480,6 +696,41 @@ webapp/
 │
 ├── Job Management Modules
 ├── job-presets.js         # Job presets and templates - 428 lines
+│
+├── Contract Management System (NEW v1.12.0)
+├── contract-manager.js    # Core contract CRUD operations - 660 lines
+├── contract-wizard.js     # Contract creation wizard - 663 lines
+├── contract-automation.js # Recurring service automation - 470 lines
+├── contract-forecasting.js # Revenue forecasting engine - 447 lines
+│
+├── Enhanced Analytics System (NEW v1.12.0)
+├── analytics-engine.js    # Core analytics processing - 692 lines
+├── analytics-dashboard.js # Interactive dashboard UI - 644 lines
+├── analytics-config.js    # Analytics configuration - 276 lines
+│
+├── Mobile & Native Features (NEW v1.12.0)
+├── camera-helper.js       # Camera integration - 424 lines
+├── geolocation-helper.js  # Location services - 457 lines
+├── native-features.js     # Native device capabilities - 428 lines
+├── push-notifications.js  # Push notification system - 544 lines
+│
+├── Backup & Recovery System (NEW v1.12.0)
+├── backup-manager.js      # Comprehensive backup/restore - 531 lines
+│
+├── Testing Infrastructure (NEW v1.12.0)
+├── test-framework.js      # Test framework foundation - 452 lines
+├── test-runner.js         # Test execution engine - 388 lines
+├── test-suites.js         # Pre-built test suites - 408 lines
+├── test-checklist.js      # Manual testing checklists - 362 lines
+├── integration-tests.js   # Integration testing - 322 lines
+├── production-readiness.js # Production validation - 459 lines
+├── performance-tests.js   # Performance benchmarking - 367 lines
+│
+├── Help System (NEW v1.12.0)
+├── help-system.js         # In-app contextual help - 579 lines
+│
+├── Production Configuration (NEW v1.12.0)
+├── config-production.js   # Production settings - 312 lines
 │
 ├── GoHighLevel CRM Integration (NEW v1.11.0)
 ├── task-manager.js        # Task CRUD operations - 514 lines
@@ -2597,6 +2848,596 @@ JobPresets.exportPresets()
 JobPresets.importPresets(data)
 ```
 
+### Contract Management System **NEW v1.12.0**
+
+#### contract-manager.js (660 lines)
+
+**Purpose:** Core contract management for recurring services
+
+**Key Features:**
+- Contract CRUD operations (create, read, update, delete)
+- Contract types: residential, commercial, strata/body corporate
+- Recurring frequencies: weekly, fortnightly, monthly, quarterly, semi-annual, annual
+- Automatic discount calculation based on frequency (5-20% discount)
+- Contract status tracking (draft, active, paused, cancelled, expired)
+- Monthly recurring revenue (MRR) and annual recurring revenue (ARR) calculations
+- Client contract history and relationship tracking
+- Contract renewal automation
+- Integration with invoice and task systems
+
+**Key Functions:**
+```javascript
+ContractManager.createContract(contractData)
+ContractManager.updateContract(id, updates)
+ContractManager.getContract(id)
+ContractManager.getAllContracts()
+ContractManager.getContractsByClient(clientId)
+ContractManager.getActiveContracts()
+ContractManager.pauseContract(id)
+ContractManager.cancelContract(id, reason)
+ContractManager.renewContract(id)
+ContractManager.calculateMRR()
+ContractManager.calculateARR()
+```
+
+**Contract Object Structure:**
+```javascript
+{
+  id: 'contract_...',
+  contractNumber: 'C-001',
+  clientId: 'client_123',
+  type: 'residential',
+  status: 'active',
+  frequency: 'monthly',
+  startDate: '2025-11-01',
+  endDate: '2026-11-01',
+  serviceScope: {
+    windows: [...],
+    pressure: [...]
+  },
+  pricing: {
+    basePrice: 250.00,
+    discount: 10,
+    finalPrice: 225.00
+  },
+  nextServiceDate: '2025-12-01',
+  lastServiceDate: '2025-11-01',
+  servicesCompleted: 1,
+  totalRevenue: 225.00
+}
+```
+
+**Storage Key:** `tts_contracts`
+
+#### contract-wizard.js (663 lines)
+
+**Purpose:** Guided contract creation wizard UI
+
+**Key Features:**
+- Multi-step contract setup wizard
+- Client selection with search and validation
+- Service scope builder (windows, pressure cleaning)
+- Frequency and pricing configuration
+- Automatic discount application
+- Terms and conditions builder
+- Contract preview before creation
+- Form validation at each step
+
+**Key Functions:**
+```javascript
+ContractWizard.open()
+ContractWizard.close()
+ContractWizard.nextStep()
+ContractWizard.previousStep()
+ContractWizard.selectClient(clientId)
+ContractWizard.defineServiceScope()
+ContractWizard.configurePricing()
+ContractWizard.previewContract()
+ContractWizard.createContract()
+```
+
+#### contract-automation.js (470 lines)
+
+**Purpose:** Automated scheduling and task generation for recurring contracts
+
+**Key Features:**
+- Automatic task generation for scheduled services
+- Smart scheduling based on frequency and business rules
+- Service reminder notifications
+- Automatic invoice creation on service completion
+- Contract renewal reminders (30, 7, 1 days before expiration)
+- Performance tracking per contract
+- Late service detection and alerts
+
+**Key Functions:**
+```javascript
+ContractAutomation.generateServiceTasks()
+ContractAutomation.scheduleNextService(contractId)
+ContractAutomation.createServiceReminders(contractId)
+ContractAutomation.autoInvoiceOnCompletion(contractId)
+ContractAutomation.checkRenewals()
+ContractAutomation.trackPerformance(contractId)
+```
+
+#### contract-forecasting.js (447 lines)
+
+**Purpose:** Revenue forecasting and contract analytics
+
+**Key Features:**
+- Monthly recurring revenue (MRR) calculations
+- Annual recurring revenue (ARR) projections
+- Contract lifetime value (CLV) calculations
+- Churn rate analysis
+- Growth trend projections
+- What-if scenario modeling
+- Revenue forecasting by contract type
+
+**Key Functions:**
+```javascript
+ContractForecasting.calculateMRR()
+ContractForecasting.calculateARR()
+ContractForecasting.projectRevenue(months)
+ContractForecasting.calculateChurnRate()
+ContractForecasting.forecastGrowth(scenario)
+ContractForecasting.analyzeCLV(contractId)
+ContractForecasting.generateForecastReport()
+```
+
+### Enhanced Analytics System **NEW v1.12.0**
+
+#### analytics-engine.js (692 lines)
+
+**Purpose:** Advanced analytics processing and calculations
+
+**Key Features:**
+- Data aggregation from quotes, invoices, tasks, and contracts
+- Time-series analysis and trend detection
+- Statistical functions (mean, median, mode, percentiles, standard deviation)
+- Conversion funnel tracking (quote → invoice → payment)
+- Customer lifetime value (CLV) calculation
+- Cohort analysis (client groups over time)
+- Performance metrics (win rate, average deal size, sales cycle)
+- Revenue attribution by source
+
+**Key Functions:**
+```javascript
+AnalyticsEngine.aggregateData(dateRange)
+AnalyticsEngine.calculateMetrics()
+AnalyticsEngine.analyzeConversionFunnel()
+AnalyticsEngine.calculateCLV(clientId)
+AnalyticsEngine.performCohortAnalysis(cohortParams)
+AnalyticsEngine.analyzeTrends(metric, period)
+AnalyticsEngine.generateInsights()
+```
+
+**Metrics Calculated:**
+- Total revenue, average quote value, win rate
+- Sales cycle length, quotes per week/month
+- Client acquisition cost, lifetime value
+- Service mix (windows vs pressure)
+- Geographic distribution
+- Seasonal trends
+
+#### analytics-dashboard.js (644 lines)
+
+**Purpose:** Interactive analytics dashboard UI
+
+**Key Features:**
+- Real-time data visualization with Chart.js
+- Multiple chart types (line, bar, pie, doughnut, area)
+- Revenue trend charts with period comparison
+- Conversion funnel visualization
+- Service breakdown and mix analysis
+- Client source attribution charts
+- Date range filtering and comparison
+- Exportable reports (PDF, CSV)
+- Responsive dashboard layout
+
+**Key Functions:**
+```javascript
+AnalyticsDashboard.init()
+AnalyticsDashboard.render()
+AnalyticsDashboard.updateCharts()
+AnalyticsDashboard.setDateRange(start, end)
+AnalyticsDashboard.renderRevenueChart()
+AnalyticsDashboard.renderFunnelChart()
+AnalyticsDashboard.renderServiceChart()
+AnalyticsDashboard.exportReport(format)
+```
+
+#### analytics-config.js (276 lines)
+
+**Purpose:** Analytics system configuration
+
+**Key Features:**
+- Metric definitions and calculation formulas
+- Dashboard layout configuration
+- Chart color schemes and themes
+- KPI thresholds and targets
+- Data retention policies
+- Custom metric builder
+- Alert configuration
+
+**Key Configuration:**
+```javascript
+{
+  metrics: {
+    revenue: { formula: '...', format: 'currency' },
+    winRate: { formula: '...', format: 'percentage' }
+  },
+  kpiTargets: {
+    monthlyRevenue: 10000,
+    winRate: 0.35,
+    averageDealSize: 500
+  },
+  chartColors: { primary: '#...', secondary: '#...' },
+  retention: { quotes: 365, analytics: 730 }
+}
+```
+
+### Mobile & Native Features **NEW v1.12.0**
+
+#### camera-helper.js (424 lines)
+
+**Purpose:** Camera integration for photo capture
+
+**Key Features:**
+- Direct camera access for photo capture
+- Image preview and cropping tools
+- Automatic EXIF data extraction (date, GPS, camera info)
+- GPS coordinates from photos for job location
+- Multiple photo selection
+- Photo annotation tools (text, arrows, highlights)
+- iOS/Android camera API support
+- Fallback to file picker
+
+**Key Functions:**
+```javascript
+CameraHelper.openCamera(options)
+CameraHelper.capturePhoto()
+CameraHelper.selectMultiple()
+CameraHelper.extractEXIF(imageData)
+CameraHelper.getGPSFromPhoto(imageData)
+CameraHelper.cropImage(imageData, bounds)
+CameraHelper.annotatePhoto(imageData, annotations)
+```
+
+#### geolocation-helper.js (457 lines)
+
+**Purpose:** Location services and geolocation
+
+**Key Features:**
+- Current location detection with GPS
+- Address geocoding (address → coordinates)
+- Reverse geocoding (coordinates → address)
+- Distance calculations between two points
+- Travel time estimates
+- Location-based client matching
+- Service area validation
+- Map integration support (Google Maps, Mapbox)
+
+**Key Functions:**
+```javascript
+GeolocationHelper.getCurrentLocation()
+GeolocationHelper.geocodeAddress(address)
+GeolocationHelper.reverseGeocode(lat, lng)
+GeolocationHelper.calculateDistance(point1, point2)
+GeolocationHelper.estimateTravelTime(origin, destination)
+GeolocationHelper.findNearbyClients(location, radius)
+GeolocationHelper.isInServiceArea(location)
+```
+
+#### native-features.js (428 lines)
+
+**Purpose:** Native device capability integration
+
+**Key Features:**
+- Contact list access (with permission)
+- Calendar integration (add events, reminders)
+- Share functionality (native share sheet)
+- Clipboard operations (copy/paste)
+- Device vibration for haptic feedback
+- Screen wake lock (prevent sleep during use)
+- Network status detection (online/offline)
+- Battery status monitoring
+- File system access (downloads, photos)
+
+**Key Functions:**
+```javascript
+NativeFeatures.accessContacts()
+NativeFeatures.addToCalendar(event)
+NativeFeatures.share(data)
+NativeFeatures.copyToClipboard(text)
+NativeFeatures.vibrate(pattern)
+NativeFeatures.keepScreenAwake()
+NativeFeatures.checkNetworkStatus()
+NativeFeatures.getBatteryStatus()
+```
+
+#### push-notifications.js (544 lines)
+
+**Purpose:** Push notification system
+
+**Key Features:**
+- Service Worker based notifications
+- Notification scheduling (future delivery)
+- Rich notifications (images, actions, badges)
+- Notification permission handling
+- Click handlers and deep linking
+- Notification history and management
+- iOS/Android compatibility
+- Badge count management
+
+**Key Functions:**
+```javascript
+PushNotifications.requestPermission()
+PushNotifications.sendNotification(title, options)
+PushNotifications.scheduleNotification(title, options, date)
+PushNotifications.addAction(notification, action)
+PushNotifications.handleClick(notification)
+PushNotifications.getHistory()
+PushNotifications.clearAll()
+```
+
+### Backup & Recovery System **NEW v1.12.0**
+
+#### backup-manager.js (531 lines)
+
+**Purpose:** Comprehensive data backup and restore
+
+**Key Features:**
+- Full data export (quotes, clients, invoices, tasks, contracts, analytics)
+- Selective restore options (choose what to restore)
+- Automatic backup scheduling (every 24 hours)
+- Backup verification and integrity checks
+- Cloud storage integration ready (Drive, Dropbox, S3)
+- Import/export in JSON format
+- Backup history tracking
+- Storage quota monitoring
+- Incremental backup support
+
+**Key Functions:**
+```javascript
+BackupManager.exportAllData()
+BackupManager.exportSelectiveData(modules)
+BackupManager.importBackup(jsonData)
+BackupManager.scheduleAutoBackup()
+BackupManager.verifyBackup(backupData)
+BackupManager.getBackupHistory()
+BackupManager.uploadToCloud(provider, data)
+BackupManager.downloadFromCloud(provider, backupId)
+```
+
+**Backup Structure:**
+```javascript
+{
+  version: '1.12.0',
+  timestamp: '2025-11-18T10:00:00Z',
+  data: {
+    quotes: [...],
+    clients: [...],
+    invoices: [...],
+    tasks: [...],
+    contracts: [...],
+    analytics: {...},
+    settings: {...}
+  },
+  checksum: 'sha256...'
+}
+```
+
+**Storage Keys:**
+- `tts_last_backup_timestamp`
+- `tts_backup_history`
+
+### Testing Infrastructure **NEW v1.12.0**
+
+#### test-framework.js (452 lines)
+
+**Purpose:** Browser-based testing framework
+
+**Key Features:**
+- Expect-style assertion library
+- Test suite organization (describe/it blocks)
+- Before/after hooks (setup/teardown)
+- Async test support
+- Test result reporting
+- Browser-based execution (no Node.js required)
+- ES5 compatible for iOS Safari 12+
+
+**Key Functions:**
+```javascript
+TestFramework.describe(name, fn)
+TestFramework.it(name, fn)
+TestFramework.expect(value).toBe(expected)
+TestFramework.expect(value).toEqual(expected)
+TestFramework.expect(value).toBeTruthy()
+TestFramework.beforeEach(fn)
+TestFramework.afterEach(fn)
+TestFramework.run()
+```
+
+#### test-runner.js (388 lines)
+
+**Purpose:** Automated test execution engine
+
+**Key Features:**
+- Automated test running
+- Parallel test execution support
+- Test filtering and selection
+- Progress reporting with live updates
+- Error handling and stack traces
+- Performance timing per test
+- CSV export of results
+- Integration with test-framework.js
+
+**Key Functions:**
+```javascript
+TestRunner.runAll()
+TestRunner.runSuite(suiteName)
+TestRunner.runTest(testName)
+TestRunner.filterTests(pattern)
+TestRunner.exportResults()
+TestRunner.reportProgress()
+```
+
+#### test-suites.js (408 lines)
+
+**Purpose:** Pre-built test suites
+
+**Test Suites Included:**
+- **Pricing Tests** - Calculation accuracy, GST, discounts
+- **Storage Tests** - LocalStorage operations, quota
+- **UI Tests** - DOM interactions, event handling
+- **Security Tests** - XSS prevention, input sanitization
+- **Performance Tests** - Speed benchmarks, memory usage
+- **Integration Tests** - Module interactions, workflows
+- **Regression Tests** - Bug prevention, edge cases
+
+**Usage:**
+```javascript
+TestSuites.runPricingTests()
+TestSuites.runStorageTests()
+TestSuites.runAllTests()
+```
+
+#### test-checklist.js (362 lines)
+
+**Purpose:** Manual testing checklists and guides
+
+**Key Features:**
+- Feature checklist generator
+- iOS Safari specific tests
+- Cross-browser testing checklist
+- Accessibility testing guide (WCAG AA)
+- Performance checklist
+- Security audit checklist
+- User acceptance testing (UAT) templates
+
+**Usage:**
+```javascript
+TestChecklist.generateFeatureChecklist()
+TestChecklist.generateIOSChecklist()
+TestChecklist.generateAccessibilityChecklist()
+TestChecklist.exportChecklist(format)
+```
+
+#### integration-tests.js (322 lines)
+
+**Purpose:** End-to-end integration testing
+
+**Key Features:**
+- Complete workflow tests (quote → invoice → payment)
+- Multi-module integration tests
+- Data flow validation
+- API integration tests (GHL, webhooks)
+- Third-party service tests
+- Error recovery scenarios
+- Performance under load
+
+**Test Scenarios:**
+```javascript
+IntegrationTests.testQuoteToInvoiceFlow()
+IntegrationTests.testContractAutomation()
+IntegrationTests.testCRMSync()
+IntegrationTests.testBackupRestore()
+```
+
+#### production-readiness.js (459 lines)
+
+**Purpose:** Production deployment validation
+
+**Key Features:**
+- Pre-deployment checks
+- Configuration validation (all required settings)
+- Performance benchmarking (load time, memory)
+- Security audit (CSP, XSS, HTTPS)
+- Browser compatibility verification
+- PWA requirements validation
+- Production environment setup
+- Deployment checklist export
+
+**Usage:**
+```javascript
+ProductionReadiness.runAllChecks()
+ProductionReadiness.validateConfig()
+ProductionReadiness.benchmarkPerformance()
+ProductionReadiness.auditSecurity()
+ProductionReadiness.exportChecklist()
+```
+
+### Help System **NEW v1.12.0**
+
+#### help-system.js (579 lines)
+
+**Purpose:** In-app contextual help and tutorials
+
+**Key Features:**
+- Context-sensitive help content
+- Interactive step-by-step tutorials
+- Tooltips and inline hints
+- Video tutorial links
+- Keyboard shortcut reference
+- Feature walkthroughs (guided tours)
+- FAQ system with search
+- Help content search functionality
+
+**Key Functions:**
+```javascript
+HelpSystem.init()
+HelpSystem.showHelp(topic)
+HelpSystem.startTutorial(tutorialId)
+HelpSystem.showTooltip(elementId, content)
+HelpSystem.searchHelp(query)
+HelpSystem.showKeyboardShortcuts()
+```
+
+**Help Topics:**
+- Getting started
+- Creating quotes
+- Managing clients
+- Invoicing
+- Contract management
+- Analytics dashboard
+- Offline mode
+- Task automation
+
+### Production Configuration **NEW v1.12.0**
+
+#### config-production.js (312 lines)
+
+**Purpose:** Production environment configuration
+
+**Key Configuration:**
+```javascript
+ProductionConfig = {
+  environment: 'production',
+  apiEndpoints: {
+    ghl: 'https://api.gohighlevel.com',
+    webhook: 'https://webhook.tictacstick.com'
+  },
+  features: {
+    contracts: true,
+    analytics: true,
+    notifications: true,
+    offlineMode: true
+  },
+  performance: {
+    cacheTimeout: 3600,
+    maxPhotos: 50,
+    autoSaveInterval: 30000
+  },
+  logging: {
+    level: 'error',
+    remoteLogging: true
+  },
+  security: {
+    enforceHTTPS: true,
+    cspEnabled: true
+  }
+}
+```
+
 ### GoHighLevel CRM Integration
 
 #### task-manager.js (514 lines) **NEW v1.11.0**
@@ -3803,7 +4644,17 @@ var value = window.Security.validateNumber(input, {
 
 ### Version History
 
-- **v1.11.0** (Current - 2025-11-18) - GoHighLevel CRM Integration & Automated Follow-ups
+- **v1.12.0** (Current - 2025-11-18) - Contract Management & Advanced Features
+  - Contract Management System (contract-manager.js, contract-wizard.js, contract-automation.js, contract-forecasting.js)
+  - Enhanced Analytics (analytics-engine.js, analytics-dashboard.js, analytics-config.js)
+  - Mobile & Native Features (camera-helper.js, geolocation-helper.js, native-features.js, push-notifications.js)
+  - Backup & Recovery System (backup-manager.js)
+  - Testing Infrastructure (test-framework.js, test-runner.js, test-suites.js, test-checklist.js, integration-tests.js, production-readiness.js)
+  - Help System (help-system.js)
+  - Production Configuration (config-production.js)
+  - Total: ~10,000 lines of new code across 19 modules
+
+- **v1.11.0** (2025-11-18) - GoHighLevel CRM Integration & Automated Follow-ups
   - Task management system (task-manager.js, task-dashboard-ui.js)
   - Intelligent follow-up automation (followup-automation.js, followup-config.js)
   - Webhook integration system (webhook-processor.js, webhook-settings.js, webhook-debug.js)
