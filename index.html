@@ -56,6 +56,7 @@
 	<link rel="stylesheet" href="css/tasks.css" />
 	<link rel="stylesheet" href="css/contracts.css" />
 	<link rel="stylesheet" href="css/help-system.css" />
+	<link rel="stylesheet" href="css/ghl-settings.css" />
 	<link rel="stylesheet" href="mobile.css" />
 	<link rel="stylesheet" href="quote-pdf.css" />
 	<link rel="stylesheet" href="css/test-runner.css" />
@@ -81,8 +82,8 @@
 					<button id="toggleModeBtn" type="button" class="btn btn-accent" aria-label="Switch to wizard mode">
 						🪄 Wizard Mode
 					</button>
-					<button id="webhookSettingsBtn" type="button" class="btn btn-secondary" title="Webhook & Sync Settings" aria-label="Open webhook settings" onclick="openWebhookSettings()">
-						🔄 Sync
+					<button id="webhookSettingsBtn" type="button" class="btn btn-secondary" title="GoHighLevel Integration Settings" aria-label="Open GHL settings" onclick="if(window.openGHLSettings) { window.openGHLSettings(); } else { alert('GHL Settings module not loaded yet'); }">
+						🔄 GHL
 					</button>
 					<button id="keyboardShortcutsBtn" type="button" class="btn btn-tertiary" title="Keyboard Shortcuts (Press ?)" aria-label="View keyboard shortcuts">
 						⌨️ Help
@@ -1120,13 +1121,13 @@
 	<script src="invoice.js" defer></script>
 	<!-- GoHighLevel Integration & Webhook Modules -->
 	<script src="ghl-client.js" defer></script>
+	<script src="ghl-opportunity-sync.js" defer></script>
 	<script src="ghl-integration.js" defer></script>
-	<script src="task-manager.js" defer></script>
-	<script src="followup-automation.js" defer></script>
 	<script src="webhook-processor.js" defer></script>
 	<script src="ghl-webhook-setup.js" defer></script>
 	<script src="webhook-settings.js" defer></script>
 	<script src="webhook-debug.js" defer></script>
+	<script src="ghl-settings-ui.js" defer></script>
 	<script src="theme.js" defer></script>
 	<script src="theme-customizer.js" defer></script>
 	<script src="shortcuts.js" defer></script>
