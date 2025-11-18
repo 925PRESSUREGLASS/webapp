@@ -58,8 +58,8 @@ body {
   font-family: system-ui, -apple-system, BlinkMacSystemFont, "SF Pro Text",
     "Roboto", "Segoe UI", sans-serif;
   -webkit-font-smoothing: antialiased;
-  background: #0f172a;
-  color: #e5e7eb;
+  background: var(--bg-primary);
+  color: var(--text-primary);
 }
 
 body.accordion-mode .card-body {
@@ -141,7 +141,7 @@ body.accordion-mode .card-body.card-body-open {
 
 .hdr-subtitle {
   font-size: 13px;
-  color: #9ca3af;
+  color: var(--text-secondary);
 }
 
 .hdr-meta {
@@ -156,7 +156,7 @@ body.accordion-mode .card-body.card-body-open {
   flex-direction: column;
   gap: 4px;
   font-size: 12px;
-  color: #9ca3af;
+  color: var(--text-secondary);
 }
 
 .hdr-meta-field span {
@@ -168,16 +168,16 @@ body.accordion-mode .card-body.card-body-open {
 .hdr-meta-field input,
 .hdr-meta-field select {
   border-radius: 8px;
-  border: 1px solid rgba(55, 65, 81, 0.8);
+  border: 1px solid var(--border-color);
   padding: 4px 8px;
-  background: rgba(15, 23, 42, 0.9);
-  color: #e5e7eb;
+  background: var(--bg-tertiary);
+  color: var(--text-primary);
   font-size: 13px;
   min-height: 30px;
 }
 
 .hdr-meta-field input::placeholder {
-  color: #6b7280;
+  color: var(--text-muted);
 }
 
 .hdr-actions {
@@ -246,7 +246,7 @@ body.accordion-mode .card-body.card-body-open {
 .card-toggle {
   border: none;
   background: transparent;
-  color: #9ca3af;
+  color: var(--text-secondary);
   font-size: 16px;
   padding: 0 4px;
   cursor: pointer;
@@ -264,16 +264,16 @@ body.accordion-mode .card-body.card-body-open {
   font-size: 11px;
   text-transform: uppercase;
   letter-spacing: 0.09em;
-  color: #9ca3af;
+  color: var(--text-secondary);
 }
 
 .field input,
 .field textarea,
 .field select {
   border-radius: 10px;
-  border: 1px solid rgba(55, 65, 81, 0.85);
-  background: rgba(15, 23, 42, 0.95);
-  color: #e5e7eb;
+  border: 1px solid var(--border-color);
+  background: var(--bg-tertiary);
+  color: var(--text-primary);
   padding: 6px 8px;
   font-size: 13px;
 }
@@ -284,7 +284,7 @@ body.accordion-mode .card-body.card-body-open {
 
 .field-help {
   font-size: 11px;
-  color: #6b7280;
+  color: var(--text-muted);
 }
 
 /* BUTTONS */
@@ -316,8 +316,8 @@ body.accordion-mode .card-body.card-body-open {
 
 .btn-ghost {
   background: transparent;
-  color: #9ca3af;
-  border: 1px solid rgba(55, 65, 81, 0.9);
+  color: var(--text-secondary);
+  border: 1px solid var(--border-color);
   box-shadow: none;
 }
 
@@ -332,7 +332,7 @@ body.accordion-mode .card-body.card-body-open {
   align-items: center;
   gap: 6px;
   font-size: 12px;
-  color: #9ca3af;
+  color: var(--text-secondary);
 }
 
 .toggle input[type="checkbox"] {
@@ -400,7 +400,7 @@ body.accordion-mode .card-body.card-body-open {
   flex-wrap: wrap;
   gap: 4px;
   font-size: 10px;
-  color: #9ca3af;
+  color: var(--text-secondary);
 }
 
 .line-card-body {
@@ -418,15 +418,15 @@ body.accordion-mode .card-body.card-body-open {
 }
 
 .line-field label {
-  color: #9ca3af;
+  color: var(--text-secondary);
 }
 
 .line-field input,
 .line-field select {
   border-radius: 8px;
-  border: 1px solid rgba(55, 65, 81, 0.9);
-  background: rgba(15, 23, 42, 0.95);
-  color: #e5e7eb;
+  border: 1px solid var(--border-color);
+  background: var(--bg-tertiary);
+  color: var(--text-primary);
   padding: 3px 6px;
   font-size: 12px;
 }
@@ -438,7 +438,7 @@ body.accordion-mode .card-body.card-body-open {
   align-items: center;
   gap: 6px;
   font-size: 11px;
-  color: #9ca3af;
+  color: var(--text-secondary);
 }
 
 .line-actions {
@@ -474,7 +474,7 @@ body.accordion-mode .card-body.card-body-open {
 
 .summary-label {
   font-size: 11px;
-  color: #9ca3af;
+  color: var(--text-secondary);
 }
 
 .summary-value {
@@ -534,7 +534,7 @@ body.accordion-mode .card-body.card-body-open {
 
 .saved-quotes-help {
   font-size: 11px;
-  color: #6b7280;
+  color: var(--text-muted);
   margin-top: 4px;
 }
 
@@ -579,7 +579,7 @@ body.accordion-mode .card-body.card-body-open {
 .wizard-overlay {
   position: fixed;
   inset: 0;
-  background: rgba(15, 23, 42, 0.85);
+  background: rgba(0, 0, 0, 0.6);
   display: none;
   align-items: center;
   justify-content: center;
@@ -618,7 +618,7 @@ body.accordion-mode .card-body.card-body-open {
 .wizard-close {
   border: none;
   background: transparent;
-  color: #9ca3af;
+  color: var(--text-secondary);
   font-size: 20px;
   cursor: pointer;
   padding: 0 4px;
@@ -626,12 +626,12 @@ body.accordion-mode .card-body.card-body-open {
 
 .wizard-content {
   font-size: 13px;
-  color: #e5e7eb;
+  color: var(--text-primary);
 }
 
 .wizard-intro {
   font-size: 12px;
-  color: #9ca3af;
+  color: var(--text-secondary);
   margin-bottom: 8px;
 }
 
@@ -639,7 +639,7 @@ body.accordion-mode .card-body.card-body-open {
   font-size: 12px;
   text-transform: uppercase;
   letter-spacing: 0.09em;
-  color: #9ca3af;
+  color: var(--text-secondary);
   margin: 8px 0 4px;
 }
 
@@ -673,7 +673,7 @@ body.accordion-mode .card-body.card-body-open {
 
 .wizard-option-sub {
   font-size: 11px;
-  color: #9ca3af;
+  color: var(--text-secondary);
 }
 
 .wizard-chips {
@@ -687,8 +687,8 @@ body.accordion-mode .card-body.card-body-open {
   font-size: 10px;
   padding: 2px 6px;
   border-radius: 999px;
-  border: 1px solid rgba(75, 85, 99, 0.9);
-  color: #9ca3af;
+  border: 1px solid var(--border-color);
+  color: var(--text-secondary);
 }
 
 .wizard-option-btn {
