@@ -1,7 +1,7 @@
 # CLAUDE.md - AI Assistant Guide for TicTacStick Quote Engine
 
 **Last Updated:** 2025-11-18
-**Version:** 1.10.0
+**Version:** 1.11.0
 **Project:** TicTacStick Quote Engine for 925 Pressure Glass
 
 ---
@@ -19,6 +19,126 @@
 9. [Module Reference](#module-reference)
 10. [Design System](#design-system)
 11. [Troubleshooting](#troubleshooting)
+
+---
+
+## What's New in v1.11.0
+
+### GoHighLevel CRM Integration & Automated Follow-ups (November 2025)
+
+This release adds comprehensive CRM integration with GoHighLevel, transforming TicTacStick into a full-featured sales automation platform:
+
+**New Task Management System (4 files, ~2,049 lines):**
+- `task-manager.js` - Core task CRUD operations (514 lines)
+  - Create, read, update, delete tasks
+  - Task types: follow-up, phone-call, email, SMS, meeting
+  - Priority levels: urgent, high, normal, low
+  - Status tracking: pending, in-progress, completed, cancelled, overdue
+  - Automatic overdue detection
+  - Task statistics and filtering
+  - GHL sync integration (tracks ghlTaskId and syncStatus)
+
+- `followup-automation.js` - Intelligent follow-up sequences (519 lines)
+  - Event-driven automation (quote sent, viewed, accepted, declined)
+  - 5 follow-up sequences: Standard, High-Value, Repeat Client, Referral, Nurture
+  - Smart timing: Business hours and DND time respect
+  - Message templates with variable substitution
+  - Optimal contact time calculation
+  - Automatic sequence triggering based on quote status
+
+- `followup-config.js` - Follow-up sequence definitions (270 lines)
+  - Configurable contact times (weekday/weekend)
+  - DND (Do Not Disturb) time rules
+  - Message templates for SMS, email, phone scripts
+  - Sequence configurations by quote type
+
+- `task-dashboard-ui.js` - Task dashboard interface (446 lines)
+  - Visual task management dashboard
+  - Summary cards (Today, Overdue, Urgent, Pending)
+  - Task filtering by status, priority, type
+  - Task details modal
+  - Complete/cancel task actions
+  - Auto-refresh every minute
+
+**New Webhook Integration System (5 files, ~2,608 lines):**
+- `webhook-processor.js` - Event processing engine (921 lines)
+  - Real-time polling from Cloudflare Worker (every 30 seconds)
+  - Event queue with batch processing (10 events per batch)
+  - Bidirectional sync (GoHighLevel ↔ TicTacStick)
+  - 4 conflict resolution strategies (timestamp, GHL wins, local wins, manual)
+  - Retry logic (3 attempts with exponential backoff)
+  - Handles 15+ event types (ContactUpdate, OpportunityUpdate, TaskUpdate, etc.)
+
+- `webhook-settings.js` - Settings UI controller (487 lines)
+  - Webhook URL and secret configuration
+  - Event subscription management
+  - Sync status monitoring
+  - Manual sync trigger
+  - Event queue viewer
+  - Register/unregister with GHL
+
+- `webhook-debug.js` - Testing and debugging tools (439 lines)
+  - Simulate webhook events for testing
+  - View event queue status
+  - Export debug logs to JSON
+  - Integration test suite
+  - Test data generators
+
+- `ghl-webhook-setup.js` - GHL API integration (373 lines)
+  - Register/update/delete webhooks via GHL API
+  - Test endpoint connectivity
+  - List and verify existing webhooks
+  - Support for 15+ GHL event types
+
+- `ghl-task-sync.js` - Bidirectional task sync (388 lines)
+  - Sync tasks between TicTacStick and GHL
+  - Maps task formats between systems
+  - Batch sync for offline recovery
+  - Auto-sync on task create/update/complete
+  - Graceful failure handling
+
+**New Task Dashboard UI (2 files, ~885 lines):**
+- Task dashboard page (integrated in `index.html`)
+  - Modern card-based layout
+  - Priority color coding (urgent=red, high=orange, normal=blue, low=gray)
+  - Responsive design (desktop/tablet/mobile)
+  - Real-time task updates
+
+- `css/tasks.css` - Task styling (439 lines)
+  - Card layouts and grids
+  - Priority badges and status indicators
+  - Dark theme support
+  - Print-friendly styles
+  - Mobile-optimized (44px touch targets)
+
+**Key Features:**
+- 📞 Automated follow-up sequences based on quote status
+- 🔄 Real-time bidirectional sync with GoHighLevel CRM
+- 📋 Visual task management dashboard
+- ⏰ Smart timing (business hours, DND times, optimal contact times)
+- 💬 Message templates with variable substitution
+- 🎯 Priority-based task routing
+- 📊 Task statistics and conversion tracking
+- 🔌 Webhook integration with event queue and retry logic
+- 🧪 Comprehensive testing and debugging tools
+- 📱 Mobile-responsive task interface
+
+**Total:** ~5,700 lines of new code (4,357 JS + 439 CSS + ~900 docs)
+
+**Integration Highlights:**
+- Seamlessly integrates with existing quote engine
+- Client data syncs from GHL contacts
+- Quote status triggers follow-up sequences
+- Tasks linked to quotes and clients
+- Uses existing design system and UI components
+- No breaking changes to existing features
+
+**Follow-up Sequences:**
+1. **Standard** - Quote sent: SMS (24h) → Phone (72h) → Email (1 week)
+2. **High-Value** ($2000+): Phone (6h) → Email (24h) → Phone (48h)
+3. **Repeat Client**: SMS (12h) → Phone (36h)
+4. **Referral**: Phone (6h) → SMS (24h)
+5. **Nurture** (declined): Email (1 week) → SMS (90 days)
 
 ---
 
@@ -289,12 +409,12 @@ TicTacStick is a **Progressive Web App (PWA)** quote engine for 925 Pressure Gla
 
 ### Current Phase
 
-**Phase 3:** Feature Enhancement & Production Optimization
-- Status: Active production deployment with comprehensive tooling
-- Recent: PDF generation suite (v1.10.0), design system (v1.9.0), print layouts (v1.8.0)
-- Current: Professional PDF quotes, production monitoring, bug tracking
-- Focus: Production stability, user feedback, feature refinement
-- Next: User acceptance testing, performance optimization, cloud migration planning
+**Phase 3:** CRM Integration & Sales Automation
+- Status: Active production deployment with CRM integration
+- Recent: GoHighLevel CRM integration (v1.11.0), PDF generation suite (v1.10.0), design system (v1.9.0)
+- Current: Automated follow-ups, task management, real-time CRM sync, webhook integration
+- Focus: CRM optimization, follow-up sequence refinement, production stability
+- Next: Advanced automation workflows, reporting enhancements, user acceptance testing
 
 ---
 
@@ -361,6 +481,17 @@ webapp/
 ├── Job Management Modules
 ├── job-presets.js         # Job presets and templates - 428 lines
 │
+├── GoHighLevel CRM Integration (NEW v1.11.0)
+├── task-manager.js        # Task CRUD operations - 514 lines
+├── followup-automation.js # Intelligent follow-up sequences - 519 lines
+├── followup-config.js     # Follow-up sequence definitions - 270 lines
+├── task-dashboard-ui.js   # Task dashboard interface - 446 lines
+├── ghl-task-sync.js       # Bidirectional task sync with GHL - 388 lines
+├── webhook-processor.js   # Event processing engine - 921 lines
+├── webhook-settings.js    # Settings UI controller - 487 lines
+├── webhook-debug.js       # Testing and debugging tools - 439 lines
+├── ghl-webhook-setup.js   # GHL API integration - 373 lines
+│
 ├── PDF Generation Suite (NEW v1.10.0)
 ├── pdf-config.js          # PDF configuration and branding - 408 lines
 ├── pdf-components.js      # PDF component rendering engine - 625 lines
@@ -379,8 +510,9 @@ webapp/
 ├── sw-optimized.js        # Advanced caching (not in use) - 553 lines
 ├── ui-components.js       # UI helpers (toast, modals) - 380 lines
 │
-├── CSS Files (~22 total)
+├── CSS Files (~23 total)
 ├── css/design-system.css  # Design system (NEW v1.9.0) - 1,539 lines
+├── css/tasks.css          # Task dashboard (NEW v1.11.0) - 439 lines
 ├── css/analytics.css      # Analytics dashboard - 138 lines (in css/ subdirectory)
 ├── app.css                # Main styles - 391 lines
 ├── invoice.css            # Invoice UI - 856 lines
@@ -472,7 +604,14 @@ From `index.html`, scripts MUST load in this order:
 <!-- 7. Job Management -->
 <script src="job-presets.js" defer></script>
 
-<!-- 8. UI and feature modules (with defer) -->
+<!-- 8. Task & Follow-up Automation (NEW v1.11.0) -->
+<script src="followup-config.js" defer></script>
+<script src="task-manager.js" defer></script>
+<script src="followup-automation.js" defer></script>
+<script src="ghl-task-sync.js" defer></script>
+<script src="task-dashboard-ui.js" defer></script>
+
+<!-- 9. UI and feature modules (with defer) -->
 <script src="ui.js" defer></script>
 <script src="wizard.js" defer></script>
 <script src="loading.js" defer></script>
@@ -488,21 +627,27 @@ From `index.html`, scripts MUST load in this order:
 <script src="export.js" defer></script>
 <script src="templates.js" defer></script>
 
-<!-- 9. PDF Generation Suite (NEW v1.10.0) -->
+<!-- 10. GoHighLevel Integration & Webhook Modules (NEW v1.11.0) -->
+<script src="webhook-processor.js" defer></script>
+<script src="ghl-webhook-setup.js" defer></script>
+<script src="webhook-settings.js" defer></script>
+<script src="webhook-debug.js" defer></script>
+
+<!-- 11. PDF Generation Suite (NEW v1.10.0) -->
 <script src="pdf-config.js" defer></script>
 <script src="pdf-components.js" defer></script>
 <script src="quote-pdf.js" defer></script>
 <script src="quote-pdf-ui.js" defer></script>
 
-<!-- 10. Photos (loaded after PDF modules) -->
+<!-- 12. Photos (loaded after PDF modules) -->
 <script src="photos.js" defer></script>
 
-<!-- 11. Production Tools (NEW v1.10.0) -->
+<!-- 13. Production Tools (NEW v1.10.0) -->
 <script src="deployment-helper.js" defer></script>
 <script src="health-check.js" defer></script>
 <script src="bug-tracker.js" defer></script>
 
-<!-- 12. Lazy-loaded modules (loaded on demand via LazyLoader) -->
+<!-- 14. Lazy-loaded modules (loaded on demand via LazyLoader) -->
 <!-- analytics.js, charts.js, photo-modal.js are loaded when needed -->
 ```
 
@@ -1567,6 +1712,194 @@ BugTracker.exportReport('bug_1234567890');
 BugTracker.clearBugs();
 ```
 
+### How to Use GoHighLevel CRM Integration (v1.11.0)
+
+The GoHighLevel integration provides automated follow-ups and real-time CRM sync.
+
+#### Configure Webhook Integration
+
+1. **Open webhook settings:**
+```javascript
+// Click "🔄 Sync" button in header
+// Or navigate to webhook settings modal
+```
+
+2. **Configure webhook endpoint:**
+- Webhook URL: Your Cloudflare Worker endpoint
+- Webhook Secret: Secret key for signature verification
+- Enable real-time sync: ✓
+- Bidirectional sync: ✓
+- Conflict resolution: "Most recent wins" (recommended)
+
+3. **Select event subscriptions:**
+- Contact Updates ✓
+- Opportunity Updates ✓
+- Task Updates ✓
+- Note Create ✓
+- Inbound Messages (optional)
+- Appointment Updates (optional)
+
+4. **Register with GoHighLevel:**
+```javascript
+// Click "Register Webhook" button
+// This calls GHL API to set up webhook subscription
+```
+
+#### Manage Tasks
+
+1. **View task dashboard:**
+```javascript
+// Click Tasks icon or navigate to #page-tasks
+// Shows summary cards: Today, Overdue, Urgent, Pending
+```
+
+2. **Create manual task:**
+```javascript
+TaskManager.createTask({
+  quoteId: 'quote_123',
+  clientId: 'client_456',
+  type: 'phone-call',
+  priority: 'high',
+  title: 'Follow up on quote',
+  description: 'Discuss quote details and answer questions',
+  dueDate: new Date(Date.now() + 24 * 60 * 60 * 1000), // Tomorrow
+  followUpMessage: 'Hi John, following up on your quote...'
+});
+```
+
+3. **Complete task:**
+```javascript
+TaskManager.completeTask('task_123');
+// Automatically syncs to GHL if integration enabled
+```
+
+4. **Filter tasks:**
+```javascript
+// Use dashboard filters
+// - By status: pending, in-progress, overdue, completed
+// - By priority: urgent, high, normal, low
+// - By type: follow-up, phone-call, email, SMS, meeting
+```
+
+#### Configure Follow-up Sequences
+
+1. **Edit follow-up config:**
+```javascript
+// In followup-config.js
+var config = window.FollowupConfig.get();
+
+// Customize contact times
+config.contactTimes.weekday.morning = { start: 9, end: 12 };
+
+// Update DND times
+config.dndTimes.start = 20;  // 8pm
+config.dndTimes.end = 8;      // 8am
+
+// Customize message templates
+config.templates.sms.quoteFollowup = "Hi {clientName}, ...";
+
+window.FollowupConfig.save(config);
+```
+
+2. **Trigger automatic follow-up:**
+```javascript
+// Automatically triggered when quote status changes
+// For example, when quote is marked as "sent":
+FollowupAutomation.triggerFollowup('quote-sent', quoteData);
+
+// This creates a follow-up sequence based on:
+// - Quote value (high-value gets priority)
+// - Client type (repeat client, referral)
+// - Quote status
+```
+
+3. **Customize follow-up sequences:**
+```javascript
+// Edit sequences in followup-config.js
+sequences: {
+  standard: [
+    { delay: 24 * 60, type: 'sms', template: 'quoteFollowup' },
+    { delay: 72 * 60, type: 'phone-call', template: 'quoteFollowupPhone' },
+    { delay: 7 * 24 * 60, type: 'email', template: 'quoteFollowupEmail' }
+  ],
+  highValue: [
+    { delay: 6 * 60, type: 'phone-call', template: 'highValuePhone' },
+    { delay: 24 * 60, type: 'email', template: 'highValueEmail' },
+    { delay: 48 * 60, type: 'phone-call', template: 'highValueSecondCall' }
+  ]
+}
+```
+
+#### Monitor Sync Status
+
+1. **Check sync status:**
+```javascript
+// Open webhook settings modal
+// Shows:
+// - Status: Active / Disabled / Error
+// - Last Sync: timestamp
+// - Pending Events: count
+```
+
+2. **Manual sync:**
+```javascript
+// Click "Sync Now" button
+// Or:
+WebhookProcessor.processBatch();
+```
+
+3. **View event queue:**
+```javascript
+// Click "View Queue" in webhook settings
+// Shows all pending webhook events
+// Can clear queue if needed
+```
+
+#### Test Integration
+
+1. **Simulate webhook event:**
+```javascript
+// Use webhook debugger
+WebhookDebug.simulateEvent('ContactUpdate', {
+  contactId: 'test_123',
+  firstName: 'John',
+  lastName: 'Doe',
+  email: 'john@example.com'
+});
+```
+
+2. **Run integration tests:**
+```javascript
+WebhookDebug.runIntegrationTests();
+// Tests all event types and sync logic
+```
+
+3. **Export debug logs:**
+```javascript
+WebhookDebug.exportLogs();
+// Downloads JSON file with all webhook activity
+```
+
+#### Troubleshooting Integration
+
+**Issue: Tasks not syncing to GHL**
+- Check webhook URL is correct
+- Verify webhook secret matches
+- Check GHL API key is valid
+- View event queue for failed events
+- Check browser console for errors
+
+**Issue: Duplicate tasks created**
+- Check conflict resolution strategy
+- Ensure task IDs are being properly mapped
+- Clear event queue and re-sync
+
+**Issue: Follow-ups not triggering**
+- Verify follow-up automation is enabled
+- Check quote status is changing correctly
+- Review followup-config.js settings
+- Check browser console for errors
+
 ### How to Debug Issues
 
 1. **Enable debug mode:**
@@ -2235,6 +2568,287 @@ JobPresets.getPresetsByCategory(category)
 JobPresets.exportPresets()
 JobPresets.importPresets(data)
 ```
+
+### GoHighLevel CRM Integration
+
+#### task-manager.js (514 lines) **NEW v1.11.0**
+
+**Purpose:** Core task management system for follow-ups and client engagement
+
+**Key Features:**
+- CRUD operations for tasks (create, read, update, delete)
+- Task types: follow-up, phone-call, email, SMS, meeting
+- Priority levels: urgent, high, normal, low
+- Status tracking: pending, in-progress, completed, cancelled, overdue
+- Automatic overdue detection (checks every minute)
+- Task statistics and filtering
+- GHL sync integration
+
+**Key Functions:**
+```javascript
+TaskManager.createTask(config)
+TaskManager.updateTask(id, updates)
+TaskManager.deleteTask(id)
+TaskManager.getTask(id)
+TaskManager.getAllTasks()
+TaskManager.filterTasks(filters)
+TaskManager.getTaskStats()
+TaskManager.markOverdue()
+TaskManager.completeTask(id)
+```
+
+**Task Object Structure:**
+```javascript
+{
+  id: 'task_...',
+  quoteId: null,
+  clientId: null,
+  type: 'follow-up',
+  priority: 'normal',
+  status: 'pending',
+  title: '',
+  description: '',
+  dueDate: null,
+  scheduledDate: null,
+  completedDate: null,
+  assignedTo: 'Gerry',
+  followUpType: null,
+  followUpMessage: '',
+  followUpAttempts: 0,
+  ghlTaskId: null,
+  syncStatus: 'pending',
+  lastSync: null,
+  reminders: [],
+  notes: []
+}
+```
+
+**Storage Key:** `tts_tasks`
+
+#### followup-automation.js (519 lines) **NEW v1.11.0**
+
+**Purpose:** Intelligent follow-up sequence automation based on quote lifecycle events
+
+**Key Features:**
+- Event-driven automation (quote sent, viewed, accepted, declined)
+- 5 pre-configured follow-up sequences
+- Smart timing (business hours, DND time respect)
+- Message templates with variable substitution
+- Optimal contact time calculation
+- Automatic sequence triggering
+
+**Follow-up Sequences:**
+1. **Standard** - Quote sent: SMS (24h) → Phone (72h) → Email (1 week)
+2. **High-Value** ($2000+): Phone (6h) → Email (24h) → Phone (48h)
+3. **Repeat Client**: SMS (12h) → Phone (36h)
+4. **Referral**: Phone (6h) → SMS (24h)
+5. **Nurture** (declined): Email (1 week) → SMS (90 days)
+
+**Key Functions:**
+```javascript
+FollowupAutomation.triggerFollowup(event, quoteData)
+FollowupAutomation.createFollowupSequence(sequenceType, quote)
+FollowupAutomation.getOptimalContactTime(baseDate, preferredTime)
+FollowupAutomation.generateMessage(template, variables)
+FollowupAutomation.scheduleFollowup(task, delay)
+```
+
+**Supported Events:**
+- `quote-created`
+- `quote-sent`
+- `quote-viewed`
+- `quote-accepted`
+- `quote-declined`
+- `verbal-yes`
+
+#### followup-config.js (270 lines) **NEW v1.11.0**
+
+**Purpose:** Configuration for follow-up sequences and contact timing rules
+
+**Key Configuration:**
+```javascript
+// Contact time windows
+contactTimes: {
+  weekday: {
+    morning: { start: 9, end: 12 },
+    afternoon: { start: 14, end: 17 },
+    evening: { start: 18, end: 19 }
+  },
+  weekend: {
+    morning: { start: 10, end: 12 },
+    afternoon: { start: 14, end: 16 }
+  }
+}
+
+// Do Not Disturb times
+dndTimes: {
+  start: 20,  // 8pm
+  end: 8,     // 8am
+  noSunday: true
+}
+
+// Message templates
+templates: {
+  sms: {
+    quoteFollowup: "Hi {clientName}, just following up on the {serviceType} quote..."
+  },
+  email: { /* ... */ },
+  phoneScript: { /* ... */ }
+}
+```
+
+**Storage Key:** `tts_followup_config`
+
+#### task-dashboard-ui.js (446 lines) **NEW v1.11.0**
+
+**Purpose:** Visual task management dashboard interface
+
+**Key Features:**
+- Summary cards (Today, Overdue, Urgent, Pending)
+- Task filtering by status, priority, type
+- Task details modal
+- Complete/cancel task actions
+- Auto-refresh every minute
+- Empty state handling
+
+**Key Functions:**
+```javascript
+TaskDashboardUI.init()
+TaskDashboardUI.render()
+TaskDashboardUI.filterTasks(filter)
+TaskDashboardUI.showTaskDetails(taskId)
+TaskDashboardUI.completeTask(taskId)
+TaskDashboardUI.updateSummary()
+```
+
+#### ghl-task-sync.js (388 lines) **NEW v1.11.0**
+
+**Purpose:** Bidirectional task synchronization with GoHighLevel
+
+**Key Features:**
+- Sync tasks between TicTacStick and GHL
+- Maps task formats between systems
+- Batch sync for offline recovery
+- Auto-sync on task create/update/complete
+- Graceful failure handling
+
+**Key Functions:**
+```javascript
+GHLTaskSync.syncTaskToGHL(taskId)
+GHLTaskSync.syncTaskFromGHL(ghlTaskId)
+GHLTaskSync.batchSync()
+GHLTaskSync.mapTaskToGHL(task)
+GHLTaskSync.mapTaskFromGHL(ghlTask)
+```
+
+#### webhook-processor.js (921 lines) **NEW v1.11.0**
+
+**Purpose:** Event processing engine for real-time webhook integration
+
+**Key Features:**
+- Polls Cloudflare Worker every 30 seconds
+- Event queue with batch processing (10 events per batch)
+- Bidirectional sync (GoHighLevel ↔ TicTacStick)
+- 4 conflict resolution strategies
+- Retry logic (3 attempts with exponential backoff)
+- Handles 15+ event types
+
+**Conflict Resolution Strategies:**
+1. **Timestamp** - Most recent wins (recommended)
+2. **GHL Wins** - GoHighLevel data always takes precedence
+3. **Local Wins** - Protect local changes
+4. **Manual** - User chooses (UI not implemented)
+
+**Supported Event Types:**
+- ContactCreate, ContactUpdate, ContactDelete
+- OpportunityCreate, OpportunityUpdate, OpportunityStatusChange
+- TaskCreate, TaskUpdate, TaskComplete, TaskDelete
+- NoteCreate, InboundMessage, AppointmentUpdate, etc.
+
+**Key Functions:**
+```javascript
+WebhookProcessor.start()
+WebhookProcessor.stop()
+WebhookProcessor.processEvent(event)
+WebhookProcessor.processBatch()
+WebhookProcessor.resolveConflict(localData, remoteData)
+WebhookProcessor.retryFailedEvents()
+```
+
+**Storage Keys:**
+- `tts_webhook_queue` - Event queue
+- `tts_webhook_config` - Webhook configuration
+
+#### webhook-settings.js (487 lines) **NEW v1.11.0**
+
+**Purpose:** Webhook configuration and settings UI controller
+
+**Key Features:**
+- Webhook URL and secret configuration
+- Event subscription management
+- Sync status monitoring
+- Manual sync trigger
+- Event queue viewer
+- Register/unregister with GHL
+
+**Key Functions:**
+```javascript
+WebhookSettings.init()
+WebhookSettings.saveSettings()
+WebhookSettings.testWebhookEndpoint()
+WebhookSettings.triggerManualSync()
+WebhookSettings.viewEventQueue()
+WebhookSettings.clearEventQueue()
+WebhookSettings.registerWebhookWithGHL()
+WebhookSettings.unregisterWebhookFromGHL()
+```
+
+#### webhook-debug.js (439 lines) **NEW v1.11.0**
+
+**Purpose:** Testing and debugging tools for webhook integration
+
+**Key Features:**
+- Simulate webhook events for testing
+- View event queue status
+- Export debug logs to JSON
+- Integration test suite
+- Test data generators
+
+**Key Functions:**
+```javascript
+WebhookDebug.simulateEvent(eventType, data)
+WebhookDebug.generateTestContact()
+WebhookDebug.generateTestOpportunity()
+WebhookDebug.generateTestTask()
+WebhookDebug.viewQueue()
+WebhookDebug.exportLogs()
+WebhookDebug.runIntegrationTests()
+```
+
+#### ghl-webhook-setup.js (373 lines) **NEW v1.11.0**
+
+**Purpose:** GoHighLevel API integration for webhook registration
+
+**Key Features:**
+- Register/update/delete webhooks via GHL API
+- Test endpoint connectivity
+- List and verify existing webhooks
+- Support for 15+ GHL event types
+
+**Key Functions:**
+```javascript
+GHLWebhookSetup.registerWebhook(url, events)
+GHLWebhookSetup.updateWebhook(webhookId, config)
+GHLWebhookSetup.deleteWebhook(webhookId)
+GHLWebhookSetup.listWebhooks()
+GHLWebhookSetup.testEndpoint(url)
+GHLWebhookSetup.verifyWebhook(webhookId)
+```
+
+**Required Configuration:**
+- GHL API key
+- Webhook endpoint URL
+- Webhook secret for signature verification
 
 ### PDF Generation Suite
 
@@ -3161,7 +3775,17 @@ var value = window.Security.validateNumber(input, {
 
 ### Version History
 
-- **v1.10.0** (Current - 2025-11-18) - PDF Generation Suite & Production Tools
+- **v1.11.0** (Current - 2025-11-18) - GoHighLevel CRM Integration & Automated Follow-ups
+  - Task management system (task-manager.js, task-dashboard-ui.js)
+  - Intelligent follow-up automation (followup-automation.js, followup-config.js)
+  - Webhook integration system (webhook-processor.js, webhook-settings.js, webhook-debug.js)
+  - GoHighLevel API integration (ghl-webhook-setup.js, ghl-task-sync.js)
+  - Real-time bidirectional sync
+  - 5 pre-configured follow-up sequences
+  - Task dashboard UI with filtering
+  - Total: ~5,700 lines of new code
+
+- **v1.10.0** (2025-11-18) - PDF Generation Suite & Production Tools
   - Professional PDF quote generation with jsPDF
   - PDF configuration and branding system (`pdf-config.js`)
   - Reusable PDF components library (`pdf-components.js`)
