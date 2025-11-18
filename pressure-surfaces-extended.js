@@ -387,6 +387,392 @@
       baseRate: 6.00,
       description: 'Brick boundary fence',
       notes: 'Common in Perth, moderate effort'
+    },
+
+    FENCE_VINYL: {
+      id: 'fence_vinyl',
+      name: 'Vinyl/PVC Fence',
+      code: 'FNCE-VNYL',
+      category: 'fencing',
+      unit: 'linear m',
+      minutesPerLinearM: 1.0,
+      baseRate: 3.50,
+      description: 'Plastic/vinyl fencing, easy clean',
+      notes: 'Low pressure, quick to clean'
+    },
+
+    FENCE_SCREEN: {
+      id: 'fence_screen',
+      name: 'Screen Enclosure',
+      code: 'FNCE-SCRN',
+      category: 'fencing',
+      unit: 'linear m',
+      minutesPerLinearM: 2.5,
+      baseRate: 7.00,
+      description: 'Mesh/screen panels, detailed work',
+      notes: 'Requires careful cleaning around mesh'
+    },
+
+    FENCE_CHAINLINK: {
+      id: 'fence_chainlink',
+      name: 'Chain Link Fence',
+      code: 'FNCE-CHNK',
+      category: 'fencing',
+      unit: 'linear m',
+      minutesPerLinearM: 1.3,
+      baseRate: 4.00,
+      description: 'Wire mesh fencing',
+      notes: 'Spray through, straightforward'
+    },
+
+    // GLASS & TRANSPARENT SURFACES
+    GLASS_BALUSTRADE: {
+      id: 'glass_balustrade',
+      name: 'Glass Balustrade',
+      code: 'GLAS-BAL',
+      category: 'glass',
+      unit: 'per panel',
+      minutesPerPanel: 4.0,
+      baseRate: 8.00,
+      description: 'Frameless glass panels, both sides',
+      notes: 'Common in Perth pools/balconies, careful cleaning'
+    },
+
+    GLASS_POOL_FENCE: {
+      id: 'glass_pool_fence',
+      name: 'Glass Pool Fence',
+      code: 'GLAS-POOL',
+      category: 'glass',
+      unit: 'per panel',
+      minutesPerPanel: 4.5,
+      baseRate: 9.00,
+      description: 'Pool safety glass, both sides',
+      notes: 'Requires spotless finish, pool chemicals'
+    },
+
+    GLASS_SHOWER_OUTDOOR: {
+      id: 'glass_shower_outdoor',
+      name: 'Outdoor Shower Screen',
+      code: 'GLAS-SHWR',
+      category: 'glass',
+      unit: 'per panel',
+      minutesPerPanel: 3.5,
+      baseRate: 7.00,
+      description: 'Outdoor shower enclosure',
+      notes: 'Hard water stains common'
+    },
+
+    SKYLIGHT_CLEAN: {
+      id: 'skylight_clean',
+      name: 'Skylight Cleaning',
+      code: 'SKLT',
+      category: 'glass',
+      unit: 'per skylight',
+      minutesPerPanel: 5.0,
+      baseRate: 12.00,
+      description: 'Roof-mounted skylights',
+      notes: 'SAFETY: Roof access required, careful approach'
+    },
+
+    // OUTDOOR FURNITURE & FEATURES
+    OUTDOOR_FURNITURE: {
+      id: 'outdoor_furniture',
+      name: 'Outdoor Furniture Set',
+      code: 'FURN-SET',
+      category: 'furniture',
+      unit: 'per set',
+      minutesPerPanel: 15.0,
+      baseRate: 25.00,
+      description: 'Table and chairs, BBQ area furniture',
+      notes: 'Detailed work around legs and joints'
+    },
+
+    BBQ_AREA: {
+      id: 'bbq_area',
+      name: 'BBQ/Kitchen Area',
+      code: 'BBQ',
+      category: 'furniture',
+      minutesPerSqm: 2.5,
+      baseRate: 15.00,
+      description: 'Outdoor kitchen, BBQ surrounds',
+      notes: 'Grease buildup, requires degreaser'
+    },
+
+    PERGOLA: {
+      id: 'pergola',
+      name: 'Pergola/Gazebo',
+      code: 'PERG',
+      category: 'furniture',
+      minutesPerSqm: 3.0,
+      baseRate: 12.00,
+      description: 'Timber or metal structure',
+      notes: 'Overhead work, safety considerations'
+    },
+
+    AWNING: {
+      id: 'awning',
+      name: 'Awning/Shade Sail',
+      code: 'AWNNG',
+      category: 'furniture',
+      minutesPerSqm: 2.0,
+      baseRate: 10.00,
+      description: 'Fabric or metal awning',
+      notes: 'Low pressure for fabric, check material first'
+    },
+
+    // RETAINING WALLS
+    RETAINING_CONCRETE: {
+      id: 'retaining_concrete',
+      name: 'Concrete Retaining Wall',
+      code: 'RET-CONC',
+      category: 'walls',
+      minutesPerSqm: 2.0,
+      baseRate: 8.00,
+      description: 'Poured concrete retaining',
+      notes: 'Often has moss/algae buildup'
+    },
+
+    RETAINING_STONE: {
+      id: 'retaining_stone',
+      name: 'Stone Retaining Wall',
+      code: 'RET-STNE',
+      category: 'walls',
+      minutesPerSqm: 2.5,
+      baseRate: 10.00,
+      description: 'Natural stone blocks',
+      notes: 'Many crevices, moderate pressure'
+    },
+
+    RETAINING_TIMBER: {
+      id: 'retaining_timber',
+      name: 'Timber Retaining Wall',
+      code: 'RET-TMBR',
+      category: 'walls',
+      minutesPerSqm: 2.2,
+      baseRate: 9.00,
+      description: 'Sleeper or timber retaining',
+      notes: 'LOW PRESSURE: Avoid damaging timber'
+    },
+
+    WALL_CLADDING: {
+      id: 'wall_cladding',
+      name: 'Wall Cladding',
+      code: 'WALL-CLAD',
+      category: 'walls',
+      minutesPerSqm: 1.9,
+      baseRate: 8.00,
+      description: 'Composite or vinyl cladding',
+      notes: 'Modern homes, avoid high pressure'
+    },
+
+    // SPECIALTY CLEANING SERVICES
+    BIN_CLEANING: {
+      id: 'bin_cleaning',
+      name: 'Wheelie Bin Cleaning',
+      code: 'BIN',
+      category: 'specialty',
+      unit: 'per bin',
+      minutesPerPanel: 5.0,
+      baseRate: 12.00,
+      description: 'Inside and out, sanitize',
+      notes: 'Requires disposal area for wastewater'
+    },
+
+    CARAVAN_CLEAN: {
+      id: 'caravan_clean',
+      name: 'Caravan/RV Wash',
+      code: 'CRVN',
+      category: 'specialty',
+      unit: 'per vehicle',
+      minutesPerPanel: 60.0,
+      baseRate: 80.00,
+      description: 'Full exterior wash',
+      notes: 'LOW PRESSURE: Avoid damage to seals and decals'
+    },
+
+    BOAT_CLEAN: {
+      id: 'boat_clean',
+      name: 'Boat Cleaning',
+      code: 'BOAT',
+      category: 'specialty',
+      unit: 'per metre',
+      minutesPerLinearM: 8.0,
+      baseRate: 15.00,
+      description: 'Hull and deck cleaning',
+      notes: 'Marine buildup, may require marine cleaner'
+    },
+
+    TRAILER_CLEAN: {
+      id: 'trailer_clean',
+      name: 'Trailer Cleaning',
+      code: 'TRLR',
+      category: 'specialty',
+      unit: 'per trailer',
+      minutesPerPanel: 20.0,
+      baseRate: 35.00,
+      description: 'Box or flatbed trailer',
+      notes: 'Often heavily soiled, may need degreaser'
+    },
+
+    PLAYGROUND: {
+      id: 'playground',
+      name: 'Playground Equipment',
+      code: 'PLAY',
+      category: 'specialty',
+      unit: 'per set',
+      minutesPerPanel: 25.0,
+      baseRate: 40.00,
+      description: 'Swing sets, slides, play equipment',
+      notes: 'LOW PRESSURE: Child safety priority, gentle clean'
+    },
+
+    STATUE_FEATURE: {
+      id: 'statue_feature',
+      name: 'Statues/Garden Features',
+      code: 'STAT',
+      category: 'specialty',
+      unit: 'per item',
+      minutesPerPanel: 10.0,
+      baseRate: 20.00,
+      description: 'Decorative garden features',
+      notes: 'DELICATE: Very low pressure, may require hand cleaning'
+    },
+
+    OUTDOOR_STEPS: {
+      id: 'outdoor_steps',
+      name: 'Outdoor Steps/Stairs',
+      code: 'STEP',
+      category: 'pathway',
+      minutesPerSqm: 2.5,
+      baseRate: 12.00,
+      description: 'External stairs and landings',
+      notes: 'Detailed work, anti-slip considerations'
+    },
+
+    BALCONY: {
+      id: 'balcony',
+      name: 'Balcony Floor',
+      code: 'BALC',
+      category: 'patio',
+      minutesPerSqm: 2.0,
+      baseRate: 11.00,
+      description: 'Apartment or upper floor balcony',
+      notes: 'Water runoff management critical'
+    },
+
+    SANDSTONE_FEATURE: {
+      id: 'sandstone_feature',
+      name: 'Sandstone Feature Wall',
+      code: 'SAND-FEAT',
+      category: 'walls',
+      minutesPerSqm: 2.8,
+      baseRate: 14.00,
+      description: 'Decorative sandstone cladding',
+      notes: 'VERY DELICATE: Soft wash only, Perth sandstone'
+    },
+
+    // ADDITIONAL ROOFING
+    ROOF_ASBESTOS_SURVEY: {
+      id: 'roof_asbestos_survey',
+      name: 'Asbestos Roof Survey',
+      code: 'ROOF-ASBS-SRV',
+      category: 'roofing',
+      unit: 'per survey',
+      minutesPerPanel: 30.0,
+      baseRate: 150.00,
+      description: 'INSPECTION ONLY - DO NOT CLEAN',
+      notes: 'CRITICAL: Licensed asbestos professional required'
+    },
+
+    ROOF_GUTTER_GUARD: {
+      id: 'roof_gutter_guard',
+      name: 'Gutter Guard Cleaning',
+      code: 'GUTR-GRD',
+      category: 'roofing',
+      unit: 'linear m',
+      minutesPerLinearM: 1.5,
+      baseRate: 5.00,
+      description: 'Clean over gutter mesh/guard',
+      notes: 'Easier than open gutters but still needs care'
+    },
+
+    // COMMERCIAL SURFACES
+    SHOP_FRONT: {
+      id: 'shop_front',
+      name: 'Shop Front/Facade',
+      code: 'SHOP',
+      category: 'specialty',
+      minutesPerSqm: 2.5,
+      baseRate: 12.00,
+      description: 'Commercial building frontage',
+      notes: 'Often requires after-hours work'
+    },
+
+    SIGNAGE: {
+      id: 'signage',
+      name: 'Signage Cleaning',
+      code: 'SIGN',
+      category: 'specialty',
+      unit: 'per sign',
+      minutesPerPanel: 8.0,
+      baseRate: 15.00,
+      description: 'Business signs and displays',
+      notes: 'GENTLE: Avoid damage to graphics and lights'
+    },
+
+    CAR_PARK: {
+      id: 'car_park',
+      name: 'Car Park/Parking Bay',
+      code: 'CPRK',
+      category: 'driveway',
+      minutesPerSqm: 1.2,
+      baseRate: 6.00,
+      description: 'Commercial parking areas',
+      notes: 'Large areas, oil stains common'
+    },
+
+    GRAFFITI_REMOVAL: {
+      id: 'graffiti_removal',
+      name: 'Graffiti Removal',
+      code: 'GRAF',
+      category: 'specialty',
+      minutesPerSqm: 5.0,
+      baseRate: 25.00,
+      description: 'Graffiti cleaning/removal',
+      notes: 'May require chemical treatment, test area first'
+    },
+
+    MOSS_TREATMENT: {
+      id: 'moss_treatment',
+      name: 'Moss/Algae Treatment',
+      code: 'MOSS',
+      category: 'specialty',
+      minutesPerSqm: 1.5,
+      baseRate: 8.00,
+      description: 'Chemical treatment and removal',
+      notes: 'Add-on service, chemical application included'
+    },
+
+    RUST_TREATMENT: {
+      id: 'rust_treatment',
+      name: 'Rust Stain Removal',
+      code: 'RUST',
+      category: 'specialty',
+      minutesPerSqm: 3.0,
+      baseRate: 15.00,
+      description: 'Rust stain treatment',
+      notes: 'Requires acid-based cleaner, specialized work'
+    },
+
+    CONCRETE_SEALING: {
+      id: 'concrete_sealing',
+      name: 'Concrete Sealing',
+      code: 'SEAL',
+      category: 'specialty',
+      minutesPerSqm: 2.0,
+      baseRate: 12.00,
+      description: 'Post-clean sealing service',
+      notes: 'Add-on after pressure cleaning, requires dry surface'
     }
   };
 

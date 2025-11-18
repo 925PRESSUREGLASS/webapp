@@ -397,18 +397,90 @@
   function buildPressureWizardContent() {
     if (!contentEl) return;
 
-    var surfaces =
-      (window.PRICING_DATA && PRICING_DATA.pressureSurfaces) || [];
+    // Use extended surfaces if available, otherwise fall back to basic surfaces
+    var surfaces = [];
+    var useExtended = false;
+
+    if (window.PRESSURE_SURFACES_ARRAY_EXT && window.PRESSURE_SURFACES_ARRAY_EXT.length > 0) {
+      surfaces = window.PRESSURE_SURFACES_ARRAY_EXT;
+      useExtended = true;
+    } else if (window.PRICING_DATA && PRICING_DATA.pressureSurfaces) {
+      surfaces = PRICING_DATA.pressureSurfaces;
+    }
+
     var optionsHtml = "";
     var i;
-    for (i = 0; i < surfaces.length; i++) {
-      var s = surfaces[i];
-      optionsHtml +=
-        '<option value="' +
-        s.id +
-        '">' +
-        s.label +
-        "</option>";
+
+    // Group by category if extended surfaces are available
+    if (useExtended) {
+      // Build grouped options
+      var categories = {
+        driveway: [],
+        patio: [],
+        decking: [],
+        pathway: [],
+        walls: [],
+        fencing: [],
+        roofing: [],
+        pool: [],
+        glass: [],
+        furniture: [],
+        specialty: []
+      };
+
+      for (i = 0; i < surfaces.length; i++) {
+        var s = surfaces[i];
+        var cat = s.category || 'specialty';
+        if (categories[cat]) {
+          categories[cat].push(s);
+        } else {
+          categories.specialty.push(s);
+        }
+      }
+
+      // Build grouped select options
+      var categoryLabels = {
+        driveway: 'Driveways & Car Parks',
+        patio: 'Patios & Outdoor Living',
+        decking: 'Decking',
+        pathway: 'Pathways & Steps',
+        walls: 'Walls & Retaining',
+        fencing: 'Fencing',
+        roofing: 'Roofing & Gutters',
+        pool: 'Pool Areas',
+        glass: 'Glass Surfaces',
+        furniture: 'Outdoor Furniture & Features',
+        specialty: 'Specialty Services'
+      };
+
+      for (var catKey in categoryLabels) {
+        if (categories[catKey] && categories[catKey].length > 0) {
+          optionsHtml += '<optgroup label="' + categoryLabels[catKey] + '">';
+          for (var j = 0; j < categories[catKey].length; j++) {
+            var surf = categories[catKey][j];
+            var unitLabel = surf.unit || 'm²';
+            optionsHtml +=
+              '<option value="' +
+              surf.id +
+              '">' +
+              surf.label +
+              ' (' + unitLabel + ')' +
+              '</option>';
+          }
+          optionsHtml += '</optgroup>';
+        }
+      }
+    } else {
+      // Simple flat list for basic surfaces
+      for (i = 0; i < surfaces.length; i++) {
+        var s = surfaces[i];
+        optionsHtml +=
+          '<option value="' +
+          s.id +
+          '">' +
+          s.label +
+          "</option>";
+      }
     }
 
     var html = "";
@@ -442,9 +514,10 @@
     html += "</label>";
 
     html += '<label class="field">';
-    html += '<span class="field-label">Area (sqm)</span>';
+    html += '<span class="field-label" id="wizPrQuantityLabel">Quantity/Area</span>';
     html +=
-      '<input id="wizPrArea" type="number" min="5" step="1" value="30" />';
+      '<input id="wizPrArea" type="number" min="1" step="1" value="30" />';
+    html += '<span class="form-hint" id="wizPrQuantityHint">Enter area in m²</span>';
     html += "</label>";
 
     // Soil / access
@@ -478,6 +551,89 @@
     html += "</div>";
 
     contentEl.innerHTML = html;
+
+    // Update quantity label based on surface type selection
+    var surfaceSelect = $("wizPrSurface");
+    var quantityLabel = $("wizPrQuantityLabel");
+    var quantityHint = $("wizPrQuantityHint");
+    var quantityInput = $("wizPrArea");
+
+    function updateQuantityLabel() {
+      if (!surfaceSelect || !quantityLabel) return;
+
+      var selectedId = surfaceSelect.value;
+      var selectedSurface = null;
+
+      // Find the selected surface
+      for (var i = 0; i < surfaces.length; i++) {
+        if (surfaces[i].id === selectedId) {
+          selectedSurface = surfaces[i];
+          break;
+        }
+      }
+
+      if (selectedSurface && selectedSurface.unit) {
+        var unit = selectedSurface.unit;
+
+        if (unit === 'per panel') {
+          quantityLabel.textContent = 'Number of Panels';
+          quantityHint.textContent = 'How many panels?';
+          quantityInput.value = '4';
+        } else if (unit === 'per bin') {
+          quantityLabel.textContent = 'Number of Bins';
+          quantityHint.textContent = 'How many bins to clean?';
+          quantityInput.value = '2';
+        } else if (unit === 'per vehicle' || unit === 'per trailer') {
+          quantityLabel.textContent = 'Number of Vehicles';
+          quantityHint.textContent = 'How many to clean?';
+          quantityInput.value = '1';
+        } else if (unit === 'per set') {
+          quantityLabel.textContent = 'Number of Sets';
+          quantityHint.textContent = 'How many sets?';
+          quantityInput.value = '1';
+        } else if (unit === 'per item') {
+          quantityLabel.textContent = 'Number of Items';
+          quantityHint.textContent = 'How many items?';
+          quantityInput.value = '1';
+        } else if (unit === 'per sign') {
+          quantityLabel.textContent = 'Number of Signs';
+          quantityHint.textContent = 'How many signs?';
+          quantityInput.value = '1';
+        } else if (unit === 'per skylight') {
+          quantityLabel.textContent = 'Number of Skylights';
+          quantityHint.textContent = 'How many skylights?';
+          quantityInput.value = '2';
+        } else if (unit === 'per survey') {
+          quantityLabel.textContent = 'Survey Required';
+          quantityHint.textContent = 'Fixed price survey';
+          quantityInput.value = '1';
+        } else if (unit === 'per metre') {
+          quantityLabel.textContent = 'Length (metres)';
+          quantityHint.textContent = 'Enter length in metres';
+          quantityInput.value = '6';
+        } else if (unit === 'linear m') {
+          quantityLabel.textContent = 'Length (linear m)';
+          quantityHint.textContent = 'Enter length in linear metres';
+          quantityInput.value = '15';
+        } else {
+          // Default to area (m²)
+          quantityLabel.textContent = 'Area (m²)';
+          quantityHint.textContent = 'Enter area in square metres';
+          quantityInput.value = '30';
+        }
+      } else {
+        // Default to area
+        quantityLabel.textContent = 'Area (m²)';
+        quantityHint.textContent = 'Enter area in square metres';
+        quantityInput.value = '30';
+      }
+    }
+
+    if (surfaceSelect) {
+      surfaceSelect.addEventListener('change', updateQuantityLabel);
+      // Set initial state
+      updateQuantityLabel();
+    }
 
     // Wire events
     var cancelBtn = $("wizPrCancel");
