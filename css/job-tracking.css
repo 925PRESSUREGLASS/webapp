@@ -572,6 +572,125 @@
     }
 }
 
+/* Jobs List Page */
+.jobs-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(350px, 1fr));
+    gap: 1rem;
+}
+
+.job-card {
+    background: white;
+    border: 1px solid #e5e7eb;
+    border-radius: 8px;
+    padding: 1rem;
+    cursor: pointer;
+    transition: all 0.2s;
+}
+
+.job-card:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+    border-color: #667eea;
+}
+
+.job-card-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 0.75rem;
+    padding-bottom: 0.75rem;
+    border-bottom: 1px solid #e5e7eb;
+}
+
+.job-card-number {
+    font-weight: 700;
+    font-size: 1.125rem;
+    color: #111827;
+}
+
+.job-card-client {
+    margin-bottom: 0.75rem;
+}
+
+.job-card-client strong {
+    font-size: 1rem;
+    color: #374151;
+    display: block;
+    margin-bottom: 0.25rem;
+}
+
+.job-card-location {
+    font-size: 0.875rem;
+    color: #6b7280;
+}
+
+.job-card-schedule {
+    display: flex;
+    gap: 1rem;
+    font-size: 0.875rem;
+    color: #6b7280;
+    margin-bottom: 0.75rem;
+}
+
+.job-card-price {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-end;
+    padding-top: 0.75rem;
+    border-top: 1px solid #e5e7eb;
+}
+
+.job-price-label {
+    font-size: 0.75rem;
+    color: #6b7280;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+}
+
+.job-price-value {
+    font-size: 1.5rem;
+    font-weight: 700;
+    color: #111827;
+}
+
+.job-price-estimate {
+    font-size: 0.75rem;
+    color: #9ca3af;
+}
+
+.job-price-diff {
+    font-size: 0.875rem;
+    font-weight: 600;
+}
+
+.job-card-photos {
+    font-size: 0.875rem;
+    color: #6b7280;
+    margin-top: 0.5rem;
+}
+
+/* Job Status Colors */
+.job-status-scheduled {
+    border-left: 4px solid #3b82f6;
+}
+
+.job-status-in-progress {
+    border-left: 4px solid #f59e0b;
+}
+
+.job-status-completed {
+    border-left: 4px solid #10b981;
+}
+
+.job-status-invoiced {
+    border-left: 4px solid #8b5cf6;
+}
+
+.job-status-cancelled {
+    border-left: 4px solid #ef4444;
+}
+
 /* Dark Theme Support */
 @media (prefers-color-scheme: dark) {
     .work-item,

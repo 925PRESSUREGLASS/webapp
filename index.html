@@ -89,6 +89,9 @@
 					<button id="customersPageBtn" type="button" class="btn btn-secondary" title="Customer Directory" aria-label="Open customer directory" onclick="showCustomersPage()">
 						👥 Customers
 					</button>
+					<button id="jobsPageBtn" type="button" class="btn btn-secondary" title="Jobs & Tracking" aria-label="Open jobs page" onclick="showJobsPage()">
+						🔨 Jobs
+					</button>
 					<button id="keyboardShortcutsBtn" type="button" class="btn btn-tertiary" title="Keyboard Shortcuts (Press ?)" aria-label="View keyboard shortcuts">
 						⌨️ Help
 					</button>
@@ -1138,6 +1141,126 @@
 		</div>
 	</div>
 
+	<!-- JOBS LIST PAGE (Hidden by default) -->
+	<div class="page" id="page-jobs" style="display: none;">
+		<div class="container">
+			<!-- Header -->
+			<div class="page-header">
+				<h1>Jobs & Tracking</h1>
+				<button class="btn btn-primary btn-sm" onclick="showCreateJobModal()" aria-label="Create new job">
+					+ Create Job from Quote
+				</button>
+			</div>
+
+			<!-- Job Summary Cards -->
+			<div class="task-summary-grid">
+				<div class="card card-clickable" onclick="filterJobs('scheduled')" role="button" tabindex="0" aria-label="View scheduled jobs">
+					<div class="card-body">
+						<div class="task-summary-label">Scheduled</div>
+						<div class="task-summary-value" id="jobs-scheduled">0</div>
+					</div>
+				</div>
+
+				<div class="card card-clickable" onclick="filterJobs('in-progress')" role="button" tabindex="0" aria-label="View in-progress jobs">
+					<div class="card-body">
+						<div class="task-summary-label">In Progress</div>
+						<div class="task-summary-value task-urgent" id="jobs-in-progress">0</div>
+					</div>
+				</div>
+
+				<div class="card card-clickable" onclick="filterJobs('completed')" role="button" tabindex="0" aria-label="View completed jobs">
+					<div class="card-body">
+						<div class="task-summary-label">Completed</div>
+						<div class="task-summary-value" id="jobs-completed">0</div>
+					</div>
+				</div>
+
+				<div class="card card-clickable" onclick="filterJobs('all')" role="button" tabindex="0" aria-label="View all jobs">
+					<div class="card-body">
+						<div class="task-summary-label">Total Jobs</div>
+						<div class="task-summary-value" id="jobs-total">0</div>
+					</div>
+				</div>
+			</div>
+
+			<!-- Job Filters -->
+			<div class="card" style="margin-bottom: 1.5rem;">
+				<div class="card-body">
+					<div class="task-filters">
+						<select class="form-select" id="job-status-filter" aria-label="Filter by status">
+							<option value="all">All Statuses</option>
+							<option value="scheduled">Scheduled</option>
+							<option value="in-progress">In Progress</option>
+							<option value="completed">Completed</option>
+							<option value="invoiced">Invoiced</option>
+						</select>
+
+						<button class="btn btn-secondary btn-sm" onclick="viewPricingInsights()" aria-label="View pricing insights">
+							📊 Pricing Insights
+						</button>
+
+						<button class="btn btn-tertiary btn-sm" onclick="refreshJobsList()" aria-label="Refresh jobs list">
+							🔄 Refresh
+						</button>
+					</div>
+				</div>
+			</div>
+
+			<!-- Jobs List -->
+			<div class="card">
+				<div class="card-header">
+					<h3 class="card-title">Jobs</h3>
+				</div>
+				<div class="card-body">
+					<div id="jobs-list">
+						<!-- Populated by JavaScript -->
+					</div>
+				</div>
+			</div>
+		</div>
+	</div>
+
+	<!-- Create Job Modal -->
+	<div class="modal" id="create-job-modal" style="display: none;">
+		<div class="modal-content">
+			<div class="modal-header">
+				<h2>Create Job from Quote</h2>
+				<button class="modal-close" onclick="closeCreateJobModal()">&times;</button>
+			</div>
+			<div class="modal-body">
+				<div class="form-group">
+					<label for="job-quote-select">Select Quote</label>
+					<select class="form-select" id="job-quote-select" aria-label="Select quote">
+						<option value="">-- Select a Quote --</option>
+					</select>
+					<span class="form-hint">Choose a saved quote to convert to a job</span>
+				</div>
+
+				<div class="form-group">
+					<label for="job-scheduled-date">Scheduled Date</label>
+					<input type="datetime-local" class="form-control" id="job-scheduled-date" />
+					<span class="form-hint">When is this job scheduled?</span>
+				</div>
+
+				<div id="job-quote-preview" style="display: none; margin-top: 1rem;">
+					<h4>Quote Preview</h4>
+					<div class="card">
+						<div class="card-body">
+							<div id="job-quote-details">
+								<!-- Quote details appear here -->
+							</div>
+						</div>
+					</div>
+				</div>
+			</div>
+			<div class="modal-footer">
+				<button class="btn btn-secondary" onclick="closeCreateJobModal()">Cancel</button>
+				<button class="btn btn-primary" onclick="createJobFromQuote()">Create Job</button>
+			</div>
+		</div>
+	</div>
+
+
 	<!-- ACTIVE JOB PAGE (Hidden by default) -->
 	<div class="page" id="page-active-job" style="display: none;">
 		<div class="container">
@@ -1543,6 +1666,7 @@
 	<script src="pricing-intelligence.js" defer></script>
 	<script src="photo-comparison.js" defer></script>
 	<script src="job-tracking-ui.js" defer></script>
+	<script src="jobs-list-ui.js" defer></script>
 
 	<!-- Production Configuration (loads last to override development settings) -->
 	<script src="config-production.js" defer></script>
@@ -1988,6 +2112,95 @@
 		}
 	</script>
 
+
+	<!-- Pricing Insights Loader -->
+	<script>
+		/**
+		 * Load pricing insights page
+		 */
+		function loadPricingInsights() {
+			if (!window.PricingIntelligence) {
+				console.error('PricingIntelligence module not loaded');
+				return;
+			}
+
+			var analysis = window.PricingIntelligence.analyzePricingAccuracy();
+			var metrics = window.JobManager.loadJobMetrics();
+			var report = window.PricingIntelligence.generateInsightsReport();
+
+			// Update accuracy gauge
+			var accuracyEl = document.getElementById('accuracy-percentage');
+			if (accuracyEl && analysis.accuracy !== null) {
+				accuracyEl.textContent = analysis.accuracy + '%';
+			}
+
+			// Update stats
+			var jobsAnalyzedEl = document.getElementById('jobs-analyzed');
+			var underquotesEl = document.getElementById('underquotes-count');
+			var overquotesEl = document.getElementById('overquotes-count');
+			var avgVarianceEl = document.getElementById('avg-variance');
+
+			if (jobsAnalyzedEl) jobsAnalyzedEl.textContent = analysis.jobsAnalyzed || 0;
+			if (underquotesEl) underquotesEl.textContent = analysis.underquotes || 0;
+			if (overquotesEl) overquotesEl.textContent = analysis.overquotes || 0;
+			if (avgVarianceEl) avgVarianceEl.textContent = analysis.avgPriceVariance ? analysis.avgPriceVariance + '%' : '0%';
+
+			// Update performance metrics
+			var avgTimeWindowEl = document.getElementById('avg-time-window');
+			var avgTimeSqmEl = document.getElementById('avg-time-sqm');
+			var avgJobDurationEl = document.getElementById('avg-job-duration');
+			var avgJobValueEl = document.getElementById('avg-job-value');
+
+			if (avgTimeWindowEl) avgTimeWindowEl.textContent = (metrics.avgTimePerWindow || 0) + ' min';
+			if (avgTimeSqmEl) avgTimeSqmEl.textContent = (metrics.avgTimePerSqm || 0) + ' min';
+			if (avgJobDurationEl) avgJobDurationEl.textContent = (metrics.avgJobDuration || 0) + ' min';
+			if (avgJobValueEl) avgJobValueEl.textContent = '$' + (metrics.avgJobValue || 0);
+
+			// Render common issues
+			var issuesContainer = document.getElementById('common-issues-list');
+			if (issuesContainer && report.issues) {
+				var issuesHtml = '';
+				if (report.issues.length === 0) {
+					issuesHtml = '<p class="text-muted">No issues recorded yet</p>';
+				} else {
+					issuesHtml = '<ul class="issues-list">';
+					for (var i = 0; i < report.issues.length; i++) {
+						var issue = report.issues[i];
+						issuesHtml += '<li>';
+						issuesHtml += '<strong>' + issue.type + '</strong>: ';
+						issuesHtml += issue.count + ' occurrence(s) (' + issue.percentage + '%)';
+						issuesHtml += '</li>';
+					}
+					issuesHtml += '</ul>';
+				}
+				issuesContainer.innerHTML = issuesHtml;
+			}
+
+			// Render recommendations
+			var recsContainer = document.getElementById('recommendations-list');
+			if (recsContainer && report.recommendations) {
+				var recsHtml = '';
+				if (report.recommendations.length === 0) {
+					recsHtml = '<p class="text-muted">Complete more jobs to get personalized recommendations</p>';
+				} else {
+					recsHtml = '<div class="recommendations-list">';
+					for (var i = 0; i < report.recommendations.length; i++) {
+						var rec = report.recommendations[i];
+						var priorityClass = rec.priority === 'high' ? 'rec-high' : rec.priority === 'medium' ? 'rec-medium' : 'rec-low';
+
+						recsHtml += '<div class="recommendation-card ' + priorityClass + '">';
+						recsHtml += '<div class="rec-priority">' + rec.priority.toUpperCase() + '</div>';
+						recsHtml += '<div class="rec-category">' + rec.category + '</div>';
+						recsHtml += '<p class="rec-message">' + rec.message + '</p>';
+						recsHtml += '<div class="rec-action">💡 ' + rec.action + '</div>';
+						recsHtml += '</div>';
+					}
+					recsHtml += '</div>';
+				}
+				recsContainer.innerHTML = recsHtml;
+			}
+		}
+	</script>
 	<!-- Service Worker Registration -->
 	<script>
 		// Register service worker for PWA offline support
