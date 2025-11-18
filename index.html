@@ -11,16 +11,15 @@
 	<!-- Content Security Policy -->
 	<meta http-equiv="Content-Security-Policy" content="
 		default-src 'self';
-		script-src 'self' 'unsafe-inline' https://cdn.jsdelivr.net https://cdnjs.cloudflare.com;
+		script-src 'self' 'unsafe-inline' 'unsafe-eval' https://cdn.jsdelivr.net https://cdnjs.cloudflare.com https://unpkg.com capacitor: ionic:;
 		style-src 'self' 'unsafe-inline';
-		img-src 'self' data: blob:;
+		img-src 'self' data: blob: capacitor:;
 		font-src 'self';
-		connect-src 'self' https://*.workers.dev https://services.leadconnectorhq.com https://rest.gohighlevel.com;
+		connect-src 'self' https://*.workers.dev https://services.leadconnectorhq.com https://rest.gohighlevel.com capacitor: ionic: http: https:;
 		object-src 'none';
 		base-uri 'self';
 		form-action 'self';
 		frame-ancestors 'none';
-		upgrade-insecure-requests;
 	">
 
 	<!-- PWA Manifest -->
@@ -1046,6 +1045,9 @@
 	<!-- Bootstrap must load FIRST to create APP namespace -->
 	<script src="bootstrap.js"></script>
 
+	<!-- Capacitor Core (for native mobile app features) -->
+	<script type="module" src="https://unpkg.com/@capacitor/core@latest/dist/capacitor.js"></script>
+
 	<!-- External dependencies -->
 	<!-- Chart.js temporarily commented out for testing - network issues in test environment -->
 	<!-- <script src="https://cdn.jsdelivr.net/npm/chart.js" defer></script> -->
@@ -1100,6 +1102,12 @@
 	<script src="contract-wizard.js" defer></script>
 	<script src="contract-automation.js" defer></script>
 	<script src="contract-forecasting.js" defer></script>
+
+	<!-- Native Mobile Features (Capacitor Integration - NEW v1.13.0) -->
+	<script src="native-features.js" defer></script>
+	<script src="camera-helper.js" defer></script>
+	<script src="push-notifications.js" defer></script>
+	<script src="geolocation-helper.js" defer></script>
 
 	<!-- UI and feature modules -->
 	<script src="ui.js" defer></script>
