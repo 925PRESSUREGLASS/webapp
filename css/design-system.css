@@ -29,9 +29,9 @@
 
 :root {
     /* Primary Colors - Vibrant Purple */
-    --color-primary: #7c3aed;
+    --color-primary: #8b5cf6;       /* Lighter purple for light theme */
     --color-primary-light: #a78bfa;
-    --color-primary-dark: #6d28d9;
+    --color-primary-dark: #6d28d9;  /* Darker purple for dark theme */
     --color-primary-contrast: #ffffff;
 
     /* Secondary Colors - Vibrant Teal (complement to purple) */
