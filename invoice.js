@@ -937,12 +937,11 @@
               '<input type="text" id="abn" value="' + escapeHtml(settings.abn) + '" placeholder="12 345 678 901" />' +
             '</div>' +
             '<div class="form-group">' +
-              '<label for="enableEncryption">Enable Encrypted Storage</label>' +
               '<div class="form-checkbox-wrapper">' +
                 '<input type="checkbox" id="enableEncryption" class="form-checkbox" ' + (settings.enableEncryption ? 'checked' : '') + ' />' +
-                '<label for="enableEncryption">Enable encryption</label>' +
+                '<label for="enableEncryption">Enable Encrypted Storage</label>' +
               '</div>' +
-              '<p class="form-hint">Encrypts invoice data in browser storage. Requires page reload to take effect.</p>' +
+              '<p class="form-hint">Encrypts invoice data in browser storage for enhanced security.</p>' +
             '</div>' +
             '<div class="form-actions">' +
               '<button type="button" class="btn btn-secondary" id="cancelSettingsBtn">Cancel</button>' +
