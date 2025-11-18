@@ -419,6 +419,111 @@ body {
 }
 
 /* ============================================
+   LANDSCAPE ORIENTATION (All screens - Desktop-centric layout)
+   ============================================ */
+@media (orientation: landscape) {
+  /* Optimize layout for landscape viewing */
+  body {
+    overflow-y: auto;
+    overflow-x: hidden;
+  }
+
+  /* App container fits viewport better */
+  .app {
+    min-height: calc(100vh - 24px);
+    display: flex;
+    flex-direction: column;
+  }
+
+  /* Header more compact in landscape */
+  .hdr {
+    position: sticky;
+    top: 0;
+    z-index: 100;
+  }
+
+  /* Main content area flexible */
+  .app-content {
+    flex: 1;
+    overflow-y: auto;
+  }
+
+  /* Multi-column layouts in landscape for wider screens */
+  @media (min-width: 900px) {
+    /* Config grid 3-column in landscape on tablets+ */
+    .config-grid {
+      grid-template-columns: repeat(3, minmax(0, 1fr));
+      gap: 16px;
+    }
+
+    /* Line cards 3-column grid */
+    .line-card-body {
+      grid-template-columns: repeat(3, minmax(0, 1fr));
+      gap: 12px;
+    }
+
+    /* Analytics 4-column */
+    .analytics-summary {
+      grid-template-columns: repeat(4, 1fr);
+      gap: 16px;
+    }
+
+    /* Modals wider but not too wide */
+    .invoice-modal-content,
+    .wizard-content,
+    .client-modal-content {
+      width: 80%;
+      max-width: 900px;
+      max-height: 85vh;
+    }
+
+    /* Side-by-side layouts where appropriate */
+    .invoice-form-grid {
+      grid-template-columns: repeat(2, 1fr);
+      gap: 16px;
+    }
+
+    /* Photo gallery more columns */
+    .photo-gallery-grid {
+      grid-template-columns: repeat(auto-fill, minmax(160px, 1fr));
+      gap: 16px;
+    }
+
+    /* Client list 2-column */
+    .client-list {
+      grid-template-columns: repeat(2, 1fr);
+      gap: 16px;
+    }
+
+    /* Pipeline stats 5-column for full pipeline view */
+    .pipeline-stats {
+      grid-template-columns: repeat(5, 1fr);
+      gap: 16px;
+    }
+  }
+
+  /* Desktop-like layout for large landscape screens */
+  @media (min-width: 1200px) {
+    /* Even more efficient use of horizontal space */
+    .config-grid {
+      grid-template-columns: repeat(4, minmax(0, 1fr));
+    }
+
+    .analytics-summary {
+      grid-template-columns: repeat(6, 1fr);
+    }
+
+    .photo-gallery-grid {
+      grid-template-columns: repeat(auto-fill, minmax(180px, 1fr));
+    }
+
+    .client-list {
+      grid-template-columns: repeat(3, 1fr);
+    }
+  }
+}
+
+/* ============================================
    SMALL MOBILE (< 375px) - iPhone SE, small Android
    ============================================ */
 @media (max-width: 375px) {
