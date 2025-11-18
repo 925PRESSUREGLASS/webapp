@@ -3,7 +3,7 @@
 
 <head>
 	<meta charset="UTF-8" />
-	<title>Tic-Tac-Stick Quote Engine</title>
+	<title>925 Pressure Glass - Quote Engine</title>
 	<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover" />
 	<meta name="description" content="Professional quoting tool for 925 Pressure Glass - Window & Pressure Cleaning" />
 	<meta name="theme-color" content="#6c63ff" />
@@ -33,11 +33,12 @@
 	<link rel="apple-touch-icon" href="icon-192.png" />
 	<meta name="apple-mobile-web-app-capable" content="yes" />
 	<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
-	<meta name="apple-mobile-web-app-title" content="Quote Engine" />
+	<meta name="apple-mobile-web-app-title" content="925 Glass" />
 
 	<!-- CSS -->
 	<!-- Design System - Load FIRST to provide CSS variables and base styles -->
 	<link rel="stylesheet" href="css/design-system.css" />
+	<link rel="stylesheet" href="css/settings-modern.css" />
 	<link rel="stylesheet" href="app.css" />
 	<link rel="stylesheet" href="toast.css" />
 	<link rel="stylesheet" href="loading.css" />
@@ -71,10 +72,10 @@
 		<header class="hdr">
 			<div class="hdr-row hdr-row-top">
 				<div class="hdr-brand">
-					<div class="hdr-ic">🧽</div>
+					<div class="hdr-ic">✨</div>
 					<div class="hdr-info">
-						<div class="hdr-title">Tic-Tac-Stick Quote Engine</div>
-						<div class="hdr-subtitle">925 Pressure Glass · Window & Pressure Cleaning</div>
+						<div class="hdr-title">925 Pressure Glass</div>
+						<div class="hdr-subtitle">Professional Window & Pressure Cleaning</div>
 					</div>
 				</div>
 				<div class="hdr-actions">
@@ -130,99 +131,384 @@
 				<!-- CONFIG PANEL -->
 				<section class="section" id="configPanel">
 					<header class="sec-h">
-						<h2 class="sec-title">Job Settings</h2>
+						<h2 class="sec-title">⚙️ Job Defaults</h2>
 						<button class="card-toggle" type="button" data-target="configBody">▾</button>
 					</header>
 					<div class="sec-b" id="configBody">
-						<div class="config-grid">
-							<!-- BASE FEE -->
-							<label class="field">
-								<span class="field-label">Base Callout Fee ($)</span>
-								<input id="baseFeeInput" type="number" min="0" step="1" value="120" inputmode="decimal" />
-								<small class="field-help">
-									Covers travel & setup; always charged once per job.
-								</small>
-							</label>
+						<div class="settings-modern">
+							<!-- PRICING SECTION -->
+							<div class="settings-section">
+								<div class="settings-section-header">
+									<div>
+										<h3 class="settings-section-title">
+											<span class="settings-section-icon">💰</span>
+											Pricing Defaults
+										</h3>
+										<p class="settings-section-description">Set your base rates and fees</p>
+									</div>
+								</div>
 
-							<!-- HOURLY RATE -->
-							<label class="field">
-								<span class="field-label">Hourly Rate ($/hr)</span>
-								<input id="hourlyRateInput" type="number" min="0" step="1" value="95" inputmode="decimal" />
-								<small class="field-help">
-									Used to convert time to labour cost.
-								</small>
-							</label>
+								<!-- Base Callout Fee -->
+								<div class="setting-item">
+									<div class="setting-label-row">
+										<label class="setting-label" for="baseFeeInput">
+											Base Callout Fee
+											<span class="setting-status-indicator optimal"></span>
+										</label>
+										<span class="setting-value-badge currency" id="baseFeeValue">120</span>
+									</div>
+									<p class="setting-description">Covers travel & setup; always charged once per job</p>
+									<div class="setting-slider-container">
+										<input
+											id="baseFeeInput"
+											type="range"
+											class="setting-slider"
+											min="0"
+											max="300"
+											step="10"
+											value="120"
+											aria-label="Base callout fee"
+										/>
+										<div class="setting-slider-markers">
+											<span class="setting-slider-marker">$0</span>
+											<span class="setting-slider-marker">$150</span>
+											<span class="setting-slider-marker">$300</span>
+										</div>
+									</div>
+									<div class="setting-quick-values">
+										<button class="quick-value-btn" data-value="100" data-target="baseFeeInput">$100</button>
+										<button class="quick-value-btn active" data-value="120" data-target="baseFeeInput">$120</button>
+										<button class="quick-value-btn" data-value="150" data-target="baseFeeInput">$150</button>
+										<button class="quick-value-btn" data-value="200" data-target="baseFeeInput">$200</button>
+									</div>
+								</div>
 
-							<!-- MINIMUM JOB -->
-							<label class="field">
-								<span class="field-label">Minimum Job Charge ($)</span>
-								<input id="minimumJobInput" type="number" min="0" step="1" value="180" inputmode="decimal" />
-								<small class="field-help">
-									Final total will never drop below this amount.
-								</small>
-							</label>
+								<!-- Hourly Rate -->
+								<div class="setting-item">
+									<div class="setting-label-row">
+										<label class="setting-label" for="hourlyRateInput">
+											Hourly Labour Rate
+											<span class="setting-status-indicator optimal"></span>
+										</label>
+										<span class="setting-value-badge currency hours" id="hourlyRateValue">95</span>
+									</div>
+									<p class="setting-description">Used to convert time estimates to labour costs</p>
+									<div class="setting-slider-container">
+										<input
+											id="hourlyRateInput"
+											type="range"
+											class="setting-slider"
+											min="50"
+											max="200"
+											step="5"
+											value="95"
+											aria-label="Hourly labour rate"
+										/>
+										<div class="setting-slider-markers">
+											<span class="setting-slider-marker">$50/hr</span>
+											<span class="setting-slider-marker">$125/hr</span>
+											<span class="setting-slider-marker">$200/hr</span>
+										</div>
+									</div>
+									<div class="setting-quick-values">
+										<button class="quick-value-btn" data-value="85" data-target="hourlyRateInput">$85</button>
+										<button class="quick-value-btn active" data-value="95" data-target="hourlyRateInput">$95</button>
+										<button class="quick-value-btn" data-value="110" data-target="hourlyRateInput">$110</button>
+										<button class="quick-value-btn" data-value="125" data-target="hourlyRateInput">$125</button>
+									</div>
+								</div>
 
-							<!-- HIGH REACH MODIFIER -->
-							<label class="field">
-								<span class="field-label">High Reach Modifier (%)</span>
-								<input id="highReachModifierInput" type="number" min="0" step="5" value="60" inputmode="decimal" />
-								<small class="field-help">
-									Added as a % of exterior pane cost for high reach work.
-								</small>
-							</label>
-
-							<!-- INSIDE / OUTSIDE MULTIPLIERS -->
-							<label class="field">
-								<span class="field-label">Inside Time Multiplier</span>
-								<input id="insideMultiplierInput" type="number" min="0.5" step="0.1" value="1.0" inputmode="decimal" />
-								<small class="field-help">Fine-tune inside pane timings.</small>
-							</label>
-
-							<label class="field">
-								<span class="field-label">Outside Time Multiplier</span>
-								<input id="outsideMultiplierInput" type="number" min="0.5" step="0.1" value="1.0" inputmode="decimal" />
-								<small class="field-help">Fine-tune outside pane timings.</small>
-							</label>
-
-							<!-- PRESSURE CLEAN SETTINGS -->
-							<label class="field">
-								<span class="field-label">Pressure Clean Base Rate ($/hr)</span>
-								<input id="pressureHourlyRateInput" type="number" min="0" step="1" value="120" inputmode="decimal" />
-								<small class="field-help">
-									Used for all surface time calculations.
-								</small>
-							</label>
-
-							<label class="field">
-								<span class="field-label">Travel / Setup Buffer (mins)</span>
-								<input id="setupBufferMinutesInput" type="number" min="0" step="5" value="15" inputmode="numeric" />
-								<small class="field-help">
-									Added once per job to cover hose run, machine setup, etc.
-								</small>
-							</label>
-						</div>
-
-						<!-- AUTOSAVE & PRESETS -->
-						<div class="config-footer">
-							<label class="toggle">
-								<input id="autosaveToggle" type="checkbox" checked />
-								<span>Autosave this quote in browser</span>
-							</label>
-							<div class="config-footer-row">
-								<button id="savePresetBtn" type="button" class="btn btn-sm btn-primary" aria-label="Save current settings as preset">
-									Save as Preset
-								</button>
-								<select id="presetSelect" class="preset-select" aria-label="Load saved preset">
-									<option value="">Load Preset...</option>
-								</select>
+								<!-- Minimum Job -->
+								<div class="setting-item">
+									<div class="setting-label-row">
+										<label class="setting-label" for="minimumJobInput">
+											Minimum Job Charge
+											<span class="setting-status-indicator optimal"></span>
+										</label>
+										<span class="setting-value-badge currency" id="minimumJobValue">180</span>
+									</div>
+									<p class="setting-description">Final total will never drop below this amount</p>
+									<div class="setting-slider-container">
+										<input
+											id="minimumJobInput"
+											type="range"
+											class="setting-slider"
+											min="100"
+											max="500"
+											step="10"
+											value="180"
+											aria-label="Minimum job charge"
+										/>
+										<div class="setting-slider-markers">
+											<span class="setting-slider-marker">$100</span>
+											<span class="setting-slider-marker">$300</span>
+											<span class="setting-slider-marker">$500</span>
+										</div>
+									</div>
+									<div class="setting-quick-values">
+										<button class="quick-value-btn" data-value="150" data-target="minimumJobInput">$150</button>
+										<button class="quick-value-btn active" data-value="180" data-target="minimumJobInput">$180</button>
+										<button class="quick-value-btn" data-value="200" data-target="minimumJobInput">$200</button>
+										<button class="quick-value-btn" data-value="250" data-target="minimumJobInput">$250</button>
+									</div>
+								</div>
 							</div>
-							<div class="config-footer-row">
-								<button id="saveTemplateBtn" type="button" class="btn btn-sm btn-secondary" aria-label="Save current quote as template">
-									Save as Template
-								</button>
-								<select id="templateSelect" class="preset-select" aria-label="Choose quote template">
-									<option value="">Choose Template...</option>
-								</select>
+
+							<!-- MODIFIERS SECTION -->
+							<div class="settings-section">
+								<div class="settings-section-header">
+									<div>
+										<h3 class="settings-section-title">
+											<span class="settings-section-icon">📏</span>
+											Job Modifiers
+										</h3>
+										<p class="settings-section-description">Adjust pricing for special conditions</p>
+									</div>
+								</div>
+
+								<!-- High Reach Modifier -->
+								<div class="setting-item">
+									<div class="setting-label-row">
+										<label class="setting-label" for="highReachModifierInput">
+											High Reach Premium
+											<span class="setting-status-indicator optimal"></span>
+										</label>
+										<span class="setting-value-badge percentage" id="highReachModifierValue">60</span>
+									</div>
+									<p class="setting-description">Added as percentage of exterior pane cost for ladders/poles</p>
+									<div class="setting-slider-container">
+										<input
+											id="highReachModifierInput"
+											type="range"
+											class="setting-slider"
+											min="0"
+											max="100"
+											step="5"
+											value="60"
+											aria-label="High reach modifier percentage"
+										/>
+										<div class="setting-slider-markers">
+											<span class="setting-slider-marker">0%</span>
+											<span class="setting-slider-marker">50%</span>
+											<span class="setting-slider-marker">100%</span>
+										</div>
+									</div>
+									<div class="setting-quick-values">
+										<button class="quick-value-btn" data-value="40" data-target="highReachModifierInput">40%</button>
+										<button class="quick-value-btn" data-value="50" data-target="highReachModifierInput">50%</button>
+										<button class="quick-value-btn active" data-value="60" data-target="highReachModifierInput">60%</button>
+										<button class="quick-value-btn" data-value="75" data-target="highReachModifierInput">75%</button>
+									</div>
+								</div>
+
+								<!-- Inside Multiplier -->
+								<div class="setting-item">
+									<div class="setting-label-row">
+										<label class="setting-label" for="insideMultiplierInput">
+											Inside Time Multiplier
+											<span class="setting-status-indicator optimal"></span>
+										</label>
+										<span class="setting-value-badge" id="insideMultiplierValue">1.0x</span>
+									</div>
+									<p class="setting-description">Fine-tune time estimates for inside panes</p>
+									<div class="setting-slider-container">
+										<input
+											id="insideMultiplierInput"
+											type="range"
+											class="setting-slider"
+											min="0.5"
+											max="2.0"
+											step="0.1"
+											value="1.0"
+											aria-label="Inside time multiplier"
+										/>
+										<div class="setting-slider-markers">
+											<span class="setting-slider-marker">0.5x</span>
+											<span class="setting-slider-marker">1.25x</span>
+											<span class="setting-slider-marker">2.0x</span>
+										</div>
+									</div>
+									<div class="setting-quick-values">
+										<button class="quick-value-btn" data-value="0.8" data-target="insideMultiplierInput">0.8x</button>
+										<button class="quick-value-btn active" data-value="1.0" data-target="insideMultiplierInput">1.0x</button>
+										<button class="quick-value-btn" data-value="1.2" data-target="insideMultiplierInput">1.2x</button>
+										<button class="quick-value-btn" data-value="1.5" data-target="insideMultiplierInput">1.5x</button>
+									</div>
+								</div>
+
+								<!-- Outside Multiplier -->
+								<div class="setting-item">
+									<div class="setting-label-row">
+										<label class="setting-label" for="outsideMultiplierInput">
+											Outside Time Multiplier
+											<span class="setting-status-indicator optimal"></span>
+										</label>
+										<span class="setting-value-badge" id="outsideMultiplierValue">1.0x</span>
+									</div>
+									<p class="setting-description">Fine-tune time estimates for outside panes</p>
+									<div class="setting-slider-container">
+										<input
+											id="outsideMultiplierInput"
+											type="range"
+											class="setting-slider"
+											min="0.5"
+											max="2.0"
+											step="0.1"
+											value="1.0"
+											aria-label="Outside time multiplier"
+										/>
+										<div class="setting-slider-markers">
+											<span class="setting-slider-marker">0.5x</span>
+											<span class="setting-slider-marker">1.25x</span>
+											<span class="setting-slider-marker">2.0x</span>
+										</div>
+									</div>
+									<div class="setting-quick-values">
+										<button class="quick-value-btn" data-value="0.8" data-target="outsideMultiplierInput">0.8x</button>
+										<button class="quick-value-btn active" data-value="1.0" data-target="outsideMultiplierInput">1.0x</button>
+										<button class="quick-value-btn" data-value="1.2" data-target="outsideMultiplierInput">1.2x</button>
+										<button class="quick-value-btn" data-value="1.5" data-target="outsideMultiplierInput">1.5x</button>
+									</div>
+								</div>
+							</div>
+
+							<!-- PRESSURE CLEANING SECTION -->
+							<div class="settings-section">
+								<div class="settings-section-header">
+									<div>
+										<h3 class="settings-section-title">
+											<span class="settings-section-icon">💦</span>
+											Pressure Cleaning
+										</h3>
+										<p class="settings-section-description">Settings for pressure washing jobs</p>
+									</div>
+								</div>
+
+								<!-- Pressure Hourly Rate -->
+								<div class="setting-item">
+									<div class="setting-label-row">
+										<label class="setting-label" for="pressureHourlyRateInput">
+											Pressure Clean Rate
+											<span class="setting-status-indicator optimal"></span>
+										</label>
+										<span class="setting-value-badge currency hours" id="pressureHourlyRateValue">120</span>
+									</div>
+									<p class="setting-description">Used for all surface time calculations</p>
+									<div class="setting-slider-container">
+										<input
+											id="pressureHourlyRateInput"
+											type="range"
+											class="setting-slider"
+											min="80"
+											max="250"
+											step="5"
+											value="120"
+											aria-label="Pressure cleaning hourly rate"
+										/>
+										<div class="setting-slider-markers">
+											<span class="setting-slider-marker">$80/hr</span>
+											<span class="setting-slider-marker">$165/hr</span>
+											<span class="setting-slider-marker">$250/hr</span>
+										</div>
+									</div>
+									<div class="setting-quick-values">
+										<button class="quick-value-btn" data-value="100" data-target="pressureHourlyRateInput">$100</button>
+										<button class="quick-value-btn active" data-value="120" data-target="pressureHourlyRateInput">$120</button>
+										<button class="quick-value-btn" data-value="150" data-target="pressureHourlyRateInput">$150</button>
+										<button class="quick-value-btn" data-value="180" data-target="pressureHourlyRateInput">$180</button>
+									</div>
+								</div>
+
+								<!-- Setup Buffer -->
+								<div class="setting-item">
+									<div class="setting-label-row">
+										<label class="setting-label" for="setupBufferMinutesInput">
+											Travel / Setup Buffer
+											<span class="setting-status-indicator optimal"></span>
+										</label>
+										<span class="setting-value-badge minutes" id="setupBufferValue">15</span>
+									</div>
+									<p class="setting-description">Added once per job for hose run, machine setup, etc.</p>
+									<div class="setting-slider-container">
+										<input
+											id="setupBufferMinutesInput"
+											type="range"
+											class="setting-slider"
+											min="0"
+											max="60"
+											step="5"
+											value="15"
+											aria-label="Setup buffer in minutes"
+										/>
+										<div class="setting-slider-markers">
+											<span class="setting-slider-marker">0 min</span>
+											<span class="setting-slider-marker">30 min</span>
+											<span class="setting-slider-marker">60 min</span>
+										</div>
+									</div>
+									<div class="setting-quick-values">
+										<button class="quick-value-btn" data-value="10" data-target="setupBufferMinutesInput">10</button>
+										<button class="quick-value-btn active" data-value="15" data-target="setupBufferMinutesInput">15</button>
+										<button class="quick-value-btn" data-value="20" data-target="setupBufferMinutesInput">20</button>
+										<button class="quick-value-btn" data-value="30" data-target="setupBufferMinutesInput">30</button>
+									</div>
+								</div>
+							</div>
+
+							<!-- AUTOMATION & PRESETS SECTION -->
+							<div class="settings-section">
+								<div class="settings-section-header">
+									<div>
+										<h3 class="settings-section-title">
+											<span class="settings-section-icon">🔧</span>
+											Automation & Presets
+										</h3>
+										<p class="settings-section-description">Save time with automation and saved configurations</p>
+									</div>
+								</div>
+
+								<!-- Autosave Toggle -->
+								<div class="setting-toggle-item">
+									<div class="setting-toggle-info">
+										<div class="setting-toggle-label">Autosave Quotes</div>
+										<div class="setting-toggle-description">Automatically save quote in browser every 10 seconds</div>
+									</div>
+									<label class="toggle-switch">
+										<input id="autosaveToggle" type="checkbox" checked />
+										<span class="toggle-slider"></span>
+									</label>
+								</div>
+
+								<!-- Presets -->
+								<div class="settings-presets">
+									<button id="savePresetBtn" type="button" class="preset-button" aria-label="Save current settings as preset">
+										<span class="preset-icon">💾</span>
+										<span class="preset-label">Save Preset</span>
+										<span class="preset-description">Save current settings</span>
+									</button>
+
+									<div class="preset-button" style="cursor: default; border-style: dashed;">
+										<span class="preset-icon">📋</span>
+										<span class="preset-label">Load Preset</span>
+										<select id="presetSelect" class="form-select" aria-label="Load saved preset" style="margin-top: 0.5rem; width: 100%;">
+											<option value="">Select...</option>
+										</select>
+									</div>
+
+									<button id="saveTemplateBtn" type="button" class="preset-button" aria-label="Save current quote as template">
+										<span class="preset-icon">📝</span>
+										<span class="preset-label">Save Template</span>
+										<span class="preset-description">Save entire quote</span>
+									</button>
+
+									<div class="preset-button" style="cursor: default; border-style: dashed;">
+										<span class="preset-icon">📄</span>
+										<span class="preset-label">Load Template</span>
+										<select id="templateSelect" class="form-select" aria-label="Choose quote template" style="margin-top: 0.5rem; width: 100%;">
+											<option value="">Select...</option>
+										</select>
+									</div>
+								</div>
 							</div>
 						</div>
 					</div>
@@ -1063,6 +1349,8 @@
 	<script src="validation.js"></script>
 	<!-- UI Components (toast, loading, modals) - no defer for immediate availability -->
 	<script src="ui-components.js"></script>
+	<!-- Modern Settings UI Controller -->
+	<script src="settings-modern.js" defer></script>
 	<!-- Lazy loader for on-demand module loading -->
 	<script src="lazy-loader.js"></script>
 	<!-- Lazy loader initialization and event handlers -->
