@@ -55,6 +55,7 @@
 	<link rel="stylesheet" href="css/analytics-dashboard.css" />
 	<link rel="stylesheet" href="photos.css" />
 	<link rel="stylesheet" href="css/tasks.css" />
+	<link rel="stylesheet" href="css/contracts.css" />
 	<link rel="stylesheet" href="mobile.css" />
 	<link rel="stylesheet" href="quote-pdf.css" />
 	<link rel="stylesheet" href="css/test-runner.css" />
@@ -698,6 +699,364 @@
 		</div>
 	</div>
 
+	<!-- CONTRACTS DASHBOARD PAGE (Hidden by default) -->
+	<div class="page" id="page-contracts" style="display: none;">
+		<div class="container">
+			<!-- Header -->
+			<div class="page-header">
+				<h1>Maintenance Contracts</h1>
+				<button class="btn btn-primary btn-sm" onclick="navigateTo('new-contract')" aria-label="Create new contract">
+					+ New Contract
+				</button>
+			</div>
+
+			<!-- Contract Stats -->
+			<div id="contract-stats">
+				<!-- Populated by JavaScript -->
+			</div>
+
+			<!-- Contract Filters -->
+			<div class="filter-buttons">
+				<button class="filter-btn active" data-filter="all" onclick="filterContracts('all')">All</button>
+				<button class="filter-btn" data-filter="active" onclick="filterContracts('active')">Active</button>
+				<button class="filter-btn" data-filter="pending" onclick="filterContracts('pending')">Pending</button>
+				<button class="filter-btn" data-filter="draft" onclick="filterContracts('draft')">Drafts</button>
+				<button class="filter-btn" data-filter="cancelled" onclick="filterContracts('cancelled')">Cancelled</button>
+			</div>
+
+			<!-- Contract List -->
+			<div id="contract-list">
+				<!-- Populated by JavaScript -->
+			</div>
+
+			<!-- Upcoming Services -->
+			<div class="card" style="margin-top: 2rem;">
+				<div class="card-header">
+					<h3 class="card-title">Upcoming Services (Next 14 Days)</h3>
+				</div>
+				<div class="card-body">
+					<div id="upcoming-services">
+						<!-- Populated by JavaScript -->
+					</div>
+				</div>
+			</div>
+		</div>
+	</div>
+
+	<!-- NEW CONTRACT WIZARD PAGE (Hidden by default) -->
+	<div class="page" id="page-new-contract" style="display: none;">
+		<div class="container">
+			<div class="page-header">
+				<button class="btn btn-secondary btn-sm" onclick="navigateTo('contracts')">← Back</button>
+				<h1>New Maintenance Contract</h1>
+			</div>
+
+			<!-- Contract Type Selection -->
+			<div class="wizard-step" id="contract-step-1">
+				<div class="card">
+					<div class="card-header">
+						<h3 class="card-title">Step 1: Contract Type</h3>
+					</div>
+					<div class="card-body">
+						<p class="form-hint">Select the type of maintenance contract</p>
+
+						<div class="contract-type-grid">
+							<div class="contract-type-card" onclick="selectContractType('residential')">
+								<div class="contract-type-icon">🏠</div>
+								<h4>Residential</h4>
+								<p>Home maintenance services</p>
+								<ul class="contract-benefits">
+									<li>Monthly to Annual</li>
+									<li>Flexible scheduling</li>
+									<li>Up to 15% discount</li>
+								</ul>
+							</div>
+
+							<div class="contract-type-card" onclick="selectContractType('commercial')">
+								<div class="contract-type-icon">🏢</div>
+								<h4>Commercial</h4>
+								<p>Business property maintenance</p>
+								<ul class="contract-benefits">
+									<li>Weekly to Monthly</li>
+									<li>SLA guarantees</li>
+									<li>Up to 25% discount</li>
+								</ul>
+							</div>
+
+							<div class="contract-type-card" onclick="selectContractType('strata')">
+								<div class="contract-type-icon">🏘️</div>
+								<h4>Strata/Body Corporate</h4>
+								<p>Multi-unit buildings</p>
+								<ul class="contract-benefits">
+									<li>Quarterly to Annual</li>
+									<li>Bulk discounts</li>
+									<li>AGM presentations</li>
+								</ul>
+							</div>
+						</div>
+					</div>
+				</div>
+			</div>
+
+			<!-- Client Selection -->
+			<div class="wizard-step" id="contract-step-2" style="display: none;">
+				<div class="card">
+					<div class="card-header">
+						<h3 class="card-title">Step 2: Client Selection</h3>
+					</div>
+					<div class="card-body">
+						<div class="form-group">
+							<label>Select Existing Client</label>
+							<select class="form-select" id="contract-client-select" onchange="loadClientDetails(this.value)">
+								<option value="">-- Select Client --</option>
+								<!-- Populated by JavaScript -->
+							</select>
+							<span class="form-hint">Or create new client below</span>
+						</div>
+
+						<div id="new-client-form">
+							<div class="form-group">
+								<label>Client Name *</label>
+								<input type="text" class="form-input" id="contract-client-name" required>
+							</div>
+
+							<div class="form-row">
+								<div class="form-group">
+									<label>Phone *</label>
+									<input type="tel" class="form-input" id="contract-client-phone" required>
+								</div>
+
+								<div class="form-group">
+									<label>Email</label>
+									<input type="email" class="form-input" id="contract-client-email">
+								</div>
+							</div>
+
+							<div class="form-group">
+								<label>Address *</label>
+								<textarea class="form-input" id="contract-client-address" rows="2" required></textarea>
+							</div>
+						</div>
+
+						<div class="wizard-actions">
+							<button class="btn btn-secondary" onclick="contractWizardBack(2)">Back</button>
+							<button class="btn btn-primary" onclick="contractWizardNext(2)">Next</button>
+						</div>
+					</div>
+				</div>
+			</div>
+
+			<!-- Service Details -->
+			<div class="wizard-step" id="contract-step-3" style="display: none;">
+				<div class="card">
+					<div class="card-header">
+						<h3 class="card-title">Step 3: Services & Pricing</h3>
+					</div>
+					<div class="card-body">
+						<div class="form-group">
+							<label>Service Category *</label>
+							<select class="form-select" id="contract-category">
+								<option value="windows">Window Cleaning</option>
+								<option value="pressure-washing">Pressure Washing</option>
+								<option value="gutters">Gutter Cleaning</option>
+								<option value="bundle">Service Bundle</option>
+							</select>
+						</div>
+
+						<div class="form-group">
+							<label>Service Frequency *</label>
+							<select class="form-select" id="contract-frequency" onchange="updateContractPricing()">
+								<!-- Populated based on contract type -->
+							</select>
+						</div>
+
+						<h4>Services Included</h4>
+						<div id="contract-services-list">
+							<!-- Services added here -->
+						</div>
+
+						<button class="btn btn-secondary btn-sm" onclick="addContractService()">+ Add Service</button>
+
+						<!-- Pricing Summary -->
+						<div class="pricing-summary" style="margin-top: 2rem;">
+							<h4>Pricing Summary</h4>
+							<table class="pricing-table">
+								<tr>
+									<td>Base Price:</td>
+									<td class="text-right" id="contract-base-price">$0.00</td>
+								</tr>
+								<tr class="discount-row">
+									<td>Discounts:</td>
+									<td class="text-right" id="contract-discounts">-$0.00</td>
+								</tr>
+								<tr>
+									<td>Subtotal:</td>
+									<td class="text-right" id="contract-subtotal">$0.00</td>
+								</tr>
+								<tr>
+									<td>GST (10%):</td>
+									<td class="text-right" id="contract-gst">$0.00</td>
+								</tr>
+								<tr class="total-row">
+									<td><strong>Total Per Service:</strong></td>
+									<td class="text-right"><strong id="contract-total">$0.00</strong></td>
+								</tr>
+								<tr class="highlight-row">
+									<td><strong>Annual Value:</strong></td>
+									<td class="text-right"><strong id="contract-annual-value">$0.00</strong></td>
+								</tr>
+							</table>
+						</div>
+
+						<div class="wizard-actions">
+							<button class="btn btn-secondary" onclick="contractWizardBack(3)">Back</button>
+							<button class="btn btn-primary" onclick="contractWizardNext(3)">Next</button>
+						</div>
+					</div>
+				</div>
+			</div>
+
+			<!-- Contract Terms -->
+			<div class="wizard-step" id="contract-step-4" style="display: none;">
+				<div class="card">
+					<div class="card-header">
+						<h3 class="card-title">Step 4: Contract Terms</h3>
+					</div>
+					<div class="card-body">
+						<div class="form-row">
+							<div class="form-group">
+								<label>Start Date *</label>
+								<input type="date" class="form-input" id="contract-start-date" required>
+							</div>
+
+							<div class="form-group">
+								<label>Contract Duration</label>
+								<select class="form-select" id="contract-duration">
+									<option value="6">6 Months</option>
+									<option value="12" selected>12 Months</option>
+									<option value="24">24 Months</option>
+									<option value="36">36 Months</option>
+									<option value="0">Ongoing (no end date)</option>
+								</select>
+							</div>
+						</div>
+
+						<div class="form-group">
+							<label class="form-checkbox-wrapper">
+								<input type="checkbox" id="contract-auto-renew" class="form-checkbox" checked>
+								Automatically renew at end of term
+							</label>
+						</div>
+
+						<div class="form-group">
+							<label>Payment Method</label>
+							<select class="form-select" id="contract-payment-method">
+								<option value="invoice">Invoice per service</option>
+								<option value="direct-debit">Direct Debit (5% discount)</option>
+								<option value="annual">Annual prepayment (10% discount)</option>
+							</select>
+						</div>
+
+						<div class="form-group">
+							<label>Payment Terms</label>
+							<select class="form-select" id="contract-payment-terms">
+								<option value="net-7">Net 7 days</option>
+								<option value="net-14">Net 14 days</option>
+								<option value="net-30">Net 30 days</option>
+								<option value="upfront">Due on service</option>
+							</select>
+						</div>
+
+						<div class="form-group">
+							<label>Notice Period for Cancellation</label>
+							<select class="form-select" id="contract-notice-period">
+								<option value="14">14 days</option>
+								<option value="30">30 days</option>
+								<option value="60">60 days</option>
+								<option value="90">90 days</option>
+							</select>
+						</div>
+
+						<div class="wizard-actions">
+							<button class="btn btn-secondary" onclick="contractWizardBack(4)">Back</button>
+							<button class="btn btn-primary" onclick="contractWizardNext(4)">Next</button>
+						</div>
+					</div>
+				</div>
+			</div>
+
+			<!-- Schedule Preferences -->
+			<div class="wizard-step" id="contract-step-5" style="display: none;">
+				<div class="card">
+					<div class="card-header">
+						<h3 class="card-title">Step 5: Schedule Preferences</h3>
+					</div>
+					<div class="card-body">
+						<div class="form-group">
+							<label>Preferred Day of Week</label>
+							<select class="form-select" id="contract-preferred-day">
+								<option value="">No preference</option>
+								<option value="1">Monday</option>
+								<option value="2">Tuesday</option>
+								<option value="3">Wednesday</option>
+								<option value="4">Thursday</option>
+								<option value="5">Friday</option>
+								<option value="6">Saturday</option>
+								<option value="0">Sunday</option>
+							</select>
+						</div>
+
+						<div class="form-group">
+							<label>Preferred Time</label>
+							<select class="form-select" id="contract-preferred-time">
+								<option value="anytime">Anytime</option>
+								<option value="morning">Morning (8am-12pm)</option>
+								<option value="afternoon">Afternoon (12pm-5pm)</option>
+							</select>
+						</div>
+
+						<div class="form-group">
+							<label class="form-checkbox-wrapper">
+								<input type="checkbox" id="contract-flexible" class="form-checkbox" checked>
+								Flexible scheduling (allows rescheduling if needed)
+							</label>
+						</div>
+
+						<div class="form-group">
+							<label>Additional Notes</label>
+							<textarea class="form-input" id="contract-notes" rows="4" placeholder="Access instructions, special requirements, etc."></textarea>
+						</div>
+
+						<div class="wizard-actions">
+							<button class="btn btn-secondary" onclick="contractWizardBack(5)">Back</button>
+							<button class="btn btn-primary" onclick="contractWizardNext(5)">Review</button>
+						</div>
+					</div>
+				</div>
+			</div>
+
+			<!-- Review & Confirm -->
+			<div class="wizard-step" id="contract-step-6" style="display: none;">
+				<div class="card">
+					<div class="card-header">
+						<h3 class="card-title">Step 6: Review Contract</h3>
+					</div>
+					<div class="card-body">
+						<div id="contract-review-summary">
+							<!-- Summary populated by JavaScript -->
+						</div>
+
+						<div class="wizard-actions">
+							<button class="btn btn-secondary" onclick="contractWizardBack(6)">Back</button>
+							<button class="btn btn-secondary" onclick="saveContractDraft()">Save as Draft</button>
+							<button class="btn btn-primary" onclick="createContractFinal()">Create Contract</button>
+						</div>
+					</div>
+				</div>
+			</div>
+		</div>
+	</div>
+
 	<!-- WIZARD OVERLAY -->
 	<div id="wizardOverlay" class="wizard-overlay">
 		<div class="wizard-dialog">
@@ -1080,6 +1439,13 @@
 
 	<!-- Phase 5: Job Templates -->
 	<script src="job-presets.js" defer></script>
+
+	<!-- Recurring Contracts & Maintenance (Prompt #37) -->
+	<script src="contract-types.js" defer></script>
+	<script src="contract-manager.js" defer></script>
+	<script src="contract-ui.js" defer></script>
+	<script src="contract-dashboard.js" defer></script>
+	<script src="contract-automation.js" defer></script>
 
 	<!-- Task & Follow-up Automation (Prompt #29) -->
 	<script src="followup-config.js" defer></script>

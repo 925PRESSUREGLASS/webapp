@@ -1,0 +1,622 @@
+/* contracts.css - Contract system styling */
+/* Responsive, mobile-first design with dark theme support */
+
+/* ============================================
+   CONTRACT DASHBOARD
+   ============================================ */
+
+.stats-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+  gap: 1rem;
+  margin-bottom: 2rem;
+}
+
+.stat-card {
+  background: var(--card-bg, #fff);
+  border: 1px solid var(--border-color, #e5e7eb);
+  border-radius: var(--radius-md, 0.5rem);
+  padding: 1.5rem;
+  text-align: center;
+  transition: transform 0.2s ease, box-shadow 0.2s ease;
+}
+
+.stat-card:hover {
+  transform: translateY(-2px);
+  box-shadow: var(--shadow-md, 0 4px 6px rgba(0, 0, 0, 0.1));
+}
+
+.stat-card-success {
+  border-left: 4px solid var(--color-success, #10b981);
+}
+
+.stat-card-primary {
+  border-left: 4px solid var(--color-primary, #2563eb);
+}
+
+.stat-card-info {
+  border-left: 4px solid var(--color-info, #3b82f6);
+}
+
+.stat-value {
+  font-size: 2rem;
+  font-weight: bold;
+  color: var(--text-primary, #111827);
+  margin-bottom: 0.5rem;
+}
+
+.stat-label {
+  font-size: 0.875rem;
+  color: var(--text-secondary, #6b7280);
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+/* ============================================
+   CONTRACT TYPE CARDS
+   ============================================ */
+
+.contract-type-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+  gap: 1.5rem;
+  margin-top: 1.5rem;
+}
+
+.contract-type-card {
+  background: var(--card-bg, #fff);
+  border: 2px solid var(--border-color, #e5e7eb);
+  border-radius: var(--radius-lg, 0.75rem);
+  padding: 2rem;
+  text-align: center;
+  cursor: pointer;
+  transition: all 0.3s ease;
+}
+
+.contract-type-card:hover {
+  border-color: var(--color-primary, #2563eb);
+  transform: translateY(-4px);
+  box-shadow: var(--shadow-lg, 0 10px 15px rgba(0, 0, 0, 0.1));
+}
+
+.contract-type-card:active {
+  transform: translateY(-2px);
+}
+
+.contract-type-icon {
+  font-size: 3rem;
+  margin-bottom: 1rem;
+}
+
+.contract-type-card h4 {
+  margin: 0 0 0.5rem 0;
+  color: var(--text-primary, #111827);
+}
+
+.contract-type-card p {
+  color: var(--text-secondary, #6b7280);
+  margin-bottom: 1rem;
+}
+
+.contract-benefits {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+  font-size: 0.875rem;
+  color: var(--text-secondary, #6b7280);
+}
+
+.contract-benefits li {
+  padding: 0.25rem 0;
+}
+
+.contract-benefits li::before {
+  content: "✓ ";
+  color: var(--color-success, #10b981);
+  font-weight: bold;
+  margin-right: 0.5rem;
+}
+
+/* ============================================
+   CONTRACT TABLE
+   ============================================ */
+
+.contract-table-wrapper {
+  overflow-x: auto;
+  margin: 1rem 0;
+  border-radius: var(--radius-md, 0.5rem);
+  border: 1px solid var(--border-color, #e5e7eb);
+}
+
+.contract-table {
+  width: 100%;
+  border-collapse: collapse;
+  background: var(--card-bg, #fff);
+}
+
+.contract-table thead {
+  background: var(--neutral-100, #f3f4f6);
+  border-bottom: 2px solid var(--border-color, #e5e7eb);
+}
+
+.contract-table th {
+  padding: 0.75rem 1rem;
+  text-align: left;
+  font-weight: 600;
+  font-size: 0.875rem;
+  color: var(--text-primary, #111827);
+  cursor: pointer;
+  user-select: none;
+}
+
+.contract-table th:hover {
+  background: var(--neutral-200, #e5e7eb);
+}
+
+.contract-table td {
+  padding: 0.75rem 1rem;
+  border-top: 1px solid var(--border-color, #e5e7eb);
+  font-size: 0.875rem;
+  color: var(--text-primary, #111827);
+}
+
+.contract-table tbody tr:hover {
+  background: var(--neutral-50, #f9fafb);
+}
+
+.contract-table a {
+  color: var(--color-primary, #2563eb);
+  text-decoration: none;
+  font-weight: 500;
+}
+
+.contract-table a:hover {
+  text-decoration: underline;
+}
+
+/* Status badges */
+.badge {
+  display: inline-block;
+  padding: 0.25rem 0.75rem;
+  border-radius: var(--radius-full, 9999px);
+  font-size: 0.75rem;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+.badge-success {
+  background: #d1fae5;
+  color: #065f46;
+}
+
+.badge-warning {
+  background: #fef3c7;
+  color: #92400e;
+}
+
+.badge-danger {
+  background: #fee2e2;
+  color: #991b1b;
+}
+
+.badge-info {
+  background: #dbeafe;
+  color: #1e40af;
+}
+
+.badge-secondary {
+  background: #e5e7eb;
+  color: #374151;
+}
+
+/* Text colors */
+.text-danger {
+  color: var(--color-error, #ef4444);
+  font-weight: 600;
+}
+
+.text-warning {
+  color: var(--color-warning, #f59e0b);
+  font-weight: 600;
+}
+
+.text-muted {
+  color: var(--text-secondary, #6b7280);
+  font-size: 0.875rem;
+}
+
+/* ============================================
+   CONTRACT SERVICES
+   ============================================ */
+
+.contract-service-item {
+  background: var(--neutral-50, #f9fafb);
+  border: 1px solid var(--border-color, #e5e7eb);
+  border-radius: var(--radius-md, 0.5rem);
+  padding: 1rem;
+  margin-bottom: 1rem;
+}
+
+.contract-service-item .form-row {
+  display: flex;
+  gap: 1rem;
+  align-items: flex-end;
+}
+
+.contract-service-item .form-group {
+  flex: 1;
+}
+
+/* ============================================
+   PRICING SUMMARY
+   ============================================ */
+
+.pricing-summary {
+  background: var(--neutral-50, #f9fafb);
+  border: 1px solid var(--border-color, #e5e7eb);
+  border-radius: var(--radius-md, 0.5rem);
+  padding: 1.5rem;
+  margin-top: 2rem;
+}
+
+.pricing-summary h4 {
+  margin: 0 0 1rem 0;
+  color: var(--text-primary, #111827);
+}
+
+.pricing-table {
+  width: 100%;
+  border-collapse: collapse;
+}
+
+.pricing-table tr {
+  border-bottom: 1px solid var(--border-color, #e5e7eb);
+}
+
+.pricing-table tr:last-child {
+  border-bottom: none;
+}
+
+.pricing-table td {
+  padding: 0.5rem 0;
+  color: var(--text-primary, #111827);
+}
+
+.pricing-table .text-right {
+  text-align: right;
+  font-weight: 500;
+}
+
+.pricing-table .discount-row td {
+  color: var(--color-success, #10b981);
+}
+
+.pricing-table .total-row {
+  border-top: 2px solid var(--border-color, #e5e7eb);
+}
+
+.pricing-table .total-row td {
+  padding-top: 1rem;
+  font-size: 1.125rem;
+}
+
+.pricing-table .highlight-row {
+  background: var(--color-primary-light, #dbeafe);
+}
+
+.pricing-table .highlight-row td {
+  padding: 0.75rem;
+  font-size: 1.125rem;
+  color: var(--color-primary, #2563eb);
+}
+
+/* ============================================
+   UPCOMING SERVICES
+   ============================================ */
+
+.upcoming-services-list {
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+}
+
+.upcoming-service-card {
+  display: flex;
+  align-items: center;
+  gap: 1.5rem;
+  background: var(--card-bg, #fff);
+  border: 1px solid var(--border-color, #e5e7eb);
+  border-radius: var(--radius-md, 0.5rem);
+  padding: 1rem;
+  transition: box-shadow 0.2s ease;
+}
+
+.upcoming-service-card:hover {
+  box-shadow: var(--shadow-md, 0 4px 6px rgba(0, 0, 0, 0.1));
+}
+
+.service-date {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  background: var(--color-primary, #2563eb);
+  color: white;
+  border-radius: var(--radius-md, 0.5rem);
+  padding: 0.75rem;
+  min-width: 70px;
+  text-align: center;
+}
+
+.date-day {
+  font-size: 1.5rem;
+  font-weight: bold;
+  line-height: 1;
+}
+
+.date-month {
+  font-size: 0.875rem;
+  text-transform: uppercase;
+  margin-top: 0.25rem;
+}
+
+.service-details {
+  flex: 1;
+}
+
+.service-details h4 {
+  margin: 0 0 0.25rem 0;
+  color: var(--text-primary, #111827);
+}
+
+.service-details p {
+  margin: 0.25rem 0;
+  color: var(--text-secondary, #6b7280);
+  font-size: 0.875rem;
+}
+
+.service-actions {
+  display: flex;
+  gap: 0.5rem;
+  align-items: center;
+}
+
+/* ============================================
+   WIZARD STEPS
+   ============================================ */
+
+.wizard-step {
+  animation: fadeIn 0.3s ease;
+}
+
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+    transform: translateY(10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.wizard-actions {
+  display: flex;
+  gap: 1rem;
+  justify-content: flex-end;
+  margin-top: 2rem;
+  padding-top: 1.5rem;
+  border-top: 1px solid var(--border-color, #e5e7eb);
+}
+
+/* ============================================
+   REVIEW SECTION
+   ============================================ */
+
+.review-section {
+  background: var(--neutral-50, #f9fafb);
+  border: 1px solid var(--border-color, #e5e7eb);
+  border-radius: var(--radius-md, 0.5rem);
+  padding: 1.5rem;
+  margin-bottom: 1.5rem;
+}
+
+.review-section h4 {
+  margin: 0 0 1rem 0;
+  color: var(--text-primary, #111827);
+  border-bottom: 2px solid var(--color-primary, #2563eb);
+  padding-bottom: 0.5rem;
+}
+
+.review-section p {
+  margin: 0.5rem 0;
+  color: var(--text-primary, #111827);
+}
+
+.review-section strong {
+  color: var(--text-secondary, #6b7280);
+  font-weight: 600;
+  margin-right: 0.5rem;
+}
+
+.review-section .table {
+  width: 100%;
+  margin-top: 1rem;
+  border-collapse: collapse;
+}
+
+.review-section .table th,
+.review-section .table td {
+  padding: 0.5rem;
+  text-align: left;
+  border-bottom: 1px solid var(--border-color, #e5e7eb);
+}
+
+.review-section .table th {
+  background: var(--neutral-100, #f3f4f6);
+  font-weight: 600;
+}
+
+/* ============================================
+   FILTER BUTTONS
+   ============================================ */
+
+.filter-buttons {
+  display: flex;
+  gap: 0.5rem;
+  margin-bottom: 1.5rem;
+  flex-wrap: wrap;
+}
+
+.filter-btn {
+  padding: 0.5rem 1rem;
+  border: 1px solid var(--border-color, #e5e7eb);
+  border-radius: var(--radius-md, 0.5rem);
+  background: var(--card-bg, #fff);
+  color: var(--text-primary, #111827);
+  font-size: 0.875rem;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.filter-btn:hover {
+  background: var(--neutral-50, #f9fafb);
+  border-color: var(--color-primary, #2563eb);
+}
+
+.filter-btn.active {
+  background: var(--color-primary, #2563eb);
+  color: white;
+  border-color: var(--color-primary, #2563eb);
+}
+
+/* ============================================
+   EMPTY STATE
+   ============================================ */
+
+.empty-state {
+  text-align: center;
+  padding: 3rem 1rem;
+  background: var(--neutral-50, #f9fafb);
+  border: 1px dashed var(--border-color, #e5e7eb);
+  border-radius: var(--radius-md, 0.5rem);
+}
+
+.empty-state p {
+  color: var(--text-secondary, #6b7280);
+  margin-bottom: 1.5rem;
+}
+
+/* ============================================
+   DARK THEME
+   ============================================ */
+
+[data-theme="dark"] .stat-card,
+[data-theme="dark"] .contract-type-card,
+[data-theme="dark"] .contract-table,
+[data-theme="dark"] .upcoming-service-card,
+[data-theme="dark"] .contract-service-item,
+[data-theme="dark"] .pricing-summary,
+[data-theme="dark"] .review-section,
+[data-theme="dark"] .filter-btn {
+  background: var(--card-bg-dark, #1f2937);
+  border-color: var(--border-color-dark, #374151);
+}
+
+[data-theme="dark"] .stat-value,
+[data-theme="dark"] .contract-type-card h4,
+[data-theme="dark"] .contract-table th,
+[data-theme="dark"] .contract-table td,
+[data-theme="dark"] .service-details h4,
+[data-theme="dark"] .review-section h4,
+[data-theme="dark"] .pricing-summary h4 {
+  color: var(--text-primary-dark, #f9fafb);
+}
+
+[data-theme="dark"] .stat-label,
+[data-theme="dark"] .contract-type-card p,
+[data-theme="dark"] .contract-benefits,
+[data-theme="dark"] .service-details p,
+[data-theme="dark"] .review-section strong {
+  color: var(--text-secondary-dark, #d1d5db);
+}
+
+[data-theme="dark"] .contract-table thead {
+  background: var(--neutral-800, #1f2937);
+}
+
+[data-theme="dark"] .contract-table tbody tr:hover {
+  background: var(--neutral-700, #374151);
+}
+
+/* ============================================
+   RESPONSIVE - MOBILE
+   ============================================ */
+
+@media (max-width: 768px) {
+  .stats-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .contract-type-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .contract-table-wrapper {
+    font-size: 0.75rem;
+  }
+
+  .contract-table th,
+  .contract-table td {
+    padding: 0.5rem;
+  }
+
+  .contract-service-item .form-row {
+    flex-direction: column;
+  }
+
+  .upcoming-service-card {
+    flex-direction: column;
+    align-items: flex-start;
+  }
+
+  .service-actions {
+    width: 100%;
+    justify-content: space-between;
+  }
+
+  .wizard-actions {
+    flex-direction: column;
+  }
+
+  .wizard-actions button {
+    width: 100%;
+  }
+}
+
+/* ============================================
+   PRINT STYLES
+   ============================================ */
+
+@media print {
+  .wizard-actions,
+  .service-actions,
+  .filter-buttons,
+  .btn-sm {
+    display: none;
+  }
+
+  .stat-card,
+  .contract-type-card,
+  .contract-table,
+  .upcoming-service-card,
+  .review-section {
+    border: 1px solid #000;
+    box-shadow: none;
+  }
+
+  .contract-table {
+    page-break-inside: avoid;
+  }
+}
