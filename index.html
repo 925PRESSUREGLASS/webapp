@@ -85,6 +85,9 @@
 					<button id="webhookSettingsBtn" type="button" class="btn btn-secondary" title="GoHighLevel Integration Settings" aria-label="Open GHL settings" onclick="if(window.openGHLSettings) { window.openGHLSettings(); } else { alert('GHL Settings module not loaded yet'); }">
 						🔄 GHL
 					</button>
+					<button id="customersPageBtn" type="button" class="btn btn-secondary" title="Customer Directory" aria-label="Open customer directory" onclick="showCustomersPage()">
+						👥 Customers
+					</button>
 					<button id="keyboardShortcutsBtn" type="button" class="btn btn-tertiary" title="Keyboard Shortcuts (Press ?)" aria-label="View keyboard shortcuts">
 						⌨️ Help
 					</button>
@@ -705,6 +708,96 @@
 		</div>
 	</div>
 
+	<!-- CUSTOMER DIRECTORY PAGE (Hidden by default) -->
+	<div class="page" id="page-customers" style="display: none;">
+		<div class="container">
+			<!-- Header -->
+			<div class="page-header">
+				<h1>Customer Directory</h1>
+				<div style="display: flex; gap: 0.5rem;">
+					<button class="btn btn-tertiary btn-sm" onclick="backToQuotes()" aria-label="Back to quotes">
+						← Back to Quotes
+					</button>
+					<button class="btn btn-primary btn-sm" onclick="openAddCustomerModal()" aria-label="Add new customer">
+						+ Add Customer
+					</button>
+				</div>
+			</div>
+
+			<!-- Search and Filters -->
+			<div class="card" style="margin-bottom: 1.5rem;">
+				<div class="card-body">
+					<div style="display: flex; gap: 1rem; flex-wrap: wrap;">
+						<input
+							type="text"
+							id="customer-search-input"
+							class="form-input"
+							placeholder="Search customers by name, email, phone, or location..."
+							style="flex: 1; min-width: 250px;"
+							aria-label="Search customers"
+						/>
+						<select class="form-select" id="customer-sort-select" aria-label="Sort customers" style="width: 200px;">
+							<option value="name-asc">Name (A-Z)</option>
+							<option value="name-desc">Name (Z-A)</option>
+							<option value="recent">Recently Added</option>
+							<option value="oldest">Oldest First</option>
+							<option value="most-quotes">Most Quotes</option>
+							<option value="highest-revenue">Highest Revenue</option>
+						</select>
+					</div>
+				</div>
+			</div>
+
+			<!-- Customer Stats Summary -->
+			<div class="task-summary-grid" style="margin-bottom: 1.5rem;">
+				<div class="card">
+					<div class="card-body">
+						<div class="task-summary-label">Total Customers</div>
+						<div class="task-summary-value" id="total-customers">0</div>
+					</div>
+				</div>
+
+				<div class="card">
+					<div class="card-body">
+						<div class="task-summary-label">Total Quotes</div>
+						<div class="task-summary-value" id="total-customer-quotes">0</div>
+					</div>
+				</div>
+
+				<div class="card">
+					<div class="card-body">
+						<div class="task-summary-label">Total Revenue</div>
+						<div class="task-summary-value" id="total-customer-revenue">$0.00</div>
+					</div>
+				</div>
+
+				<div class="card">
+					<div class="card-body">
+						<div class="task-summary-label">Avg. Quote Value</div>
+						<div class="task-summary-value" id="avg-quote-value">$0.00</div>
+					</div>
+				</div>
+			</div>
+
+			<!-- Customer List -->
+			<div id="customer-list">
+				<!-- Populated by JavaScript -->
+			</div>
+
+			<!-- Empty State -->
+			<div id="customers-empty-state" class="empty-state" style="display: none;">
+				<svg class="empty-state-icon" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" aria-hidden="true">
+					<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4.354a4 4 0 110 5.292M15 21H3v-1a6 6 0 0112 0v1zm0 0h6v-1a6 6 0 00-9-5.197M13 7a4 4 0 11-8 0 4 4 0 018 0z"/>
+				</svg>
+				<h3 class="empty-state-title">No Customers Yet</h3>
+				<p class="empty-state-message">Get started by adding your first customer.</p>
+				<button class="btn btn-primary" onclick="openAddCustomerModal()" style="margin-top: 1rem;">
+					+ Add Your First Customer
+				</button>
+			</div>
+		</div>
+	</div>
+
 	<!-- WIZARD OVERLAY -->
 	<div id="wizardOverlay" class="wizard-overlay">
 		<div class="wizard-dialog">
@@ -1119,6 +1212,7 @@
 	<script src="loading.js" defer></script>
 	<script src="accessibility.js" defer></script>
 	<script src="client-database.js" defer></script>
+	<script src="customer-directory-ui.js" defer></script>
 	<script src="quote-workflow.js" defer></script>
 	<script src="import-export.js" defer></script>
 	<script src="invoice.js" defer></script>
