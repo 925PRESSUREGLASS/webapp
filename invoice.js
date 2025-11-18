@@ -2122,7 +2122,11 @@
           }
           return;
         }
-        convertQuoteToInvoice();
+        var invoice = convertQuoteToInvoice();
+        if (invoice) {
+          // Show the invoice list to display the newly created invoice
+          showInvoiceList();
+        }
       }
     };
   }
