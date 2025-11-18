@@ -764,7 +764,7 @@
   // ============================================
 
   /**
-   * Get all clients (placeholder - implement based on your storage)
+   * Get all clients from LocalStorage
    */
   function getAllClients() {
     try {
@@ -780,7 +780,7 @@
   }
 
   /**
-   * Save client (placeholder - implement based on your storage)
+   * Save client to LocalStorage
    */
   function saveClient(client) {
     try {
@@ -808,7 +808,7 @@
   }
 
   /**
-   * Get all quotes (placeholder - implement based on your storage)
+   * Get all quotes from LocalStorage
    */
   function getAllQuotes() {
     try {
@@ -824,7 +824,7 @@
   }
 
   /**
-   * Save quote (placeholder - implement based on your storage)
+   * Save quote to LocalStorage
    */
   function saveQuote(quote) {
     try {
@@ -852,7 +852,7 @@
   }
 
   /**
-   * Get all tasks (placeholder - implement based on your storage)
+   * Get all tasks from LocalStorage
    */
   function getAllTasks() {
     try {
@@ -867,7 +867,7 @@
   }
 
   /**
-   * Save task (placeholder - implement based on your storage)
+   * Save task to LocalStorage
    */
   function saveTask(task) {
     try {

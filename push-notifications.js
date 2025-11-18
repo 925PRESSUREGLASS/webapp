@@ -181,33 +181,109 @@
    */
   function navigateTo(page, params) {
     console.log('[PUSH] Navigate to:', page, params);
+    params = params || {};
 
-    // TODO: Implement navigation based on your app structure
-    // This is a placeholder implementation
+    var navigated = false;
 
     // Show task dashboard
     if (page === 'tasks') {
       if (window.TaskDashboardUI && window.TaskDashboardUI.show) {
         window.TaskDashboardUI.show();
+        if (window.UIComponents && window.UIComponents.showToast) {
+          window.UIComponents.showToast('Opening tasks...', 'info');
+        }
+        navigated = true;
       }
     }
 
     // Show specific quote
-    if (page === 'quote-detail' && params && params.id) {
+    if (page === 'quote-detail' && params.id) {
       if (window.QuoteManager && window.QuoteManager.showQuote) {
         window.QuoteManager.showQuote(params.id);
+        if (window.UIComponents && window.UIComponents.showToast) {
+          window.UIComponents.showToast('Loading quote...', 'info');
+        }
+        navigated = true;
       }
     }
 
-    // Show invoices
+    // Show invoices list
     if (page === 'invoices') {
       if (window.InvoiceSystem && window.InvoiceSystem.showInvoiceList) {
         window.InvoiceSystem.showInvoiceList();
+        if (window.UIComponents && window.UIComponents.showToast) {
+          window.UIComponents.showToast('Opening invoices...', 'info');
+        }
+        navigated = true;
       }
     }
 
-    // Fallback: log to console
-    console.log('[PUSH] Navigation not fully implemented for:', page);
+    // Show specific invoice
+    if (page === 'invoice-detail' && params.id) {
+      if (window.InvoiceSystem && window.InvoiceSystem.viewInvoice) {
+        window.InvoiceSystem.viewInvoice(params.id);
+        if (window.UIComponents && window.UIComponents.showToast) {
+          window.UIComponents.showToast('Loading invoice...', 'info');
+        }
+        navigated = true;
+      }
+    }
+
+    // Show client database
+    if (page === 'clients') {
+      if (window.ClientDatabase && window.ClientDatabase.showList) {
+        window.ClientDatabase.showList();
+        if (window.UIComponents && window.UIComponents.showToast) {
+          window.UIComponents.showToast('Opening client database...', 'info');
+        }
+        navigated = true;
+      }
+    }
+
+    // Show specific client
+    if (page === 'client-detail' && params.id) {
+      if (window.ClientDatabase && window.ClientDatabase.viewClient) {
+        window.ClientDatabase.viewClient(params.id);
+        if (window.UIComponents && window.UIComponents.showToast) {
+          window.UIComponents.showToast('Loading client...', 'info');
+        }
+        navigated = true;
+      } else if (window.ClientDatabase && window.ClientDatabase.showList) {
+        // Fallback to showing list if viewClient doesn't exist
+        window.ClientDatabase.showList();
+        navigated = true;
+      }
+    }
+
+    // Show analytics dashboard
+    if (page === 'analytics') {
+      if (window.QuoteAnalytics && window.QuoteAnalytics.renderDashboard) {
+        var timeframe = params.timeframe || 'all';
+        window.QuoteAnalytics.renderDashboard(timeframe);
+        if (window.UIComponents && window.UIComponents.showToast) {
+          window.UIComponents.showToast('Loading analytics...', 'info');
+        }
+        navigated = true;
+      }
+    }
+
+    // Show home/main quote screen
+    if (page === 'home' || page === 'quote') {
+      // Scroll to top of page
+      window.scrollTo(0, 0);
+      if (window.UIComponents && window.UIComponents.showToast) {
+        window.UIComponents.showToast('Returning to quote screen...', 'info');
+      }
+      navigated = true;
+    }
+
+    // Show error if navigation failed
+    if (!navigated) {
+      console.warn('[PUSH] Navigation not available for:', page);
+      if (window.UIComponents && window.UIComponents.showToast) {
+        window.UIComponents.showToast('Unable to navigate to: ' + page, 'error');
+      }
+    }
   }
 
   // ============================================

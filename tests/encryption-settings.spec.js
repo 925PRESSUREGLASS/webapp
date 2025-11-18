@@ -1,5 +1,5 @@
 // encryption-settings.spec.js - Test user-configurable encryption setting
-// Tests the TODO implementation: Make encryption user-configurable via settings UI
+// Tests the encryption settings feature in invoice.js (enableEncryption checkbox)
 
 const { test, expect } = require('@playwright/test');
 
