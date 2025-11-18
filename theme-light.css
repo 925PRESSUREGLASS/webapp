@@ -1,35 +1,59 @@
 /* Light Theme - Professional daytime color scheme */
-
+/* These override the design-system.css defaults for light theme */
 [data-theme="light"] {
-  /* Light theme color variables */
-  --bg-primary: #ffffff;
-  --bg-secondary: #f8fafc;
-  --bg-tertiary: #f1f5f9;
-  --bg-card: #ffffff;
-  --bg-card-hover: #f8fafc;
+  /* Consolidated color variables - semantic backgrounds */
+  --color-bg-primary: #ffffff;
+  --color-bg-secondary: #f8fafc;
+  --color-bg-tertiary: #f1f5f9;
+  --color-bg-card: #ffffff;
+  --color-bg-card-hover: #f8fafc;
+  --color-bg-elevated: #ffffff;
 
-  --text-primary: #0f172a;
-  --text-secondary: #475569;
-  --text-tertiary: #64748b;
-  --text-muted: #64748b;  /* ACCESSIBILITY: Improved from #94a3b8 (3.8:1) to #64748b (5.2:1) for WCAG AA compliance */
+  /* Consolidated color variables - semantic text */
+  --color-text-primary: #0f172a;
+  --color-text-secondary: #475569;
+  --color-text-tertiary: #64748b;
+  --color-text-muted: #64748b;  /* ACCESSIBILITY: Improved from #94a3b8 (3.8:1) to #64748b (5.2:1) for WCAG AA compliance */
+  --color-text-inverse: #ffffff;
 
-  --border-color: #e2e8f0;
-  --border-hover: #cbd5e1;
+  /* Consolidated color variables - borders */
+  --color-border-primary: #e2e8f0;
+  --color-border-secondary: #cbd5e1;
+  --color-border-hover: #cbd5e1;
 
   /* Vibrant Purple & Orange Theme */
-  --accent-primary: #8b5cf6;  /* Lighter purple for light theme */
-  --accent-secondary: #14b8a6; /* Teal complement */
-  --accent-hover: #a78bfa;    /* Lighter purple for hover states */
-  --accent-orange: #f97316;   /* Vibrant orange accent */
+  --color-primary: #8b5cf6;  /* Lighter purple for light theme */
+  --color-primary-light: #a78bfa;
+  --color-primary-dark: #6d28d9;
+  --color-secondary: #14b8a6; /* Teal complement */
+  --color-accent: #f97316;   /* Vibrant orange accent */
 
-  --success: #14b8a6;
-  --warning: #f97316;
-  --error: #ef4444;
-  --info: #8b5cf6;
-
+  /* Light theme shadows */
   --shadow-sm: 0 1px 2px 0 rgba(0, 0, 0, 0.05);
   --shadow-md: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
   --shadow-lg: 0 10px 15px -3px rgba(0, 0, 0, 0.1);
+  --shadow-xl: 0 20px 25px -5px rgba(0, 0, 0, 0.1);
+
+  /* Legacy variable aliases for backward compatibility (will be removed in next phase) */
+  --bg-primary: var(--color-bg-primary);
+  --bg-secondary: var(--color-bg-secondary);
+  --bg-tertiary: var(--color-bg-tertiary);
+  --bg-card: var(--color-bg-card);
+  --bg-card-hover: var(--color-bg-card-hover);
+  --text-primary: var(--color-text-primary);
+  --text-secondary: var(--color-text-secondary);
+  --text-tertiary: var(--color-text-tertiary);
+  --text-muted: var(--color-text-muted);
+  --border-color: var(--color-border-primary);
+  --border-hover: var(--color-border-hover);
+  --accent-primary: var(--color-primary);
+  --accent-secondary: var(--color-secondary);
+  --accent-hover: var(--color-primary-light);
+  --accent-orange: var(--color-accent);
+  --success: var(--color-success);
+  --warning: var(--color-warning);
+  --error: var(--color-error);
+  --info: var(--color-info);
 }
 
 /* Body */
