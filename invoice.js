@@ -8,10 +8,9 @@
   var INVOICE_SETTINGS_KEY = 'invoice-settings';
 
   // Encryption configuration
-  // NOTE: Encryption is disabled by default for backward compatibility
-  // Set ENABLE_ENCRYPTION = true to enable encrypted storage
-  // TODO: Make this user-configurable via settings UI in future version
-  var ENABLE_ENCRYPTION = false;
+  // NOTE: Encryption is now user-configurable via settings.enableEncryption
+  // The ENABLE_ENCRYPTION constant is kept for initial bootstrap only
+  var ENABLE_ENCRYPTION = false;  // Default for new installations
   var ENCRYPTION_KEY = 'tictacstick-2025-invoice-secure';
 
   var invoices = [];
@@ -24,14 +23,9 @@
     bsb: '',
     accountNumber: '',
     abn: '',
-    includeGST: true
+    includeGST: true,
+    enableEncryption: false  // User-configurable via settings UI
   };
-
-  // Initialize encryption for secure storage (if enabled)
-  if (ENABLE_ENCRYPTION && window.Security && window.Security.SecureStorage) {
-    window.Security.SecureStorage.setKey(ENCRYPTION_KEY);
-    console.log('[INVOICE] Encryption enabled for invoice data');
-  }
 
   var INVOICE_STATUSES = {
     draft: { label: 'Draft', color: '#94a3b8', icon: '📝' },
@@ -41,10 +35,31 @@
     cancelled: { label: 'Cancelled', color: '#64748b', icon: '✗' }
   };
 
+  // Helper function to check if encryption is enabled
+  // Uses settings.enableEncryption if available, otherwise falls back to ENABLE_ENCRYPTION constant
+  function isEncryptionEnabled() {
+    // Check if settings have been loaded and enableEncryption is defined
+    if (settings && typeof settings.enableEncryption !== 'undefined') {
+      return settings.enableEncryption;
+    }
+    // Fall back to constant for initial bootstrap
+    return ENABLE_ENCRYPTION;
+  }
+
+  // Initialize encryption for secure storage based on settings
+  function initializeEncryption() {
+    if (isEncryptionEnabled() && window.Security && window.Security.SecureStorage) {
+      window.Security.SecureStorage.setKey(ENCRYPTION_KEY);
+      console.log('[INVOICE] Encryption enabled for invoice data');
+      return true;
+    }
+    return false;
+  }
+
   // Load invoices from storage (supports encrypted and unencrypted modes)
   function loadInvoices() {
     try {
-      if (ENABLE_ENCRYPTION && window.Security && window.Security.SecureStorage) {
+      if (isEncryptionEnabled() && window.Security && window.Security.SecureStorage) {
         // Try to load encrypted data first
         invoices = window.Security.SecureStorage.getItem(INVOICES_KEY, null);
 
@@ -81,7 +96,7 @@
   // Save invoices to storage (supports encrypted and unencrypted modes)
   function saveInvoices() {
     try {
-      if (ENABLE_ENCRYPTION && window.Security && window.Security.SecureStorage) {
+      if (isEncryptionEnabled() && window.Security && window.Security.SecureStorage) {
         window.Security.SecureStorage.setItem(INVOICES_KEY, invoices);
       } else {
         // Save unencrypted (default mode)
@@ -101,7 +116,7 @@
   function loadSettings() {
     try {
       var loadedSettings = null;
-      if (ENABLE_ENCRYPTION && window.Security && window.Security.SecureStorage) {
+      if (isEncryptionEnabled() && window.Security && window.Security.SecureStorage) {
         // Try to load encrypted data first
         loadedSettings = window.Security.SecureStorage.getItem(INVOICE_SETTINGS_KEY, null);
 
@@ -141,7 +156,7 @@
   // Save settings (supports encrypted and unencrypted modes)
   function saveSettings() {
     try {
-      if (ENABLE_ENCRYPTION && window.Security && window.Security.SecureStorage) {
+      if (isEncryptionEnabled() && window.Security && window.Security.SecureStorage) {
         window.Security.SecureStorage.setItem(INVOICE_SETTINGS_KEY, settings);
       } else {
         // Save unencrypted (default mode)
@@ -802,6 +817,13 @@
               '<label for="abn">ABN</label>' +
               '<input type="text" id="abn" value="' + escapeHtml(settings.abn) + '" placeholder="12 345 678 901" />' +
             '</div>' +
+            '<div class="form-group form-checkbox-group">' +
+              '<label class="form-checkbox-wrapper">' +
+                '<input type="checkbox" id="enableEncryption" ' + (settings.enableEncryption ? 'checked' : '') + ' />' +
+                '<span>Enable Encrypted Storage</span>' +
+              '</label>' +
+              '<p class="form-hint">Encrypts invoice and settings data in browser storage for enhanced security. Requires page reload to take effect.</p>' +
+            '</div>' +
             '<div class="form-actions">' +
               '<button type="button" class="btn btn-secondary" id="cancelSettingsBtn">Cancel</button>' +
               '<button type="submit" class="btn btn-primary">Save Settings</button>' +
@@ -870,10 +892,25 @@
       settings.accountNumber = document.getElementById('accountNumber').value;
       settings.abn = abnValue;
 
+      // Save encryption preference
+      var previousEncryptionState = settings.enableEncryption;
+      settings.enableEncryption = document.getElementById('enableEncryption').checked;
+
       saveSettings();
 
-      if (window.ErrorHandler) {
-        window.ErrorHandler.showSuccess('Settings saved');
+      // If encryption setting changed, notify user to reload
+      if (previousEncryptionState !== settings.enableEncryption) {
+        var encryptionMessage = settings.enableEncryption ?
+          'Encryption enabled. Please reload the page for changes to take effect.' :
+          'Encryption disabled. Please reload the page for changes to take effect.';
+        if (window.ErrorHandler) {
+          window.ErrorHandler.showSuccess(encryptionMessage);
+        }
+      } else {
+        // Show general success message if encryption didn't change
+        if (window.ErrorHandler) {
+          window.ErrorHandler.showSuccess('Settings saved');
+        }
       }
 
       modal.classList.remove('active');
@@ -1918,6 +1955,7 @@
   function init() {
     loadInvoices();
     loadSettings();
+    initializeEncryption();  // Initialize encryption based on loaded settings
     addInvoiceButton();
 
     // Check for overdue invoices daily
