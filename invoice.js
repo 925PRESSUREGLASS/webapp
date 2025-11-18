@@ -1966,6 +1966,55 @@
     }, 500);
   });
 
+  /**
+   * Get current settings
+   * Returns a copy of settings object to prevent external modifications
+   * @returns {object} Copy of current settings
+   */
+  function getSettings() {
+    // Return a copy to prevent external modifications
+    var settingsCopy = {};
+    for (var key in settings) {
+      if (settings.hasOwnProperty(key)) {
+        settingsCopy[key] = settings[key];
+      }
+    }
+    return settingsCopy;
+  }
+
+  /**
+   * Update settings programmatically
+   * Merges provided settings with existing settings and saves
+   * @param {object} newSettings - Settings to update
+   * @returns {boolean} Success status
+   */
+  function updateSettings(newSettings) {
+    if (!newSettings || typeof newSettings !== 'object') {
+      console.error('[INVOICE] Invalid settings provided to updateSettings');
+      return false;
+    }
+
+    var previousEncryptionSetting = settings.enableEncryption;
+
+    // Merge new settings with existing settings
+    for (var key in newSettings) {
+      if (newSettings.hasOwnProperty(key) && settings.hasOwnProperty(key)) {
+        settings[key] = newSettings[key];
+      }
+    }
+
+    // Save updated settings
+    var success = saveSettings();
+
+    // Re-initialize encryption if the setting changed
+    if (success && previousEncryptionSetting !== settings.enableEncryption) {
+      initializeEncryption();
+      console.log('[INVOICE] Encryption setting changed to:', settings.enableEncryption);
+    }
+
+    return success;
+  }
+
   // Export public API
   window.InvoiceManager = {
     create: convertQuoteToInvoice,
@@ -1985,7 +2034,12 @@
     changeStatus: changeInvoiceStatus,
     printInvoice: printInvoiceView,
     settings: settings,
-    saveSettings: saveSettings
+    saveSettings: saveSettings,
+    getSettings: getSettings,
+    updateSettings: updateSettings
   };
+
+  // Alias for backward compatibility and test compatibility
+  window.InvoiceSystem = window.InvoiceManager;
 
 })();
