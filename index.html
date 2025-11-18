@@ -6,7 +6,7 @@
 	<title>Tic-Tac-Stick Quote Engine</title>
 	<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover" />
 	<meta name="description" content="Professional quoting tool for 925 Pressure Glass - Window & Pressure Cleaning" />
-	<meta name="theme-color" content="#6c63ff" />
+	<meta name="theme-color" content="#7c3aed" />
 
 	<!-- Content Security Policy -->
 	<meta http-equiv="Content-Security-Policy" content="
@@ -78,20 +78,20 @@
 					</div>
 				</div>
 				<div class="hdr-actions">
-					<button id="toggleModeBtn" type="button" class="btn btn-secondary" aria-label="Switch to wizard mode">
-						Switch to Wizard Mode
+					<button id="toggleModeBtn" type="button" class="btn btn-accent" aria-label="Switch to wizard mode">
+						🪄 Wizard Mode
 					</button>
-					<button id="clearAllBtn" type="button" class="btn btn-tertiary" aria-label="Clear all quote data">
-						Clear All
+					<button id="webhookSettingsBtn" type="button" class="btn btn-secondary" title="Webhook & Sync Settings" aria-label="Open webhook settings" onclick="openWebhookSettings()">
+						🔄 Sync
 					</button>
 					<button id="keyboardShortcutsBtn" type="button" class="btn btn-tertiary" title="Keyboard Shortcuts (Press ?)" aria-label="View keyboard shortcuts">
 						⌨️ Help
 					</button>
-					<button id="webhookSettingsBtn" type="button" class="btn btn-tertiary" title="Webhook & Sync Settings" aria-label="Open webhook settings" onclick="openWebhookSettings()">
-						🔄 Sync
-					</button>
 					<button id="testRunnerBtn" type="button" class="btn btn-tertiary" title="Test & QA Suite" aria-label="Open test runner" onclick="openTestRunner()">
 						🧪 Tests
+					</button>
+					<button id="clearAllBtn" type="button" class="btn btn-tertiary" aria-label="Clear all quote data">
+						🗑️ Clear All
 					</button>
 				</div>
 			</div>
@@ -130,7 +130,7 @@
 				<!-- CONFIG PANEL -->
 				<section class="section" id="configPanel">
 					<header class="sec-h">
-						<h2 class="sec-title">Job Settings</h2>
+						<h2 class="sec-title">⚙️ Job Settings</h2>
 						<button class="card-toggle" type="button" data-target="configBody">▾</button>
 					</header>
 					<div class="sec-b" id="configBody">
@@ -209,20 +209,20 @@
 								<span>Autosave this quote in browser</span>
 							</label>
 							<div class="config-footer-row">
-								<button id="savePresetBtn" type="button" class="btn btn-sm btn-primary" aria-label="Save current settings as preset">
-									Save as Preset
-								</button>
 								<select id="presetSelect" class="preset-select" aria-label="Load saved preset">
 									<option value="">Load Preset...</option>
 								</select>
+								<button id="savePresetBtn" type="button" class="btn btn-sm btn-primary" aria-label="Save current settings as preset">
+									💾 Save Preset
+								</button>
 							</div>
 							<div class="config-footer-row">
-								<button id="saveTemplateBtn" type="button" class="btn btn-sm btn-secondary" aria-label="Save current quote as template">
-									Save as Template
-								</button>
 								<select id="templateSelect" class="preset-select" aria-label="Choose quote template">
 									<option value="">Choose Template...</option>
 								</select>
+								<button id="saveTemplateBtn" type="button" class="btn btn-sm btn-secondary" aria-label="Save current quote as template">
+									📋 Save Template
+								</button>
 							</div>
 						</div>
 					</div>
@@ -231,13 +231,13 @@
 				<!-- WINDOWS PANEL -->
 				<section class="section" id="windowsPanel">
 					<header class="sec-h">
-						<h2 class="sec-title">Windows</h2>
+						<h2 class="sec-title">🪟 Windows</h2>
 						<div class="card-hdr-actions">
-							<button id="addWindowLineBtn" type="button" class="btn btn-sm btn-primary" aria-label="Add window line item manually">
-								+ Add Manual Line
+							<button id="openWindowWizardBtn" type="button" class="btn btn-accent btn-sm" aria-label="Open window wizard for guided entry">
+								🪄 Wizard
 							</button>
-							<button id="openWindowWizardBtn" type="button" class="btn btn-secondary btn-sm" aria-label="Open window wizard for guided entry">
-								Open Window Wizard
+							<button id="addWindowLineBtn" type="button" class="btn btn-sm btn-primary" aria-label="Add window line item manually">
+								+ Add Line
 							</button>
 							<button class="card-toggle" type="button" data-target="windowsBody" aria-label="Toggle windows section" aria-expanded="true">▾</button>
 						</div>
@@ -250,13 +250,13 @@
 				<!-- PRESSURE PANEL -->
 				<section class="section" id="pressurePanel">
 					<header class="sec-h">
-						<h2 class="sec-title">Pressure Cleaning</h2>
+						<h2 class="sec-title">💦 Pressure Cleaning</h2>
 						<div class="card-hdr-actions">
-							<button id="addPressureLineBtn" type="button" class="btn btn-sm btn-primary" aria-label="Add pressure cleaning line item manually">
-								+ Add Manual Line
+							<button id="openPressureWizardBtn" type="button" class="btn btn-accent btn-sm" aria-label="Open pressure wizard for guided entry">
+								🪄 Wizard
 							</button>
-							<button id="openPressureWizardBtn" type="button" class="btn btn-secondary btn-sm" aria-label="Open pressure wizard for guided entry">
-								Open Pressure Wizard
+							<button id="addPressureLineBtn" type="button" class="btn btn-sm btn-primary" aria-label="Add pressure cleaning line item manually">
+								+ Add Line
 							</button>
 							<button class="card-toggle" type="button" data-target="pressureBody" aria-label="Toggle pressure cleaning section" aria-expanded="true">▾</button>
 						</div>
@@ -272,7 +272,7 @@
 				<!-- SUMMARY PANEL -->
 				<section class="section card-summary" id="summaryPanel">
 					<header class="sec-h">
-						<h2 class="sec-title">Quote Summary</h2>
+						<h2 class="sec-title">💰 Quote Summary</h2>
 						<button class="card-toggle" type="button" data-target="summaryBody">▾</button>
 					</header>
 					<div class="sec-b" id="summaryBody">
@@ -341,7 +341,7 @@
 				<!-- NOTES PANEL -->
 				<section class="section" id="notesPanel">
 					<header class="sec-h">
-						<h2 class="sec-title">Notes & Extras</h2>
+						<h2 class="sec-title">📝 Notes & Actions</h2>
 						<button class="card-toggle" type="button" data-target="notesBody">▾</button>
 					</header>
 					<div class="sec-b" id="notesBody">
@@ -356,11 +356,11 @@
 						</label>
 
 						<div class="notes-footer">
-							<button id="generatePdfBtn" type="button" class="btn">
-								Export Quote Breakdown (PDF)
+							<button id="generatePdfBtn" type="button" class="btn btn-accent">
+								📄 Export PDF
 							</button>
 							<button id="copySummaryBtn" type="button" class="btn btn-secondary">
-								Copy Summary for SMS / Email
+								📋 Copy Summary
 							</button>
 						</div>
 					</div>
@@ -585,24 +585,24 @@
 				<!-- SAVED QUOTES PANEL -->
 				<section class="section" id="savedQuotesPanel">
 					<header class="sec-h">
-						<h2 class="sec-title">Saved Quotes</h2>
+						<h2 class="sec-title">💾 Saved Quotes</h2>
 						<button class="card-toggle" type="button" data-target="savedQuotesBody">▾</button>
 					</header>
 					<div class="sec-b" id="savedQuotesBody">
 						<div class="saved-quotes-row">
-							<button id="saveQuoteBtn" type="button" class="btn btn-sm btn-primary" aria-label="Save current quote">
-								💾 Save Quote
+							<button id="saveQuoteBtn" type="button" class="btn btn-sm btn-accent" aria-label="Save current quote">
+								💾 Save Current Quote
 							</button>
 						</div>
 						<div class="saved-quotes-row" style="margin-top: 0.5rem;">
 							<select id="savedQuotesSelect" class="saved-quotes-select">
 								<option value="">Select Saved Quote...</option>
 							</select>
-							<button id="loadSavedQuoteBtn" type="button" class="btn btn-sm">
-								Load
+							<button id="loadSavedQuoteBtn" type="button" class="btn btn-sm btn-primary">
+								📂 Load
 							</button>
-							<button id="deleteSavedQuoteBtn" type="button" class="btn btn-sm btn-tertiary">
-								Delete
+							<button id="deleteSavedQuoteBtn" type="button" class="btn btn-sm btn-danger">
+								🗑️ Delete
 							</button>
 						</div>
 						<p class="saved-quotes-help">
