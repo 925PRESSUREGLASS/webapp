@@ -11,6 +11,49 @@
     pressureLines: []
   };
 
+  // Default value counters
+  var defaultCounters = {
+    customer: 0,
+    quote: 0
+  };
+
+  // Load counters from storage
+  function loadDefaultCounters() {
+    try {
+      var saved = localStorage.getItem('tictacstick_default_counters');
+      if (saved) {
+        var parsed = JSON.parse(saved);
+        defaultCounters.customer = parsed.customer || 0;
+        defaultCounters.quote = parsed.quote || 0;
+      }
+    } catch (e) {
+      console.error('Error loading default counters:', e);
+    }
+  }
+
+  // Save counters to storage
+  function saveDefaultCounters() {
+    try {
+      localStorage.setItem('tictacstick_default_counters', JSON.stringify(defaultCounters));
+    } catch (e) {
+      console.error('Error saving default counters:', e);
+    }
+  }
+
+  // Generate default customer name
+  function getDefaultClientName() {
+    defaultCounters.customer++;
+    saveDefaultCounters();
+    return 'customer_' + defaultCounters.customer;
+  }
+
+  // Generate default quote title
+  function getDefaultQuoteTitle() {
+    defaultCounters.quote++;
+    saveDefaultCounters();
+    return 'Quote_' + defaultCounters.quote;
+  }
+
   // ————————————————————
   // DOM HELPERS
   // ————————————————————
@@ -103,7 +146,7 @@
   // STATE <-> UI
   // ————————————————————
 
-  function buildStateFromUI(includeLines) {
+  function buildStateFromUI(includeLines, useDefaults) {
     // Ensure all numeric values are non-negative
     var baseFee = Math.max(0, parseFloat($("baseFeeInput").value) || 0);
     var hourlyRate = Math.max(0, parseFloat($("hourlyRateInput").value) || 0);
@@ -130,6 +173,22 @@
     var jobType = $("jobTypeInput").value || "";
     var internalNotes = $("internalNotesInput").value || "";
     var clientNotes = $("clientNotesInput").value || "";
+
+    // Apply defaults if requested and fields are empty
+    if (useDefaults) {
+      if (!quoteTitle || quoteTitle.trim() === "") {
+        quoteTitle = getDefaultQuoteTitle();
+      }
+      if (!clientName || clientName.trim() === "") {
+        clientName = getDefaultClientName();
+      }
+      if (!clientLocation || clientLocation.trim() === "") {
+        clientLocation = "Location pending";
+      }
+      if (!jobType || jobType === "") {
+        jobType = "residential";
+      }
+    }
 
     var s = {
       baseFee: baseFee,
@@ -894,7 +953,8 @@ $("totalIncGstDisplay").textContent = formatMoney(totalIncGst);
         return;
       }
 
-      var currentState = buildStateFromUI(true);
+      // Use defaults for missing fields when saving
+      var currentState = buildStateFromUI(true, true);
       var newQuote = {
         id: "q" + Date.now(),
         title: quoteName.trim(),
@@ -1460,6 +1520,9 @@ $("totalIncGstDisplay").textContent = formatMoney(totalIncGst);
   // ————————————————————
 
   function initApp() {
+    // Load default counters for customer/quote naming
+    loadDefaultCounters();
+
     loadInitialState();
 
     $("addWindowLineBtn").addEventListener("click", function () {

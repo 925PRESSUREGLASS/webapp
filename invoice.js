@@ -307,6 +307,36 @@
     // Generate quote ID for tracking
     var quoteId = 'quote_' + Date.now() + '_' + Math.random().toString(36).substr(2, 9);
 
+    // Helper function to get default customer name
+    function getDefaultCustomerName() {
+      try {
+        var counters = JSON.parse(localStorage.getItem('tictacstick_default_counters') || '{"customer":0,"quote":0}');
+        counters.customer++;
+        localStorage.setItem('tictacstick_default_counters', JSON.stringify(counters));
+        return 'customer_' + counters.customer;
+      } catch (e) {
+        return 'customer_' + Date.now();
+      }
+    }
+
+    // Helper function to get default quote title
+    function getDefaultQuoteName() {
+      try {
+        var counters = JSON.parse(localStorage.getItem('tictacstick_default_counters') || '{"customer":0,"quote":0}');
+        counters.quote++;
+        localStorage.setItem('tictacstick_default_counters', JSON.stringify(counters));
+        return 'Quote_' + counters.quote;
+      } catch (e) {
+        return 'Quote_' + Date.now();
+      }
+    }
+
+    // Apply defaults for missing fields
+    var clientName = state.clientName && state.clientName.trim() !== '' ? state.clientName : getDefaultCustomerName();
+    var clientLocation = state.clientLocation && state.clientLocation.trim() !== '' ? state.clientLocation : 'Location pending';
+    var quoteTitle = state.quoteTitle && state.quoteTitle.trim() !== '' ? state.quoteTitle : getDefaultQuoteName();
+    var jobType = state.jobType && state.jobType !== '' ? state.jobType : 'residential';
+
     // Create invoice
     var invoice = {
       id: 'invoice_' + Date.now() + '_' + Math.random().toString(36).substr(2, 9),
@@ -316,16 +346,16 @@
       dueDate: Date.now() + (settings.paymentTermsDays * 24 * 60 * 60 * 1000),
       status: 'draft',
 
-      // Client info
-      clientName: state.clientName || '',
-      clientLocation: state.clientLocation || '',
+      // Client info (with defaults applied)
+      clientName: clientName,
+      clientLocation: clientLocation,
       clientEmail: '',
       clientPhone: '',
 
-      // Quote info
+      // Quote info (with defaults applied)
       quoteId: quoteId,
-      quoteTitle: state.quoteTitle || 'Untitled Invoice',
-      jobType: state.jobType || '',
+      quoteTitle: quoteTitle,
+      jobType: jobType,
 
       // Line items - add descriptions for validation
       windowLines: (state.windowLines || []).map(function(line) {
