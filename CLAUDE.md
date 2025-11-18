@@ -1,7 +1,7 @@
 # CLAUDE.md - AI Assistant Guide for TicTacStick Quote Engine
 
 **Last Updated:** 2025-11-18
-**Version:** 1.12.0
+**Version:** 1.13.0
 **Project:** TicTacStick Quote Engine for 925 Pressure Glass
 
 ---
@@ -19,6 +19,122 @@
 9. [Module Reference](#module-reference)
 10. [Design System](#design-system)
 11. [Troubleshooting](#troubleshooting)
+
+---
+
+## What's New in v1.13.0
+
+### Job Tracking, Customer Directory & Enhanced CRM Integration (November 2025)
+
+This release adds comprehensive job tracking and scheduling, customer directory management, and enhanced GoHighLevel CRM integration:
+
+**New Job Tracking & Management System (4 files, ~2,429 lines):**
+- `job-manager.js` - Core job tracking and scheduling (857 lines)
+  - Create jobs from quotes or contracts
+  - Job status tracking (scheduled, in-progress, paused, completed, cancelled)
+  - Time tracking with start/stop/pause functionality
+  - GPS location tracking for job sites
+  - Job metrics and performance analytics
+  - Photo attachments (before/after documentation)
+  - Material and equipment tracking
+  - Job completion workflow with client sign-off
+  - Revenue and profitability per job
+  - Job history and reporting
+
+- `job-tracking-ui.js` - Job tracking UI controller (1,092 lines)
+  - Interactive job dashboard with calendar view
+  - Job list with filtering (by status, date, client)
+  - Job details modal with full information
+  - Timer interface for tracking work time
+  - Photo upload and management
+  - Material/equipment checklist
+  - Notes and internal comments
+  - Job completion form
+  - Mobile-optimized interface
+
+- `pricing-intelligence.js` - Pricing learning and suggestions (278 lines)
+  - Analyze pricing accuracy from completed jobs
+  - Learn actual time vs estimated time
+  - Suggest pricing adjustments based on historical data
+  - Identify under-priced and over-priced jobs
+  - Generate pricing reports by service type
+  - Profitability trend analysis
+
+- `photo-comparison.js` - Before/after photo comparison (202 lines)
+  - Create side-by-side before/after images
+  - Automatic photo pairing and matching
+  - Annotation tools for highlighting improvements
+  - Export comparison images for marketing
+  - Share on social media
+  - Client approval workflow
+
+**Customer Directory Enhancement (1 file, 542 lines):**
+- `customer-directory-ui.js` - Customer directory page controller
+  - Comprehensive customer list view
+  - Advanced search and filtering (name, phone, email, location)
+  - Customer profile cards with contact info
+  - Job history per customer
+  - Revenue per customer
+  - Quick actions (call, email, create quote, view jobs)
+  - Add to quote functionality
+  - Edit customer details
+  - Delete customer with confirmation
+  - Export customer list to CSV
+  - Mobile-responsive grid layout
+
+**Enhanced GoHighLevel CRM Integration (3 files, ~1,722 lines):**
+- `ghl-client.js` - GoHighLevel API client (483 lines)
+  - Centralized GHL API interface
+  - Authentication and token management
+  - Contact CRUD operations
+  - Opportunity (deal pipeline) operations
+  - Task management via API
+  - Note creation and updates
+  - Custom field support
+  - Error handling and retry logic
+  - Rate limiting compliance
+
+- `ghl-opportunity-sync.js` - Opportunity/deal synchronization (717 lines)
+  - Bidirectional sync between quotes and GHL opportunities
+  - Pipeline stage mapping (quote → opportunity stage)
+  - Automatic opportunity creation from quotes
+  - Opportunity value and status updates
+  - Won/lost opportunity tracking
+  - Custom field synchronization
+  - Conflict resolution with timestamp-based merge
+  - Batch sync for offline recovery
+
+- `ghl-settings-ui.js` - GHL settings and sync UI (522 lines)
+  - GHL API key configuration
+  - Connection testing and validation
+  - Sync settings and preferences
+  - Manual sync trigger
+  - Sync status monitoring
+  - Pipeline stage mapping UI
+  - Custom field mapping configuration
+  - Sync history and logs
+  - Conflict resolution interface
+
+**Key Features:**
+- 🗓️ Complete job scheduling and tracking with time monitoring
+- 📸 Before/after photo documentation and comparison
+- 👥 Customer directory with advanced search and management
+- 📊 Pricing intelligence learns from completed jobs
+- 🔄 Enhanced GHL integration with opportunity/deal sync
+- 📱 Mobile-optimized job tracking interface
+- 💰 Job profitability analysis and reporting
+- 📋 Material and equipment checklists per job
+- ✅ Client sign-off workflow for job completion
+
+**Total:** ~4,700 lines of new code across 8 new modules
+
+**Integration Highlights:**
+- Jobs created from quotes or contracts automatically
+- Customer directory integrates with existing client database
+- GHL opportunity sync keeps deal pipeline updated
+- Pricing intelligence improves quote accuracy over time
+- Photo comparison tools support marketing and client communication
+- All modules maintain ES5 compatibility and offline-first architecture
 
 ---
 
@@ -625,12 +741,12 @@ TicTacStick is a **Progressive Web App (PWA)** quote engine for 925 Pressure Gla
 
 ### Current Phase
 
-**Phase 3:** CRM Integration & Sales Automation
-- Status: Active production deployment with CRM integration
-- Recent: GoHighLevel CRM integration (v1.11.0), PDF generation suite (v1.10.0), design system (v1.9.0)
-- Current: Automated follow-ups, task management, real-time CRM sync, webhook integration
-- Focus: CRM optimization, follow-up sequence refinement, production stability
-- Next: Advanced automation workflows, reporting enhancements, user acceptance testing
+**Phase 3:** Job Tracking & Complete Business Operations
+- Status: Active production deployment with full job lifecycle management
+- Recent: Job tracking system (v1.13.0), GoHighLevel CRM integration (v1.11.0), Contract management (v1.12.0)
+- Current: Job scheduling and tracking, customer directory, pricing intelligence, GHL opportunity sync
+- Focus: Job workflow optimization, pricing accuracy improvement, customer relationship management
+- Next: Advanced reporting and analytics, mobile app optimization, workflow automation enhancements
 
 ---
 
@@ -868,9 +984,23 @@ From `index.html`, scripts MUST load in this order:
 <script src="loading.js" defer></script>
 <script src="accessibility.js" defer></script>
 <script src="client-database.js" defer></script>
+<script src="customer-directory-ui.js" defer></script>
 <script src="quote-workflow.js" defer></script>
 <script src="import-export.js" defer></script>
 <script src="invoice.js" defer></script>
+
+<!-- 10. Enhanced GoHighLevel CRM Integration (NEW v1.13.0) -->
+<script src="ghl-client.js" defer></script>
+<script src="ghl-opportunity-sync.js" defer></script>
+<script src="ghl-settings-ui.js" defer></script>
+
+<!-- 11. GoHighLevel Integration & Webhook Modules (v1.11.0) -->
+<script src="webhook-processor.js" defer></script>
+<script src="ghl-webhook-setup.js" defer></script>
+<script src="webhook-settings.js" defer></script>
+<script src="webhook-debug.js" defer></script>
+
+<!-- 12. Theme and UI customization -->
 <script src="theme.js" defer></script>
 <script src="theme-customizer.js" defer></script>
 <script src="shortcuts.js" defer></script>
@@ -878,28 +1008,49 @@ From `index.html`, scripts MUST load in this order:
 <script src="export.js" defer></script>
 <script src="templates.js" defer></script>
 
-<!-- 10. GoHighLevel Integration & Webhook Modules (NEW v1.11.0) -->
-<script src="webhook-processor.js" defer></script>
-<script src="ghl-webhook-setup.js" defer></script>
-<script src="webhook-settings.js" defer></script>
-<script src="webhook-debug.js" defer></script>
-
-<!-- 11. PDF Generation Suite (NEW v1.10.0) -->
+<!-- 13. PDF Generation Suite (v1.10.0) -->
 <script src="pdf-config.js" defer></script>
 <script src="pdf-components.js" defer></script>
 <script src="quote-pdf.js" defer></script>
 <script src="quote-pdf-ui.js" defer></script>
 
-<!-- 12. Photos (loaded after PDF modules) -->
+<!-- 14. Analytics Suite -->
+<script src="analytics-config.js" defer></script>
+<script src="analytics-engine.js" defer></script>
+<script src="analytics-dashboard.js" defer></script>
+<script src="analytics.js" defer></script>
+
+<!-- 15. Photos (loaded after PDF and analytics modules) -->
 <script src="photos.js" defer></script>
 
-<!-- 13. Production Tools (NEW v1.10.0) -->
+<!-- 16. Production Tools (v1.10.0) -->
 <script src="deployment-helper.js" defer></script>
 <script src="health-check.js" defer></script>
 <script src="bug-tracker.js" defer></script>
 
-<!-- 14. Lazy-loaded modules (loaded on demand via LazyLoader) -->
-<!-- analytics.js, charts.js, photo-modal.js are loaded when needed -->
+<!-- 17. Testing Infrastructure (v1.12.0) -->
+<script src="test-framework.js" defer></script>
+<script src="test-suites.js" defer></script>
+<script src="integration-tests.js" defer></script>
+<script src="performance-tests.js" defer></script>
+<script src="test-runner.js" defer></script>
+<script src="test-checklist.js" defer></script>
+<script src="production-readiness.js" defer></script>
+
+<!-- 18. Backup Manager (v1.12.0) -->
+<script src="backup-manager.js" defer></script>
+
+<!-- 19. Job Tracking & Management (NEW v1.13.0) -->
+<script src="job-manager.js" defer></script>
+<script src="pricing-intelligence.js" defer></script>
+<script src="photo-comparison.js" defer></script>
+<script src="job-tracking-ui.js" defer></script>
+
+<!-- 20. Production Configuration -->
+<script src="config-production.js" defer></script>
+
+<!-- 21. Lazy-loaded modules (loaded on demand via LazyLoader) -->
+<!-- charts.js, photo-modal.js are loaded when needed -->
 ```
 
 **Why This Order?**
@@ -911,9 +1062,15 @@ From `index.html`, scripts MUST load in this order:
 - `app.js` depends on `calc.js`, `data.js`, `storage.js`
 - Business intelligence and mobile modules load before UI
 - Feature modules depend on core modules
+- `customer-directory-ui.js` loads after `client-database.js`
+- Enhanced GHL CRM integration (v1.13.0) loads after invoice system
+- GoHighLevel webhook modules (v1.11.0) load after GHL client
 - PDF generation suite loads after core features
-- Production tools load last for monitoring and debugging
-- Some modules (analytics, charts, photo-modal) are lazy-loaded on demand
+- Analytics suite loads before photos for data processing
+- Production tools and testing infrastructure load near end
+- Job tracking modules (v1.13.0) load after all dependencies
+- Production configuration loads last
+- Some modules (charts, photo-modal) are lazy-loaded on demand
 
 ---
 
@@ -3438,7 +3595,317 @@ ProductionConfig = {
 }
 ```
 
-### GoHighLevel CRM Integration
+### Job Tracking & Management System **NEW v1.13.0**
+
+#### job-manager.js (857 lines)
+
+**Purpose:** Core job tracking, scheduling, and management system
+
+**Key Features:**
+- Create jobs from quotes or contracts
+- Job status tracking (scheduled, in-progress, paused, completed, cancelled)
+- Time tracking with start/stop/pause functionality
+- GPS location tracking for job sites
+- Job metrics and performance analytics
+- Photo attachments (before/after documentation)
+- Material and equipment tracking
+- Job completion workflow with client sign-off
+- Revenue and profitability per job
+- Job history and reporting
+
+**Key Functions:**
+```javascript
+JobManager.createFromQuote(quoteId, scheduledDate)
+JobManager.createFromContract(contractId, scheduledDate)
+JobManager.updateJob(jobId, updates)
+JobManager.startJob(jobId)
+JobManager.pauseJob(jobId)
+JobManager.completeJob(jobId, completionData)
+JobManager.cancelJob(jobId, reason)
+JobManager.getJob(jobId)
+JobManager.getAllJobs()
+JobManager.getJobsByStatus(status)
+JobManager.getJobsByClient(clientId)
+JobManager.getJobMetrics()
+JobManager.attachPhoto(jobId, photoData)
+JobManager.addMaterial(jobId, material)
+JobManager.trackTime(jobId, action) // 'start', 'pause', 'stop'
+```
+
+**Job Object Structure:**
+```javascript
+{
+  id: 'job_...',
+  jobNumber: 'J-001',
+  quoteId: 'quote_123',
+  contractId: null,
+  client: {
+    id: 'client_456',
+    name: 'John Doe',
+    phone: '0400000000',
+    email: 'john@example.com',
+    address: '123 Main St'
+  },
+  status: 'scheduled',
+  schedule: {
+    scheduledDate: '2025-11-20',
+    startTime: '09:00',
+    estimatedDuration: 180
+  },
+  tracking: {
+    actualStartTime: null,
+    actualEndTime: null,
+    totalMinutes: 0,
+    pausedMinutes: 0
+  },
+  location: {
+    address: '123 Main St',
+    gpsCoordinates: { lat: -31.9505, lng: 115.8605 }
+  },
+  photos: [],
+  materials: [],
+  equipment: [],
+  notes: '',
+  completion: {
+    completedDate: null,
+    clientSignature: null,
+    feedback: ''
+  },
+  financial: {
+    quotedAmount: 450.00,
+    actualCost: 0,
+    profit: 0
+  }
+}
+```
+
+**Storage Key:** `tts_jobs`
+
+#### job-tracking-ui.js (1,092 lines)
+
+**Purpose:** Job tracking user interface controller
+
+**Key Features:**
+- Interactive job dashboard with calendar view
+- Job list with filtering (by status, date, client)
+- Job details modal with full information
+- Timer interface for tracking work time
+- Photo upload and management
+- Material/equipment checklist
+- Notes and internal comments
+- Job completion form
+- Mobile-optimized interface
+
+**Key Functions:**
+```javascript
+JobTrackingUI.init()
+JobTrackingUI.renderJobList(filters)
+JobTrackingUI.showJobDetails(jobId)
+JobTrackingUI.startTimer(jobId)
+JobTrackingUI.pauseTimer(jobId)
+JobTrackingUI.stopTimer(jobId)
+JobTrackingUI.uploadPhoto(jobId, file)
+JobTrackingUI.addMaterial(jobId, material)
+JobTrackingUI.completeJob(jobId)
+JobTrackingUI.filterByStatus(status)
+JobTrackingUI.filterByDate(startDate, endDate)
+JobTrackingUI.exportJobReport(jobId)
+```
+
+#### pricing-intelligence.js (278 lines)
+
+**Purpose:** Pricing learning and suggestions based on job history
+
+**Key Features:**
+- Analyze pricing accuracy from completed jobs
+- Learn actual time vs estimated time
+- Suggest pricing adjustments based on historical data
+- Identify under-priced and over-priced jobs
+- Generate pricing reports by service type
+- Profitability trend analysis
+
+**Key Functions:**
+```javascript
+PricingIntelligence.analyzeJob(jobId)
+PricingIntelligence.suggestPricing(serviceType, jobDetails)
+PricingIntelligence.getAccuracyReport()
+PricingIntelligence.identifyUnderpriced()
+PricingIntelligence.identifyOverpriced()
+PricingIntelligence.getTrendAnalysis(serviceType, period)
+PricingIntelligence.exportReport()
+```
+
+#### photo-comparison.js (202 lines)
+
+**Purpose:** Before/after photo comparison tool
+
+**Key Features:**
+- Create side-by-side before/after images
+- Automatic photo pairing and matching
+- Annotation tools for highlighting improvements
+- Export comparison images for marketing
+- Share on social media
+- Client approval workflow
+
+**Key Functions:**
+```javascript
+PhotoComparison.createComparison(jobId, beforePhoto, afterPhoto)
+PhotoComparison.annotate(comparisonId, annotations)
+PhotoComparison.export(comparisonId, format)
+PhotoComparison.share(comparisonId, platform)
+PhotoComparison.getComparisonsByJob(jobId)
+```
+
+### Customer Directory Enhancement **NEW v1.13.0**
+
+#### customer-directory-ui.js (542 lines)
+
+**Purpose:** Customer directory page controller with advanced management features
+
+**Key Features:**
+- Comprehensive customer list view
+- Advanced search and filtering (name, phone, email, location)
+- Customer profile cards with contact info
+- Job history per customer
+- Revenue per customer
+- Quick actions (call, email, create quote, view jobs)
+- Add to quote functionality
+- Edit customer details
+- Delete customer with confirmation
+- Export customer list to CSV
+- Mobile-responsive grid layout
+
+**Key Functions:**
+```javascript
+CustomerDirectoryUI.init()
+CustomerDirectoryUI.renderCustomerList(filters)
+CustomerDirectoryUI.searchCustomers(query)
+CustomerDirectoryUI.filterCustomers(criteria)
+CustomerDirectoryUI.showCustomerDetails(customerId)
+CustomerDirectoryUI.editCustomer(customerId)
+CustomerDirectoryUI.deleteCustomer(customerId)
+CustomerDirectoryUI.addToQuote(customerId)
+CustomerDirectoryUI.createQuote(customerId)
+CustomerDirectoryUI.viewJobHistory(customerId)
+CustomerDirectoryUI.exportToCSV()
+CustomerDirectoryUI.call(customerId)
+CustomerDirectoryUI.email(customerId)
+```
+
+### Enhanced GoHighLevel CRM Integration **NEW v1.13.0**
+
+#### ghl-client.js (483 lines)
+
+**Purpose:** Centralized GoHighLevel API client
+
+**Key Features:**
+- Centralized GHL API interface
+- Authentication and token management
+- Contact CRUD operations
+- Opportunity (deal pipeline) operations
+- Task management via API
+- Note creation and updates
+- Custom field support
+- Error handling and retry logic
+- Rate limiting compliance
+
+**Key Functions:**
+```javascript
+GHLClient.initialize(apiKey, locationId)
+GHLClient.authenticate()
+GHLClient.createContact(contactData)
+GHLClient.updateContact(contactId, updates)
+GHLClient.getContact(contactId)
+GHLClient.deleteContact(contactId)
+GHLClient.createOpportunity(opportunityData)
+GHLClient.updateOpportunity(opportunityId, updates)
+GHLClient.getOpportunity(opportunityId)
+GHLClient.createTask(taskData)
+GHLClient.updateTask(taskId, updates)
+GHLClient.createNote(contactId, noteContent)
+GHLClient.setCustomField(contactId, fieldName, value)
+```
+
+**API Configuration:**
+```javascript
+{
+  apiKey: 'your-api-key',
+  locationId: 'your-location-id',
+  baseURL: 'https://api.gohighlevel.com/v1',
+  timeout: 30000,
+  retryAttempts: 3,
+  rateLimitPerMinute: 60
+}
+```
+
+#### ghl-opportunity-sync.js (717 lines)
+
+**Purpose:** Bidirectional synchronization between quotes and GHL opportunities
+
+**Key Features:**
+- Bidirectional sync between quotes and GHL opportunities
+- Pipeline stage mapping (quote → opportunity stage)
+- Automatic opportunity creation from quotes
+- Opportunity value and status updates
+- Won/lost opportunity tracking
+- Custom field synchronization
+- Conflict resolution with timestamp-based merge
+- Batch sync for offline recovery
+
+**Key Functions:**
+```javascript
+GHLOpportunitySync.syncQuoteToOpportunity(quoteId)
+GHLOpportunitySync.syncOpportunityToQuote(opportunityId)
+GHLOpportunitySync.createOpportunityFromQuote(quoteId)
+GHLOpportunitySync.updateOpportunityStage(opportunityId, stage)
+GHLOpportunitySync.markOpportunityWon(opportunityId)
+GHLOpportunitySync.markOpportunityLost(opportunityId, reason)
+GHLOpportunitySync.batchSync()
+GHLOpportunitySync.resolveConflict(localData, remoteData)
+GHLOpportunitySync.mapQuoteStageToOpportunityStage(quoteStatus)
+```
+
+**Pipeline Stage Mapping:**
+```javascript
+{
+  'draft': 'Lead',
+  'sent': 'Proposal Sent',
+  'viewed': 'Proposal Viewed',
+  'accepted': 'Won',
+  'declined': 'Lost',
+  'verbal-yes': 'Verbal Commitment'
+}
+```
+
+#### ghl-settings-ui.js (522 lines)
+
+**Purpose:** GHL settings and sync UI controller
+
+**Key Features:**
+- GHL API key configuration
+- Connection testing and validation
+- Sync settings and preferences
+- Manual sync trigger
+- Sync status monitoring
+- Pipeline stage mapping UI
+- Custom field mapping configuration
+- Sync history and logs
+- Conflict resolution interface
+
+**Key Functions:**
+```javascript
+GHLSettingsUI.init()
+GHLSettingsUI.saveSettings(config)
+GHLSettingsUI.testConnection()
+GHLSettingsUI.triggerManualSync()
+GHLSettingsUI.showSyncStatus()
+GHLSettingsUI.configurePipelineMapping()
+GHLSettingsUI.configureCustomFields()
+GHLSettingsUI.viewSyncHistory()
+GHLSettingsUI.resolveConflictUI(conflict)
+```
+
+### GoHighLevel CRM Integration (v1.11.0)
 
 #### task-manager.js (514 lines) **NEW v1.11.0**
 
@@ -4637,6 +5104,12 @@ var value = window.Security.validateNumber(input, {
 | Enable bug tracking | `bug-tracker.js` |
 | Update design system | `css/design-system.css` |
 | Add UI components | `ui-components.js` |
+| Manage job tracking | `job-manager.js`, `job-tracking-ui.js` |
+| View job metrics and pricing intelligence | `pricing-intelligence.js` |
+| Create before/after photo comparisons | `photo-comparison.js` |
+| Manage customer directory | `customer-directory-ui.js` |
+| Configure GHL API integration | `ghl-client.js`, `ghl-settings-ui.js` |
+| Sync quotes with GHL opportunities | `ghl-opportunity-sync.js` |
 
 ---
 
@@ -4644,7 +5117,13 @@ var value = window.Security.validateNumber(input, {
 
 ### Version History
 
-- **v1.12.0** (Current - 2025-11-18) - Contract Management & Advanced Features
+- **v1.13.0** (Current - 2025-11-18) - Job Tracking, Customer Directory & Enhanced CRM Integration
+  - Job Tracking & Management System (job-manager.js, job-tracking-ui.js, pricing-intelligence.js, photo-comparison.js)
+  - Customer Directory Enhancement (customer-directory-ui.js)
+  - Enhanced GoHighLevel CRM Integration (ghl-client.js, ghl-opportunity-sync.js, ghl-settings-ui.js)
+  - Total: ~4,700 lines of new code across 8 modules
+
+- **v1.12.0** (2025-11-18) - Contract Management & Advanced Features
   - Contract Management System (contract-manager.js, contract-wizard.js, contract-automation.js, contract-forecasting.js)
   - Enhanced Analytics (analytics-engine.js, analytics-dashboard.js, analytics-config.js)
   - Mobile & Native Features (camera-helper.js, geolocation-helper.js, native-features.js, push-notifications.js)
