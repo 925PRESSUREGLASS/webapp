@@ -89,7 +89,10 @@
 					<button id="customersPageBtn" type="button" class="btn btn-secondary" title="Customer Directory" aria-label="Open customer directory" onclick="showCustomersPage()">
 						👥 Customers
 					</button>
-					<button id="keyboardShortcutsBtn" type="button" class="btn btn-tertiary" title="Keyboard Shortcuts (Press ?)" aria-label="View keyboard shortcuts">
+					<button id="jobsPageBtn" type="button" class="btn btn-secondary" title="Job Tracking" aria-label="Open jobs page" onclick="navigateTo('jobs')">
+					📋 Jobs
+				</button>
+				<button id="keyboardShortcutsBtn" type="button" class="btn btn-tertiary" title="Keyboard Shortcuts (Press ?)" aria-label="View keyboard shortcuts">
 						⌨️ Help
 					</button>
 					<button id="testRunnerBtn" type="button" class="btn btn-tertiary" title="Test & QA Suite" aria-label="Open test runner" onclick="openTestRunner()">
@@ -1138,6 +1141,95 @@
 		</div>
 	</div>
 
+	<!-- JOBS LIST PAGE (Hidden by default) -->
+	<div class="page" id="page-jobs" style="display: none;">
+		<div class="container">
+			<div class="page-header">
+				<h1>📋 Jobs</h1>
+				<div class="page-actions">
+					<button class="btn btn-primary" onclick="showCreateJobDialog()">
+						➕ Create Job
+					</button>
+				</div>
+			</div>
+
+			<!-- Job Filters -->
+			<div class="card">
+				<div class="card-body">
+					<div class="filter-tabs">
+						<button class="filter-tab active" onclick="JobTrackingUI.filterJobs('all')">All</button>
+						<button class="filter-tab" onclick="JobTrackingUI.filterJobs('scheduled')">Scheduled</button>
+						<button class="filter-tab" onclick="JobTrackingUI.filterJobs('in-progress')">In Progress</button>
+						<button class="filter-tab" onclick="JobTrackingUI.filterJobs('completed')">Completed</button>
+						<button class="filter-tab" onclick="JobTrackingUI.filterJobs('invoiced')">Invoiced</button>
+					</div>
+				</div>
+			</div>
+
+			<!-- Jobs Summary Cards -->
+			<div class="stats-grid">
+				<div class="stat-card">
+					<div class="stat-label">Scheduled</div>
+					<div class="stat-value" id="jobs-count-scheduled">0</div>
+				</div>
+				<div class="stat-card">
+					<div class="stat-label">In Progress</div>
+					<div class="stat-value" id="jobs-count-in-progress">0</div>
+				</div>
+				<div class="stat-card">
+					<div class="stat-label">Completed</div>
+					<div class="stat-value" id="jobs-count-completed">0</div>
+				</div>
+				<div class="stat-card">
+					<div class="stat-label">Total Revenue</div>
+					<div class="stat-value" id="jobs-total-revenue">$0</div>
+				</div>
+			</div>
+
+			<!-- Jobs List -->
+			<div class="card">
+				<div class="card-header">
+					<h3 class="card-title">All Jobs</h3>
+				</div>
+				<div class="card-body">
+					<div id="jobs-list-container">
+						<p class="text-muted">No jobs found. Create a job from a quote to get started.</p>
+					</div>
+				</div>
+			</div>
+		</div>
+	</div>
+
+	<!-- Create Job Modal -->
+	<div class="modal" id="create-job-modal" style="display: none;">
+		<div class="modal-dialog">
+			<div class="modal-header">
+				<h2>Create Job from Quote</h2>
+				<button class="modal-close" onclick="closeCreateJobDialog()">&times;</button>
+			</div>
+			<div class="modal-body">
+				<div class="form-group">
+					<label class="form-label">Select Quote</label>
+					<select id="create-job-quote-select" class="form-select">
+						<option value="">-- Select a quote --</option>
+					</select>
+				</div>
+				<div class="form-group">
+					<label class="form-label">Scheduled Date</label>
+					<input type="date" id="create-job-scheduled-date" class="form-input" />
+				</div>
+				<div class="form-group">
+					<label class="form-label">Scheduled Time</label>
+					<input type="time" id="create-job-scheduled-time" class="form-input" value="09:00" />
+				</div>
+			</div>
+			<div class="modal-footer">
+				<button class="btn btn-secondary" onclick="closeCreateJobDialog()">Cancel</button>
+				<button class="btn btn-primary" onclick="createJobFromQuote()">Create Job</button>
+			</div>
+		</div>
+	</div>
+
 	<!-- ACTIVE JOB PAGE (Hidden by default) -->
 	<div class="page" id="page-active-job" style="display: none;">
 		<div class="container">
@@ -1984,6 +2076,132 @@
 
 			if (window.UIComponents && window.UIComponents.showToast) {
 				window.UIComponents.showToast('Difficulty updated', 'success');
+			}
+		}
+
+		/**
+		 * Show create job dialog
+		 */
+		function showCreateJobDialog() {
+			var modal = document.getElementById('create-job-modal');
+			if (!modal) return;
+
+			// Populate quote select dropdown
+			var select = document.getElementById('create-job-quote-select');
+			if (select) {
+				select.innerHTML = '<option value="">-- Select a quote --</option>';
+
+				// Get saved quotes
+				var savedQuotes = Storage.get('tictacstick_saved_quotes_v1') || [];
+				for (var i = 0; i < savedQuotes.length; i++) {
+					var quote = savedQuotes[i];
+					var option = document.createElement('option');
+					option.value = quote.id;
+					option.textContent = (quote.title || 'Untitled Quote') + ' - ' + (quote.clientName || 'No client') + ' - $' + (quote.total || 0).toFixed(2);
+					select.appendChild(option);
+				}
+			}
+
+			// Set default date to tomorrow
+			var tomorrow = new Date();
+			tomorrow.setDate(tomorrow.getDate() + 1);
+			var dateInput = document.getElementById('create-job-scheduled-date');
+			if (dateInput) {
+				dateInput.value = tomorrow.toISOString().split('T')[0];
+			}
+
+			modal.style.display = 'flex';
+		}
+
+		/**
+		 * Close create job dialog
+		 */
+		function closeCreateJobDialog() {
+			var modal = document.getElementById('create-job-modal');
+			if (modal) {
+				modal.style.display = 'none';
+			}
+		}
+
+		/**
+		 * Create job from quote
+		 */
+		function createJobFromQuote() {
+			var select = document.getElementById('create-job-quote-select');
+			var dateInput = document.getElementById('create-job-scheduled-date');
+			var timeInput = document.getElementById('create-job-scheduled-time');
+
+			if (!select || !select.value) {
+				alert('Please select a quote');
+				return;
+			}
+
+			var quoteId = select.value;
+			var date = dateInput ? dateInput.value : '';
+			var time = timeInput ? timeInput.value : '09:00';
+
+			if (!date) {
+				alert('Please select a scheduled date');
+				return;
+			}
+
+			// Combine date and time into ISO string
+			var scheduledDateTime = new Date(date + 'T' + time + ':00').toISOString();
+
+			// Create job
+			var job = window.JobManager.createFromQuote(quoteId, scheduledDateTime);
+
+			if (job) {
+				closeCreateJobDialog();
+
+				if (window.UIComponents && window.UIComponents.showToast) {
+					window.UIComponents.showToast('Job created: ' + job.jobNumber, 'success');
+				}
+
+				// Refresh jobs list if on jobs page
+				if (window.JobTrackingUI && window.JobTrackingUI.renderJobsList) {
+					window.JobTrackingUI.renderJobsList('all');
+				}
+
+				// Navigate to the new job
+				setTimeout(function() {
+					if (window.JobTrackingUI && window.JobTrackingUI.openJob) {
+						window.JobTrackingUI.openJob(job.id);
+					}
+				}, 500);
+			} else {
+				alert('Failed to create job');
+			}
+		}
+
+		/**
+		 * Generate invoice from job (called from jobs list)
+		 */
+		function generateJobInvoiceFromList(jobId) {
+			if (!window.JobManager) return;
+
+			var invoice = window.JobManager.generateInvoice(jobId);
+
+			if (invoice) {
+				if (window.UIComponents && window.UIComponents.showToast) {
+					window.UIComponents.showToast('Invoice generated: ' + invoice.invoiceNumber, 'success');
+				}
+
+				// Refresh jobs list
+				if (window.JobTrackingUI && window.JobTrackingUI.renderJobsList) {
+					window.JobTrackingUI.renderJobsList('all');
+				}
+
+				// Ask if user wants to view invoice
+				setTimeout(function() {
+					if (confirm('Invoice created! View invoice now?')) {
+						if (window.navigateTo) {
+							window.navigateTo('invoices');
+						}
+					}
+				}, 500);
+			} else {
+				alert('Failed to generate invoice');
 			}
 		}
 	</script>

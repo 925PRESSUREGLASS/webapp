@@ -283,6 +283,44 @@
         }
         break;
 
+      case 'jobs':
+        // Show jobs list page
+        var jobsPage = document.getElementById('page-jobs');
+        var activeJobPage = document.getElementById('page-active-job');
+        if (jobsPage) {
+          jobsPage.style.display = 'block';
+          if (mainApp) mainApp.style.display = 'none';
+          if (taskPage) taskPage.style.display = 'none';
+          if (activeJobPage) activeJobPage.style.display = 'none';
+          // Initialize jobs page
+          if (window.JobTrackingUI && window.JobTrackingUI.initJobsPage) {
+            window.JobTrackingUI.initJobsPage();
+          }
+          console.log('[PUSH] Navigated to jobs');
+        } else {
+          console.warn('[PUSH] Jobs page element not found');
+        }
+        break;
+
+      case 'active-job':
+        // Show active job tracking page
+        var activeJobPage = document.getElementById('page-active-job');
+        var jobsPage = document.getElementById('page-jobs');
+        if (activeJobPage) {
+          activeJobPage.style.display = 'block';
+          if (mainApp) mainApp.style.display = 'none';
+          if (taskPage) taskPage.style.display = 'none';
+          if (jobsPage) jobsPage.style.display = 'none';
+          // Open specific job if ID provided
+          if (params && params.id && window.JobTrackingUI && window.JobTrackingUI.openJob) {
+            window.JobTrackingUI.openJob(params.id);
+          }
+          console.log('[PUSH] Navigated to active job');
+        } else {
+          console.warn('[PUSH] Active job page element not found');
+        }
+        break;
+
       default:
         console.warn('[PUSH] Unknown navigation target:', page);
         // Default to home
