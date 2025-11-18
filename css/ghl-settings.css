@@ -1,0 +1,214 @@
+/* ghl-settings.css - GoHighLevel Settings UI Styles */
+
+/* Settings Modal */
+.modal-large {
+  max-width: 800px;
+  width: 95%;
+}
+
+/* Tabs */
+.ghl-settings-tabs {
+  display: flex;
+  gap: 8px;
+  margin-bottom: 24px;
+  border-bottom: 2px solid var(--color-neutral-200, #e5e7eb);
+  padding-bottom: 0;
+}
+
+.ghl-tab-btn {
+  padding: 12px 16px;
+  background: transparent;
+  border: none;
+  border-bottom: 3px solid transparent;
+  color: var(--color-neutral-600, #6b7280);
+  font-size: 14px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.2s;
+  position: relative;
+  bottom: -2px;
+}
+
+.ghl-tab-btn:hover {
+  color: var(--color-primary, #2563eb);
+  background: var(--color-neutral-50, #f9fafb);
+}
+
+.ghl-tab-btn.active {
+  color: var(--color-primary, #2563eb);
+  border-bottom-color: var(--color-primary, #2563eb);
+}
+
+/* Tab Content */
+.ghl-settings-content {
+  padding: 16px 0;
+}
+
+.ghl-tab-content {
+  display: none;
+}
+
+.ghl-tab-content.active {
+  display: block;
+}
+
+/* Pipeline Stages */
+.ghl-pipeline-stages {
+  background: var(--color-neutral-50, #f9fafb);
+  padding: 16px;
+  border-radius: var(--radius-md, 8px);
+  border: 1px solid var(--color-neutral-200, #e5e7eb);
+}
+
+/* Alert Styles */
+.alert {
+  padding: 12px 16px;
+  border-radius: var(--radius-md, 8px);
+  font-size: 14px;
+  line-height: 1.6;
+}
+
+.alert-success {
+  background: #d1fae5;
+  color: #065f46;
+  border: 1px solid #10b981;
+}
+
+.alert-error {
+  background: #fee2e2;
+  color: #991b1b;
+  border: 1px solid #ef4444;
+}
+
+.alert-warning {
+  background: #fef3c7;
+  color: #92400e;
+  border: 1px solid #fbbf24;
+}
+
+/* Loading Spinner */
+.loading-spinner {
+  display: inline-block;
+  width: 20px;
+  height: 20px;
+  border: 3px solid var(--color-neutral-200, #e5e7eb);
+  border-top-color: var(--color-primary, #2563eb);
+  border-radius: 50%;
+  animation: spin 0.8s linear infinite;
+}
+
+@keyframes spin {
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+/* Sync Button in Summary */
+#sync-quote-ghl-btn {
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  color: white;
+  border: none;
+  font-weight: 600;
+}
+
+#sync-quote-ghl-btn:hover {
+  transform: translateY(-1px);
+  box-shadow: 0 4px 12px rgba(102, 126, 234, 0.4);
+}
+
+#sync-quote-ghl-btn:active {
+  transform: translateY(0);
+}
+
+/* GHL Settings Button in Header */
+#webhookSettingsBtn {
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  color: white;
+  border: none;
+}
+
+#webhookSettingsBtn:hover {
+  box-shadow: 0 4px 12px rgba(102, 126, 234, 0.4);
+}
+
+/* Form Enhancements */
+.form-group {
+  margin-bottom: 20px;
+}
+
+.form-label-required::after {
+  content: ' *';
+  color: var(--color-error, #ef4444);
+}
+
+.form-hint {
+  display: block;
+  margin-top: 4px;
+  font-size: 13px;
+  color: var(--color-neutral-600, #6b7280);
+}
+
+/* Dark Theme Support */
+@media (prefers-color-scheme: dark) {
+  .ghl-settings-tabs {
+    border-bottom-color: var(--color-neutral-700, #374151);
+  }
+
+  .ghl-tab-btn {
+    color: var(--color-neutral-400, #9ca3af);
+  }
+
+  .ghl-tab-btn:hover {
+    color: var(--color-primary-light, #3b82f6);
+    background: var(--color-neutral-800, #1f2937);
+  }
+
+  .ghl-tab-btn.active {
+    color: var(--color-primary-light, #3b82f6);
+  }
+
+  .ghl-pipeline-stages {
+    background: var(--color-neutral-800, #1f2937);
+    border-color: var(--color-neutral-700, #374151);
+  }
+
+  .alert-success {
+    background: #064e3b;
+    color: #d1fae5;
+    border-color: #059669;
+  }
+
+  .alert-error {
+    background: #7f1d1d;
+    color: #fee2e2;
+    border-color: #dc2626;
+  }
+
+  .alert-warning {
+    background: #78350f;
+    color: #fef3c7;
+    border-color: #f59e0b;
+  }
+}
+
+/* Mobile Responsive */
+@media (max-width: 767px) {
+  .modal-large {
+    max-width: 100%;
+    margin: 0;
+    border-radius: 0;
+    height: 100vh;
+  }
+
+  .ghl-settings-tabs {
+    overflow-x: auto;
+    flex-wrap: nowrap;
+    -webkit-overflow-scrolling: touch;
+  }
+
+  .ghl-tab-btn {
+    white-space: nowrap;
+    padding: 10px 12px;
+    font-size: 13px;
+  }
+}
