@@ -305,6 +305,271 @@
       baseRate: 7.00,
       description: 'Covered parking area',
       notes: 'Usually lighter soiling than exposed driveway'
+    },
+
+    // ========================================
+    // ADDITIONAL SPECIALTY SURFACES
+    // ========================================
+
+    PATIO_SANDSTONE: {
+      id: 'patio_sandstone',
+      name: 'Sandstone Paving',
+      code: 'PAT-SAND',
+      category: 'patio',
+      minutesPerSqm: 2.4,
+      baseRate: 14.00,
+      description: 'Natural sandstone, gentle cleaning',
+      notes: 'DELICATE: Low pressure only, can stain easily'
+    },
+
+    WALL_LIMESTONE: {
+      id: 'wall_limestone',
+      name: 'Limestone Wall',
+      code: 'WALL-LIME',
+      category: 'walls',
+      minutesPerSqm: 2.5,
+      baseRate: 12.00,
+      description: 'Natural limestone blocks, soft wash',
+      notes: 'Perth limestone, VERY SOFT - low pressure only!'
+    },
+
+    GARAGE_FLOOR: {
+      id: 'garage_floor',
+      name: 'Garage Floor (Indoor)',
+      code: 'GARG-FLR',
+      category: 'specialty',
+      minutesPerSqm: 2.0,
+      baseRate: 10.00,
+      description: 'Indoor concrete, drainage concerns',
+      notes: 'Must manage water runoff carefully, often oil-stained'
+    },
+
+    DRIVEWAY_BRICK: {
+      id: 'driveway_brick',
+      name: 'Brick Driveway',
+      code: 'DRV-BRCK',
+      category: 'driveway',
+      minutesPerSqm: 2.3,
+      baseRate: 11.00,
+      description: 'Clay brick pavers',
+      notes: 'Mortar joints need care, avoid displacing sand'
+    },
+
+    DECK_BAMBOO: {
+      id: 'deck_bamboo',
+      name: 'Bamboo Decking',
+      code: 'DECK-BAMB',
+      category: 'decking',
+      minutesPerSqm: 1.9,
+      baseRate: 11.00,
+      description: 'Bamboo composite decking',
+      notes: 'Low pressure, gentle approach'
+    },
+
+    ROOF_ASBESTOS: {
+      id: 'roof_asbestos',
+      name: 'Asbestos Roof (OLD)',
+      code: 'ROOF-ASBS',
+      category: 'roofing',
+      minutesPerSqm: 4.0,
+      baseRate: 25.00,
+      description: 'OLD MATERIAL - EXTREME CARE REQUIRED',
+      notes: 'MAY REQUIRE LICENSED CONTRACTOR - Check regulations!'
+    },
+
+    FENCE_BRICK: {
+      id: 'fence_brick',
+      name: 'Brick Fence/Wall',
+      code: 'FNCE-BRCK',
+      category: 'fencing',
+      unit: 'linear m',
+      minutesPerLinearM: 1.8,
+      baseRate: 6.00,
+      description: 'Brick boundary fence',
+      notes: 'Common in Perth, moderate effort'
+    }
+  };
+
+  // ========================================
+  // HELPER FUNCTIONS
+  // ========================================
+
+  var SurfaceHelpers = {
+
+    /**
+     * Get surface by ID
+     * @param {string} surfaceId - Surface ID
+     * @returns {Object|null} Surface object or null
+     */
+    getSurface: function(surfaceId) {
+      if (!surfaceId) return null;
+      for (var key in PRESSURE_SURFACES_EXTENDED) {
+        if (PRESSURE_SURFACES_EXTENDED.hasOwnProperty(key)) {
+          if (PRESSURE_SURFACES_EXTENDED[key].id === surfaceId) {
+            return PRESSURE_SURFACES_EXTENDED[key];
+          }
+        }
+      }
+      return null;
+    },
+
+    /**
+     * Get all surfaces
+     * @returns {Object} All surfaces
+     */
+    getAllSurfaces: function() {
+      return PRESSURE_SURFACES_EXTENDED;
+    },
+
+    /**
+     * Get surfaces by category
+     * @param {string} category - Category name
+     * @returns {Array} Array of surfaces in that category
+     */
+    getSurfacesByCategory: function(category) {
+      var results = [];
+      for (var key in PRESSURE_SURFACES_EXTENDED) {
+        if (PRESSURE_SURFACES_EXTENDED.hasOwnProperty(key)) {
+          var surface = PRESSURE_SURFACES_EXTENDED[key];
+          if (surface.category === category) {
+            results.push(surface);
+          }
+        }
+      }
+      return results;
+    },
+
+    /**
+     * Calculate time for surface
+     * @param {string} surfaceId - Surface ID
+     * @param {number} quantity - Area/length/count
+     * @returns {number} Total minutes
+     */
+    calculateTime: function(surfaceId, quantity) {
+      var surface = this.getSurface(surfaceId);
+      if (!surface) return 0;
+
+      // Determine which time metric to use
+      var timePerUnit = surface.minutesPerSqm ||
+                        surface.minutesPerLinearM ||
+                        surface.minutesPerPanel ||
+                        0;
+
+      return Math.round(timePerUnit * quantity);
+    },
+
+    /**
+     * Calculate base price for surface
+     * @param {string} surfaceId - Surface ID
+     * @param {number} quantity - Area/length/count
+     * @returns {number} Base price in dollars
+     */
+    calculateBasePrice: function(surfaceId, quantity) {
+      var surface = this.getSurface(surfaceId);
+      if (!surface || !surface.baseRate) return 0;
+
+      return surface.baseRate * quantity;
+    },
+
+    /**
+     * Get difficulty level for a surface
+     * @param {string} surfaceId - Surface ID
+     * @returns {string} Difficulty level (easy, medium, hard, extreme)
+     */
+    getDifficulty: function(surfaceId) {
+      var surface = this.getSurface(surfaceId);
+      if (!surface) return 'medium';
+
+      // Determine difficulty based on category and notes
+      if (surface.category === 'roofing') return 'hard';
+      if (surface.id === 'roof_asbestos') return 'extreme';
+      if (surface.notes && surface.notes.indexOf('DELICATE') !== -1) return 'hard';
+      if (surface.notes && surface.notes.indexOf('SOFT') !== -1) return 'hard';
+      if (surface.baseRate >= 12.00) return 'medium';
+
+      return 'easy';
+    },
+
+    /**
+     * Get difficulty multiplier
+     * @param {string} difficulty - Difficulty level
+     * @returns {number} Multiplier
+     */
+    getDifficultyMultiplier: function(difficulty) {
+      var multipliers = {
+        'easy': 1.0,
+        'medium': 1.2,
+        'hard': 1.5,
+        'extreme': 2.0
+      };
+      return multipliers[difficulty] || 1.0;
+    },
+
+    /**
+     * Search surfaces by name or description
+     * @param {string} query - Search query
+     * @returns {Array} Matching surfaces
+     */
+    searchSurfaces: function(query) {
+      if (!query) return [];
+
+      var results = [];
+      var lowerQuery = query.toLowerCase();
+
+      for (var key in PRESSURE_SURFACES_EXTENDED) {
+        if (PRESSURE_SURFACES_EXTENDED.hasOwnProperty(key)) {
+          var surface = PRESSURE_SURFACES_EXTENDED[key];
+          var nameMatch = surface.name && surface.name.toLowerCase().indexOf(lowerQuery) !== -1;
+          var descMatch = surface.description && surface.description.toLowerCase().indexOf(lowerQuery) !== -1;
+          var codeMatch = surface.code && surface.code.toLowerCase().indexOf(lowerQuery) !== -1;
+
+          if (nameMatch || descMatch || codeMatch) {
+            results.push(surface);
+          }
+        }
+      }
+
+      return results;
+    },
+
+    /**
+     * Get categories list
+     * @returns {Array} List of unique categories
+     */
+    getCategories: function() {
+      var categories = [];
+      var seen = {};
+
+      for (var key in PRESSURE_SURFACES_EXTENDED) {
+        if (PRESSURE_SURFACES_EXTENDED.hasOwnProperty(key)) {
+          var cat = PRESSURE_SURFACES_EXTENDED[key].category;
+          if (cat && !seen[cat]) {
+            categories.push(cat);
+            seen[cat] = true;
+          }
+        }
+      }
+
+      return categories;
+    },
+
+    /**
+     * Get surface by code
+     * @param {string} code - Surface code (e.g., 'DRV-CONC')
+     * @returns {Object|null} Surface or null
+     */
+    getSurfaceByCode: function(code) {
+      if (!code) return null;
+
+      for (var key in PRESSURE_SURFACES_EXTENDED) {
+        if (PRESSURE_SURFACES_EXTENDED.hasOwnProperty(key)) {
+          if (PRESSURE_SURFACES_EXTENDED[key].code === code) {
+            return PRESSURE_SURFACES_EXTENDED[key];
+          }
+        }
+      }
+
+      return null;
     }
   };
 
@@ -330,8 +595,36 @@
     }
   }
 
+  // Register with APP namespace
+  if (window.APP && window.APP.registerModule) {
+    window.APP.registerModule('pressureSurfacesExtended', {
+      surfaces: PRESSURE_SURFACES_EXTENDED,
+      helpers: SurfaceHelpers,
+      getSurface: SurfaceHelpers.getSurface.bind(SurfaceHelpers),
+      getAllSurfaces: SurfaceHelpers.getAllSurfaces.bind(SurfaceHelpers),
+      calculateTime: SurfaceHelpers.calculateTime.bind(SurfaceHelpers),
+      calculateBasePrice: SurfaceHelpers.calculateBasePrice.bind(SurfaceHelpers),
+      searchSurfaces: SurfaceHelpers.searchSurfaces.bind(SurfaceHelpers)
+    });
+  }
+
   // Export globally
   window.PRESSURE_SURFACES_EXTENDED = PRESSURE_SURFACES_EXTENDED;
   window.PRESSURE_SURFACES_ARRAY_EXT = PRESSURE_SURFACES_ARRAY;
+  window.PressureSurfacesExtended = {
+    surfaces: PRESSURE_SURFACES_EXTENDED,
+    getSurface: SurfaceHelpers.getSurface.bind(SurfaceHelpers),
+    getAllSurfaces: SurfaceHelpers.getAllSurfaces.bind(SurfaceHelpers),
+    getSurfacesByCategory: SurfaceHelpers.getSurfacesByCategory.bind(SurfaceHelpers),
+    calculateTime: SurfaceHelpers.calculateTime.bind(SurfaceHelpers),
+    calculateBasePrice: SurfaceHelpers.calculateBasePrice.bind(SurfaceHelpers),
+    getDifficulty: SurfaceHelpers.getDifficulty.bind(SurfaceHelpers),
+    getDifficultyMultiplier: SurfaceHelpers.getDifficultyMultiplier.bind(SurfaceHelpers),
+    searchSurfaces: SurfaceHelpers.searchSurfaces.bind(SurfaceHelpers),
+    getCategories: SurfaceHelpers.getCategories.bind(SurfaceHelpers),
+    getSurfaceByCode: SurfaceHelpers.getSurfaceByCode.bind(SurfaceHelpers)
+  };
+
+  console.log('[PRESSURE-SURFACES-EXTENDED] Loaded ' + PRESSURE_SURFACES_ARRAY.length + ' pressure surface types');
 
 })();
