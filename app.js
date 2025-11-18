@@ -226,6 +226,7 @@
 
     state.windowLines.push(line);
     renderLines();
+    recalculate();
     scheduleAutosave(true);
   }
 
@@ -249,6 +250,7 @@
 
     state.pressureLines.push(line);
     renderLines();
+    recalculate();
     scheduleAutosave(true);
   }
 
@@ -267,6 +269,7 @@
     copy.title = original.title + " (copy)";
     state.windowLines.push(copy);
     renderLines();
+    recalculate();
     scheduleAutosave(true);
   }
 
@@ -285,6 +288,7 @@
     copy.title = original.title + " (copy)";
     state.pressureLines.push(copy);
     renderLines();
+    recalculate();
     scheduleAutosave(true);
   }
 
@@ -293,6 +297,7 @@
       return line.id !== id;
     });
     renderLines();
+    recalculate();
     scheduleAutosave(true);
   }
 
@@ -301,6 +306,7 @@
       return line.id !== id;
     });
     renderLines();
+    recalculate();
     scheduleAutosave(true);
   }
 
