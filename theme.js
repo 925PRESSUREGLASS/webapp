@@ -41,6 +41,8 @@
   function applyTheme(theme) {
     currentTheme = theme;
 
+    console.log('[THEME] Applying theme:', theme);
+
     // Handle custom theme
     if (theme === 'custom') {
       // Apply custom theme if ThemeCustomizer is available
@@ -52,7 +54,9 @@
           document.documentElement.setAttribute('data-theme', baseTheme);
           document.body.setAttribute('data-theme', baseTheme);
 
-          // Apply custom theme
+          console.log('[THEME] Loaded custom theme with base:', baseTheme);
+
+          // Apply custom theme (this will override CSS variables)
           window.ThemeCustomizer.apply(customTheme);
         } else {
           // No custom theme found, fall back to dark
@@ -62,6 +66,13 @@
           document.documentElement.setAttribute('data-theme', 'dark');
           document.body.setAttribute('data-theme', 'dark');
         }
+      } else {
+        // ThemeCustomizer not loaded yet, wait for it
+        console.warn('[THEME] ThemeCustomizer not available yet, deferring custom theme application');
+        setTimeout(function() {
+          applyTheme('custom');
+        }, 100);
+        return;
       }
     } else {
       // Apply standard light/dark theme
@@ -72,7 +83,7 @@
     // Update toggle button if exists
     updateToggleButton();
 
-    // Save preference
+    // Save preference (ensure we save 'custom' not the base theme)
     saveTheme(theme);
   }
 
