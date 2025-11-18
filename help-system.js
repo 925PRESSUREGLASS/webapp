@@ -395,9 +395,33 @@
         content += '<p>Need help? Contact us:</p>';
         content += '<ul>';
         content += '<li>Email: <a href="mailto:support@tictacstick.com.au">support@tictacstick.com.au</a></li>';
-        content += '<li>Phone: 0400 XXX XXX</li>';
+
+        // Get phone number from company config or invoice settings
+        var supportPhone = '0400 000 000'; // Default placeholder
+
+        // Try to get from invoice settings first (user-configured)
+        try {
+            var invoiceSettings = localStorage.getItem('invoice-settings');
+            if (invoiceSettings) {
+                var settings = JSON.parse(invoiceSettings);
+                if (settings && settings.phone) {
+                    supportPhone = settings.phone;
+                }
+            }
+        } catch (e) {
+            // Silently fail, use default
+        }
+
+        // Fall back to company config if available and invoice settings don't have it
+        if (supportPhone === '0400 000 000' && typeof window.PDF_CONFIG !== 'undefined' &&
+            window.PDF_CONFIG.COMPANY_CONFIG && window.PDF_CONFIG.COMPANY_CONFIG.phone) {
+            supportPhone = window.PDF_CONFIG.COMPANY_CONFIG.phone;
+        }
+
+        content += '<li>Phone: ' + supportPhone + '</li>';
         content += '<li>Response time: 24-48 hours</li>';
         content += '</ul>';
+        content += '<p class="help-note"><small>💡 Update contact details in Settings → Invoice Settings</small></p>';
         content += '</div>';
 
         // Keyboard shortcuts section
