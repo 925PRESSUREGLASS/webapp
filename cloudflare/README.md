@@ -128,8 +128,9 @@ Make sure `ALLOWED_ORIGINS` environment variable includes your TicTacStick domai
 
 ### Signature Verification Failures
 
-1. Check `WEBHOOK_SECRET` matches GHL configuration
-2. Implement proper HMAC verification (see TODO in code)
+1. Check `WEBHOOK_SECRET` matches GHL configuration exactly
+2. Ensure the secret is properly configured in Cloudflare Workers environment variables
+3. Check worker logs for signature mismatch details (expected vs received)
 
 ### Events Not Appearing
 
@@ -140,7 +141,7 @@ Make sure `ALLOWED_ORIGINS` environment variable includes your TicTacStick domai
 ## Security Best Practices
 
 1. **Never commit secrets** - Always use environment variables
-2. **Implement signature verification** - Uncomment and complete the signature verification code
+2. **Configure signature verification** - Set WEBHOOK_SECRET environment variable to enable HMAC-SHA256 verification
 3. **Limit CORS origins** - Only allow your actual domains
 4. **Monitor logs** - Watch for suspicious activity
 5. **Rotate secrets** - Change webhook secret periodically

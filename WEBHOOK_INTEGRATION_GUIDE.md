@@ -589,10 +589,10 @@ Access to fetch at 'https://worker.workers.dev/events' from origin 'https://your
 - Logs show "Invalid webhook signature"
 
 **Solutions:**
-1. **Implement signature verification in worker.js**
-   - See TODO in `verifySignature()` function
-   - Use HMAC-SHA256
-   - Compare with X-GHL-Signature header
+1. **Configure signature verification in worker.js**
+   - HMAC-SHA256 verification is implemented
+   - Set WEBHOOK_SECRET environment variable in Cloudflare Workers
+   - Worker validates X-GHL-Signature header automatically
 
 2. **Verify webhook secret matches**
    - Same secret in TicTacStick
@@ -634,10 +634,10 @@ Access to fetch at 'https://worker.workers.dev/events' from origin 'https://your
    - Never use HTTP for webhook URLs
    - Cloudflare Workers enforce HTTPS
 
-2. **Implement Signature Verification**
-   - Verify all webhooks using HMAC-SHA256
-   - Reject invalid signatures
-   - See `worker.js` TODO
+2. **Enable Signature Verification**
+   - HMAC-SHA256 verification implemented in worker.js
+   - Configure WEBHOOK_SECRET environment variable
+   - Worker automatically rejects invalid signatures
 
 3. **Rotate Secrets Regularly**
    - Change webhook secret every 90 days
