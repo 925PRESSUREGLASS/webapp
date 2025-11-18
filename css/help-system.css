@@ -1,0 +1,638 @@
+/**
+ * help-system.css - In-App Help System Styles
+ * Version: 1.11.0
+ * Dependencies: design-system.css
+ */
+
+/* ============================================
+   HELP ICON (INLINE)
+   ============================================ */
+
+.help-icon-inline {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 18px;
+    height: 18px;
+    margin-left: 6px;
+    font-size: 12px;
+    cursor: pointer;
+    user-select: none;
+    color: var(--color-primary, #2563eb);
+    opacity: 0.7;
+    transition: opacity 0.2s ease, transform 0.2s ease;
+    vertical-align: middle;
+}
+
+.help-icon-inline:hover {
+    opacity: 1;
+    transform: scale(1.1);
+}
+
+.help-icon-inline:focus {
+    outline: 2px solid var(--color-primary, #2563eb);
+    outline-offset: 2px;
+    border-radius: 50%;
+    opacity: 1;
+}
+
+/* Mobile: Larger touch target */
+@media (max-width: 767px) {
+    .help-icon-inline {
+        width: 24px;
+        height: 24px;
+        font-size: 14px;
+        margin-left: 8px;
+    }
+}
+
+
+/* ============================================
+   HELP TOOLTIP
+   ============================================ */
+
+.help-tooltip {
+    position: fixed;
+    z-index: 10000;
+    max-width: 360px;
+    min-width: 280px;
+    opacity: 0;
+    transform: translateY(-10px);
+    transition: opacity 0.3s ease, transform 0.3s ease;
+    pointer-events: all;
+}
+
+.help-tooltip-visible {
+    opacity: 1;
+    transform: translateY(0);
+}
+
+.help-tooltip-fade-out {
+    opacity: 0;
+    transform: translateY(-10px);
+}
+
+.help-tooltip-content {
+    background: white;
+    border: 1px solid var(--color-neutral-200, #e5e7eb);
+    border-radius: var(--radius-lg, 12px);
+    box-shadow: 0 10px 25px rgba(0, 0, 0, 0.15),
+                0 4px 10px rgba(0, 0, 0, 0.1);
+    padding: 16px;
+    position: relative;
+}
+
+/* Dark theme support */
+@media (prefers-color-scheme: dark) {
+    .help-tooltip-content {
+        background: var(--color-neutral-800, #1f2937);
+        border-color: var(--color-neutral-700, #374151);
+        color: white;
+    }
+}
+
+
+/* ============================================
+   TOOLTIP CONTENT ELEMENTS
+   ============================================ */
+
+.help-icon {
+    font-size: 32px;
+    text-align: center;
+    margin-bottom: 8px;
+}
+
+.help-title {
+    margin: 0 0 8px 0;
+    font-size: 16px;
+    font-weight: 600;
+    color: var(--color-neutral-900, #111827);
+    line-height: 1.3;
+}
+
+@media (prefers-color-scheme: dark) {
+    .help-title {
+        color: white;
+    }
+}
+
+.help-text {
+    margin: 0 0 12px 0;
+    font-size: 14px;
+    line-height: 1.6;
+    color: var(--color-neutral-700, #374151);
+}
+
+@media (prefers-color-scheme: dark) {
+    .help-text {
+        color: var(--color-neutral-300, #d1d5db);
+    }
+}
+
+.help-tip {
+    background: var(--color-warning-light, #fef3c7);
+    border-left: 3px solid var(--color-warning, #f59e0b);
+    padding: 10px 12px;
+    margin: 12px 0;
+    border-radius: var(--radius-md, 8px);
+    font-size: 13px;
+    line-height: 1.5;
+    color: var(--color-warning-dark, #92400e);
+}
+
+@media (prefers-color-scheme: dark) {
+    .help-tip {
+        background: rgba(245, 158, 11, 0.2);
+        color: var(--color-warning-light, #fbbf24);
+    }
+}
+
+.help-example {
+    background: var(--color-neutral-100, #f3f4f6);
+    border-left: 3px solid var(--color-info, #3b82f6);
+    padding: 10px 12px;
+    margin: 12px 0;
+    border-radius: var(--radius-md, 8px);
+    font-size: 13px;
+    line-height: 1.5;
+    color: var(--color-neutral-700, #374151);
+}
+
+@media (prefers-color-scheme: dark) {
+    .help-example {
+        background: var(--color-neutral-700, #374151);
+        color: var(--color-neutral-300, #d1d5db);
+    }
+}
+
+.help-formula {
+    background: var(--color-neutral-900, #111827);
+    color: var(--color-success-light, #86efac);
+    padding: 12px;
+    margin: 12px 0;
+    border-radius: var(--radius-md, 8px);
+    font-family: 'Monaco', 'Menlo', 'Courier New', monospace;
+    font-size: 13px;
+    overflow-x: auto;
+}
+
+.help-formula code {
+    color: var(--color-success-light, #86efac);
+    background: transparent;
+    padding: 0;
+}
+
+.help-schedule {
+    background: var(--color-neutral-100, #f3f4f6);
+    padding: 10px 12px;
+    margin: 12px 0;
+    border-radius: var(--radius-md, 8px);
+    font-size: 13px;
+    line-height: 1.6;
+    overflow-x: auto;
+}
+
+.help-schedule pre {
+    margin: 0;
+    white-space: pre-wrap;
+    font-family: inherit;
+    color: var(--color-neutral-700, #374151);
+}
+
+@media (prefers-color-scheme: dark) {
+    .help-schedule {
+        background: var(--color-neutral-700, #374151);
+    }
+
+    .help-schedule pre {
+        color: var(--color-neutral-300, #d1d5db);
+    }
+}
+
+.help-video-link,
+.help-external-link {
+    display: inline-block;
+    margin-top: 12px;
+    padding: 8px 12px;
+    background: var(--color-primary, #2563eb);
+    color: white !important;
+    text-decoration: none;
+    border-radius: var(--radius-md, 8px);
+    font-size: 13px;
+    font-weight: 500;
+    transition: background 0.2s ease, transform 0.2s ease;
+}
+
+.help-video-link:hover,
+.help-external-link:hover {
+    background: var(--color-primary-dark, #1e40af);
+    transform: translateY(-1px);
+    color: white !important;
+}
+
+.help-external-link {
+    background: var(--color-neutral-600, #4b5563);
+}
+
+.help-external-link:hover {
+    background: var(--color-neutral-700, #374151);
+}
+
+.help-close {
+    position: absolute;
+    top: 12px;
+    right: 12px;
+    width: 28px;
+    height: 28px;
+    padding: 0;
+    background: transparent;
+    border: none;
+    font-size: 24px;
+    line-height: 1;
+    color: var(--color-neutral-500, #6b7280);
+    cursor: pointer;
+    transition: color 0.2s ease, transform 0.2s ease;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.help-close:hover {
+    color: var(--color-neutral-900, #111827);
+    transform: scale(1.1);
+}
+
+@media (prefers-color-scheme: dark) {
+    .help-close:hover {
+        color: white;
+    }
+}
+
+.help-close:focus {
+    outline: 2px solid var(--color-primary, #2563eb);
+    outline-offset: 2px;
+    border-radius: 50%;
+}
+
+
+/* ============================================
+   HELP BUTTON (GLOBAL)
+   ============================================ */
+
+.btn-help {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    padding: 8px 16px;
+    background: var(--color-neutral-100, #f3f4f6);
+    border: 1px solid var(--color-neutral-300, #d1d5db);
+    border-radius: var(--radius-md, 8px);
+    color: var(--color-neutral-700, #374151);
+    font-size: 14px;
+    font-weight: 500;
+    cursor: pointer;
+    transition: all 0.2s ease;
+}
+
+.btn-help:hover {
+    background: var(--color-neutral-200, #e5e7eb);
+    border-color: var(--color-neutral-400, #9ca3af);
+    color: var(--color-neutral-900, #111827);
+}
+
+.btn-help:focus {
+    outline: 2px solid var(--color-primary, #2563eb);
+    outline-offset: 2px;
+}
+
+@media (prefers-color-scheme: dark) {
+    .btn-help {
+        background: var(--color-neutral-700, #374151);
+        border-color: var(--color-neutral-600, #4b5563);
+        color: var(--color-neutral-300, #d1d5db);
+    }
+
+    .btn-help:hover {
+        background: var(--color-neutral-600, #4b5563);
+        border-color: var(--color-neutral-500, #6b7280);
+        color: white;
+    }
+}
+
+/* Mobile: Smaller button */
+@media (max-width: 767px) {
+    .btn-help {
+        padding: 6px 12px;
+        font-size: 13px;
+    }
+}
+
+
+/* ============================================
+   HELP CENTER MODAL
+   ============================================ */
+
+.help-center-modal .modal-content {
+    max-width: 700px;
+    max-height: 90vh;
+    overflow: hidden;
+}
+
+.help-center-modal .modal-body {
+    max-height: calc(90vh - 140px);
+    overflow-y: auto;
+    padding: 20px;
+}
+
+.help-section {
+    margin-bottom: 28px;
+}
+
+.help-section:last-child {
+    margin-bottom: 0;
+}
+
+.help-section h3 {
+    margin: 0 0 12px 0;
+    font-size: 18px;
+    font-weight: 600;
+    color: var(--color-neutral-900, #111827);
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+@media (prefers-color-scheme: dark) {
+    .help-section h3 {
+        color: white;
+    }
+}
+
+.help-section p {
+    margin: 0 0 12px 0;
+    font-size: 14px;
+    line-height: 1.6;
+    color: var(--color-neutral-700, #374151);
+}
+
+@media (prefers-color-scheme: dark) {
+    .help-section p {
+        color: var(--color-neutral-300, #d1d5db);
+    }
+}
+
+.help-section ul {
+    margin: 0;
+    padding-left: 24px;
+    list-style: disc;
+}
+
+.help-section li {
+    margin-bottom: 8px;
+    font-size: 14px;
+    line-height: 1.6;
+    color: var(--color-neutral-700, #374151);
+}
+
+@media (prefers-color-scheme: dark) {
+    .help-section li {
+        color: var(--color-neutral-300, #d1d5db);
+    }
+}
+
+.help-section a {
+    color: var(--color-primary, #2563eb);
+    text-decoration: none;
+    transition: color 0.2s ease;
+}
+
+.help-section a:hover {
+    color: var(--color-primary-dark, #1e40af);
+    text-decoration: underline;
+}
+
+.help-section kbd {
+    display: inline-block;
+    padding: 2px 6px;
+    background: var(--color-neutral-100, #f3f4f6);
+    border: 1px solid var(--color-neutral-300, #d1d5db);
+    border-radius: 4px;
+    font-family: 'Monaco', 'Menlo', 'Courier New', monospace;
+    font-size: 12px;
+    color: var(--color-neutral-700, #374151);
+    box-shadow: 0 1px 2px rgba(0, 0, 0, 0.05);
+}
+
+@media (prefers-color-scheme: dark) {
+    .help-section kbd {
+        background: var(--color-neutral-700, #374151);
+        border-color: var(--color-neutral-600, #4b5563);
+        color: var(--color-neutral-300, #d1d5db);
+    }
+}
+
+
+/* ============================================
+   RESPONSIVE ADJUSTMENTS
+   ============================================ */
+
+/* Mobile */
+@media (max-width: 767px) {
+    .help-tooltip {
+        max-width: calc(100vw - 40px);
+        min-width: calc(100vw - 40px);
+        left: 20px !important;
+        right: 20px !important;
+    }
+
+    .help-tooltip-content {
+        padding: 14px;
+    }
+
+    .help-title {
+        font-size: 15px;
+        padding-right: 30px; /* Space for close button */
+    }
+
+    .help-text {
+        font-size: 13px;
+    }
+
+    .help-center-modal .modal-content {
+        max-width: 100%;
+        margin: 10px;
+        max-height: calc(100vh - 20px);
+    }
+
+    .help-center-modal .modal-body {
+        max-height: calc(100vh - 140px);
+        padding: 16px;
+    }
+
+    .help-section h3 {
+        font-size: 16px;
+    }
+
+    .help-section {
+        margin-bottom: 24px;
+    }
+}
+
+/* Tablet */
+@media (min-width: 768px) and (max-width: 1023px) {
+    .help-tooltip {
+        max-width: 400px;
+    }
+}
+
+
+/* ============================================
+   ACCESSIBILITY
+   ============================================ */
+
+/* High contrast mode support */
+@media (prefers-contrast: high) {
+    .help-tooltip-content {
+        border: 2px solid var(--color-neutral-900, #111827);
+    }
+
+    .help-icon-inline {
+        border: 1px solid var(--color-primary, #2563eb);
+        border-radius: 50%;
+    }
+}
+
+/* Reduced motion support */
+@media (prefers-reduced-motion: reduce) {
+    .help-tooltip,
+    .help-icon-inline,
+    .help-close,
+    .btn-help,
+    .help-video-link,
+    .help-external-link {
+        transition: none;
+    }
+
+    .help-tooltip {
+        transform: none;
+    }
+
+    .help-tooltip-visible {
+        transform: none;
+    }
+
+    .help-tooltip-fade-out {
+        transform: none;
+    }
+}
+
+
+/* ============================================
+   PRINT STYLES
+   ============================================ */
+
+@media print {
+    .help-icon-inline,
+    .btn-help,
+    .help-tooltip {
+        display: none !important;
+    }
+}
+
+
+/* ============================================
+   DARK MODE OVERRIDES
+   ============================================ */
+
+/* Additional dark mode refinements */
+[data-theme="dark"] .help-tooltip-content {
+    background: var(--color-neutral-800, #1f2937);
+    border-color: var(--color-neutral-700, #374151);
+}
+
+[data-theme="dark"] .help-title {
+    color: white;
+}
+
+[data-theme="dark"] .help-text {
+    color: var(--color-neutral-300, #d1d5db);
+}
+
+[data-theme="dark"] .help-tip {
+    background: rgba(245, 158, 11, 0.2);
+    color: var(--color-warning-light, #fbbf24);
+}
+
+[data-theme="dark"] .help-example {
+    background: var(--color-neutral-700, #374151);
+    color: var(--color-neutral-300, #d1d5db);
+}
+
+[data-theme="dark"] .help-schedule {
+    background: var(--color-neutral-700, #374151);
+}
+
+[data-theme="dark"] .help-schedule pre {
+    color: var(--color-neutral-300, #d1d5db);
+}
+
+[data-theme="dark"] .btn-help {
+    background: var(--color-neutral-700, #374151);
+    border-color: var(--color-neutral-600, #4b5563);
+    color: var(--color-neutral-300, #d1d5db);
+}
+
+[data-theme="dark"] .btn-help:hover {
+    background: var(--color-neutral-600, #4b5563);
+    border-color: var(--color-neutral-500, #6b7280);
+    color: white;
+}
+
+[data-theme="dark"] .help-section h3,
+[data-theme="dark"] .help-section p,
+[data-theme="dark"] .help-section li {
+    color: var(--color-neutral-300, #d1d5db);
+}
+
+[data-theme="dark"] .help-section kbd {
+    background: var(--color-neutral-700, #374151);
+    border-color: var(--color-neutral-600, #4b5563);
+    color: var(--color-neutral-300, #d1d5db);
+}
+
+
+/* ============================================
+   ANIMATIONS
+   ============================================ */
+
+@keyframes helpPulse {
+    0%, 100% {
+        opacity: 0.7;
+        transform: scale(1);
+    }
+    50% {
+        opacity: 1;
+        transform: scale(1.1);
+    }
+}
+
+/* Pulse animation for first-time help hints */
+.help-icon-inline.help-hint-new {
+    animation: helpPulse 2s ease-in-out 3;
+}
+
+
+/* ============================================
+   UTILITY CLASSES
+   ============================================ */
+
+/* Hide help icons in certain contexts */
+.no-help .help-icon-inline {
+    display: none !important;
+}
+
+/* Force help tooltip to stay open (for debugging) */
+.help-tooltip.help-tooltip-debug {
+    opacity: 1 !important;
+    transform: translateY(0) !important;
+}
