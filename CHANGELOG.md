@@ -7,6 +7,29 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [1.13.1] - 2024-11-19
+
+### Documentation
+
+- Added comprehensive fix documentation in `docs/fixes/`
+  - Created master fix roadmap (MASTER_TODO_FIXES.md)
+  - Documented P0 critical fixes (test suite, iOS Safari issues)
+  - Documented P1 high-priority iOS compatibility improvements
+  - Documented P2 medium-priority future enhancements
+  - Added fix documentation navigation index (README.md)
+  - Updated main README with links to fix docs
+  - Updated CHANGELOG with fix documentation entry
+
+### Known Issues
+
+- Test suite status documented in P0 fixes
+- iOS Safari compatibility improvements planned in P1 fixes
+- See `docs/fixes/P0_IMMEDIATE_FIXES.md` for details
+
+### Migration Notes
+
+No code changes in this release. This is a documentation-only update to track planned fixes and improvements for v1.7+.
+
 ## [1.13.0] - 2025-11-18
 
 ### Fixed
