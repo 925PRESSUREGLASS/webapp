@@ -1,5 +1,6 @@
 // @ts-check
 const { test, expect } = require('@playwright/test');
+const { initializeApp } = require('./test-helpers');
 
 const APP_URL = '/index.html';
 
@@ -13,8 +14,7 @@ const APP_URL = '/index.html';
 test.describe('Invoice System - Critical Functional Tests (P0)', () => {
 
   test.beforeEach(async ({ page }) => {
-    await page.goto(APP_URL);
-    await page.waitForLoadState('networkidle');
+    await initializeApp(page);
 
     // Clear LocalStorage for clean state
     await page.evaluate(() => {
@@ -24,6 +24,13 @@ test.describe('Invoice System - Critical Functional Tests (P0)', () => {
 
     await page.reload();
     await page.waitForLoadState('networkidle');
+
+    // Wait for APP to initialize again after reload
+    await page.evaluate(async () => {
+      if (window.APP && typeof window.APP.waitForInit === 'function') {
+        await window.APP.waitForInit();
+      }
+    });
 
     // Wait for invoice system to initialize
     await page.waitForFunction(() => {
@@ -614,14 +621,22 @@ test.describe('Invoice System - Critical Functional Tests (P0)', () => {
 test.describe('Invoice System - Known Issues (Bug Documentation)', () => {
 
   test.beforeEach(async ({ page }) => {
-    await page.goto(APP_URL);
-    await page.waitForLoadState('networkidle');
+    await initializeApp(page);
+
     await page.evaluate(() => {
       localStorage.removeItem('invoice-database');
       localStorage.removeItem('invoice-settings');
     });
     await page.reload();
     await page.waitForLoadState('networkidle');
+
+    // Wait for APP to initialize again after reload
+    await page.evaluate(async () => {
+      if (window.APP && typeof window.APP.waitForInit === 'function') {
+        await window.APP.waitForInit();
+      }
+    });
+
     await page.waitForFunction(() => {
       return typeof window.InvoiceManager !== 'undefined' && typeof window.APP !== 'undefined';
     }, { timeout: 10000 });

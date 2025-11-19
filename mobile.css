@@ -281,8 +281,9 @@ body {
 
   /* Line cards 2-column grid */
   .line-card-body {
-    grid-template-columns: repeat(2, minmax(0, 1fr));
-    gap: 10px;
+    grid-template-columns: 1fr 1fr; /* Explicit for iOS Safari 12 */
+    grid-column-gap: 10px; /* Prefixed for iOS Safari 12 */
+    grid-row-gap: 10px;
   }
 
   /* Analytics summary 2-column */

@@ -38,6 +38,23 @@
 
   // Add or update client
   function saveClient(clientData) {
+    // ENHANCED VALIDATION: Use QuoteValidation module if available
+    if (window.QuoteValidation) {
+      var validation = window.QuoteValidation.validateClient(clientData);
+      if (!validation.valid) {
+        // Show validation errors
+        if (window.QuoteValidation.showValidationErrors) {
+          window.QuoteValidation.showValidationErrors(validation.errors, 'Cannot save client');
+        } else if (window.ErrorHandler) {
+          // Fallback: show first error
+          window.ErrorHandler.showError(validation.errors[0].message);
+        }
+        console.error('[CLIENT-DB] Client validation failed:', validation.errors);
+        return null;
+      }
+    }
+
+    // Legacy validation (kept as fallback)
     if (!clientData.name || clientData.name.trim() === '') {
       if (window.ErrorHandler) {
         window.ErrorHandler.showError('Client name is required');

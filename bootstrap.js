@@ -87,8 +87,9 @@
               }
             }
 
-            // Mark as initialized
+            // Mark as initialized (both flags for backward compatibility)
             self.initialized = true;
+            self.isInitialized = true;
             console.log('[BOOTSTRAP] APP initialization complete ✅');
 
             // Dispatch custom event (for analytics, monitoring)

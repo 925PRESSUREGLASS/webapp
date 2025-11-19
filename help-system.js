@@ -72,6 +72,79 @@
             title: 'Quote Expiry Date',
             content: 'Quotes are valid for a limited time (default 30 days). This creates urgency and protects you from price changes.',
             tip: 'Use expiry as a gentle closing tool in follow-ups'
+        },
+
+        'base-fee': {
+            title: 'Base Callout Fee',
+            content: 'A fixed charge covering travel time, fuel, and initial setup. This fee is applied once per job regardless of job size.',
+            example: 'Typical range: $100-$150',
+            tip: 'Factor in your average travel distance and vehicle costs'
+        },
+
+        'hourly-rate': {
+            title: 'Hourly Rate',
+            content: 'Your labour charge per hour. This converts estimated time into dollar amounts for the quote.',
+            formula: 'Labour Cost = Hours × Hourly Rate',
+            tip: 'Consider your skill level, equipment costs, and market rates'
+        },
+
+        'minimum-job': {
+            title: 'Minimum Job Charge',
+            content: 'The lowest amount you will accept for any job. Prevents unprofitable small jobs.',
+            example: 'Common minimum: $150-$250',
+            tip: 'Should cover your base fee plus at least 30 minutes of labour'
+        },
+
+        'high-reach': {
+            title: 'High Reach Work',
+            content: 'Additional charge for windows requiring ladders, scaffolding, or special equipment. Compensates for extra time, difficulty, and safety risk.',
+            example: 'Typical modifier: 40-80% extra',
+            tip: 'Always assess safety requirements before quoting'
+        },
+
+        'contracts': {
+            title: 'Recurring Contracts',
+            content: 'Set up regular cleaning schedules for repeat clients. Automatic task creation, invoicing, and discounts for commitment.',
+            icon: '📝',
+            tip: 'Offer discounts for longer commitments (e.g. 10% for annual contracts)'
+        },
+
+        'analytics': {
+            title: 'Analytics Dashboard',
+            content: 'Track key business metrics: revenue trends, quote conversion rates, top clients, and seasonal patterns.',
+            icon: '📊',
+            tip: 'Review analytics weekly to spot trends and opportunities'
+        },
+
+        'jobs-tracking': {
+            title: 'Job Tracking',
+            content: 'Manage active jobs from quote acceptance through to completion and invoicing. Track time, status, and notes.',
+            tip: 'Update job status regularly to stay organized'
+        },
+
+        'tasks': {
+            title: 'Tasks & Follow-ups',
+            content: 'Manage all follow-up calls, emails, and SMS. Tasks are created automatically based on quote status.',
+            icon: '✓',
+            tip: 'Process your task list every morning for best results'
+        },
+
+        'customers': {
+            title: 'Customer Directory',
+            content: 'Central database of all clients. Track contact details, job history, and VIP status.',
+            tip: 'Keep client info updated for better service and communication'
+        },
+
+        'wizard-mode': {
+            title: 'Wizard Mode',
+            content: 'Guided step-by-step quote creation. Answer simple questions and let the system calculate pricing.',
+            tip: 'Fastest way to create accurate quotes on-site!'
+        },
+
+        'accordion-mode': {
+            title: 'Accordion Mode',
+            content: 'Manual quote building with collapsible sections. More control for complex or custom quotes.',
+            tip: 'Use when you need to fine-tune pricing or add special items'
         }
     };
 

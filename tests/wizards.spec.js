@@ -2,16 +2,13 @@
 // Tests the quick-entry wizard dialogs for windows and pressure cleaning
 
 const { test, expect } = require('@playwright/test');
+const { initializeApp } = require('./test-helpers');
 
 const APP_URL = '/index.html';
 
 test.describe('Window Wizard', () => {
   test.beforeEach(async ({ page }) => {
-    await page.goto(APP_URL);
-    await page.waitForLoadState('networkidle');
-    await page.evaluate(() => localStorage.clear());
-    await page.reload();
-    await page.waitForLoadState('networkidle');
+    await initializeApp(page);
 
     // Open window wizard
     await page.click('#openWindowWizardBtn');
@@ -45,11 +42,7 @@ test.describe('Window Wizard', () => {
 
 test.describe('Pressure Wizard', () => {
   test.beforeEach(async ({ page }) => {
-    await page.goto(APP_URL);
-    await page.waitForLoadState('networkidle');
-    await page.evaluate(() => localStorage.clear());
-    await page.reload();
-    await page.waitForLoadState('networkidle');
+    await initializeApp(page);
 
     // Open pressure wizard
     await page.click('#openPressureWizardBtn');

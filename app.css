@@ -389,7 +389,16 @@ body.accordion-mode .card-body.card-body-open {
 .lines-list {
   display: flex;
   flex-direction: column;
-  gap: 6px;
+  /* gap: 6px; */ /* Not supported in iOS Safari 12 flexbox */
+}
+
+/* Fallback spacing for iOS Safari 12 */
+.lines-list > * {
+  margin-bottom: 6px;
+}
+
+.lines-list > *:last-child {
+  margin-bottom: 0;
 }
 
 /* LINE CARD */
@@ -425,8 +434,9 @@ body.accordion-mode .card-body.card-body-open {
 
 .line-card-body {
   display: grid;
-  grid-template-columns: repeat(3, minmax(0, 1fr));
-  gap: 6px;
+  grid-template-columns: 1fr 1fr 1fr; /* Explicit fractions for iOS Safari 12 */
+  grid-column-gap: 6px; /* Prefixed for iOS Safari 12 */
+  grid-row-gap: 6px;
   margin-top: 4px;
 }
 

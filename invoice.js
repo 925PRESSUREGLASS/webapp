@@ -283,7 +283,22 @@
 
     var state = window.APP.getState();
 
-    // Validate quote has items
+    // ENHANCED VALIDATION: Use QuoteValidation module if available
+    if (window.QuoteValidation) {
+      var validation = window.QuoteValidation.validateForInvoice(state);
+      if (!validation.valid) {
+        // Show detailed validation errors
+        if (window.QuoteValidation.showValidationErrors) {
+          window.QuoteValidation.showValidationErrors(validation.errors, 'Cannot create invoice');
+        } else if (window.ErrorHandler) {
+          window.ErrorHandler.showError('Quote validation failed. Please fix errors and try again.');
+        }
+        console.error('[INVOICE] Quote validation failed:', validation.errors);
+        return null;
+      }
+    }
+
+    // Legacy validation (kept as fallback)
     var hasItems = (state.windowLines && state.windowLines.length > 0) ||
                    (state.pressureLines && state.pressureLines.length > 0);
 

@@ -126,6 +126,13 @@
     if (!autosaveEnabled) return;
 
     var currentState = buildStateFromUI(true);
+
+    // Validate before autosave (less strict - only checks critical fields)
+    if (window.QuoteValidation && !window.QuoteValidation.validateForAutosave(currentState)) {
+      console.warn('[APP] Skipping autosave - quote validation failed');
+      return;
+    }
+
     try {
       AppStorage.saveState(currentState);
     } catch (e) {
@@ -1082,13 +1089,23 @@ $("totalIncGstDisplay").textContent = formatMoney(totalIncGst);
     renderSavedQuotesOptions(savedQuotes);
 
     $("saveQuoteBtn").addEventListener("click", function () {
+      // Use defaults for missing fields when saving
+      var currentState = buildStateFromUI(true, true);
+
+      // Validate before save (strict validation)
+      if (window.QuoteValidation) {
+        var validation = window.QuoteValidation.validateForSave(currentState);
+        if (!validation.valid) {
+          window.QuoteValidation.showValidationErrors(validation.errors, 'Cannot save quote');
+          return;
+        }
+      }
+
       var quoteName = prompt("Enter a name for this quote:");
       if (!quoteName || quoteName.trim() === "") {
         return;
       }
 
-      // Use defaults for missing fields when saving
-      var currentState = buildStateFromUI(true, true);
       var newQuote = {
         id: "q" + Date.now(),
         title: quoteName.trim(),
@@ -1707,10 +1724,6 @@ $("totalIncGstDisplay").textContent = formatMoney(totalIncGst);
 
     // First recalc
     recalculate();
-
-    // Mark app as initialized for testing (both flags for compatibility)
-    APP.isInitialized = true;
-    APP.initialized = true;
 
     window.DEBUG.log('[APP] Application initialized successfully');
   }

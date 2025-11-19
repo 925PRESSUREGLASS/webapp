@@ -161,7 +161,7 @@
 					<div class="sec-b" id="configBody">
 						<div class="config-grid">
 							<!-- BASE FEE -->
-							<label class="field">
+							<label class="field" data-help="base-fee">
 								<span class="field-label">Base Callout Fee ($)</span>
 								<input id="baseFeeInput" type="number" min="0" step="1" value="120" inputmode="decimal" />
 								<small class="field-help">
@@ -170,7 +170,7 @@
 							</label>
 
 							<!-- HOURLY RATE -->
-							<label class="field">
+							<label class="field" data-help="hourly-rate">
 								<span class="field-label">Hourly Rate ($/hr)</span>
 								<input id="hourlyRateInput" type="number" min="0" step="1" value="95" inputmode="decimal" />
 								<small class="field-help">
@@ -179,7 +179,7 @@
 							</label>
 
 							<!-- MINIMUM JOB -->
-							<label class="field">
+							<label class="field" data-help="minimum-job">
 								<span class="field-label">Minimum Job Charge ($)</span>
 								<input id="minimumJobInput" type="number" min="0" step="1" value="180" inputmode="decimal" />
 								<small class="field-help">
@@ -188,7 +188,7 @@
 							</label>
 
 							<!-- HIGH REACH MODIFIER -->
-							<label class="field">
+							<label class="field" data-help="high-reach">
 								<span class="field-label">High Reach Modifier (%)</span>
 								<input id="highReachModifierInput" type="number" min="0" step="5" value="60" inputmode="decimal" />
 								<small class="field-help">
@@ -647,9 +647,14 @@
 			<!-- Header -->
 			<div class="page-header">
 				<h1>Tasks & Follow-ups</h1>
-				<button class="btn btn-primary btn-sm" onclick="showNewTaskModal()" aria-label="Create new task">
-					+ New Task
-				</button>
+				<div class="page-actions">
+					<button class="btn btn-tertiary btn-sm" onclick="if(window.HelpSystem){HelpSystem.showHelpCenter();}else{alert('Help system loading...');}" aria-label="Show help" title="Help & Documentation">
+						❓ Help
+					</button>
+					<button class="btn btn-primary btn-sm" onclick="showNewTaskModal()" aria-label="Create new task">
+						+ New Task
+					</button>
+				</div>
 			</div>
 
 			<!-- Task Summary Cards -->
@@ -739,6 +744,9 @@
 				<div style="display: flex; gap: 0.5rem;">
 					<button class="btn btn-tertiary btn-sm" onclick="backToQuotes()" aria-label="Back to quotes">
 						← Back to Quotes
+					</button>
+					<button class="btn btn-tertiary btn-sm" onclick="if(window.HelpSystem){HelpSystem.showHelpCenter();}else{alert('Help system loading...');}" aria-label="Show help" title="Help & Documentation">
+						❓ Help
 					</button>
 					<button class="btn btn-primary btn-sm" onclick="openAddCustomerModal()" aria-label="Add new customer">
 						+ Add Customer
@@ -1162,6 +1170,9 @@
 			<div class="page-header">
 				<h1>📋 Jobs</h1>
 				<div class="page-actions">
+					<button class="btn btn-tertiary" onclick="if(window.HelpSystem){HelpSystem.showHelpCenter();}else{alert('Help system loading...');}" aria-label="Show help" title="Help & Documentation">
+						❓ Help
+					</button>
 					<button class="btn btn-primary" onclick="showCreateJobDialog()">
 						➕ Create Job
 					</button>
@@ -1252,6 +1263,9 @@
 				<button class="btn btn-secondary btn-sm" onclick="navigateTo('jobs')">← Jobs</button>
 				<h1 id="job-title">Job #JOB-0001</h1>
 				<div class="page-actions">
+					<button class="btn btn-tertiary btn-sm" onclick="if(window.HelpSystem){HelpSystem.showHelpCenter();}else{alert('Help system loading...');}" aria-label="Show help" title="Help & Documentation">
+						❓ Help
+					</button>
 					<button class="btn btn-danger" id="complete-job-btn" onclick="JobTrackingUI.showCompleteJobDialog()">
 						✓ Complete Job
 					</button>
@@ -1374,6 +1388,9 @@
 		<div class="container">
 			<div class="page-header">
 				<h1>Pricing Insights</h1>
+				<button class="btn btn-tertiary btn-sm" onclick="if(window.HelpSystem){HelpSystem.showHelpCenter();}else{alert('Help system loading...');}" aria-label="Show help" title="Help & Documentation">
+					❓ Help
+				</button>
 				<p class="subtitle">Learn from completed jobs to improve accuracy</p>
 			</div>
 
@@ -1516,6 +1533,9 @@
 				<button class="btn btn-secondary btn-sm" onclick="backToQuotes()">← Back</button>
 				<h1>📝 Contract Management</h1>
 				<div class="page-actions">
+					<button class="btn btn-tertiary" onclick="if(window.HelpSystem){HelpSystem.showHelpCenter();}else{alert('Help system loading...');}" aria-label="Show help" title="Help & Documentation">
+						❓ Help
+					</button>
 					<button class="btn btn-primary" onclick="openContractWizard()" aria-label="Create new contract">
 						➕ New Contract
 					</button>
@@ -1597,6 +1617,9 @@
 				<button class="btn btn-secondary btn-sm" onclick="backToQuotes()">← Back</button>
 				<h1>📊 Analytics Dashboard</h1>
 				<div class="page-actions">
+					<button class="btn btn-tertiary" onclick="if(window.HelpSystem){HelpSystem.showHelpCenter();}else{alert('Help system loading...');}" aria-label="Show help" title="Help & Documentation">
+						❓ Help
+					</button>
 					<select id="analytics-period" class="form-select" onchange="updateAnalyticsPeriod()" style="width: auto;">
 						<option value="7">Last 7 Days</option>
 						<option value="30" selected>Last 30 Days</option>
@@ -1981,6 +2004,8 @@
 	<script src="security.js"></script>
 	<!-- Validation system (no defer - must be available before invoice and other modules) -->
 	<script src="validation.js"></script>
+	<!-- Quote validation system (no defer - must be available before app.js) -->
+	<script src="quote-validation.js"></script>
 	<!-- UI Components (toast, loading, modals) - no defer for immediate availability -->
 	<script src="ui-components.js"></script>
 	<!-- Lazy loader for on-demand module loading -->
@@ -2096,6 +2121,7 @@
 	<script src="pricing-intelligence.js" defer></script>
 	<script src="photo-comparison.js" defer></script>
 	<script src="job-tracking-ui.js" defer></script>
+	<script src="job-tracking-global.js" defer></script>
 
 	<!-- Production Configuration (loads last to override development settings) -->
 	<script src="config-production.js" defer></script>
@@ -2577,131 +2603,7 @@
 			}
 		}
 
-		/**
-		 * Show create job dialog
-		 */
-		function showCreateJobDialog() {
-			var modal = document.getElementById('create-job-modal');
-			if (!modal) return;
-
-			// Populate quote select dropdown
-			var select = document.getElementById('create-job-quote-select');
-			if (select) {
-				select.innerHTML = '<option value="">-- Select a quote --</option>';
-
-				// Get saved quotes
-				var savedQuotes = Storage.get('tictacstick_saved_quotes_v1') || [];
-				for (var i = 0; i < savedQuotes.length; i++) {
-					var quote = savedQuotes[i];
-					var option = document.createElement('option');
-					option.value = quote.id;
-					option.textContent = (quote.title || 'Untitled Quote') + ' - ' + (quote.clientName || 'No client') + ' - $' + (quote.total || 0).toFixed(2);
-					select.appendChild(option);
-				}
-			}
-
-			// Set default date to tomorrow
-			var tomorrow = new Date();
-			tomorrow.setDate(tomorrow.getDate() + 1);
-			var dateInput = document.getElementById('create-job-scheduled-date');
-			if (dateInput) {
-				dateInput.value = tomorrow.toISOString().split('T')[0];
-			}
-
-			modal.style.display = 'flex';
-		}
-
-		/**
-		 * Close create job dialog
-		 */
-		function closeCreateJobDialog() {
-			var modal = document.getElementById('create-job-modal');
-			if (modal) {
-				modal.style.display = 'none';
-			}
-		}
-
-		/**
-		 * Create job from quote
-		 */
-		function createJobFromQuote() {
-			var select = document.getElementById('create-job-quote-select');
-			var dateInput = document.getElementById('create-job-scheduled-date');
-			var timeInput = document.getElementById('create-job-scheduled-time');
-
-			if (!select || !select.value) {
-				alert('Please select a quote');
-				return;
-			}
-
-			var quoteId = select.value;
-			var date = dateInput ? dateInput.value : '';
-			var time = timeInput ? timeInput.value : '09:00';
-
-			if (!date) {
-				alert('Please select a scheduled date');
-				return;
-			}
-
-			// Combine date and time into ISO string
-			var scheduledDateTime = new Date(date + 'T' + time + ':00').toISOString();
-
-			// Create job
-			var job = window.JobManager.createFromQuote(quoteId, scheduledDateTime);
-
-			if (job) {
-				closeCreateJobDialog();
-
-				if (window.UIComponents && window.UIComponents.showToast) {
-					window.UIComponents.showToast('Job created: ' + job.jobNumber, 'success');
-				}
-
-				// Refresh jobs list if on jobs page
-				if (window.JobTrackingUI && window.JobTrackingUI.renderJobsList) {
-					window.JobTrackingUI.renderJobsList('all');
-				}
-
-				// Navigate to the new job
-				setTimeout(function() {
-					if (window.JobTrackingUI && window.JobTrackingUI.openJob) {
-						window.JobTrackingUI.openJob(job.id);
-					}
-				}, 500);
-			} else {
-				alert('Failed to create job');
-			}
-		}
-
-		/**
-		 * Generate invoice from job (called from jobs list)
-		 */
-		function generateJobInvoiceFromList(jobId) {
-			if (!window.JobManager) return;
-
-			var invoice = window.JobManager.generateInvoice(jobId);
-
-			if (invoice) {
-				if (window.UIComponents && window.UIComponents.showToast) {
-					window.UIComponents.showToast('Invoice generated: ' + invoice.invoiceNumber, 'success');
-				}
-
-				// Refresh jobs list
-				if (window.JobTrackingUI && window.JobTrackingUI.renderJobsList) {
-					window.JobTrackingUI.renderJobsList('all');
-				}
-
-				// Ask if user wants to view invoice
-				setTimeout(function() {
-					if (confirm('Invoice created! View invoice now?')) {
-						if (window.navigateTo) {
-							window.navigateTo('invoices');
-						}
-					}
-				}, 500);
-			} else {
-				alert('Failed to generate invoice');
-			}
-		}
+		// Job creation functions (showCreateJobDialog, closeCreateJobDialog, createJobFromQuote, generateJobInvoiceFromList) are now defined in job-tracking-global.js
 	</script>
 
 	<!-- Contract Page Helper Functions & UI Controller -->
