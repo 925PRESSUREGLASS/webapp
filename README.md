@@ -55,6 +55,19 @@ Professional quoting tool for **925 Pressure Glass** - Window & Pressure Cleanin
 - Client-side only - works anywhere
 - LocalStorage for data persistence
 
+## 📋 Fix Documentation
+
+TicTacStick v1.7+ is under active development. Comprehensive fix documentation is available:
+
+- **[Master Fix Roadmap](docs/fixes/MASTER_TODO_FIXES.md)** - Complete overview of all planned fixes
+- **[P0 Critical Fixes](docs/fixes/P0_IMMEDIATE_FIXES.md)** - Immediate blockers (test suite, iOS Safari)
+- **[P1 High Priority](docs/fixes/P1_HIGH_PRIORITY_FIXES.md)** - iOS Safari compatibility improvements
+- **[P2 Medium Priority](docs/fixes/P2_MEDIUM_PRIORITY_FIXES.md)** - Future enhancements and architecture improvements
+
+For a navigation index of all fix documentation, see [docs/fixes/README.md](docs/fixes/README.md).
+
+**Current Status:** Production-ready with known areas for improvement. See P0 documentation for immediate action items.
+
 ## Getting Started
 
 ### Quick Start
@@ -101,6 +114,19 @@ Comprehensive automated tests using Playwright:
 - **Wizard Tests** - Validate quick-entry dialogs
 - **Cross-Browser Tests** - Chrome, Firefox, Safari, Mobile browsers
 - **Responsive Tests** - Mobile and tablet viewports
+
+### Running Tests
+
+```bash
+# Run all tests
+npm test
+
+# Run specific test suite
+npm test tests/unit/storage.test.js
+
+# Known Issues:
+# See docs/fixes/P0_IMMEDIATE_FIXES.md for details on current test status
+```
 
 ## Browser Support
 
