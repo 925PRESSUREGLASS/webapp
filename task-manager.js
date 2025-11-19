@@ -9,7 +9,20 @@
   var STORAGE_KEY = 'tts_tasks';
 
   /**
-   * Create task object structure
+   * Create task object structure with default values
+   * @param {Object} config - Task configuration object
+   * @param {string} [config.quoteId] - Associated quote ID
+   * @param {string} [config.clientId] - Associated client ID
+   * @param {string} [config.type='follow-up'] - Task type: follow-up, phone-call, email, sms, meeting
+   * @param {string} [config.priority='normal'] - Priority: urgent, high, normal, low
+   * @param {string} [config.title=''] - Task title
+   * @param {string} [config.description=''] - Task description
+   * @param {Date|string} [config.dueDate] - Due date (ISO string or Date object)
+   * @param {Date|string} [config.scheduledDate] - Scheduled date
+   * @param {string} [config.assignedTo='Gerry'] - Person assigned to task
+   * @param {string} [config.followUpType] - Follow-up type: sms, email, phone-call
+   * @param {string} [config.followUpMessage=''] - Message template for follow-up
+   * @returns {Object} Complete task object with all fields initialized
    */
   function createTaskObject(config) {
     return {
@@ -51,6 +64,7 @@
 
   /**
    * Get all tasks from LocalStorage
+   * @returns {Array<Object>} Array of all task objects, or empty array if error
    */
   function getAllTasks() {
     try {
@@ -64,6 +78,8 @@
 
   /**
    * Save all tasks to LocalStorage
+   * @param {Array<Object>} tasks - Array of task objects to save
+   * @returns {boolean} True if save succeeded, false if failed
    */
   function saveTasks(tasks) {
     try {
@@ -80,6 +96,8 @@
 
   /**
    * Get task by ID
+   * @param {string} taskId - Unique task identifier
+   * @returns {Object|null} Task object if found, null if not found
    */
   function getTask(taskId) {
     var tasks = getAllTasks();
@@ -92,7 +110,9 @@
   }
 
   /**
-   * Create new task
+   * Create new task and save to LocalStorage
+   * @param {Object} config - Task configuration (see createTaskObject for full structure)
+   * @returns {Object|null} Created task object with generated ID, or null if save failed
    */
   function createTask(config) {
     var task = createTaskObject(config);
@@ -115,6 +135,8 @@
 
   /**
    * Update existing task
+   * @param {Object} updatedTask - Task object with updated fields (must include id)
+   * @returns {boolean} True if update succeeded, false if task not found or save failed
    */
   function updateTask(updatedTask) {
     var tasks = getAllTasks();
@@ -144,7 +166,10 @@
   }
 
   /**
-   * Complete task
+   * Mark task as completed with optional completion notes
+   * @param {string} taskId - Task ID to complete
+   * @param {string} [notes] - Optional completion notes
+   * @returns {boolean} True if completed successfully, false if task not found or save failed
    */
   function completeTask(taskId, notes) {
     var task = getTask(taskId);
@@ -173,7 +198,10 @@
   }
 
   /**
-   * Cancel task
+   * Cancel task with optional reason
+   * @param {string} taskId - Task ID to cancel
+   * @param {string} [reason] - Optional cancellation reason
+   * @returns {boolean} True if cancelled successfully, false if task not found or save failed
    */
   function cancelTask(taskId, reason) {
     var task = getTask(taskId);
@@ -201,7 +229,9 @@
   }
 
   /**
-   * Delete task
+   * Delete task permanently from LocalStorage
+   * @param {string} taskId - Task ID to delete
+   * @returns {boolean} True if deleted successfully, false if task not found or save failed
    */
   function deleteTask(taskId) {
     var tasks = getAllTasks();
@@ -224,7 +254,9 @@
   }
 
   /**
-   * Get tasks for specific quote
+   * Get all tasks associated with a specific quote
+   * @param {string} quoteId - Quote ID to filter by
+   * @returns {Array<Object>} Array of tasks linked to this quote
    */
   function getTasksForQuote(quoteId) {
     var tasks = getAllTasks();
@@ -234,7 +266,8 @@
   }
 
   /**
-   * Get pending tasks
+   * Get all tasks with pending or in-progress status
+   * @returns {Array<Object>} Array of active tasks
    */
   function getPendingTasks() {
     var tasks = getAllTasks();
@@ -244,7 +277,8 @@
   }
 
   /**
-   * Get overdue tasks
+   * Get all overdue tasks (past due date or marked as overdue)
+   * @returns {Array<Object>} Array of overdue tasks
    */
   function getOverdueTasks() {
     var tasks = getAllTasks();
@@ -270,7 +304,8 @@
   }
 
   /**
-   * Get today's tasks
+   * Get tasks due today (pending or in-progress with today's due date)
+   * @returns {Array<Object>} Array of tasks due today
    */
   function getTodaysTasks() {
     var tasks = getAllTasks();
@@ -294,7 +329,8 @@
   }
 
   /**
-   * Get urgent tasks
+   * Get all urgent priority tasks (pending or in-progress only)
+   * @returns {Array<Object>} Array of urgent tasks
    */
   function getUrgentTasks() {
     var tasks = getAllTasks();
@@ -306,6 +342,10 @@
 
   /**
    * Add note to task
+   * @param {string} taskId - Task ID to add note to
+   * @param {string} noteText - Note text content
+   * @param {string} [noteType='general'] - Note type (general, completion, system, etc.)
+   * @returns {boolean} True if note added successfully, false if task not found or save failed
    */
   function addTaskNote(taskId, noteText, noteType) {
     var task = getTask(taskId);
@@ -324,7 +364,10 @@
   }
 
   /**
-   * Update task status
+   * Update task status and add automatic status change note
+   * @param {string} taskId - Task ID to update
+   * @param {string} newStatus - New status (pending, in-progress, completed, cancelled, overdue)
+   * @returns {boolean} True if status updated successfully, false if task not found or save failed
    */
   function updateTaskStatus(taskId, newStatus) {
     var task = getTask(taskId);
@@ -352,7 +395,9 @@
   }
 
   /**
-   * Check for overdue tasks and update status
+   * Check for overdue tasks and automatically update their status
+   * Runs every minute via setInterval
+   * @returns {boolean} True if any tasks were marked as overdue
    */
   function checkOverdueTasks() {
     var tasks = getAllTasks();
@@ -389,7 +434,9 @@
   }
 
   /**
-   * Clean up old completed tasks
+   * Clean up old completed/cancelled tasks older than specified days
+   * @param {number} [daysOld=90] - Number of days old before cleanup (default: 90)
+   * @returns {number} Number of tasks removed
    */
   function cleanupOldTasks(daysOld) {
     daysOld = daysOld || 90; // Default 90 days
@@ -418,7 +465,16 @@
   }
 
   /**
-   * Get task statistics
+   * Get comprehensive task statistics
+   * @returns {Object} Statistics object with counts by status, priority, and type
+   * @returns {number} .total - Total number of tasks
+   * @returns {number} .pending - Number of pending tasks
+   * @returns {number} .inProgress - Number of in-progress tasks
+   * @returns {number} .completed - Number of completed tasks
+   * @returns {number} .cancelled - Number of cancelled tasks
+   * @returns {number} .overdue - Number of overdue tasks
+   * @returns {Object} .byPriority - Counts by priority level (urgent, high, normal, low)
+   * @returns {Object} .byType - Counts by task type
    */
   function getTaskStats() {
     var tasks = getAllTasks();

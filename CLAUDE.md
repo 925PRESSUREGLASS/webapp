@@ -1,7 +1,7 @@
 # CLAUDE.md - AI Assistant Guide for TicTacStick Quote Engine
 
-**Last Updated:** 2025-11-18
-**Version:** 1.12.0
+**Last Updated:** 2025-11-19
+**Version:** 1.13.0
 **Project:** TicTacStick Quote Engine for 925 Pressure Glass
 
 ---
@@ -235,6 +235,13 @@ This release adds comprehensive contract management for recurring services, enha
 - Testing infrastructure ensures production quality
 - Help system provides user guidance throughout app
 - All modules maintain ES5 compatibility and offline-first architecture
+
+**Test Infrastructure Update (November 2025):**
+- Fixed critical Service Worker test hanging issue
+- Playwright configuration updated to block SW registration during tests
+- Sequential test execution prevents SW state conflicts
+- Comprehensive manual testing checklist created ([MANUAL_TESTING_v1.12.0.md](MANUAL_TESTING_v1.12.0.md))
+- See [Testing](#testing) section for details on Service Worker fix
 
 ---
 
@@ -1364,23 +1371,71 @@ function saveState(data) {
 Tests use Playwright v1.56.1 configured in `playwright.config.js`:
 
 ```javascript
-module.exports = {
+module.exports = defineConfig({
   testDir: './tests',
-  timeout: 30000,
-  retries: 2,
+  fullyParallel: false,  // Run sequentially to avoid Service Worker conflicts
+  forbidOnly: !!process.env.CI,
+  retries: process.env.CI ? 2 : 1,
+  workers: 1,  // Single worker to prevent SW state leakage
+  reporter: 'list',
   use: {
-    baseURL: 'http://localhost:8080',
-    headless: true,
+    baseURL: 'http://localhost:3000',
+    trace: 'on-first-retry',
     screenshot: 'only-on-failure',
-    video: 'retain-on-failure'
+    video: 'retain-on-failure',
+    serviceWorkers: 'block',  // Block Service Worker registration during tests
+    launchOptions: {
+      args: [
+        '--disable-dev-shm-usage',
+        '--no-sandbox',
+        '--disable-setuid-sandbox',
+        '--disable-gpu',
+        '--single-process',
+        '--no-zygote'
+      ]
+    }
+  },
+  webServer: {
+    command: 'npx http-server -p 3000 -c-1',
+    port: 3000,
+    reuseExistingServer: !process.env.CI,
+    timeout: 120000,
   },
   projects: [
-    { name: 'chromium', use: { browserName: 'chromium' } },
-    { name: 'firefox', use: { browserName: 'firefox' } },
-    { name: 'webkit', use: { browserName: 'webkit' } }
-  ]
-};
+    {
+      name: 'chromium',
+      use: { ...devices['Desktop Chrome'] },
+    },
+  ],
+});
 ```
+
+**CRITICAL: Service Worker Configuration (v1.12.0)**
+
+The application uses a Service Worker (`sw.js`) for PWA offline functionality. However, this causes test infrastructure issues:
+
+**The Problem:**
+- Service Worker registers on page load via `index.html`
+- Creates persistent background process with event listeners
+- Survives page navigation and browser context switches
+- Has `self.clients.claim()` which forces immediate control
+- Blocks proper browser cleanup between test files
+- With parallel execution, causes race conditions and infinite hangs
+
+**The Fix:**
+Three critical configuration changes were made to prevent Service Worker interference:
+
+1. **`serviceWorkers: 'block'`** - Prevents SW registration during tests
+2. **`fullyParallel: false`** - Runs test files sequentially to avoid SW conflicts
+3. **`workers: 1`** - Single worker prevents SW state leakage between parallel tests
+
+**Trade-offs:**
+- Sequential execution is slower (~6-7 hours for 397 tests)
+- But tests now run reliably without hanging
+- Production SW functionality is tested separately via manual testing
+
+**Manual Testing Required:**
+Due to test infrastructure limitations with Service Workers, comprehensive manual testing is required for PWA features. See [MANUAL_TESTING_v1.12.0.md](MANUAL_TESTING_v1.12.0.md) for the complete checklist.
 
 ### Running a Local Server for Tests
 

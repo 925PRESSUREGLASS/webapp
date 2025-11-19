@@ -1959,10 +1959,7 @@
 	</div>
 
 	<!-- SCRIPTS -->
-	<!-- Config must load FIRST to define global constants -->
-	<script src="config.js"></script>
-
-	<!-- Bootstrap must load SECOND to create APP namespace -->
+	<!-- Bootstrap must load FIRST to create APP namespace -->
 	<script src="bootstrap.js"></script>
 
 	<!-- Capacitor Core (for native mobile app features) -->
@@ -3006,9 +3003,16 @@
 		// Export all data using BackupManager
 		function exportAllData() {
 			try {
-				if (window.BackupManager && window.BackupManager.downloadBackup) {
-					// Use downloadBackup() which handles everything correctly
-					window.BackupManager.downloadBackup();
+				if (window.BackupManager && window.BackupManager.exportAllData) {
+					var data = window.BackupManager.exportAllData();
+					var json = JSON.stringify(data, null, 2);
+					var blob = new Blob([json], { type: 'application/json' });
+					var url = URL.createObjectURL(blob);
+					var a = document.createElement('a');
+					a.href = url;
+					a.download = 'tictacstick-backup-' + Date.now() + '.json';
+					a.click();
+					URL.revokeObjectURL(url);
 
 					// Update last backup date
 					localStorage.setItem('tts_last_backup_timestamp', Date.now());
@@ -3050,8 +3054,17 @@
 					var data = JSON.parse(e.target.result);
 
 					if (window.BackupManager && window.BackupManager.importBackup) {
-						// importBackup handles toast notifications and page reload internally
-						window.BackupManager.importBackup(JSON.stringify(data));
+						var result = window.BackupManager.importBackup(data);
+						if (result.success) {
+							if (window.UIComponents && window.UIComponents.showToast) {
+								window.UIComponents.showToast('Backup restored successfully! Reloading...', 'success');
+							}
+							setTimeout(function() {
+								location.reload();
+							}, 2000);
+						} else {
+							throw new Error(result.message || 'Import failed');
+						}
 					} else {
 						console.warn('[SETTINGS] BackupManager not available');
 						alert('Backup system not loaded yet. Please try again in a moment.');
@@ -3279,10 +3292,10 @@
 					window.TaskDashboardUI.render();
 				} else if (page === 'contracts' && window.ContractManager && window.ContractManager.renderContractsList) {
 					window.ContractManager.renderContractsList();
-				} else if (page === 'analytics-dashboard' && window.AnalyticsDashboard && window.AnalyticsDashboard.updateDashboard) {
-					window.AnalyticsDashboard.updateDashboard();
-				} else if (page === 'help' && window.HelpSystem && window.HelpSystem.refresh) {
-					window.HelpSystem.refresh();
+				} else if (page === 'analytics-dashboard' && window.AnalyticsDashboard && window.AnalyticsDashboard.init) {
+					window.AnalyticsDashboard.init();
+				} else if (page === 'help' && window.HelpSystem && window.HelpSystem.init) {
+					window.HelpSystem.init();
 				} else if (page === 'settings' && window.initSettingsPage) {
 					window.initSettingsPage();
 				} else if (page === 'jobs' && window.JobTrackingUI && window.JobTrackingUI.initJobsPage) {

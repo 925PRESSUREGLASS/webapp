@@ -15,15 +15,11 @@
 
   // Define modules that can be lazy loaded
   var MODULE_PATHS = {
-    'analytics': '/analytics.js',
+    // NOTE: analytics.js is NOT lazy-loaded because it's needed immediately
+    // for core functionality (saving quotes to history). Tests expect it to be available.
     'charts': '/charts.js',
-    'invoice': '/invoice.js',
-    'import-export': '/import-export.js',
-    'export': '/export.js',
-    'photo-modal': '/photo-modal.js',
-    'templates': '/templates.js',
-    'client-database': '/client-database.js',
-    'quote-workflow': '/quote-workflow.js'
+    'photo-modal': '/photo-modal.js'
+    // NOTE: Removed other modules from lazy loading as they're needed at app start
   };
 
   // External libraries

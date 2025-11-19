@@ -611,6 +611,7 @@ test.describe('Quote Analytics', () => {
       });
 
       // GST should be 1/11th of total (10% of subtotal)
+      // Formula matches Money.extractGST() implementation
       const expectedGst = entry.total * 0.1 / 1.1;
       expect(entry.gst).toBeCloseTo(expectedGst, 2);
     });

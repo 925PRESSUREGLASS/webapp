@@ -2,18 +2,21 @@
 
 Professional quoting tool for **925 Pressure Glass** - Window & Pressure Cleaning services.
 
-**Current Version:** v1.5 | [See What's New](IMPROVEMENTS_V1.5.md)
+**Current Version:** v1.13.0 | [See Changelog](CHANGELOG.md)
 
 ## Features
 
 ### Core Functionality
 - **Window Cleaning Quotes** - 6 window types with customizable pricing
-- **Pressure Cleaning Quotes** - 5 surface types with area-based calculations
+- **Pressure Cleaning Quotes** - 60+ surface types with area-based calculations
 - **Smart Pricing Engine** - GST calculations, high-reach premiums, minimum job enforcement
 - **Quote Management** - Autosave, save/load multiple quotes, presets
-- **Export Options** - PDF, CSV/Excel, copy to clipboard for SMS/email
+- **Export Options** - PDF generation, CSV/Excel, copy to clipboard for SMS/email
 - **Visual Analytics** - Real-time cost breakdown with Chart.js visualizations
 - **Quote Templates** - 5 built-in templates + save custom templates
+- **Invoice System** - Convert quotes to invoices, payment tracking, tax compliance
+- **Client Database** - CRM functionality with contact management and history
+- **Quote Workflow** - Status tracking (draft, sent, accepted, declined, completed)
 
 ### Progressive Web App (PWA)
 - **Offline Capability** - Works without internet connection via Service Worker
@@ -24,7 +27,7 @@ Professional quoting tool for **925 Pressure Glass** - Window & Pressure Cleanin
 ### Productivity Features
 - **Keyboard Shortcuts** - Power-user shortcuts for common actions (see [KEYBOARD_SHORTCUTS.md](KEYBOARD_SHORTCUTS.md))
 - **Toast Notifications** - Visual feedback for actions
-- **Professional Print Layout** - Optimized PDF export with clean formatting
+- **Professional Print Layout** - Optimized PDF export with clean formatting and letterhead
 - **Quick Help** - Press `?` to see available shortcuts
 - **Error Handling** - LocalStorage quota warnings, validation, offline detection
 - **Form Validation** - Real-time validation with helpful error messages
@@ -34,6 +37,17 @@ Professional quoting tool for **925 Pressure Glass** - Window & Pressure Cleanin
 - **Loading States** - Clear feedback for async operations (photo processing, analytics, exports)
 - **Enhanced Accessibility** - ARIA labels, keyboard navigation, screen reader support
 - **Performance Optimization** - Input debouncing for smooth calculation updates
+
+### Advanced Features (v1.10-v1.13)
+- **PDF Generation Suite** - Professional PDF quotes with customizable branding
+- **Contract Management** - Recurring service contracts with automated billing and MRR/ARR tracking
+- **Task Management** - Follow-up automation with GoHighLevel CRM integration
+- **Enhanced Analytics** - Advanced reporting with conversion funnels and cohort analysis
+- **Mobile Features** - Camera integration, geolocation, push notifications
+- **Backup System** - Comprehensive backup and restore with cloud storage ready
+- **Testing Infrastructure** - Production-ready testing framework and manual checklists
+- **Help System** - In-app contextual help and interactive tutorials
+- **Production Tools** - Pre-deployment validation, health monitoring, bug tracking
 
 ### Technology
 - Pure Vanilla JavaScript (ES5-compatible for iOS Safari)
@@ -243,36 +257,48 @@ Document jobs with before/after photos:
 
 ## Recent Improvements
 
-### v1.4 (Latest)
-- ✅ Dark/Light theme toggle with system preference
-- ✅ Quote history tracking (last 100 quotes)
-- ✅ Business analytics dashboard
-- ✅ Photo upload with automatic compression
-- ✅ Base64 photo storage for offline use
-- ✅ Enhanced UI with new panels
+### v1.13.0 (Latest - 2025-11-18)
+- ✅ Fixed 4 XSS security vulnerabilities in user input handling
+- ✅ Fixed critical production blocker (missing file reference)
+- ✅ Fixed calculation edge case in window cleaning quotes
+- ✅ Fixed modal structure for customer/job creation
+- ✅ Added complete Jobs tracking feature with UI
+- ✅ Optimized wizard UX with design system components
+- ✅ Integration completion improved: 72% → 88%
 
-### v1.3
-- ✅ CSV/Excel export functionality
-- ✅ Quote templates system (5 built-in + custom)
-- ✅ Enhanced error handling and validation
-- ✅ LocalStorage quota monitoring
-- ✅ Offline status detection
-- ✅ Real-time form validation
+### v1.12.0 (2025-11-18)
+- ✅ Contract management system with recurring billing
+- ✅ Enhanced analytics with interactive dashboards
+- ✅ Mobile/native features (camera, geolocation, push notifications)
+- ✅ Comprehensive backup and restore system
+- ✅ Complete testing infrastructure (browser-based + manual)
+- ✅ In-app contextual help system
+- ✅ Production configuration management
+- ✅ ~10,000 lines of new code across 19 modules
 
-### v1.2
-- ✅ Added keyboard shortcuts for power users
-- ✅ Created professional print stylesheet for PDFs
-- ✅ Added toast notifications for user feedback
-- ✅ Generated PWA app icons and favicon
-- ✅ Icon generator utility for easy customization
+### v1.11.0 (2025-11-18)
+- ✅ Task management system with automated follow-ups
+- ✅ GoHighLevel CRM integration (bidirectional sync)
+- ✅ Webhook integration with event processing
+- ✅ 5 intelligent follow-up sequences
+- ✅ Task dashboard with priority management
+- ✅ ~5,700 lines of new code
 
-### v1.1
-- ✅ Fixed duplicate HTML in summary section
-- ✅ Added PWA support for offline capability
-- ✅ Implemented Service Worker caching
-- ✅ Added comprehensive Playwright test suite
-- ✅ Cross-browser and mobile testing
-- ✅ Created proper project documentation
+### v1.10.0 (2025-11-18)
+- ✅ Professional PDF generation suite with jsPDF
+- ✅ Pre-deployment validation tools
+- ✅ Production health monitoring
+- ✅ Built-in bug tracking and reporting
+- ✅ ~4,000 lines of new code
+
+### v1.9.0 (2025-11-18)
+- ✅ Client database and CRM functionality
+- ✅ Quote workflow and status tracking
+- ✅ Testing and production polish
+- ✅ WCAG AA accessibility compliance
+- ✅ ~6,700 lines of new code
+
+For complete version history, see [CHANGELOG.md](CHANGELOG.md)
 
 ## License
 

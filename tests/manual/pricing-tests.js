@@ -136,7 +136,7 @@ function testGSTCalculation() {
     console.log('\n--- Testing GST Calculation ---');
 
     var subtotal = 1000;
-    var gst = subtotal * 0.1; // 10% GST
+    var gst = Money.calculateGST(subtotal); // 10% GST using Money utility
     var total = subtotal + gst;
 
     assertEqual(gst, 100, 'GST is 10% of subtotal');
@@ -144,7 +144,7 @@ function testGSTCalculation() {
 
     // Test with cents precision
     var subtotal2 = 333.33;
-    var gst2 = Money.fromCents(Money.toCents(subtotal2 * 0.1));
+    var gst2 = Money.calculateGST(subtotal2);
     assertEqual(gst2, 33.33, 'GST with cent precision');
 }
 

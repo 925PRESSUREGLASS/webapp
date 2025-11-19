@@ -1,0 +1,209 @@
+{
+  "version": "1.0.0",
+  "lastUpdated": "2025-11-18T23:00:00Z",
+  "tasks": [
+    {
+      "id": "TASK-001",
+      "title": "Fix ghl-integration.js missing file error",
+      "description": "Remove or stub ghl-integration.js script tag in index.html that references non-existent file",
+      "status": "pending",
+      "priority": "critical",
+      "type": "bug",
+      "assignedAgent": "code-reviewer",
+      "createdDate": "2025-11-18",
+      "dueDate": null,
+      "estimatedHours": 0.25,
+      "actualHours": 0,
+      "progress": 0,
+      "tags": ["critical", "bug", "ghl", "quick-win"],
+      "blockedBy": [],
+      "subtasks": [],
+      "notes": "Causes script loading error on page load. File referenced in index.html line 2350 but does not exist."
+    },
+    {
+      "id": "TASK-002",
+      "title": "Implement fillCurrentLocation() function",
+      "description": "Create function to populate location field using GeolocationHelper",
+      "status": "pending",
+      "priority": "high",
+      "type": "bug",
+      "assignedAgent": "code-reviewer",
+      "createdDate": "2025-11-18",
+      "dueDate": null,
+      "estimatedHours": 0.5,
+      "actualHours": 0,
+      "progress": 0,
+      "tags": ["bug", "geolocation", "ui"],
+      "blockedBy": [],
+      "subtasks": [],
+      "notes": "Location button in header (index.html:132) calls undefined function. Should integrate with geolocation-helper.js."
+    },
+    {
+      "id": "TASK-003",
+      "title": "Uncomment Chart.js CDN",
+      "description": "Enable Chart.js for analytics dashboard chart rendering",
+      "status": "pending",
+      "priority": "high",
+      "type": "bug",
+      "assignedAgent": "code-reviewer",
+      "createdDate": "2025-11-18",
+      "dueDate": null,
+      "estimatedHours": 0.25,
+      "actualHours": 0,
+      "progress": 0,
+      "tags": ["bug", "analytics", "charts"],
+      "blockedBy": [],
+      "subtasks": [],
+      "notes": "Chart.js commented out in index.html lines 2275 and 2293. Analytics dashboard charts won't render without it."
+    },
+    {
+      "id": "TASK-004",
+      "title": "Integrate Job Tracking UI initialization",
+      "description": "Add initialization to navigateTo() for jobs page",
+      "status": "pending",
+      "priority": "high",
+      "type": "integration",
+      "assignedAgent": "code-reviewer",
+      "createdDate": "2025-11-18",
+      "dueDate": null,
+      "estimatedHours": 2,
+      "actualHours": 0,
+      "progress": 0,
+      "tags": ["integration", "job-tracking", "ui"],
+      "blockedBy": [],
+      "subtasks": [
+        "Add case 'jobs' to navigateTo() switch",
+        "Call JobTrackingUI.initJobsPage()",
+        "Test job list rendering",
+        "Add case 'active-job' for job details page"
+      ],
+      "notes": "Jobs page loads but doesn't initialize properly. Need to call JobTrackingUI.initJobsPage() when navigating to jobs page."
+    },
+    {
+      "id": "TASK-005",
+      "title": "Integrate Help System page",
+      "description": "Wire help system initialization and topic display",
+      "status": "pending",
+      "priority": "medium",
+      "type": "integration",
+      "assignedAgent": "code-reviewer",
+      "createdDate": "2025-11-18",
+      "dueDate": null,
+      "estimatedHours": 2,
+      "actualHours": 0,
+      "progress": 0,
+      "tags": ["integration", "help-system", "ui"],
+      "blockedBy": [],
+      "subtasks": [
+        "Add help page initialization to navigateTo()",
+        "Wire search functionality",
+        "Test topic display",
+        "Add contextual help tooltips"
+      ],
+      "notes": "Help system module complete but page has no initialization. Need to call HelpSystem.init() or similar when navigating to help page."
+    },
+    {
+      "id": "TASK-006",
+      "title": "Split invoice.js into 4 modules",
+      "description": "Refactor invoice.js (2,240 lines) into invoice-crud, invoice-ui, invoice-payments, invoice-pdf",
+      "status": "pending",
+      "priority": "medium",
+      "type": "refactoring",
+      "assignedAgent": "refactoring-architect",
+      "createdDate": "2025-11-18",
+      "dueDate": null,
+      "estimatedHours": 10,
+      "actualHours": 0,
+      "progress": 0,
+      "tags": ["refactoring", "technical-debt", "invoice"],
+      "blockedBy": [],
+      "subtasks": [
+        "Create invoice-core.js with shared utilities (2h)",
+        "Extract payment logic to invoice-payments.js (2h)",
+        "Extract PDF generation to invoice-pdf.js (2h)",
+        "Extract UI rendering to invoice-ui.js (2h)",
+        "Keep CRUD in invoice-crud.js (1h)",
+        "Update index.html script loading (0.5h)",
+        "Test thoroughly after each extraction (0.5h)"
+      ],
+      "notes": "invoice.js is too large (2,240 lines) and has multiple responsibilities. Needs systematic splitting while maintaining functionality."
+    },
+    {
+      "id": "TASK-007",
+      "title": "Console logging audit",
+      "description": "Convert production console.log statements to DEBUG.log()",
+      "status": "pending",
+      "priority": "low",
+      "type": "optimization",
+      "assignedAgent": "code-reviewer",
+      "createdDate": "2025-11-18",
+      "dueDate": null,
+      "estimatedHours": 3,
+      "actualHours": 0,
+      "progress": 0,
+      "tags": ["optimization", "production", "logging"],
+      "blockedBy": [],
+      "subtasks": [
+        "Audit all console.log statements (0.5h)",
+        "Convert to DEBUG.log() where appropriate (2h)",
+        "Test debug mode on/off (0.5h)"
+      ],
+      "notes": "Many unconditional console.log statements in production code. Should use DEBUG system for conditional logging."
+    },
+    {
+      "id": "TASK-008",
+      "title": "Update documentation to v1.13.0",
+      "description": "Update README.md, CHANGELOG.md, PROJECT_STATE.md to current version",
+      "status": "pending",
+      "priority": "medium",
+      "type": "documentation",
+      "assignedAgent": "documentation-writer",
+      "createdDate": "2025-11-18",
+      "dueDate": null,
+      "estimatedHours": 3,
+      "actualHours": 0,
+      "progress": 0,
+      "tags": ["documentation", "version-update"],
+      "blockedBy": [],
+      "subtasks": [
+        "Update README.md to v1.13.0 (0.5h)",
+        "Backfill CHANGELOG.md entries for v1.10-v1.13 (1.5h)",
+        "Update PROJECT_STATE.md with current file counts (1h)"
+      ],
+      "notes": "Documentation drift - CLAUDE.md claims v1.12.0, CHANGELOG.md last entry is v1.9.0, recent commits show v1.13.0 features."
+    }
+  ],
+  "completedTasks": [
+    {
+      "id": "TASK-000",
+      "title": "ES5 Violation Audit",
+      "description": "Audit codebase for ES5 compliance violations",
+      "completedDate": "2025-11-18",
+      "completedBy": "general-purpose",
+      "actualHours": 1,
+      "notes": "Comprehensive audit completed. Zero ES5 violations found in production code. Initial analysis was incorrect."
+    }
+  ],
+  "statistics": {
+    "totalTasks": 8,
+    "pending": 8,
+    "inProgress": 0,
+    "completed": 1,
+    "blocked": 0,
+    "byPriority": {
+      "critical": 1,
+      "high": 3,
+      "medium": 3,
+      "low": 1
+    },
+    "byType": {
+      "bug": 3,
+      "integration": 2,
+      "refactoring": 1,
+      "optimization": 1,
+      "documentation": 1
+    },
+    "estimatedHoursRemaining": 21,
+    "completedThisWeek": 1
+  }
+}

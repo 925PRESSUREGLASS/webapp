@@ -3,16 +3,17 @@ const { defineConfig, devices } = require('@playwright/test');
 
 module.exports = defineConfig({
   testDir: './tests',
-  fullyParallel: true,
+  fullyParallel: false,  // Changed: Run sequentially to avoid Service Worker conflicts
   forbidOnly: !!process.env.CI,
   retries: process.env.CI ? 2 : 1,
-  workers: process.env.CI ? 1 : undefined,
+  workers: 1,  // Changed: Force single worker to prevent SW state leakage
   reporter: 'list',
   use: {
     baseURL: 'http://localhost:3000',
     trace: 'on-first-retry',
     screenshot: 'only-on-failure',
     video: 'retain-on-failure',
+    serviceWorkers: 'block',  // ADDED: Block Service Worker registration during tests
     launchOptions: {
       args: [
         '--disable-dev-shm-usage',

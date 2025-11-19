@@ -1,0 +1,270 @@
+{
+  "version": "1.0.0",
+  "lastUpdated": "2025-11-18T23:00:00Z",
+  "project": {
+    "name": "TicTacStick Quote Engine",
+    "version": "1.13.0",
+    "phase": "Phase 3 - Feature Enhancement & Production Optimization",
+    "currentBranch": "main",
+    "repository": "925PRESSUREGLASS/webapp",
+    "owner": "Gerard Varone",
+    "location": "Perth, Western Australia",
+    "primaryUse": "On-site iPad quotes for window and pressure cleaning"
+  },
+  "context": {
+    "recentChanges": [
+      {
+        "date": "2025-11-18",
+        "type": "feature",
+        "summary": "Added comprehensive agent workflow enhancement system",
+        "files": [".claude/memory.json", ".claude/agents/", ".claude/workflows/"],
+        "linesAdded": 2000,
+        "impact": "Enables persistent memory and agent coordination",
+        "sessionId": "agent-workflow-setup"
+      },
+      {
+        "date": "2025-11-18",
+        "type": "analysis",
+        "summary": "Architecture review completed - 72% integration complete",
+        "files": ["index.html", "contract-manager.js", "analytics-dashboard.js"],
+        "findings": [
+          "3 critical gaps: ghl-integration.js missing, fillCurrentLocation() missing, Chart.js commented",
+          "Contract system 95% complete",
+          "Analytics dashboard 90% complete",
+          "Job tracking 60% complete (needs initialization)"
+        ],
+        "sessionId": "architecture-review-2025-11-18"
+      },
+      {
+        "date": "2025-11-17",
+        "type": "fix",
+        "summary": "Fixed customer creation modal structure and test runner",
+        "commit": "417713b",
+        "sessionId": "modal-structure-fix"
+      }
+    ],
+    "activeIssues": [
+      {
+        "id": "CRITICAL-001",
+        "title": "Missing ghl-integration.js file",
+        "severity": "high",
+        "file": "index.html:2350",
+        "description": "Script tag references non-existent file, causes loading error",
+        "status": "open",
+        "assignedAgent": null,
+        "discovered": "2025-11-18"
+      },
+      {
+        "id": "CRITICAL-002",
+        "title": "fillCurrentLocation() function not implemented",
+        "severity": "medium",
+        "file": "index.html:132",
+        "description": "Location button in header references undefined function",
+        "status": "open",
+        "assignedAgent": null,
+        "discovered": "2025-11-18"
+      },
+      {
+        "id": "CRITICAL-003",
+        "title": "Chart.js CDN commented out",
+        "severity": "medium",
+        "file": "index.html:2275,2293",
+        "description": "Analytics dashboard charts won't render without Chart.js",
+        "status": "open",
+        "assignedAgent": null,
+        "discovered": "2025-11-18"
+      }
+    ],
+    "pendingTasks": [
+      {
+        "id": "TASK-001",
+        "title": "Integrate Job Tracking UI initialization",
+        "priority": "high",
+        "estimatedHours": 2,
+        "assignedAgent": "general-purpose",
+        "status": "pending",
+        "blockedBy": []
+      },
+      {
+        "id": "TASK-002",
+        "title": "Integrate Help System page initialization",
+        "priority": "medium",
+        "estimatedHours": 2,
+        "assignedAgent": "general-purpose",
+        "status": "pending",
+        "blockedBy": []
+      },
+      {
+        "id": "TASK-003",
+        "title": "Split invoice.js (2,240 lines) into 4 modules",
+        "priority": "medium",
+        "estimatedHours": 10,
+        "assignedAgent": "refactoring-architect",
+        "status": "pending",
+        "blockedBy": []
+      }
+    ],
+    "decisions": [
+      {
+        "id": "DEC-001",
+        "date": "2025-11-18",
+        "decision": "Use Sonnet for agent workflow setup instead of Opus",
+        "rationale": "ES5 audit revealed no violations (saved 4-6h Opus). Agent setup is systematic work suitable for Sonnet.",
+        "alternatives": ["Use Opus for everything", "Use Haiku for simpler tasks"],
+        "chosenBy": "architecture-review-agent",
+        "impact": "Saved ~8.5 hours of Opus budget for critical decisions later"
+      },
+      {
+        "id": "DEC-002",
+        "date": "2025-11-18",
+        "decision": "Implement MVP agent workflow (Option C) before full system",
+        "rationale": "Get immediate value with memory + 3 agents + 2 workflows in 1 week, then expand",
+        "alternatives": ["Full implementation (3 weeks)", "Phased rollout (6 weeks)"],
+        "chosenBy": "planning-agent",
+        "impact": "Faster time-to-value, iterative validation"
+      },
+      {
+        "id": "DEC-003",
+        "date": "2025-11-17",
+        "decision": "Defer CSS refactoring to Week 5-6",
+        "rationale": "Stability > aesthetics. Focus on functionality first.",
+        "alternatives": ["Do CSS refactoring now"],
+        "chosenBy": "strategic-planner-agent",
+        "impact": "Prioritizes working features over visual polish"
+      }
+    ]
+  },
+  "agents": {
+    "lastActive": {
+      "general-purpose": "2025-11-18T22:45:00Z",
+      "code-reviewer": "2025-11-18T18:00:00Z",
+      "test-runner": "2025-11-18T17:30:00Z",
+      "Explore": "2025-11-18T22:30:00Z",
+      "Plan": "2025-11-18T22:15:00Z"
+    },
+    "sessionCount": {
+      "general-purpose": 3,
+      "code-reviewer": 2,
+      "test-runner": 1,
+      "Explore": 2,
+      "Plan": 1
+    },
+    "performance": {
+      "general-purpose": {
+        "averageTime": 180,
+        "successRate": 1.0,
+        "lastError": null
+      },
+      "code-reviewer": {
+        "averageTime": 120,
+        "successRate": 1.0,
+        "lastError": null
+      },
+      "test-runner": {
+        "averageTime": 240,
+        "successRate": 1.0,
+        "lastError": null
+      }
+    }
+  },
+  "knowledge": {
+    "criticalConstraints": [
+      "ES5 JavaScript only (no const, let, arrow functions, template literals, destructuring, spread)",
+      "iOS Safari 12+ compatibility for field use on older iPads",
+      "No build tools (no webpack, babel, vite - direct browser execution)",
+      "Offline-first architecture (must work without internet indefinitely)",
+      "Integer arithmetic for money calculations (use Money.toCents/fromCents)",
+      "All user input must be sanitized (use Security.escapeHTML)",
+      "LocalStorage only (no backend in Phase 2)"
+    ],
+    "commonPatterns": [
+      "IIFE module pattern: (function() { 'use strict'; ... })();",
+      "Module registration: window.APP.registerModule('name', { exports });",
+      "Money calculations: Money.toCents(19.99) → 1999 cents",
+      "Input sanitization: Security.escapeHTML(userInput) before innerHTML",
+      "Validation: InvoiceValidation.validateField('fieldName', value)",
+      "Storage: Storage.set('key', value) / Storage.get('key')",
+      "Toast notifications: UIComponents.showToast('message', 'type')",
+      "Modal dialogs: UIComponents.showConfirm({ ... })"
+    ],
+    "moduleLoadOrder": [
+      "1. bootstrap.js (MUST load first - creates APP namespace)",
+      "2. debug.js, security.js, validation.js, ui-components.js (no defer)",
+      "3. lazy-loader.js, lazy-loader-init.js",
+      "4. Extended types (window-types-extended, conditions-modifiers, pressure-surfaces-extended)",
+      "5. data.js, quote-migration.js, storage.js, calc.js",
+      "6. app.js (depends on calc, data, storage)",
+      "7. Business logic (task-manager, contract-manager, job-manager)",
+      "8. UI modules (ui.js, wizard.js, client-database.js, invoice.js)",
+      "9. Feature modules (analytics, help-system, backup-manager)",
+      "10. Production tools (deployment-helper, health-check, bug-tracker)"
+    ],
+    "fileLocations": {
+      "addWindowType": "data.js or window-types-extended.js",
+      "addSurfaceType": "pressure-surfaces-extended.js",
+      "modifyCalculations": "calc.js",
+      "stateManagement": "app.js",
+      "uiRendering": "ui.js",
+      "invoiceSystem": "invoice.js (2,240 lines - needs splitting)",
+      "validation": "validation.js",
+      "security": "security.js",
+      "tests": "tests/ (Playwright suite)",
+      "documentation": "CLAUDE.md (4,776 lines - primary AI guide)"
+    },
+    "integrationStatus": {
+      "contracts": 0.95,
+      "analytics": 0.90,
+      "customerDirectory": 0.95,
+      "jobTracking": 0.60,
+      "helpSystem": 0.50,
+      "ghlCRM": 0.85,
+      "backup": 0.70,
+      "mobileNative": 0.30,
+      "overall": 0.72
+    }
+  },
+  "metrics": {
+    "codebase": {
+      "jsFiles": 89,
+      "totalLines": 46000,
+      "documentationFiles": 96,
+      "documentationLines": 34027,
+      "testFiles": 20,
+      "cssFiles": 23
+    },
+    "performance": {
+      "lastDeploymentCheck": null,
+      "lastHealthCheck": null,
+      "averageLoadTime": null,
+      "memoryUsage": null
+    },
+    "development": {
+      "openIssues": 3,
+      "pendingTasks": 3,
+      "completedTasksThisWeek": 2,
+      "averageTaskCompletionTime": 3.5
+    }
+  },
+  "notes": {
+    "nextSession": [
+      "Start with 3 critical fixes: ghl-integration.js, fillCurrentLocation(), Chart.js",
+      "Create 3 new agents: documentation-writer, deployment-specialist, refactoring-architect",
+      "Define 2 workflows: bug-fix, feature-development",
+      "Test agent coordination with simple bug fix workflow"
+    ],
+    "technicalDebt": [
+      "invoice.js too large (2,240 lines) - needs module splitting",
+      "Job tracking UI needs initialization on page navigation",
+      "Help system needs page initialization and wiring",
+      "89 JS files loaded - consider lazy loading unused modules",
+      "Console.log statements in production code - convert to DEBUG.log()"
+    ],
+    "futureEnhancements": [
+      "Expose pricing intelligence module to UI",
+      "Integrate camera helper for job photo capture",
+      "Enable push notifications for reminders",
+      "Add contract forecasting UI to contracts page",
+      "Implement photo comparison feature"
+    ]
+  }
+}

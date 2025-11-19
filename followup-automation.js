@@ -6,7 +6,10 @@
   'use strict';
 
   /**
-   * Calculate next business day
+   * Calculate next business day, skipping weekends if requested
+   * @param {Date} date - Starting date
+   * @param {boolean} [skipWeekends=true] - Whether to skip weekends (Saturday/Sunday)
+   * @returns {Date} Next business day
    */
   function getNextBusinessDay(date, skipWeekends) {
     if (skipWeekends === undefined) skipWeekends = true;
@@ -27,7 +30,16 @@
   }
 
   /**
-   * Calculate optimal contact time
+   * Calculate optimal contact time respecting business hours and DND rules
+   * @param {Date} baseDate - Base date/time to start from
+   * @param {string} [preferredTime='morning'] - Preferred time slot: 'morning', 'afternoon', 'evening'
+   * @returns {Date} Optimized contact time respecting configuration rules
+   *
+   * Rules applied:
+   * - Uses weekday/weekend contact time windows from config
+   * - Avoids Do Not Disturb (DND) hours
+   * - Optionally skips Sundays
+   * - Sets time to middle of preferred time slot
    */
   function getOptimalContactTime(baseDate, preferredTime) {
     var config = window.FollowupConfig.get();
@@ -74,7 +86,16 @@
   }
 
   /**
-   * Replace variables in message template
+   * Replace template variables with quote-specific data
+   * @param {string} template - Message template with {variable} placeholders
+   * @param {Object} quote - Quote object with data to substitute
+   * @returns {string} Message with variables replaced
+   *
+   * Supported variables:
+   * - {clientName} - Client first name (or "there" if missing)
+   * - {serviceType} - "window cleaning", "pressure cleaning", or "our services"
+   * - {quoteTotal} - Formatted quote total with $ symbol
+   * - {companyName} - Company name (925 Pressure Glass)
    */
   function replaceMessageVariables(template, quote) {
     var message = template;
@@ -106,7 +127,15 @@
   }
 
   /**
-   * Determine which sequence to use for quote
+   * Determine appropriate follow-up sequence based on quote characteristics
+   * @param {Object} quote - Quote object to analyze
+   * @returns {Array} Follow-up sequence steps from config
+   *
+   * Selection criteria (in priority order):
+   * 1. High-value quotes (>= threshold) → highValue sequence
+   * 2. Referral source → referral sequence
+   * 3. Quote status → status-based sequence (sent, viewed, accepted, declined)
+   * 4. Default → sent sequence
    */
   function getFollowupSequence(quote) {
     var config = window.FollowupConfig.get();
@@ -139,7 +168,23 @@
   }
 
   /**
-   * Create follow-up tasks for quote
+   * Create automated follow-up task sequence for a quote
+   * @param {Object} quote - Quote object requiring follow-ups
+   * @param {string} quote.id - Quote ID
+   * @param {string} [quote.clientId] - Associated client ID
+   * @param {string} [quote.clientName] - Client name for personalization
+   * @param {number} [quote.totalIncGst] - Quote total (determines if high-value)
+   * @param {string} [quote.clientSource] - Source: 'referral', etc.
+   * @param {string} [quote.status] - Quote status: 'sent', 'viewed', 'accepted', 'declined'
+   * @param {Date|string} [quote.dateSent] - When quote was sent (used as base time)
+   * @returns {Array<Object>} Array of created task objects
+   *
+   * Process:
+   * 1. Determines appropriate sequence based on quote characteristics
+   * 2. Creates tasks with delays from base time (dateSent or now)
+   * 3. Adjusts due dates to optimal contact times
+   * 4. Personalizes messages with quote data
+   * 5. Returns created tasks for tracking
    */
   function createFollowupTasks(quote) {
     if (!quote || !quote.id) {

@@ -7,6 +7,13 @@
   'use strict';
 
   // ============================================
+  // PHOTO QUALITY CONSTANTS
+  // ============================================
+  var DEFAULT_PHOTO_QUALITY = 90;     // JPEG quality (0-100), 90 = high quality
+  var DEFAULT_PHOTO_WIDTH = 1920;     // Max width in pixels (Full HD)
+  var DEFAULT_PHOTO_HEIGHT = 1080;    // Max height in pixels (Full HD)
+
+  // ============================================
   // AVAILABILITY CHECK
   // ============================================
 
@@ -27,12 +34,12 @@
   /**
    * Take photo with camera
    * @param {Object} options - Camera options
-   * @param {number} options.quality - Image quality 0-100 (default: 90)
+   * @param {number} options.quality - Image quality 0-100 (default: DEFAULT_PHOTO_QUALITY)
    * @param {boolean} options.allowEditing - Allow editing (default: true)
    * @param {string} options.resultType - 'base64', 'uri', or 'dataUrl' (default: 'base64')
    * @param {boolean} options.saveToGallery - Save to photo gallery (default: true)
-   * @param {number} options.width - Max width (default: 1920)
-   * @param {number} options.height - Max height (default: 1080)
+   * @param {number} options.width - Max width (default: DEFAULT_PHOTO_WIDTH)
+   * @param {number} options.height - Max height (default: DEFAULT_PHOTO_HEIGHT)
    * @returns {Promise<Object>} Photo data
    */
   function takePhoto(options) {
@@ -43,13 +50,13 @@
 
     // Default options
     var defaultOptions = {
-      quality: 90,
+      quality: DEFAULT_PHOTO_QUALITY,
       allowEditing: true,
       resultType: 'base64',
       source: 'camera',
       saveToGallery: true,
-      width: 1920,
-      height: 1080,
+      width: DEFAULT_PHOTO_WIDTH,
+      height: DEFAULT_PHOTO_HEIGHT,
       correctOrientation: true
     };
 
@@ -251,7 +258,7 @@
     var afterPhoto = null;
 
     // Take before photo
-    return takePhoto({ quality: 90 })
+    return takePhoto({ quality: DEFAULT_PHOTO_QUALITY })
       .then(function(photo) {
         if (!photo) {
           throw new Error('Before photo cancelled');
@@ -266,7 +273,7 @@
         }
 
         // Take after photo
-        return takePhoto({ quality: 90 });
+        return takePhoto({ quality: DEFAULT_PHOTO_QUALITY });
       })
       .then(function(photo) {
         if (!photo) {

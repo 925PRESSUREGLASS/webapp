@@ -12,26 +12,19 @@
     // ============================================
     // ANALYTICS MODULE
     // ============================================
+    // NOTE: Analytics is no longer lazy-loaded - it loads immediately via <script> tag
+    // This is needed for core functionality and tests
 
     var viewAnalyticsBtn = document.getElementById('viewAnalyticsBtn');
     if (viewAnalyticsBtn) {
       viewAnalyticsBtn.addEventListener('click', function() {
-        if (window.LazyLoader) {
-          window.LazyLoader.withLoading('analytics', function(error) {
-            if (error) {
-              console.error('[LAZY-INIT] Failed to load analytics:', error);
-              if (window.showToast) {
-                window.showToast('Failed to load analytics module', 'error');
-              }
-              return;
-            }
-
-            if (window.QuoteAnalytics && window.QuoteAnalytics.renderDashboard) {
-              window.QuoteAnalytics.renderDashboard('all');
-            }
-          });
-        } else if (window.QuoteAnalytics) {
+        if (window.QuoteAnalytics && window.QuoteAnalytics.renderDashboard) {
           window.QuoteAnalytics.renderDashboard('all');
+        } else {
+          console.error('[LAZY-INIT] QuoteAnalytics not available');
+          if (window.showToast) {
+            window.showToast('Analytics module not loaded', 'error');
+          }
         }
       });
     }
@@ -39,22 +32,13 @@
     var exportHistoryBtn = document.getElementById('exportHistoryBtn');
     if (exportHistoryBtn) {
       exportHistoryBtn.addEventListener('click', function() {
-        if (window.LazyLoader) {
-          window.LazyLoader.withLoading('analytics', function(error) {
-            if (error) {
-              console.error('[LAZY-INIT] Failed to load analytics:', error);
-              if (window.showToast) {
-                window.showToast('Failed to load analytics module', 'error');
-              }
-              return;
-            }
-
-            if (window.QuoteAnalytics && window.QuoteAnalytics.exportHistory) {
-              window.QuoteAnalytics.exportHistory();
-            }
-          });
-        } else if (window.QuoteAnalytics) {
+        if (window.QuoteAnalytics && window.QuoteAnalytics.exportHistory) {
           window.QuoteAnalytics.exportHistory();
+        } else {
+          console.error('[LAZY-INIT] QuoteAnalytics not available');
+          if (window.showToast) {
+            window.showToast('Analytics module not loaded', 'error');
+          }
         }
       });
     }

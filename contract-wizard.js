@@ -26,6 +26,7 @@
 
     showStep(1);
     populateClientDropdown();
+    setupRealtimeValidation();
 
     console.log('[CONTRACT-WIZARD] Initialized');
   }
@@ -190,53 +191,203 @@
   }
 
   /**
-   * Validate step
+   * Validate step with comprehensive checks
    */
   function validateStep(step) {
+    clearValidationErrors();
+
     if (step === 1) {
+      // Step 1: Contract Type
       if (!_contractData.type) {
-        if (window.UIComponents) {
-          window.UIComponents.showToast('Please select a contract type', 'error');
-        } else {
-          alert('Please select a contract type');
-        }
+        showValidationError('Please select a contract type');
         return false;
       }
     } else if (step === 2) {
+      // Step 2: Client Information
       var name = document.getElementById('contract-client-name').value.trim();
       var phone = document.getElementById('contract-client-phone').value.trim();
+      var email = document.getElementById('contract-client-email').value.trim();
       var address = document.getElementById('contract-client-address').value.trim();
 
-      if (!name || !phone || !address) {
-        if (window.UIComponents) {
-          window.UIComponents.showToast('Please fill in all required client fields', 'error');
-        } else {
-          alert('Please fill in all required client fields');
-        }
+      // Name validation
+      if (!name || name.length < 2) {
+        showValidationError('Client name is required (minimum 2 characters)');
+        highlightField('contract-client-name', true);
         return false;
       }
+
+      // Phone validation (Australian format: 10 digits)
+      var phoneClean = phone.replace(/[\s\-\(\)]/g, '');
+      if (!phoneClean || phoneClean.length !== 10 || !/^\d{10}$/.test(phoneClean)) {
+        showValidationError('Phone number must be 10 digits (e.g., 0400 000 000)');
+        highlightField('contract-client-phone', true);
+        return false;
+      }
+
+      // Email validation (optional but must be valid if provided)
+      if (email && !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
+        showValidationError('Please enter a valid email address');
+        highlightField('contract-client-email', true);
+        return false;
+      }
+
+      // Address validation
+      if (!address || address.length < 5) {
+        showValidationError('Service address is required (minimum 5 characters)');
+        highlightField('contract-client-address', true);
+        return false;
+      }
+
     } else if (step === 3) {
-      if (_contractData.services.length === 0) {
-        if (window.UIComponents) {
-          window.UIComponents.showToast('Please add at least one service', 'error');
-        } else {
-          alert('Please add at least one service');
-        }
+      // Step 3: Services & Frequency
+      if (!_contractData.services || _contractData.services.length === 0) {
+        showValidationError('Please add at least one service to the contract');
         return false;
       }
+
+      var frequency = document.getElementById('contract-frequency').value;
+      if (!frequency) {
+        showValidationError('Please select a service frequency');
+        highlightField('contract-frequency', true);
+        return false;
+      }
+
     } else if (step === 4) {
+      // Step 4: Schedule & Preferences
       var startDate = document.getElementById('contract-start-date').value;
       if (!startDate) {
-        if (window.UIComponents) {
-          window.UIComponents.showToast('Please select a start date', 'error');
-        } else {
-          alert('Please select a start date');
-        }
+        showValidationError('Start date is required');
+        highlightField('contract-start-date', true);
+        return false;
+      }
+
+      // Check if start date is in the future
+      var selectedDate = new Date(startDate);
+      var today = new Date();
+      today.setHours(0, 0, 0, 0);
+      if (selectedDate < today) {
+        showValidationError('Start date must be today or in the future');
+        highlightField('contract-start-date', true);
+        return false;
+      }
+
+      // Duration validation (if provided)
+      var duration = document.getElementById('contract-duration').value;
+      if (duration && (isNaN(duration) || parseInt(duration) < 1 || parseInt(duration) > 60)) {
+        showValidationError('Contract duration must be between 1 and 60 months');
+        highlightField('contract-duration', true);
         return false;
       }
     }
 
     return true;
+  }
+
+  /**
+   * Show validation error message
+   */
+  function showValidationError(message) {
+    if (window.UIComponents && window.UIComponents.showToast) {
+      window.UIComponents.showToast(message, 'error');
+    } else {
+      alert(message);
+    }
+  }
+
+  /**
+   * Clear all validation errors
+   */
+  function clearValidationErrors() {
+    var inputs = document.querySelectorAll('.contract-wizard-modal input, .contract-wizard-modal select, .contract-wizard-modal textarea');
+    for (var i = 0; i < inputs.length; i++) {
+      inputs[i].classList.remove('form-input-error');
+    }
+  }
+
+  /**
+   * Highlight field with error
+   */
+  function highlightField(fieldId, hasError) {
+    var field = document.getElementById(fieldId);
+    if (!field) return;
+
+    if (hasError) {
+      field.classList.add('form-input-error');
+    } else {
+      field.classList.remove('form-input-error');
+    }
+  }
+
+  /**
+   * Real-time validation on field blur
+   */
+  function setupRealtimeValidation() {
+    // Add blur event listeners to validate fields as user leaves them
+    var nameField = document.getElementById('contract-client-name');
+    var phoneField = document.getElementById('contract-client-phone');
+    var emailField = document.getElementById('contract-client-email');
+    var addressField = document.getElementById('contract-client-address');
+    var startDateField = document.getElementById('contract-start-date');
+
+    if (nameField) {
+      nameField.addEventListener('blur', function() {
+        var value = this.value.trim();
+        if (value && value.length < 2) {
+          highlightField('contract-client-name', true);
+        } else {
+          highlightField('contract-client-name', false);
+        }
+      });
+    }
+
+    if (phoneField) {
+      phoneField.addEventListener('blur', function() {
+        var value = this.value.trim().replace(/[\s\-\(\)]/g, '');
+        if (value && (value.length !== 10 || !/^\d{10}$/.test(value))) {
+          highlightField('contract-client-phone', true);
+        } else {
+          highlightField('contract-client-phone', false);
+        }
+      });
+    }
+
+    if (emailField) {
+      emailField.addEventListener('blur', function() {
+        var value = this.value.trim();
+        if (value && !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(value)) {
+          highlightField('contract-client-email', true);
+        } else {
+          highlightField('contract-client-email', false);
+        }
+      });
+    }
+
+    if (addressField) {
+      addressField.addEventListener('blur', function() {
+        var value = this.value.trim();
+        if (value && value.length < 5) {
+          highlightField('contract-client-address', true);
+        } else {
+          highlightField('contract-client-address', false);
+        }
+      });
+    }
+
+    if (startDateField) {
+      startDateField.addEventListener('change', function() {
+        var value = this.value;
+        if (value) {
+          var selectedDate = new Date(value);
+          var today = new Date();
+          today.setHours(0, 0, 0, 0);
+          if (selectedDate < today) {
+            highlightField('contract-start-date', true);
+          } else {
+            highlightField('contract-start-date', false);
+          }
+        }
+      });
+    }
   }
 
   /**
@@ -418,15 +569,50 @@
 
     for (var i = 0; i < _contractData.services.length; i++) {
       var service = _contractData.services[i];
-      html += '<div class="service-item">';
+      html += '<div class="service-item" data-service-index="' + i + '">';
       html += '<div class="service-description">' + window.Security.escapeHTML(service.description) + '</div>';
       html += '<div class="service-price">$' + service.unitPrice.toFixed(2) + '</div>';
-      html += '<button class="btn btn-danger btn-sm" onclick="ContractWizard.removeService(' + i + ')">Remove</button>';
+      html += '<button type="button" class="btn btn-danger btn-sm service-remove-btn" aria-label="Remove service">Remove</button>';
       html += '</div>';
     }
 
     html += '</div>';
     container.innerHTML = html;
+
+    // Event delegation: attach click handler for remove buttons
+    attachServicesEventHandlers(container);
+  }
+
+  /**
+   * Attach event handlers to services list using event delegation
+   */
+  function attachServicesEventHandlers(container) {
+    // Remove old listener if it exists
+    if (container._servicesClickHandler) {
+      container.removeEventListener('click', container._servicesClickHandler);
+    }
+
+    // Create new click handler
+    container._servicesClickHandler = function(event) {
+      var target = event.target;
+
+      // Handle remove button click
+      if (target.classList.contains('service-remove-btn') || target.closest('.service-remove-btn')) {
+        var removeBtn = target.classList.contains('service-remove-btn') ? target : target.closest('.service-remove-btn');
+        var serviceItem = removeBtn.closest('.service-item');
+        if (serviceItem) {
+          var index = parseInt(serviceItem.getAttribute('data-service-index'), 10);
+          if (!isNaN(index)) {
+            removeContractService(index);
+          }
+        }
+        event.preventDefault();
+        return;
+      }
+    };
+
+    // Attach the event listener
+    container.addEventListener('click', container._servicesClickHandler);
   }
 
   /**
@@ -659,5 +845,84 @@ function saveContractDraft() {
 function createContractFinal() {
   if (window.ContractWizard) {
     window.ContractWizard.createFinal();
+  }
+}
+
+// Additional global UI functions
+function openContractWizard() {
+  var modal = document.getElementById('contract-wizard-modal');
+  if (modal) {
+    modal.style.display = 'flex';
+    if (window.ContractWizard) {
+      window.ContractWizard.init();
+    }
+  }
+}
+
+function closeContractWizard() {
+  var modal = document.getElementById('contract-wizard-modal');
+  if (modal) {
+    modal.style.display = 'none';
+  }
+}
+
+function wizardNext(step) {
+  if (window.ContractWizard) {
+    window.ContractWizard.wizardNext(step);
+  }
+}
+
+function wizardBack(step) {
+  if (window.ContractWizard) {
+    window.ContractWizard.wizardBack(step);
+  }
+}
+
+function createContractFromWizard() {
+  if (window.ContractWizard) {
+    window.ContractWizard.createFinal();
+  }
+}
+
+function toggleNewClientForm() {
+  var select = document.getElementById('contract-client-select');
+  var form = document.getElementById('contract-client-form');
+
+  if (select && select.value) {
+    // Client selected, disable form
+    var inputs = form.querySelectorAll('input, textarea');
+    for (var i = 0; i < inputs.length; i++) {
+      inputs[i].disabled = true;
+    }
+  } else {
+    // No client selected, enable form
+    var inputs = form.querySelectorAll('input, textarea');
+    for (var i = 0; i < inputs.length; i++) {
+      inputs[i].disabled = false;
+    }
+  }
+}
+
+function selectServiceCategory(category) {
+  // Update button states
+  var windows = document.getElementById('contract-category-windows');
+  var pressure = document.getElementById('contract-category-pressure');
+  var both = document.getElementById('contract-category-both');
+
+  if (windows) windows.className = 'btn btn-sm btn-tertiary';
+  if (pressure) pressure.className = 'btn btn-sm btn-tertiary';
+  if (both) both.className = 'btn btn-sm btn-tertiary';
+
+  if (category === 'windows' && windows) {
+    windows.className = 'btn btn-sm btn-primary';
+  } else if (category === 'pressure' && pressure) {
+    pressure.className = 'btn btn-sm btn-primary';
+  } else if (category === 'both' && both) {
+    both.className = 'btn btn-sm btn-primary';
+  }
+
+  // Store category in wizard data
+  if (window.ContractWizard && window.ContractWizard._contractData) {
+    window.ContractWizard._contractData.category = category;
   }
 }

@@ -467,7 +467,7 @@
       }
 
       // GST
-      var gstAmount = quoteData.gst || ((quoteData.subtotal - (quoteData.discount || 0)) * 0.1);
+      var gstAmount = quoteData.gst || Money.calculateGST(quoteData.subtotal - (quoteData.discount || 0));
       pdf.text('GST (10%):', labelX, textY);
       pdf.text('$' + PDFHelpers.formatCurrency(gstAmount), valueX, textY, { align: 'right' });
       textY += summaryBox.lineHeight;

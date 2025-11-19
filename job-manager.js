@@ -390,7 +390,7 @@
             }
         }
 
-        var gst = subtotal * 0.1;
+        var gst = Money.calculateGST(subtotal);
         var total = subtotal + gst;
 
         job.actual.subtotal = Math.round(subtotal * 100) / 100;

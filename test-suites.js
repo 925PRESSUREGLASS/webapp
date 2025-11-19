@@ -237,7 +237,7 @@
 
     ctx.it('should calculate GST correctly', function() {
       var subtotal = 100;
-      var gst = subtotal * 0.1;
+      var gst = Money.calculateGST(subtotal);
 
       assert.equal(gst, 10, 'GST should be 10% of subtotal');
     });

@@ -11,6 +11,16 @@
   var _lastEventId = null;
   var _pollInterval = null;
 
+  // ============================================
+  // WEBHOOK TIMING CONSTANTS (milliseconds)
+  // ============================================
+  var POLL_INTERVAL = 30000;        // 30 seconds - how often to check for new events
+  var BATCH_SIZE = 10;               // Process max 10 events per batch
+  var BATCH_DELAY = 5000;            // 5 seconds - delay between batches
+  var RETRY_ATTEMPTS = 3;            // Maximum retry attempts for failed events
+  var RETRY_DELAY = 60000;           // 1 minute - delay before retrying
+  var MAX_QUEUE_SIZE = 1000;         // Maximum events to queue before dropping oldest
+
   // Webhook configuration
   var WEBHOOK_CONFIG = {
     // Webhook endpoint (your Cloudflare Worker or backend)
@@ -35,11 +45,11 @@
 
     // Processing configuration
     processing: {
-      batchSize: 10,
-      batchDelay: 5000, // 5 seconds
-      retryAttempts: 3,
-      retryDelay: 60000, // 1 minute
-      maxQueueSize: 1000
+      batchSize: BATCH_SIZE,
+      batchDelay: BATCH_DELAY,
+      retryAttempts: RETRY_ATTEMPTS,
+      retryDelay: RETRY_DELAY,
+      maxQueueSize: MAX_QUEUE_SIZE
     },
 
     // Feature flags
@@ -53,7 +63,9 @@
   };
 
   /**
-   * Initialize webhook processor
+   * Initialize webhook processor and start event polling
+   * Loads configuration, last event ID, queued events, and starts polling if enabled
+   * @returns {void}
    */
   function init() {
     // Load configuration
@@ -74,7 +86,9 @@
   }
 
   /**
-   * Start polling for webhook events
+   * Start polling for webhook events from the configured endpoint
+   * Polls every 30 seconds if webhook is enabled and URL is configured
+   * @returns {void}
    */
   function startPolling() {
     if (!WEBHOOK_CONFIG.features.enabled) {
@@ -90,12 +104,10 @@
     // Stop existing polling
     stopPolling();
 
-    // Poll every 30 seconds
-    var pollDelay = 30000;
-
+    // Poll at configured interval (default: 30 seconds)
     _pollInterval = setInterval(function() {
       pollForEvents();
-    }, pollDelay);
+    }, POLL_INTERVAL);
 
     // Poll immediately
     pollForEvents();
@@ -176,7 +188,17 @@
   }
 
   /**
-   * Queue event for processing
+   * Queue webhook event for processing with deduplication and size limits
+   * @param {Object} event - Webhook event object from GHL
+   * @param {string} event.id - Unique event ID
+   * @param {string} event.type - Event type (ContactUpdate, TaskUpdate, etc.)
+   * @param {Object} event.data - Event payload data
+   * @returns {void}
+   *
+   * Behavior:
+   * - Deduplicates events if enabled (checks event.id)
+   * - Enforces max queue size (drops oldest if full)
+   * - Persists queue to LocalStorage
    */
   function queueEvent(event) {
     // Check for duplicates
@@ -202,7 +224,14 @@
   }
 
   /**
-   * Process event queue
+   * Process queued events in batches with retry logic
+   * @returns {void}
+   *
+   * Behavior:
+   * - Processes events in batches (default: 10 events per batch)
+   * - Retries failed events up to 3 attempts with exponential backoff
+   * - Automatically processes next batch when current batch completes
+   * - Updates queue in LocalStorage after each batch
    */
   function processEventQueue() {
     if (_processing || _eventQueue.length === 0) {
@@ -528,6 +557,11 @@
 
   /**
    * Check if there's a conflict between local and remote data
+   * A conflict exists if local data was modified more recently than remote data
+   * @param {Object} localData - Local data object (must have lastModified or lastSync)
+   * @param {Object} remoteData - Remote data from webhook event
+   * @param {string|Date} remoteTimestamp - Remote data modification timestamp
+   * @returns {boolean} True if conflict exists (local is newer), false otherwise
    */
   function hasConflict(localData, remoteData, remoteTimestamp) {
     if (!localData.lastModified && !localData.lastSync) {
@@ -542,7 +576,19 @@
   }
 
   /**
-   * Resolve data conflict
+   * Resolve data conflict using configured resolution strategy
+   * @param {Object} localData - Local data object with lastModified/lastSync
+   * @param {Object} remoteData - Remote data from GHL webhook event
+   * @param {string|Date} remoteTimestamp - Remote data timestamp
+   * @param {Function} callback - Callback function(resolvedData), receives updated local data if changed, null if no change
+   *
+   * Conflict Resolution Strategies:
+   * - 'timestamp': Most recent data wins (default)
+   * - 'ghl-wins': Always use GoHighLevel data
+   * - 'local-wins': Always keep local data
+   * - 'manual': Show UI for user to choose (not yet implemented)
+   *
+   * @returns {void}
    */
   function resolveConflict(localData, remoteData, remoteTimestamp, callback) {
     var strategy = WEBHOOK_CONFIG.features.conflictResolution;

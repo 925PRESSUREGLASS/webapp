@@ -145,19 +145,72 @@
     var html = '<div class="photo-grid">';
 
     currentPhotos.forEach(function(photo, index) {
-      html += '<div class="photo-item" data-photo-id="' + photo.id + '">';
-      html += '<img src="' + photo.base64 + '" alt="' + photo.filename + '" class="photo-thumbnail" onclick="window.PhotoModal.show(' + index + ')" style="cursor: pointer;" />';
+      // Sanitize user-provided filename to prevent XSS
+      var safeFilename = window.Security && window.Security.escapeHTML
+        ? window.Security.escapeHTML(photo.filename)
+        : photo.filename.replace(/[<>"'&]/g, function(c) {
+            return {'<':'&lt;', '>':'&gt;', '"':'&quot;', "'":"&#39;", '&':'&amp;'}[c];
+          });
+
+      html += '<div class="photo-item" data-photo-id="' + photo.id + '" data-photo-index="' + index + '">';
+      html += '<img src="' + photo.base64 + '" alt="' + safeFilename + '" class="photo-thumbnail" style="cursor: pointer;" />';
       html += '<div class="photo-info">';
-      html += '<div class="photo-filename">' + truncateFilename(photo.filename) + '</div>';
+      html += '<div class="photo-filename">' + truncateFilename(safeFilename) + '</div>';
       html += '<div class="photo-size">' + formatFileSize(photo.size) + '</div>';
       html += '</div>';
-      html += '<button type="button" class="photo-remove-btn" onclick="window.PhotoManager.remove(\'' + photo.id + '\')">×</button>';
+      html += '<button type="button" class="photo-remove-btn" aria-label="Remove photo">×</button>';
       html += '</div>';
     });
 
     html += '</div>';
 
     container.innerHTML = html;
+
+    // Event delegation: attach click handlers after rendering
+    attachPhotoEventHandlers(container);
+  }
+
+  // Attach event handlers using event delegation (no inline onclick)
+  function attachPhotoEventHandlers(container) {
+    // Remove old listeners if they exist
+    if (container._photoClickHandler) {
+      container.removeEventListener('click', container._photoClickHandler);
+    }
+
+    // Create new click handler
+    container._photoClickHandler = function(event) {
+      var target = event.target;
+
+      // Handle photo thumbnail click (open modal)
+      if (target.classList.contains('photo-thumbnail')) {
+        var photoItem = target.closest('.photo-item');
+        if (photoItem) {
+          var index = parseInt(photoItem.getAttribute('data-photo-index'), 10);
+          if (!isNaN(index) && window.PhotoModal && window.PhotoModal.show) {
+            window.PhotoModal.show(index);
+          }
+        }
+        event.preventDefault();
+        return;
+      }
+
+      // Handle remove button click
+      if (target.classList.contains('photo-remove-btn') || target.closest('.photo-remove-btn')) {
+        var removeBtn = target.classList.contains('photo-remove-btn') ? target : target.closest('.photo-remove-btn');
+        var photoItem = removeBtn.closest('.photo-item');
+        if (photoItem) {
+          var photoId = photoItem.getAttribute('data-photo-id');
+          if (photoId) {
+            removePhoto(photoId);
+          }
+        }
+        event.preventDefault();
+        return;
+      }
+    };
+
+    // Attach the event listener
+    container.addEventListener('click', container._photoClickHandler);
   }
 
   // Remove photo

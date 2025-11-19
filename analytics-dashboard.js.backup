@@ -620,9 +620,25 @@
         AnalyticsDashboard.exportDashboard();
     };
 
+    console.log('[ANALYTICS-DASHBOARD] Initialized');
 
-    // Note: init() is called by "Update Analytics" button (index.html line ~2849)
-    // Navigation handler calls updateDashboard() to refresh without re-initializing
-    console.log('[ANALYTICS-DASHBOARD] Module loaded');
+    // Auto-initialize when DOM is ready
+    if (document.readyState === 'loading') {
+        document.addEventListener('DOMContentLoaded', function() {
+            // Wait a bit for other modules to initialize
+            setTimeout(function() {
+                if (document.getElementById('analytics-date-range-selector')) {
+                    init();
+                }
+            }, 500);
+        });
+    } else {
+        // DOM already loaded
+        setTimeout(function() {
+            if (document.getElementById('analytics-date-range-selector')) {
+                init();
+            }
+        }, 500);
+    }
 
 })();

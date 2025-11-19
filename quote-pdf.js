@@ -115,7 +115,7 @@
 
       // Calculate GST
       if (!enriched.gst) {
-        enriched.gst = (enriched.subtotal - discount) * 0.1;
+        enriched.gst = Money.calculateGST(enriched.subtotal - discount);
       }
 
       // Calculate total

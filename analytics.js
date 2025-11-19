@@ -90,8 +90,8 @@
         timeEstimate: timeHours,
         windowLineCount: state.windowLines ? state.windowLines.length : 0,
         pressureLineCount: state.pressureLines ? state.pressureLines.length : 0,
-        gst: total * 0.1 / 1.1, // Calculate GST component
-        subtotal: total / 1.1,
+        gst: Money.extractGST(total), // Extract GST component from total
+        subtotal: Money.extractSubtotal(total),
 
         // Analytics tracking fields
         status: state.status || QUOTE_STATUS.DRAFT,

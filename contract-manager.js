@@ -5,37 +5,59 @@
 (function() {
   'use strict';
 
+  // ============================================
+  // DISCOUNT CONSTANTS (%)
+  // ============================================
+  // Residential discounts
+  var DISCOUNT_RESIDENTIAL_WEEKLY = 15;
+  var DISCOUNT_RESIDENTIAL_FORTNIGHTLY = 12;
+  var DISCOUNT_RESIDENTIAL_MONTHLY = 10;
+  var DISCOUNT_RESIDENTIAL_QUARTERLY = 5;
+  var DISCOUNT_RESIDENTIAL_SEMI_ANNUAL = 3;
+  var DISCOUNT_RESIDENTIAL_ANNUAL = 0;
+
+  // Commercial discounts (higher frequency = higher volume = better discount)
+  var DISCOUNT_COMMERCIAL_WEEKLY = 20;
+  var DISCOUNT_COMMERCIAL_FORTNIGHTLY = 15;
+  var DISCOUNT_COMMERCIAL_MONTHLY = 12;
+  var DISCOUNT_COMMERCIAL_QUARTERLY = 8;
+
+  // Strata/Body Corporate discounts (bulk building contracts)
+  var DISCOUNT_STRATA_FORTNIGHTLY = 18;
+  var DISCOUNT_STRATA_MONTHLY = 15;
+  var DISCOUNT_STRATA_QUARTERLY = 10;
+
   // Contract Types Configuration
   var CONTRACT_TYPES = {
     residential: {
       name: 'Residential',
       description: 'Single-family homes, townhouses, apartments',
       frequencies: [
-        { id: 'weekly', name: 'Weekly', interval: 1, unit: 'week', discount: 15 },
-        { id: 'fortnightly', name: 'Fortnightly', interval: 2, unit: 'week', discount: 12 },
-        { id: 'monthly', name: 'Monthly', interval: 1, unit: 'month', discount: 10 },
-        { id: 'quarterly', name: 'Quarterly', interval: 3, unit: 'month', discount: 5 },
-        { id: 'semi-annual', name: 'Semi-Annual', interval: 6, unit: 'month', discount: 3 },
-        { id: 'annual', name: 'Annual', interval: 12, unit: 'month', discount: 0 }
+        { id: 'weekly', name: 'Weekly', interval: 1, unit: 'week', discount: DISCOUNT_RESIDENTIAL_WEEKLY },
+        { id: 'fortnightly', name: 'Fortnightly', interval: 2, unit: 'week', discount: DISCOUNT_RESIDENTIAL_FORTNIGHTLY },
+        { id: 'monthly', name: 'Monthly', interval: 1, unit: 'month', discount: DISCOUNT_RESIDENTIAL_MONTHLY },
+        { id: 'quarterly', name: 'Quarterly', interval: 3, unit: 'month', discount: DISCOUNT_RESIDENTIAL_QUARTERLY },
+        { id: 'semi-annual', name: 'Semi-Annual', interval: 6, unit: 'month', discount: DISCOUNT_RESIDENTIAL_SEMI_ANNUAL },
+        { id: 'annual', name: 'Annual', interval: 12, unit: 'month', discount: DISCOUNT_RESIDENTIAL_ANNUAL }
       ]
     },
     commercial: {
       name: 'Commercial',
       description: 'Offices, retail stores, restaurants',
       frequencies: [
-        { id: 'weekly', name: 'Weekly', interval: 1, unit: 'week', discount: 20 },
-        { id: 'fortnightly', name: 'Fortnightly', interval: 2, unit: 'week', discount: 15 },
-        { id: 'monthly', name: 'Monthly', interval: 1, unit: 'month', discount: 12 },
-        { id: 'quarterly', name: 'Quarterly', interval: 3, unit: 'month', discount: 8 }
+        { id: 'weekly', name: 'Weekly', interval: 1, unit: 'week', discount: DISCOUNT_COMMERCIAL_WEEKLY },
+        { id: 'fortnightly', name: 'Fortnightly', interval: 2, unit: 'week', discount: DISCOUNT_COMMERCIAL_FORTNIGHTLY },
+        { id: 'monthly', name: 'Monthly', interval: 1, unit: 'month', discount: DISCOUNT_COMMERCIAL_MONTHLY },
+        { id: 'quarterly', name: 'Quarterly', interval: 3, unit: 'month', discount: DISCOUNT_COMMERCIAL_QUARTERLY }
       ]
     },
     strata: {
       name: 'Strata/Body Corporate',
       description: 'Multi-unit buildings, apartment complexes',
       frequencies: [
-        { id: 'fortnightly', name: 'Fortnightly', interval: 2, unit: 'week', discount: 18 },
-        { id: 'monthly', name: 'Monthly', interval: 1, unit: 'month', discount: 15 },
-        { id: 'quarterly', name: 'Quarterly', interval: 3, unit: 'month', discount: 10 }
+        { id: 'fortnightly', name: 'Fortnightly', interval: 2, unit: 'week', discount: DISCOUNT_STRATA_FORTNIGHTLY },
+        { id: 'monthly', name: 'Monthly', interval: 1, unit: 'month', discount: DISCOUNT_STRATA_MONTHLY },
+        { id: 'quarterly', name: 'Quarterly', interval: 3, unit: 'month', discount: DISCOUNT_STRATA_QUARTERLY }
       ]
     }
   };
@@ -209,7 +231,7 @@
     var subtotal = basePrice - discountAmount;
 
     // Calculate GST (10%)
-    var gst = subtotal * 0.1;
+    var gst = Money.calculateGST(subtotal);
     var total = subtotal + gst;
 
     return {

@@ -103,6 +103,7 @@ test.describe('Quote Calculations', () => {
     const gst = parseFloat(gstText.replace(/[$,]/g, ''));
 
     // GST should be 10% of subtotal
+    // Formula matches Money.calculateGST() implementation
     const expectedGst = Math.round(subtotal * 0.1 * 100) / 100;
     expect(Math.abs(gst - expectedGst)).toBeLessThan(0.02); // Allow 1 cent rounding
   });

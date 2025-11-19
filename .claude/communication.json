@@ -1,0 +1,129 @@
+{
+  "version": "1.0.0",
+  "lastUpdated": "2025-11-18T23:00:00Z",
+  "messages": [
+    {
+      "id": "MSG-001",
+      "timestamp": "2025-11-18T23:00:00Z",
+      "from": "general-purpose",
+      "to": "all",
+      "type": "announcement",
+      "subject": "Agent Workflow System Initialized",
+      "body": {
+        "message": "Agent memory system, workflows, and communication protocol now active",
+        "capabilities": [
+          "Persistent context via memory.json",
+          "Task tracking via tasks.json",
+          "Agent-to-agent handoffs",
+          "Automated documentation",
+          "Coordinated workflows"
+        ],
+        "agentsActive": [
+          "code-reviewer",
+          "test-runner",
+          "documentation-writer",
+          "deployment-specialist",
+          "refactoring-architect"
+        ],
+        "workflowsAvailable": [
+          "bug-fix-workflow",
+          "feature-development-workflow"
+        ]
+      },
+      "status": "read",
+      "priority": "high"
+    },
+    {
+      "id": "MSG-002",
+      "timestamp": "2025-11-18T23:00:00Z",
+      "from": "general-purpose",
+      "to": "code-reviewer",
+      "type": "task-assignment",
+      "subject": "3 Critical Issues Need Immediate Attention",
+      "body": {
+        "tasks": [
+          {
+            "id": "TASK-001",
+            "title": "Fix ghl-integration.js missing file",
+            "priority": "critical",
+            "estimatedTime": "15 minutes"
+          },
+          {
+            "id": "TASK-002",
+            "title": "Implement fillCurrentLocation() function",
+            "priority": "high",
+            "estimatedTime": "30 minutes"
+          },
+          {
+            "id": "TASK-003",
+            "title": "Uncomment Chart.js CDN",
+            "priority": "high",
+            "estimatedTime": "15 minutes"
+          }
+        ],
+        "totalEstimate": "1 hour",
+        "note": "These are quick wins that will increase integration completion from 72% to 90%"
+      },
+      "status": "unread",
+      "priority": "critical"
+    }
+  ],
+  "messageQueue": [],
+  "archivedMessages": [],
+  "statistics": {
+    "totalMessages": 2,
+    "unreadMessages": 1,
+    "messagesByType": {
+      "announcement": 1,
+      "task-assignment": 1,
+      "handoff": 0,
+      "question": 0,
+      "response": 0
+    },
+    "messagesByPriority": {
+      "critical": 1,
+      "high": 1,
+      "medium": 0,
+      "low": 0
+    }
+  },
+  "handoffProtocol": {
+    "version": "1.0.0",
+    "rules": [
+      "Agent completing work must write handoff message to next agent",
+      "Handoff message must include context, outputs, and next steps",
+      "Receiving agent must mark message as read when processing",
+      "Update memory.json with handoff outcomes",
+      "Archive messages after 7 days"
+    ],
+    "templates": {
+      "handoff": {
+        "from": "sending-agent",
+        "to": "receiving-agent",
+        "type": "handoff",
+        "subject": "Brief description of work completed",
+        "body": {
+          "context": "What was done and why",
+          "outputs": "Files modified, results produced",
+          "nextSteps": "What the receiving agent should do",
+          "blockers": "Any issues or dependencies"
+        },
+        "status": "unread",
+        "priority": "medium"
+      },
+      "question": {
+        "from": "asking-agent",
+        "to": "target-agent",
+        "type": "question",
+        "subject": "Brief question description",
+        "body": {
+          "question": "Specific question to answer",
+          "context": "Why this question matters",
+          "urgency": "When answer is needed"
+        },
+        "status": "unread",
+        "priority": "medium"
+      }
+    }
+  }
+}
