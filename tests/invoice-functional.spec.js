@@ -1,8 +1,7 @@
 // @ts-check
 const { test, expect } = require('@playwright/test');
 const { initializeApp } = require('./test-helpers');
-
-const APP_URL = '/index.html';
+const { waitForAppReady } = require('./fixtures/app-url');
 
 /**
  * Invoice System Functional Tests
@@ -23,7 +22,7 @@ test.describe('Invoice System - Critical Functional Tests (P0)', () => {
     });
 
     await page.reload();
-    await page.waitForLoadState('networkidle');
+    await waitForAppReady(page);
 
     // Wait for APP to initialize again after reload
     await page.evaluate(async () => {
@@ -191,7 +190,7 @@ test.describe('Invoice System - Critical Functional Tests (P0)', () => {
 
     // Test persistence after refresh
     await page.reload();
-    await page.waitForLoadState('networkidle');
+    await waitForAppReady(page);
     await page.waitForFunction(() => typeof window.InvoiceManager !== 'undefined');
 
     await createInvoice('Client 4');
@@ -460,7 +459,7 @@ test.describe('Invoice System - Critical Functional Tests (P0)', () => {
 
     // Reload page
     await page.reload();
-    await page.waitForLoadState('networkidle');
+    await waitForAppReady(page);
     await page.waitForFunction(() => typeof window.InvoiceManager !== 'undefined');
 
     // Open settings again
@@ -558,7 +557,7 @@ test.describe('Invoice System - Critical Functional Tests (P0)', () => {
 
     // Reload page
     await page.reload();
-    await page.waitForLoadState('networkidle');
+    await waitForAppReady(page);
     await page.waitForFunction(() => typeof window.InvoiceManager !== 'undefined');
 
     // Get invoice data after reload
@@ -628,7 +627,7 @@ test.describe('Invoice System - Known Issues (Bug Documentation)', () => {
       localStorage.removeItem('invoice-settings');
     });
     await page.reload();
-    await page.waitForLoadState('networkidle');
+    await waitForAppReady(page);
 
     // Wait for APP to initialize again after reload
     await page.evaluate(async () => {

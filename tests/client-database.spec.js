@@ -2,10 +2,11 @@
 // Tests client CRUD operations, search, validation, and persistence
 
 const { test, expect } = require('@playwright/test');
+const { gotoApp } = require('./fixtures/app-url');
 
 test.describe('Client Database', () => {
   test.beforeEach(async ({ page }) => {
-    await page.goto('http://localhost:8080');
+    await gotoApp(page);
     await page.waitForSelector('.app');
     await page.waitForFunction(() => window.APP && window.APP.initialized);
 

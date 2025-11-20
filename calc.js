@@ -436,6 +436,7 @@ return result;
 };
 
 // Export globally
+window.Money = Money;
 window.PrecisionCalc = PrecisionCalc;
 
 })();

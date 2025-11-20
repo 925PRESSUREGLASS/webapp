@@ -2,11 +2,12 @@
 // Tests the TODO implementation: Make encryption user-configurable via settings UI
 
 const { test, expect } = require('@playwright/test');
+const { gotoApp } = require('./fixtures/app-url');
 
 test.describe('Invoice Encryption Settings', function() {
   test.beforeEach(async function({ page }) {
     // Navigate to app and wait for initialization
-    await page.goto('http://localhost:8080');
+    await gotoApp(page);
     await page.waitForSelector('.app');
     await page.waitForFunction(function() {
       return window.APP && window.APP.initialized;

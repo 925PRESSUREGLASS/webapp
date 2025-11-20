@@ -3,10 +3,11 @@
 
 var test = require('@playwright/test').test;
 var expect = require('@playwright/test').expect;
+var gotoApp = require('./fixtures/app-url').gotoApp;
 
 test.describe('Wizard Checkbox Fix', function() {
   test.beforeEach(async function({ page }) {
-    await page.goto('http://localhost:8080');
+    await gotoApp(page);
     await page.waitForSelector('.app');
     await page.waitForFunction(function() {
       return window.APP && window.APP.initialized;

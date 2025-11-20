@@ -2,7 +2,14 @@
 
 Professional quoting tool for **925 Pressure Glass** - Window & Pressure Cleaning services.
 
-**Current Version:** v1.13.2 | [See Changelog](CHANGELOG.md)
+**Current Version:** v1.13.2 | [See Changelog](CHANGELOG.md)  
+**Contributor Guide:** [Repository Guidelines](AGENTS.md)
+
+## Contributing
+- Read through `AGENTS.md` for expectations on structure, ES5 coding style, testing, and PR etiquette before starting a task.
+- Keep branches rebased on `main`, then follow the conventional commit prefixes already in `git log` (`fix:`, `docs:`, etc.) when pushing changes.
+- Document any user-facing adjustments in `CHANGELOG.md`, attach Playwright or manual test evidence to your PR, and link the relevant deployment/testing guides when appropriate.
+- Surface new risks or follow-ups inside `CLAUDE.md` so downstream agents can pick up context quickly.
 
 ## Features
 

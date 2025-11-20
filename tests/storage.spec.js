@@ -2,10 +2,11 @@
 // Tests direct storage operations, persistence, and error handling
 
 const { test, expect } = require('@playwright/test');
+const { gotoApp } = require('./fixtures/app-url');
 
 test.describe('Storage Module', () => {
   test.beforeEach(async ({ page }) => {
-    await page.goto('http://localhost:8080');
+    await gotoApp(page);
     await page.waitForSelector('.app');
     await page.waitForFunction(() => window.APP && window.APP.initialized);
     await page.waitForFunction(() => window.AppStorage);

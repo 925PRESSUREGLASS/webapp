@@ -2,10 +2,11 @@
 // Tests built-in templates, custom templates, and template loading
 
 const { test, expect } = require('@playwright/test');
+const { gotoApp } = require('./fixtures/app-url');
 
 test.describe('Quote Templates', () => {
   test.beforeEach(async ({ page }) => {
-    await page.goto('http://localhost:8080');
+    await gotoApp(page);
     await page.waitForSelector('.app');
     await page.waitForFunction(() => window.APP && window.APP.initialized);
     await page.waitForFunction(() => window.QuoteTemplates);

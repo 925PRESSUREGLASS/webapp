@@ -1,13 +1,12 @@
 // @ts-check
 const { test, expect } = require('@playwright/test');
-
-const APP_URL = '/index.html';
+const { gotoApp, waitForAppReady } = require('./fixtures/app-url');
 
 test.describe('Invoice Interface Tests', () => {
 
   test.beforeEach(async ({ page }) => {
-    await page.goto(APP_URL);
-    await page.waitForLoadState('networkidle');
+    await gotoApp(page);
+    await waitForAppReady(page);
   });
 
   test('should load the main page successfully', async ({ page }) => {
@@ -164,8 +163,8 @@ test.describe('Invoice Interface Tests', () => {
   test('should check responsive design - mobile viewport', async ({ page }) => {
     // Set mobile viewport
     await page.setViewportSize({ width: 375, height: 667 });
-    await page.goto(APP_URL);
-    await page.waitForLoadState('networkidle');
+    await gotoApp(page);
+    await waitForAppReady(page);
 
     // Open invoice modal
     await page.click('#manageInvoicesBtn');

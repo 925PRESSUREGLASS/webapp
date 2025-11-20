@@ -445,6 +445,7 @@
     labelType.textContent = "Type";
 
     var selectType = createEl("select");
+    selectType.className = "window-type-select";
     selectType.value = line.windowTypeId;
 
     // Use extended types with categories if available
@@ -530,6 +531,7 @@
 
     var panesInput = createEl("input");
     panesInput.type = "number";
+    panesInput.className = "window-quantity-input";
     panesInput.min = "1";
     panesInput.step = "1";
     panesInput.value = line.panes;

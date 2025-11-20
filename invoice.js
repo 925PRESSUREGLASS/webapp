@@ -77,6 +77,9 @@
           []
         );
       }
+      if (!Array.isArray(invoices)) {
+        invoices = [];
+      }
       return invoices;
     } catch (e) {
       console.error('[INVOICE] Failed to load invoices:', e);
@@ -560,14 +563,16 @@
 
   // Get all invoices
   function getAllInvoices() {
-    return invoices.slice(0).sort(function(a, b) {
+    var list = Array.isArray(invoices) ? invoices : [];
+    return list.slice(0).sort(function(a, b) {
       return b.createdDate - a.createdDate;
     });
   }
 
   // Get filtered invoices
   function getInvoicesByStatus(status) {
-    return invoices.filter(function(invoice) {
+    var list = Array.isArray(invoices) ? invoices : [];
+    return list.filter(function(invoice) {
       return invoice.status === status;
     });
   }
@@ -577,7 +582,8 @@
     var now = Date.now();
     var overdueCount = 0;
 
-    invoices.forEach(function(invoice) {
+    var list = Array.isArray(invoices) ? invoices : [];
+    list.forEach(function(invoice) {
       if (invoice.status === 'sent' && invoice.dueDate < now && invoice.balance > 0) {
         invoice.status = 'overdue';
         invoice.statusHistory.push({
@@ -598,8 +604,9 @@
 
   // Get invoice statistics
   function getInvoiceStats() {
+    var list = Array.isArray(invoices) ? invoices : [];
     var stats = {
-      total: invoices.length,
+      total: list.length,
       draft: 0,
       sent: 0,
       paid: 0,
@@ -611,7 +618,8 @@
       averageInvoice: 0
     };
 
-    invoices.forEach(function(invoice) {
+    var list = Array.isArray(invoices) ? invoices : [];
+    list.forEach(function(invoice) {
       stats[invoice.status]++;
       stats.totalRevenue += invoice.total;
       stats.totalPaid += invoice.amountPaid;

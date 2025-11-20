@@ -2,11 +2,12 @@
 // Tests for Task Manager, Follow-up Automation, and GHL sync
 
 const { test, expect } = require('@playwright/test');
+const { gotoApp } = require('./fixtures/app-url');
 
 test.describe('Task Management System', () => {
   test.beforeEach(async ({ page }) => {
     // Navigate to app
-    await page.goto('http://localhost:8080');
+    await gotoApp(page);
 
     // Wait for app to be ready
     await page.waitForSelector('.app');
@@ -256,7 +257,7 @@ test.describe('Task Management System', () => {
 
 test.describe('Follow-up Configuration', () => {
   test.beforeEach(async ({ page }) => {
-    await page.goto('http://localhost:8080');
+    await gotoApp(page);
     await page.waitForFunction(() => window.FollowupConfig);
   });
 
@@ -321,7 +322,7 @@ test.describe('Follow-up Configuration', () => {
 
 test.describe('Follow-up Automation', () => {
   test.beforeEach(async ({ page }) => {
-    await page.goto('http://localhost:8080');
+    await gotoApp(page);
     await page.waitForFunction(() => window.FollowupAutomation && window.TaskManager);
 
     // Clear tasks
@@ -470,7 +471,7 @@ test.describe('Follow-up Automation', () => {
 
 test.describe('Task Dashboard UI', () => {
   test.beforeEach(async ({ page }) => {
-    await page.goto('http://localhost:8080');
+    await gotoApp(page);
     await page.waitForFunction(() => window.TaskDashboard);
   });
 
@@ -500,7 +501,7 @@ test.describe('Task Dashboard UI', () => {
 
 test.describe('LocalStorage Persistence', () => {
   test.beforeEach(async ({ page }) => {
-    await page.goto('http://localhost:8080');
+    await gotoApp(page);
     await page.waitForFunction(() => window.TaskManager);
 
     // Clear storage
@@ -558,7 +559,7 @@ test.describe('LocalStorage Persistence', () => {
 
 test.describe('Error Handling', () => {
   test.beforeEach(async ({ page }) => {
-    await page.goto('http://localhost:8080');
+    await gotoApp(page);
     await page.waitForFunction(() => window.TaskManager);
   });
 

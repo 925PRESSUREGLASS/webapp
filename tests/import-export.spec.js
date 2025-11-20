@@ -3,14 +3,13 @@
 // PHASE 1: Critical Data Integrity Tests
 
 const { test, expect } = require('@playwright/test');
-
-const APP_URL = '/index.html';
+const { gotoApp, waitForAppReady } = require('./fixtures/app-url');
 
 test.describe('Import/Export System - Backup & Restore', () => {
 
   test.beforeEach(async ({ page }) => {
-    await page.goto(APP_URL);
-    await page.waitForLoadState('networkidle');
+    await gotoApp(page);
+    await waitForAppReady(page);
 
     // Clear all data before each test
     await page.evaluate(() => {
@@ -18,7 +17,7 @@ test.describe('Import/Export System - Backup & Restore', () => {
     });
 
     await page.reload();
-    await page.waitForLoadState('networkidle');
+    await waitForAppReady(page);
 
     // Wait for ImportExport to initialize
     await page.waitForFunction(() => {

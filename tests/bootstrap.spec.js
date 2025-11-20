@@ -2,12 +2,11 @@
 // Tests the new bootstrap.js initialization system for reliability and edge cases
 
 const { test, expect } = require('@playwright/test');
-
-const APP_URL = '/index.html';
+const { gotoApp, waitForAppReady } = require('./fixtures/app-url');
 
 test.describe('Bootstrap System', () => {
   test('APP object exists before any module loads', async ({ page }) => {
-    await page.goto(APP_URL);
+    await gotoApp(page);
 
     // Check APP exists immediately (created by bootstrap.js)
     const appExists = await page.evaluate(() => {
@@ -27,8 +26,8 @@ test.describe('Bootstrap System', () => {
   });
 
   test('waitForInit() resolves when app is initialized', async ({ page }) => {
-    await page.goto(APP_URL);
-    await page.waitForLoadState('networkidle');
+    await gotoApp(page);
+    await waitForAppReady(page);
 
     const result = await page.evaluate(async () => {
       const startTime = Date.now();
@@ -54,8 +53,8 @@ test.describe('Bootstrap System', () => {
   });
 
   test('modules are properly registered', async ({ page }) => {
-    await page.goto(APP_URL);
-    await page.waitForLoadState('networkidle');
+    await gotoApp(page);
+    await waitForAppReady(page);
 
     await page.evaluate(async () => {
       await window.APP.waitForInit();
@@ -76,8 +75,8 @@ test.describe('Bootstrap System', () => {
   });
 
   test('init() can be called multiple times safely', async ({ page }) => {
-    await page.goto(APP_URL);
-    await page.waitForLoadState('networkidle');
+    await gotoApp(page);
+    await waitForAppReady(page);
 
     const result = await page.evaluate(async () => {
       // Call init multiple times
@@ -98,8 +97,8 @@ test.describe('Bootstrap System', () => {
   });
 
   test('both initialization flags are set for backward compatibility', async ({ page }) => {
-    await page.goto(APP_URL);
-    await page.waitForLoadState('networkidle');
+    await gotoApp(page);
+    await waitForAppReady(page);
 
     await page.evaluate(async () => {
       await window.APP.waitForInit();
@@ -117,8 +116,8 @@ test.describe('Bootstrap System', () => {
   });
 
   test('APP methods are available after initialization', async ({ page }) => {
-    await page.goto(APP_URL);
-    await page.waitForLoadState('networkidle');
+    await gotoApp(page);
+    await waitForAppReady(page);
 
     await page.evaluate(async () => {
       await window.APP.waitForInit();
@@ -146,8 +145,8 @@ test.describe('Bootstrap System', () => {
 
 test.describe('Edge Cases', () => {
   test('handles rapid page reloads', async ({ page }) => {
-    await page.goto(APP_URL);
-    await page.waitForLoadState('networkidle');
+    await gotoApp(page);
+    await waitForAppReady(page);
 
     // First initialization
     await page.evaluate(async () => {
@@ -156,7 +155,7 @@ test.describe('Edge Cases', () => {
 
     // Reload and reinitialize
     await page.reload();
-    await page.waitForLoadState('networkidle');
+    await waitForAppReady(page);
 
     const result = await page.evaluate(async () => {
       try {
@@ -188,8 +187,8 @@ test.describe('Edge Cases', () => {
       });
     });
 
-    await page.goto(APP_URL);
-    await page.waitForLoadState('networkidle');
+    await gotoApp(page);
+    await waitForAppReady(page);
 
     // App should still initialize even if localStorage fails
     const result = await page.evaluate(async () => {
@@ -213,8 +212,8 @@ test.describe('Edge Cases', () => {
   });
 
   test('gracefully handles missing dependencies', async ({ page }) => {
-    await page.goto(APP_URL);
-    await page.waitForLoadState('networkidle');
+    await gotoApp(page);
+    await waitForAppReady(page);
 
     // Even if some modules fail, APP should still initialize
     const result = await page.evaluate(async () => {
@@ -239,7 +238,7 @@ test.describe('Edge Cases', () => {
   });
 
   test('version information is available', async ({ page }) => {
-    await page.goto(APP_URL);
+    await gotoApp(page);
 
     const version = await page.evaluate(() => {
       return window.APP ? window.APP.version : null;
@@ -251,8 +250,8 @@ test.describe('Edge Cases', () => {
   });
 
   test('custom event is dispatched on initialization', async ({ page }) => {
-    await page.goto(APP_URL);
-    await page.waitForLoadState('networkidle');
+    await gotoApp(page);
+    await waitForAppReady(page);
 
     const result = await page.evaluate(async () => {
       return new Promise((resolve) => {
@@ -280,7 +279,7 @@ test.describe('Edge Cases', () => {
 
 test.describe('Module Registration System', () => {
   test('modules can be registered and retrieved', async ({ page }) => {
-    await page.goto(APP_URL);
+    await gotoApp(page);
 
     const result = await page.evaluate(() => {
       // Register a test module
@@ -303,7 +302,7 @@ test.describe('Module Registration System', () => {
   });
 
   test('warns when overwriting existing module', async ({ page }) => {
-    await page.goto(APP_URL);
+    await gotoApp(page);
 
     const warnings = [];
     page.on('console', msg => {
@@ -322,7 +321,7 @@ test.describe('Module Registration System', () => {
   });
 
   test('returns null for non-existent modules', async ({ page }) => {
-    await page.goto(APP_URL);
+    await gotoApp(page);
 
     const result = await page.evaluate(() => {
       const module = window.APP.getModule('nonExistentModule');

@@ -3,11 +3,12 @@
 // Tests window-types-extended.js, conditions-modifiers.js, pressure-surfaces-extended.js
 
 const { test, expect } = require('@playwright/test');
+const { gotoApp } = require('./fixtures/app-url');
 
 test.describe('Window Types Extended', () => {
 
   test.beforeEach(async ({ page }) => {
-    await page.goto('http://localhost:8080');
+    await gotoApp(page);
     await page.waitForSelector('.app');
     await page.waitForFunction(() => window.APP && window.APP.initialized);
   });
@@ -103,7 +104,7 @@ test.describe('Window Types Extended', () => {
 test.describe('Conditions Modifiers', () => {
 
   test.beforeEach(async ({ page }) => {
-    await page.goto('http://localhost:8080');
+    await gotoApp(page);
     await page.waitForSelector('.app');
     await page.waitForFunction(() => window.APP && window.APP.initialized);
   });
@@ -225,7 +226,7 @@ test.describe('Conditions Modifiers', () => {
 test.describe('Pressure Surfaces Extended', () => {
 
   test.beforeEach(async ({ page }) => {
-    await page.goto('http://localhost:8080');
+    await gotoApp(page);
     await page.waitForSelector('.app');
     await page.waitForFunction(() => window.APP && window.APP.initialized);
   });
@@ -342,7 +343,7 @@ test.describe('Pressure Surfaces Extended', () => {
 test.describe('Integration Tests', () => {
 
   test.beforeEach(async ({ page }) => {
-    await page.goto('http://localhost:8080');
+    await gotoApp(page);
     await page.waitForSelector('.app');
     await page.waitForFunction(() => window.APP && window.APP.initialized);
   });

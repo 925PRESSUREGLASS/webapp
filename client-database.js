@@ -15,6 +15,9 @@
         null,
         []
       );
+      if (!Array.isArray(clients)) {
+        clients = [];
+      }
       return clients;
     } catch (e) {
       console.error('Failed to load clients:', e);
@@ -158,15 +161,16 @@
 
   // Search clients
   function searchClients(query) {
+    var list = Array.isArray(clients) ? clients : [];
     if (!query || query.trim() === '') {
-      return clients.slice(0);
+      return list.slice(0);
     }
 
     var searchQuery = query.toLowerCase().trim();
     var results = [];
 
-    for (var i = 0; i < clients.length; i++) {
-      var client = clients[i];
+    for (var i = 0; i < list.length; i++) {
+      var client = list[i];
       if (
         client.name.toLowerCase().indexOf(searchQuery) !== -1 ||
         client.email.toLowerCase().indexOf(searchQuery) !== -1 ||
@@ -182,7 +186,8 @@
 
   // Get all clients
   function getAllClients() {
-    return clients.slice(0).sort(function(a, b) {
+    var list = Array.isArray(clients) ? clients : [];
+    return list.slice(0).sort(function(a, b) {
       return a.name.localeCompare(b.name);
     });
   }

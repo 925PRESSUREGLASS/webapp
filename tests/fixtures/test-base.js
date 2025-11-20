@@ -15,6 +15,7 @@
 
 const { test: base, expect } = require('@playwright/test');
 const { createHelpers } = require('./helpers');
+const { gotoApp } = require('./app-url');
 
 /**
  * Extended test with custom fixtures
@@ -31,7 +32,7 @@ const test = base.extend({
    */
   appReady: async ({ page }, use) => {
     // Navigate to app
-    await page.goto('http://localhost:8080');
+    await gotoApp(page);
 
     // Wait for APP object to exist
     await page.waitForFunction(() => window.APP !== undefined, {
@@ -80,7 +81,7 @@ const test = base.extend({
    */
   cleanState: [async ({ page }, use) => {
     // Clear LocalStorage before test
-    await page.goto('http://localhost:8080');
+    await gotoApp(page);
     await page.evaluate(() => localStorage.clear());
 
     // Run the test

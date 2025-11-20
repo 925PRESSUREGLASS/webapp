@@ -2,16 +2,15 @@
 // Tests user interface functionality, wizards, and data persistence
 
 const { test, expect } = require('@playwright/test');
-
-const APP_URL = '/index.html';
+const { gotoApp, waitForAppReady } = require('./fixtures/app-url');
 
 test.describe('UI Interactions', () => {
   test.beforeEach(async ({ page }) => {
-    await page.goto(APP_URL);
-    await page.waitForLoadState('networkidle');
+    await gotoApp(page);
+    await waitForAppReady(page);
     await page.evaluate(() => localStorage.clear());
     await page.reload();
-    await page.waitForLoadState('networkidle');
+    await waitForAppReady(page);
   });
 
   test('should toggle accordion sections', async ({ page }) => {
@@ -204,7 +203,7 @@ test.describe('UI Interactions', () => {
 test.describe('Responsive Design', () => {
   test('should display correctly on mobile viewport', async ({ page }) => {
     await page.setViewportSize({ width: 375, height: 667 });
-    await page.goto(APP_URL);
+    await gotoApp(page);
 
     // App should be visible
     const app = page.locator('.app');
@@ -217,7 +216,7 @@ test.describe('Responsive Design', () => {
 
   test('should display correctly on tablet viewport', async ({ page }) => {
     await page.setViewportSize({ width: 768, height: 1024 });
-    await page.goto(APP_URL);
+    await gotoApp(page);
 
     const app = page.locator('.app');
     await expect(app).toBeVisible();

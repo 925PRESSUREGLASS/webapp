@@ -7,14 +7,16 @@
  * Call this in beforeEach hooks
  * @param {Page} page - Playwright page object
  */
+const { gotoApp, waitForAppReady } = require('./fixtures/app-url');
+
 async function initializeApp(page) {
-  await page.goto('/index.html');
-  await page.waitForLoadState('networkidle');
+  await gotoApp(page);
+  await waitForAppReady(page);
   
   // Clear localStorage for clean test state
   await page.evaluate(() => localStorage.clear());
   await page.reload();
-  await page.waitForLoadState('networkidle');
+  await waitForAppReady(page);
   
   // Wait for APP to be fully initialized
   await page.evaluate(async () => {

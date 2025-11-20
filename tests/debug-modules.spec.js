@@ -2,11 +2,12 @@
 // Tests the newly implemented module-specific debug functionality
 
 const { test, expect } = require('@playwright/test');
+const { gotoApp } = require('./fixtures/app-url');
 
 test.describe('Module-specific debug controls', () => {
   test.beforeEach(async ({ page }) => {
     // Navigate to the application
-    await page.goto('http://localhost:8080');
+    await gotoApp(page);
 
     // Wait for app initialization
     await page.waitForSelector('.app');

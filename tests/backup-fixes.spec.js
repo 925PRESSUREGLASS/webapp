@@ -2,12 +2,15 @@
 // Tests Bug #1 (double stringification) and Bug #2 (return value handling)
 
 const { test, expect } = require('@playwright/test');
+const { resolvePath } = require('./fixtures/app-url');
+
+const VERIFY_URL = resolvePath('tests/verify-backup-fixes.html');
 
 test.describe('Backup System Bug Fixes Verification', () => {
 
   test('should verify Bug #1 fix - no double JSON stringification', async ({ page }) => {
     // Navigate to verification page
-    await page.goto('http://localhost:3000/tests/verify-backup-fixes.html');
+    await page.goto(VERIFY_URL);
 
     // Wait for auto-run tests to complete
     await page.waitForTimeout(3000);
@@ -23,7 +26,7 @@ test.describe('Backup System Bug Fixes Verification', () => {
   });
 
   test('should verify Bug #2 fix - correct return value handling', async ({ page }) => {
-    await page.goto('http://localhost:3000/tests/verify-backup-fixes.html');
+    await page.goto(VERIFY_URL);
     await page.waitForTimeout(3000);
 
     // Check import test results
@@ -37,7 +40,7 @@ test.describe('Backup System Bug Fixes Verification', () => {
   });
 
   test('should verify round-trip data integrity', async ({ page }) => {
-    await page.goto('http://localhost:3000/tests/verify-backup-fixes.html');
+    await page.goto(VERIFY_URL);
     await page.waitForTimeout(3000);
 
     // Check round-trip test results
@@ -51,7 +54,7 @@ test.describe('Backup System Bug Fixes Verification', () => {
   });
 
   test('should show all tests passed in summary', async ({ page }) => {
-    await page.goto('http://localhost:3000/tests/verify-backup-fixes.html');
+    await page.goto(VERIFY_URL);
     await page.waitForTimeout(3000);
 
     // Check summary

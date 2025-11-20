@@ -1,13 +1,12 @@
 // Quick test to verify APP initialization
 
 const { test, expect } = require('@playwright/test');
-
-const APP_URL = '/index.html';
+const { gotoApp, waitForAppReady } = require('./fixtures/app-url');
 
 test.describe('Initialization Test', () => {
   test('should initialize APP correctly', async ({ page }) => {
-    await page.goto(APP_URL);
-    await page.waitForLoadState('networkidle');
+    await gotoApp(page);
+    await waitForAppReady(page);
 
     // Check if APP object exists (created by bootstrap.js)
     const appExists = await page.evaluate(() => {

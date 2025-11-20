@@ -1,8 +1,9 @@
 const { test, expect } = require('@playwright/test');
+const { gotoApp } = require('./fixtures/app-url');
 
 test.describe('Quote Validation', () => {
   test.beforeEach(async ({ page }) => {
-    await page.goto('http://localhost:3000');
+    await gotoApp(page);
     await page.waitForSelector('.app');
     await page.waitForFunction(() => window.APP && window.QuoteValidation);
   });

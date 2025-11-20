@@ -3,8 +3,7 @@
 
 const { test, expect } = require('@playwright/test');
 const { initializeApp } = require('./test-helpers');
-
-const APP_URL = '/index.html';
+const { gotoApp, waitForAppReady } = require('./fixtures/app-url');
 
 test.describe('Window Wizard', () => {
   test.beforeEach(async ({ page }) => {
@@ -68,8 +67,8 @@ test.describe('Pressure Wizard', () => {
 
 test.describe('Data Validation', () => {
   test('should validate numeric inputs', async ({ page }) => {
-    await page.goto(APP_URL);
-    await page.waitForLoadState('networkidle');
+    await gotoApp(page);
+    await waitForAppReady(page);
 
     // Try to enter invalid data
     await page.fill('#baseFeeInput', '-100');
@@ -87,8 +86,8 @@ test.describe('Data Validation', () => {
   });
 
   test('should handle decimal precision in currency', async ({ page }) => {
-    await page.goto(APP_URL);
-    await page.waitForLoadState('networkidle');
+    await gotoApp(page);
+    await waitForAppReady(page);
 
     // Add window line using wizard
     await page.click('#openWindowWizardBtn');

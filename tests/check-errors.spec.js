@@ -1,8 +1,7 @@
 // Test to check for console errors during initialization
 
 const { test, expect } = require('@playwright/test');
-
-const APP_URL = '/index.html';
+const { gotoApp, waitForAppReady } = require('./fixtures/app-url');
 
 test.describe('Console Error Check', () => {
   test('should not have console errors during initialization', async ({ page }) => {
@@ -21,8 +20,8 @@ test.describe('Console Error Check', () => {
       pageErrors.push(error.toString());
     });
 
-    await page.goto(APP_URL);
-    await page.waitForLoadState('networkidle');
+    await gotoApp(page);
+    await waitForAppReady(page);
 
     // Wait for app initialization using APP.waitForInit()
     await page.evaluate(async () => {

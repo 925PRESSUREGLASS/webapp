@@ -926,6 +926,8 @@ From `index.html`, scripts MUST load in this order:
 
 ## Development Workflows
 
+> 🔗 **New:** See `AGENTS.md` for the up-to-date repository guidelines (structure, ES5 coding rules, testing, and PR flow). Treat it as the quick-start check before diving into any task.
+
 ### Module Pattern (ES5 IIFE)
 
 ALL JavaScript files follow this pattern:
