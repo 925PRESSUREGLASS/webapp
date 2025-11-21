@@ -46,6 +46,23 @@
   };
 
   /**
+   * Helper to safely parse JSON from localStorage
+   */
+  function safeParseJSON(jsonStr, defaultValue) {
+    if (!jsonStr) return defaultValue;
+    
+    try {
+      if (window.Security && window.Security.safeJSONParse) {
+        return window.Security.safeJSONParse(jsonStr, null, defaultValue);
+      }
+      return JSON.parse(jsonStr);
+    } catch (e) {
+      console.warn('[SELECTIVE-EXPORT] JSON parse failed:', e);
+      return defaultValue;
+    }
+  }
+
+  /**
    * Export selected data categories
    */
   function exportSelected(selectedCategories) {
@@ -78,17 +95,17 @@
           try {
             var value = localStorage.getItem(category.key);
             if (value) {
-              var parsed = window.Security ? 
-                window.Security.safeJSONParse(value, null, null) : 
-                JSON.parse(value);
+              var parsed = safeParseJSON(value, null);
               
-              exportData.data[category.key] = parsed;
-              
-              // Count items
-              if (Array.isArray(parsed)) {
-                totalItems += parsed.length;
-              } else if (parsed && typeof parsed === 'object') {
-                totalItems += Object.keys(parsed).length;
+              if (parsed) {
+                exportData.data[category.key] = parsed;
+                
+                // Count items
+                if (Array.isArray(parsed)) {
+                  totalItems += parsed.length;
+                } else if (parsed && typeof parsed === 'object') {
+                  totalItems += Object.keys(parsed).length;
+                }
               }
             }
           } catch (e) {
@@ -158,9 +175,7 @@
         return false;
       }
 
-      var quotes = window.Security ? 
-        window.Security.safeJSONParse(quotesStr, null, []) : 
-        JSON.parse(quotesStr);
+      var quotes = safeParseJSON(quotesStr, []);
 
       if (!Array.isArray(quotes) || quotes.length === 0) {
         if (window.LoadingState) {
@@ -288,9 +303,7 @@
         return false;
       }
 
-      var clients = window.Security ? 
-        window.Security.safeJSONParse(clientsStr, null, []) : 
-        JSON.parse(clientsStr);
+      var clients = safeParseJSON(clientsStr, []);
 
       if (!Array.isArray(clients) || clients.length === 0) {
         if (window.LoadingState) {
@@ -472,12 +485,14 @@
       
       if (hasData) {
         try {
-          var data = localStorage.getItem(category.key);
-          var parsed = JSON.parse(data);
-          if (Array.isArray(parsed)) {
-            itemCount = parsed.length;
-          } else if (parsed && typeof parsed === 'object') {
-            itemCount = Object.keys(parsed).length;
+          var dataStr = localStorage.getItem(category.key);
+          var parsed = safeParseJSON(dataStr, null);
+          if (parsed) {
+            if (Array.isArray(parsed)) {
+              itemCount = parsed.length;
+            } else if (parsed && typeof parsed === 'object') {
+              itemCount = Object.keys(parsed).length;
+            }
           }
         } catch (e) {
           // Ignore parse errors
