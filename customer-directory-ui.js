@@ -153,6 +153,9 @@
 
     if (!container) return;
 
+    container.setAttribute('role', 'grid');
+    container.setAttribute('aria-label', 'Customer directory');
+
     if (customers.length === 0) {
       container.style.display = 'none';
       if (emptyState) emptyState.style.display = 'block';
@@ -173,7 +176,7 @@
       var escapedLocation = escapeHtml(customer.location);
       var escapedNotes = escapeHtml(customer.notes);
 
-      html += '<div class="customer-card card">';
+      html += '<div class="customer-card card" tabindex="0" role="row" aria-label="Customer ' + escapedName + '">';
       html += '<div class="card-header" style="display: flex; justify-content: space-between; align-items: center;">';
       html += '<div>';
       html += '<h3 class="card-title" style="margin: 0;">' + escapedName + '</h3>';
@@ -182,9 +185,9 @@
       }
       html += '</div>';
       html += '<div class="customer-card-actions">';
-      html += '<button class="btn btn-sm btn-success" onclick="addCustomerToQuote(\'' + customer.id + '\')" title="Add to Quote" aria-label="Add to quote">+ Quote</button>';
-      html += '<button class="btn btn-sm btn-secondary" onclick="editCustomerFromDirectory(\'' + customer.id + '\')" title="Edit" aria-label="Edit customer">✎ Edit</button>';
-      html += '<button class="btn btn-sm btn-danger" onclick="deleteCustomerFromDirectory(\'' + customer.id + '\')" title="Delete" aria-label="Delete customer">🗑️ Delete</button>';
+      html += '<button class="btn btn-sm btn-success" onclick="addCustomerToQuote(\'' + customer.id + '\')" title="Add to Quote" aria-label="Add ' + escapedName + ' to quote" role="button">+ Quote</button>';
+      html += '<button class="btn btn-sm btn-secondary" onclick="editCustomerFromDirectory(\'' + customer.id + '\')" title="Edit" aria-label="Edit ' + escapedName + '" role="button">✎ Edit</button>';
+      html += '<button class="btn btn-sm btn-danger" onclick="deleteCustomerFromDirectory(\'' + customer.id + '\')" title="Delete" aria-label="Delete ' + escapedName + '" role="button">🗑️ Delete</button>';
       html += '</div>';
       html += '</div>';
 
@@ -243,6 +246,15 @@
     }
 
     container.innerHTML = html;
+
+    if (window.EventHandlers && window.EventHandlers.enableKeyboardTableNavigation) {
+      window.EventHandlers.enableKeyboardTableNavigation(container, '.customer-card', function(row) {
+        var editBtn = row.querySelector('.btn-secondary');
+        if (editBtn) {
+          editBtn.click();
+        }
+      });
+    }
   }
 
   // Add customer to current quote
@@ -376,9 +388,9 @@
     modalOverlay.className = 'modal-overlay';
     modalOverlay.style.display = 'flex';
 
-    var html = '<div class="modal">';
+    var html = '<div class="modal" role="dialog" aria-modal="true" aria-labelledby="customerFormTitle">';
     html += '<div class="modal-header">';
-    html += '<h2 class="modal-title">' + (isEdit ? 'Edit Customer' : 'Add Customer') + '</h2>';
+    html += '<h2 class="modal-title" id="customerFormTitle">' + (isEdit ? 'Edit Customer' : 'Add Customer') + '</h2>';
     html += '<button type="button" class="modal-close" aria-label="Close">&times;</button>';
     html += '</div>';
     html += '<div class="modal-body">';
@@ -477,6 +489,18 @@
       e.preventDefault();
       submitHandler();
     };
+
+    if (window.EventHandlers && window.EventHandlers.setupModalNavigation) {
+      window.EventHandlers.setupModalNavigation(modalOverlay, {
+        onClose: function() {
+          modalOverlay.style.display = 'none';
+          setTimeout(function() { modalOverlay.remove(); }, 300);
+        },
+        onSubmit: submitHandler,
+        initialFocusSelector: '#customerFormName',
+        labelledBy: 'customerFormTitle'
+      });
+    }
 
     return modalOverlay;
   }

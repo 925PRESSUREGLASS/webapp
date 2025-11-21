@@ -65,6 +65,14 @@
     transform: translateY(-2px);
 }
 
+.quick-action-btn:focus,
+.quick-action-btn:focus-visible {
+    outline: 3px solid #0ea5e9;
+    outline-offset: 3px;
+    border-color: #0ea5e9;
+    box-shadow: 0 0 0 3px rgba(14, 165, 233, 0.25);
+}
+
 .quick-action-icon {
     font-size: 2rem;
 }
@@ -83,6 +91,13 @@
     border-radius: 8px;
     padding: 1rem;
     margin-bottom: 1rem;
+}
+
+.work-item:focus,
+.work-item:focus-visible {
+    outline: 3px solid #6366f1;
+    outline-offset: 3px;
+    box-shadow: 0 0 0 3px rgba(99, 102, 241, 0.25);
 }
 
 .work-item-header {
@@ -198,6 +213,14 @@
     color: #6b7280;
     transition: all 0.2s;
     margin-bottom: -2px;
+}
+
+.photo-tab:focus,
+.photo-tab:focus-visible {
+    outline: 3px solid #10b981;
+    outline-offset: 2px;
+    color: #065f46;
+    border-color: #10b981;
 }
 
 .photo-tab:hover {
