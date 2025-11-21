@@ -291,23 +291,33 @@
    * @param {String} moduleName - Module to load when visible
    * @param {Function} callback - function(error, exports)
    */
-  function loadOnVisible(element, moduleName, callback) {
+  function loadOnVisible(element, moduleName, callback, options) {
     if (!element) {
       callback(new Error('Element not found'));
       return;
     }
 
+    var loadOptions = options || {};
+    var verticalBuffer = typeof loadOptions.verticalBuffer === 'number' ? loadOptions.verticalBuffer : 120;
+    var threshold = typeof loadOptions.threshold === 'number' ? loadOptions.threshold : 0.35;
+    var rootMargin = loadOptions.rootMargin || '0px 0px -' + verticalBuffer + 'px 0px';
+    var loader = typeof loadOptions.loader === 'function' ? loadOptions.loader : function(cb) {
+      loadModule(moduleName, cb);
+    };
+
     // Check if already visible
     var rect = element.getBoundingClientRect();
+    var viewportHeight = window.innerHeight || document.documentElement.clientHeight;
+    var viewportWidth = window.innerWidth || document.documentElement.clientWidth;
     var isVisible = (
-      rect.top >= 0 &&
-      rect.left >= 0 &&
-      rect.bottom <= (window.innerHeight || document.documentElement.clientHeight) &&
-      rect.right <= (window.innerWidth || document.documentElement.clientWidth)
+      rect.top < (viewportHeight - verticalBuffer) &&
+      rect.bottom > verticalBuffer &&
+      rect.left < viewportWidth &&
+      rect.right > 0
     );
 
     if (isVisible) {
-      loadModule(moduleName, callback);
+      loader(callback);
       return;
     }
 
@@ -315,13 +325,14 @@
     if (window.IntersectionObserver) {
       var observer = new IntersectionObserver(function(entries) {
         entries.forEach(function(entry) {
-          if (entry.isIntersecting) {
+          if (entry.isIntersecting && entry.intersectionRatio >= threshold) {
             observer.disconnect();
-            loadModule(moduleName, callback);
+            loader(callback);
           }
         });
       }, {
-        rootMargin: '50px' // Load slightly before visible
+        rootMargin: rootMargin,
+        threshold: threshold
       });
 
       observer.observe(element);
@@ -330,13 +341,13 @@
       var scrollHandler = function() {
         var rect = element.getBoundingClientRect();
         var isVisible = (
-          rect.top < window.innerHeight &&
-          rect.bottom > 0
+          rect.top < (window.innerHeight - verticalBuffer) &&
+          rect.bottom > verticalBuffer
         );
 
         if (isVisible) {
           window.removeEventListener('scroll', scrollHandler);
-          loadModule(moduleName, callback);
+          loader(callback);
         }
       };
 
