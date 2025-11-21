@@ -17,27 +17,126 @@
          * @param {string} type - 'success', 'error', 'warning', 'info'
          * @param {number} duration - Duration in ms (default 3000)
          */
+        var toastQueue = [];
+        var toastTimer = null;
+        var toastPool = [];
+        var TOAST_BATCH_DELAY = 140;
+
         function showToast(message, type, duration) {
             type = type || 'info';
             duration = duration || 3000;
 
-            // Create toast container if doesn't exist
+            // Sanitize message early for reuse
+            var sanitizedMessage = message;
+            if (window.Security && window.Security.escapeHTML) {
+                sanitizedMessage = window.Security.escapeHTML(message);
+            }
+
+            toastQueue.push({
+                message: sanitizedMessage,
+                type: type,
+                duration: duration
+            });
+
+            scheduleToastDrain();
+        }
+
+        function scheduleToastDrain() {
+            if (toastTimer) {
+                return;
+            }
+            toastTimer = setTimeout(function() {
+                toastTimer = null;
+                drainToastQueue();
+            }, TOAST_BATCH_DELAY);
+        }
+
+        function drainToastQueue() {
+            if (!toastQueue.length) {
+                return;
+            }
+
+            var nextToast = toastQueue.shift();
+            renderToast(nextToast.message, nextToast.type, nextToast.duration);
+
+            if (toastQueue.length) {
+                scheduleToastDrain();
+            }
+        }
+
+        function getToastContainer() {
             var container = document.getElementById('toast-container');
             if (!container) {
                 container = document.createElement('div');
                 container.id = 'toast-container';
                 container.className = 'toast-container';
+                container.setAttribute('role', 'region');
+                container.setAttribute('aria-live', 'polite');
+                container.setAttribute('aria-label', 'Notifications');
                 document.body.appendChild(container);
             }
+            return container;
+        }
 
-            // Create toast element
+        function buildToastElement() {
             var toast = document.createElement('div');
-            toast.className = 'toast toast-' + type;
+            toast.className = 'toast';
+            toast.setAttribute('aria-atomic', 'true');
 
-            // Icon based on type
+            var iconSvg = document.createElementNS('http://www.w3.org/2000/svg', 'svg');
+            iconSvg.setAttribute('class', 'toast-icon');
+            iconSvg.setAttribute('xmlns', 'http://www.w3.org/2000/svg');
+            iconSvg.setAttribute('fill', 'none');
+            iconSvg.setAttribute('viewBox', '0 0 24 24');
+            iconSvg.setAttribute('stroke-width', '2');
+            var iconPath = document.createElementNS('http://www.w3.org/2000/svg', 'path');
+            iconPath.setAttribute('stroke-linecap', 'round');
+            iconPath.setAttribute('stroke-linejoin', 'round');
+            iconSvg.appendChild(iconPath);
+
+            var content = document.createElement('div');
+            content.className = 'toast-content';
+
+            var messageEl = document.createElement('div');
+            messageEl.className = 'toast-message';
+            messageEl.setAttribute('role', 'text');
+            content.appendChild(messageEl);
+
+            var closeBtn = document.createElement('button');
+            closeBtn.className = 'toast-close';
+            closeBtn.setAttribute('type', 'button');
+            closeBtn.setAttribute('aria-label', 'Close notification');
+            closeBtn.innerHTML = '<svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" width="16" height="16"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/></svg>';
+
+            closeBtn.addEventListener('click', function() {
+                removeToast(toast);
+            });
+
+            toast.appendChild(iconSvg);
+            toast.appendChild(content);
+            toast.appendChild(closeBtn);
+
+            toast._icon = iconSvg;
+            toast._iconPath = iconPath;
+            toast._message = messageEl;
+            toast._closeBtn = closeBtn;
+
+            return toast;
+        }
+
+        function acquireToast() {
+            if (toastPool.length) {
+                return toastPool.pop();
+            }
+            return buildToastElement();
+        }
+
+        function renderToast(message, type, duration) {
+            var container = getToastContainer();
+            var toast = acquireToast();
+
             var iconPath = '';
             var iconColor = '';
-
             switch (type) {
                 case 'success':
                     iconPath = 'M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z';
@@ -51,34 +150,37 @@
                     iconPath = 'M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z';
                     iconColor = '#f59e0b';
                     break;
-                default: // info
+                default:
                     iconPath = 'M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z';
                     iconColor = '#3b82f6';
             }
 
-            // Build toast HTML
-            var iconSvg = '<svg class="toast-icon" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="' + iconColor + '"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="' + iconPath + '"/></svg>';
-            var closeSvg = '<svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" width="16" height="16"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/></svg>';
+            var role = (type === 'error' || type === 'warning') ? 'alert' : 'status';
+            toast.className = 'toast toast-' + type;
+            toast.setAttribute('role', role);
+            toast.setAttribute('aria-live', role === 'alert' ? 'assertive' : 'polite');
+            toast._icon.setAttribute('stroke', iconColor);
+            toast._iconPath.setAttribute('d', iconPath);
+            toast._message.textContent = message;
 
-            // Sanitize message
-            var sanitizedMessage = message;
-            if (window.Security && window.Security.escapeHTML) {
-                sanitizedMessage = window.Security.escapeHTML(message);
+            if (toast._removeTimer) {
+                clearTimeout(toast._removeTimer);
             }
 
-            toast.innerHTML = iconSvg + '<div class="toast-content"><div class="toast-message">' + sanitizedMessage + '</div></div><button class="toast-close" aria-label="Close">' + closeSvg + '</button>';
-
-            // Add to container
             container.appendChild(toast);
 
-            // Close button event
-            var closeBtn = toast.querySelector('.toast-close');
-            closeBtn.addEventListener('click', function() {
-                removeToast(toast);
-            });
+            // Ensure the toast becomes keyboard reachable
+            toast.setAttribute('tabindex', '-1');
 
-            // Auto remove after duration
-            setTimeout(function() {
+            if (window.requestAnimationFrame) {
+                window.requestAnimationFrame(function() {
+                    toast.classList.add('toast-show');
+                });
+            } else {
+                toast.classList.add('toast-show');
+            }
+
+            toast._removeTimer = setTimeout(function() {
                 removeToast(toast);
             }, duration);
 
@@ -94,12 +196,48 @@
                 return;
             }
 
-            toast.style.animation = 'slideOutRight 0.3s ease';
-            setTimeout(function() {
+            if (toast._removeTimer) {
+                clearTimeout(toast._removeTimer);
+                toast._removeTimer = null;
+            }
+
+            var prefersReduceMotion = false;
+            if (window.matchMedia && typeof window.matchMedia === 'function') {
+                prefersReduceMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+            }
+
+            var cleanup = function() {
                 if (toast.parentNode) {
                     toast.parentNode.removeChild(toast);
                 }
-            }, 300);
+                toast.className = 'toast';
+                toast.removeAttribute('tabindex');
+                toast._removeTimer = null;
+                toastPool.push(toast);
+            };
+
+            if (prefersReduceMotion) {
+                cleanup();
+                return;
+            }
+
+            toast.classList.remove('toast-show');
+
+            var handled = false;
+            var onTransitionEnd = function() {
+                if (handled) {
+                    return;
+                }
+                handled = true;
+                toast.removeEventListener('transitionend', onTransitionEnd);
+                cleanup();
+            };
+
+            toast.addEventListener('transitionend', onTransitionEnd);
+
+            setTimeout(function() {
+                onTransitionEnd();
+            }, 400);
         }
 
         /**
@@ -170,7 +308,10 @@
             overlay.className = 'modal-overlay';
             overlay.setAttribute('role', 'dialog');
             overlay.setAttribute('aria-modal', 'true');
+
+            var messageId = 'confirm-modal-message-' + new Date().getTime();
             overlay.setAttribute('aria-labelledby', 'confirm-modal-title');
+            overlay.setAttribute('aria-describedby', messageId);
 
             // Create modal
             var modal = document.createElement('div');
@@ -180,7 +321,7 @@
             var confirmBtnClass = danger ? 'btn btn-danger' : 'btn btn-primary';
 
             modal.innerHTML = '<div class="modal-header"><h3 class="modal-title" id="confirm-modal-title">' + title + '</h3></div>' +
-                '<div class="modal-body"><p>' + message + '</p></div>' +
+                '<div class="modal-body"><p id="' + messageId + '">' + message + '</p></div>' +
                 '<div class="modal-footer">' +
                 '<button class="btn btn-secondary" data-action="cancel">' + cancelText + '</button>' +
                 '<button class="' + confirmBtnClass + '" data-action="confirm">' + confirmText + '</button>' +
@@ -191,6 +332,8 @@
 
             // Prevent body scroll
             document.body.classList.add('modal-open');
+
+            var previousFocus = document.activeElement;
 
             // Handle overlay click (close on backdrop)
             overlay.addEventListener('click', function(e) {
@@ -213,16 +356,49 @@
                 close();
             });
 
-            // Focus confirm button
+            // Focus first interactive element and trap focus within modal
+            var focusableElements = modal.querySelectorAll('button, [href], input, select, textarea, [tabindex]:not([tabindex="-1"])');
+            var firstFocusable = focusableElements[0];
+            var lastFocusable = focusableElements[focusableElements.length - 1];
+
             setTimeout(function() {
-                confirmBtn.focus();
-            }, 100);
+                if (firstFocusable && firstFocusable.focus) {
+                    firstFocusable.focus();
+                }
+            }, 50);
+
+            var handleTab = function(e) {
+                if (e.key !== 'Tab' && e.keyCode !== 9) {
+                    return;
+                }
+                if (!firstFocusable || !lastFocusable) {
+                    return;
+                }
+                if (e.shiftKey) {
+                    if (document.activeElement === firstFocusable) {
+                        e.preventDefault();
+                        lastFocusable.focus();
+                    }
+                } else {
+                    if (document.activeElement === lastFocusable) {
+                        e.preventDefault();
+                        firstFocusable.focus();
+                    }
+                }
+            };
+
+            overlay.addEventListener('keydown', handleTab);
 
             // Close function
             function close() {
                 document.body.classList.remove('modal-open');
+                overlay.removeEventListener('keydown', handleTab);
+                document.removeEventListener('keydown', handleEscape);
                 if (overlay.parentNode) {
                     overlay.parentNode.removeChild(overlay);
+                }
+                if (previousFocus && previousFocus.focus) {
+                    previousFocus.focus();
                 }
             }
 
@@ -300,6 +476,7 @@
             // Close function
             function close() {
                 document.body.classList.remove('modal-open');
+                document.removeEventListener('keydown', handleEscape);
                 if (overlay.parentNode) {
                     overlay.parentNode.removeChild(overlay);
                 }
