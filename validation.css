@@ -85,6 +85,11 @@
   background: rgba(255, 255, 255, 0.3);
 }
 
+.validation-error-close:focus-visible {
+  outline: 2px solid #fbbf24;
+  outline-offset: 2px;
+}
+
 .validation-error-body {
   padding: 20px;
   overflow-y: auto;
@@ -105,6 +110,9 @@
   border-radius: 4px;
   color: #f3f4f6;
   line-height: 1.5;
+  display: flex;
+  align-items: flex-start;
+  gap: 8px;
 }
 
 .validation-error-item strong {

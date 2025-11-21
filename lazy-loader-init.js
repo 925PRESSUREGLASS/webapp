@@ -157,6 +157,13 @@
       }
     }
 
+    window.addEventListener('load', function() {
+      if (window.LazyLoader) {
+        window.LazyLoader.load('analytics-dashboard', function() {});
+        window.LazyLoader.load('photos', function() {});
+      }
+    });
+
     console.log('[LAZY-INIT] Lazy loading handlers initialized');
   }
 

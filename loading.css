@@ -78,6 +78,36 @@
   font-weight: 500;
 }
 
+/* Skeleton cards */
+.skeleton-card,
+.skeleton-bar {
+  position: relative;
+  overflow: hidden;
+  background: linear-gradient(90deg, #1f2937 0%, #111827 40%, #1f2937 80%);
+  background-size: 200% 100%;
+  animation: loadingShimmer 1.2s ease-in-out infinite;
+}
+
+.skeleton-card {
+  border-radius: 12px;
+  min-height: 72px;
+  border: 1px solid rgba(55, 65, 81, 0.7);
+}
+
+.skeleton-bar {
+  height: 14px;
+  border-radius: 8px;
+}
+
+@keyframes loadingShimmer {
+  0% {
+    background-position: 200% 0;
+  }
+  100% {
+    background-position: -200% 0;
+  }
+}
+
 /* Button loading state */
 .btn-loading {
   position: relative;

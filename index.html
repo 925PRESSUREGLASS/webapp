@@ -217,11 +217,26 @@
 			</div>
 		</header>
 
-		<!-- MAIN -->
-		<main class="main">
-			<!-- LEFT COLUMN -->
-			<section class="col col-left">
-				<!-- CONFIG PANEL -->
+                <!-- MAIN -->
+                <main class="main" id="mainContent">
+                        <section class="workspace-panel" aria-labelledby="quoteWorkspaceHeading">
+                                <header class="workspace-header">
+                                        <div class="workspace-titles">
+                                                <p class="workspace-eyebrow">Quote Builder</p>
+                                                <h1 class="workspace-title" id="quoteWorkspaceHeading">Build the quote, capture job details, and review totals</h1>
+                                        </div>
+                                        <div class="workspace-status" aria-live="polite" role="status" id="workspaceStatusLive"></div>
+                                </header>
+
+                                <div class="panel-grid" role="presentation">
+                                        <!-- LEFT COLUMN -->
+                                        <section class="col col-left" aria-labelledby="builderColumnHeading">
+                                                <header class="col-header" id="builderColumnHeading">
+                                                        <h2 class="col-title">Job setup & line items</h2>
+                                                        <p class="col-description">Configure rates, add windows or pressure cleaning lines, and keep items organized.</p>
+                                                </header>
+
+                                                <!-- CONFIG PANEL -->
 				<section class="section" id="configPanel">
 					<header class="sec-h">
 						<h2 class="sec-title">⚙️ Job Settings</h2>
@@ -737,9 +752,10 @@
 							</div>
 						</div>
 					</div>
-				</section>
-			</section>
-		</main>
+                                </section>
+                        </div>
+                </section>
+        </main>
 	</div> <!-- /.app -->
 
 	<!-- TASK DASHBOARD PAGE (Hidden by default) -->

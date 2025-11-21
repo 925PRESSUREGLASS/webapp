@@ -18,8 +18,15 @@
     // NOTE: analytics.js is NOT lazy-loaded because it's needed immediately
     // for core functionality (saving quotes to history). Tests expect it to be available.
     'charts': '/charts.js',
-    'photo-modal': '/photo-modal.js'
+    'photo-modal': '/photo-modal.js',
+    'analytics-dashboard': '/analytics-dashboard.js',
+    'photos': '/photos.js'
     // NOTE: Removed other modules from lazy loading as they're needed at app start
+  };
+
+  var MODULE_STYLES = {
+    'photo-modal': '/photo-modal.css',
+    'analytics-dashboard': '/analytics.css'
   };
 
   // External libraries
@@ -139,40 +146,54 @@
     };
 
     var scriptPath = MODULE_PATHS[moduleName];
+    var stylePath = MODULE_STYLES[moduleName];
 
     console.log('[LazyLoader] Loading module:', moduleName);
 
-    loadScript(scriptPath, function(error) {
-      if (error) {
-        console.error('[LazyLoader] Failed to load module:', moduleName, error);
+    var afterStyle = function() {
+      loadScript(scriptPath, function(error) {
+        if (error) {
+          console.error('[LazyLoader] Failed to load module:', moduleName, error);
+
+          // Notify all waiting callbacks
+          modules[moduleName].callbacks.forEach(function(cb) {
+            cb(error, null);
+          });
+
+          modules[moduleName].loading = false;
+          modules[moduleName].callbacks = [];
+          return;
+        }
+
+        // Module loaded successfully
+        modules[moduleName].loaded = true;
+        modules[moduleName].loading = false;
+
+        // Get module exports (if module registered itself)
+        var moduleExports = window[getModuleGlobalName(moduleName)] || true;
+        modules[moduleName].exports = moduleExports;
+
+        console.log('[LazyLoader] Module loaded:', moduleName);
 
         // Notify all waiting callbacks
         modules[moduleName].callbacks.forEach(function(cb) {
-          cb(error, null);
+          cb(null, moduleExports);
         });
 
-        modules[moduleName].loading = false;
         modules[moduleName].callbacks = [];
-        return;
-      }
-
-      // Module loaded successfully
-      modules[moduleName].loaded = true;
-      modules[moduleName].loading = false;
-
-      // Get module exports (if module registered itself)
-      var moduleExports = window[getModuleGlobalName(moduleName)] || true;
-      modules[moduleName].exports = moduleExports;
-
-      console.log('[LazyLoader] Module loaded:', moduleName);
-
-      // Notify all waiting callbacks
-      modules[moduleName].callbacks.forEach(function(cb) {
-        cb(null, moduleExports);
       });
+    };
 
-      modules[moduleName].callbacks = [];
-    });
+    if (stylePath) {
+      loadCSS(stylePath, function(styleError) {
+        if (styleError) {
+          console.warn('[LazyLoader] Failed to load CSS for', moduleName, styleError);
+        }
+        afterStyle();
+      });
+    } else {
+      afterStyle();
+    }
   }
 
   /**
