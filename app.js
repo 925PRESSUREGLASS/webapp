@@ -1379,7 +1379,7 @@ $("totalIncGstDisplay").textContent = formatMoney(totalIncGst);
           "<td>" +
           (line.highReach ? "✔" : "") +
           "</td>" +
-          "<td style='text-align:right;'>" +
+          "<td class='quote-doc-align-right'>" +
           lineTotalText +
           "</td>" +
           "</tr>";
@@ -1394,7 +1394,7 @@ $("totalIncGstDisplay").textContent = formatMoney(totalIncGst);
         "<th>In</th>" +
         "<th>Out</th>" +
         "<th>High</th>" +
-        "<th style='text-align:right;'>Line Total</th>" +
+        "<th class='quote-doc-align-right'>Line Total</th>" +
         "</tr></thead>" +
         "<tbody>" +
         rows +
@@ -1435,7 +1435,7 @@ $("totalIncGstDisplay").textContent = formatMoney(totalIncGst);
           "<td>" +
           window.Security.escapeHTML(line.notes || "") +
           "</td>" +
-          "<td style='text-align:right;'>" +
+          "<td class='quote-doc-align-right'>" +
           lineTotalText +
           "</td>" +
           "</tr>";
@@ -1449,7 +1449,7 @@ $("totalIncGstDisplay").textContent = formatMoney(totalIncGst);
         "<th>Soil</th>" +
         "<th>Access</th>" +
         "<th>Notes</th>" +
-        "<th style='text-align:right;'>Line Total</th>" +
+        "<th class='quote-doc-align-right'>Line Total</th>" +
         "</tr></thead>" +
         "<tbody>" +
         rows +
@@ -1488,7 +1488,7 @@ $("totalIncGstDisplay").textContent = formatMoney(totalIncGst);
         "<div class='quote-doc-totals-row'><div>GST (10%):</div><div>" +
           fmtMoneyExport(gst) +
         "</div></div>" +
-        "<div class='quote-doc-totals-row' style='font-weight:600;'><div>Total (incl. GST):</div><div>" +
+        "<div class='quote-doc-totals-row quote-doc-strong-row'><div>Total (incl. GST):</div><div>" +
           fmtMoneyExport(totalIncGst) +
         "</div></div>" +
       "</div>";
@@ -1560,7 +1560,7 @@ $("totalIncGstDisplay").textContent = formatMoney(totalIncGst);
       totalsHtml +
       timeHtml +
       notesHtml +
-      "<div style='margin-top:18px;font-size:11px;color:#6b7280;'>" +
+      "<div class='quote-doc-disclaimer'>" +
       "This quote is based on the information provided and assumes reasonable access. " +
       "Any significant changes in scope or condition may require an updated quote." +
       "</div>" +
