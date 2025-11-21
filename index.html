@@ -336,10 +336,27 @@
 							<button class="card-toggle" type="button" data-target="windowsBody" aria-label="Toggle windows section" aria-expanded="true">▾</button>
 						</div>
 					</header>
-					<div class="sec-b" id="windowsBody">
-						<div class="lines-list" id="windowLinesContainer"></div>
-					</div>
-				</section>
+                                        <div class="sec-b" id="windowsBody">
+                                                <div class="lines-table-wrapper">
+                                                        <table class="lines-table" id="windowLinesTable" aria-label="Window lines">
+                                                                <thead>
+                                                                        <tr>
+                                                                                <th scope="col"><button type="button" class="sort-toggle" data-type="window" data-key="title">Title <span class="sort-icon" aria-hidden="true"></span></button></th>
+                                                                                <th scope="col"><button type="button" class="sort-toggle" data-type="window" data-key="type">Type <span class="sort-icon" aria-hidden="true"></span></button></th>
+                                                                                <th scope="col"><button type="button" class="sort-toggle" data-type="window" data-key="panes">Panes <span class="sort-icon" aria-hidden="true"></span></button></th>
+                                                                                <th scope="col">Flags</th>
+                                                                                <th scope="col"><button type="button" class="sort-toggle" data-type="window" data-key="condition">Condition <span class="sort-icon" aria-hidden="true"></span></button></th>
+                                                                                <th scope="col"><button type="button" class="sort-toggle" data-type="window" data-key="access">Access <span class="sort-icon" aria-hidden="true"></span></button></th>
+                                                                                <th scope="col">Tint</th>
+                                                                                <th scope="col"><button type="button" class="sort-toggle" data-type="window" data-key="location">Location <span class="sort-icon" aria-hidden="true"></span></button></th>
+                                                                                <th scope="col" class="actions-col">Actions</th>
+                                                                        </tr>
+                                                                </thead>
+                                                                <tbody id="windowLinesTableBody"></tbody>
+                                                        </table>
+                                                </div>
+                                        </div>
+                                </section>
 
 				<!-- PRESSURE PANEL -->
 				<section class="section" id="pressurePanel">
@@ -355,10 +372,25 @@
 							<button class="card-toggle" type="button" data-target="pressureBody" aria-label="Toggle pressure cleaning section" aria-expanded="true">▾</button>
 						</div>
 					</header>
-					<div class="sec-b" id="pressureBody">
-						<div class="lines-list" id="pressureLinesContainer"></div>
-					</div>
-				</section>
+                                        <div class="sec-b" id="pressureBody">
+                                                <div class="lines-table-wrapper">
+                                                        <table class="lines-table" id="pressureLinesTable" aria-label="Pressure lines">
+                                                                <thead>
+                                                                        <tr>
+                                                                                <th scope="col"><button type="button" class="sort-toggle" data-type="pressure" data-key="title">Title <span class="sort-icon" aria-hidden="true"></span></button></th>
+                                                                                <th scope="col"><button type="button" class="sort-toggle" data-type="pressure" data-key="surface">Surface <span class="sort-icon" aria-hidden="true"></span></button></th>
+                                                                                <th scope="col"><button type="button" class="sort-toggle" data-type="pressure" data-key="area">Area (sqm) <span class="sort-icon" aria-hidden="true"></span></button></th>
+                                                                                <th scope="col"><button type="button" class="sort-toggle" data-type="pressure" data-key="soil">Soil <span class="sort-icon" aria-hidden="true"></span></button></th>
+                                                                                <th scope="col"><button type="button" class="sort-toggle" data-type="pressure" data-key="access">Access <span class="sort-icon" aria-hidden="true"></span></button></th>
+                                                                                <th scope="col">Notes</th>
+                                                                                <th scope="col" class="actions-col">Actions</th>
+                                                                        </tr>
+                                                                </thead>
+                                                                <tbody id="pressureLinesTableBody"></tbody>
+                                                        </table>
+                                                </div>
+                                        </div>
+                                </section>
 			</section>
 
 			<!-- RIGHT COLUMN -->
