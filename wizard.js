@@ -76,6 +76,23 @@
     isReady = true;
   }
 
+  function showWizardLoader(message) {
+    if (window.LoadingState && contentEl) {
+      window.LoadingState.showElement(contentEl, {
+        message: message || 'Processing...',
+        reducedMotion: true
+      });
+      return true;
+    }
+    return false;
+  }
+
+  function hideWizardLoader(active) {
+    if (active && window.LoadingState && contentEl) {
+      window.LoadingState.hideElement(contentEl);
+    }
+  }
+
   function openOverlay() {
     if (!isReady) initOverlay();
     if (!overlay) return;
@@ -589,6 +606,7 @@
   }
 
   function handleWindowWizardApply() {
+    var loaderShown = false;
     try {
       if (!window.APP || typeof APP.addWindowLine !== 'function') {
         if (window.UIComponents && window.UIComponents.showToast) {
@@ -651,6 +669,8 @@
 
       var tintLevel = $('wizWinTint') && $('wizWinTint').value ? $('wizWinTint').value : 'none';
 
+      loaderShown = showWizardLoader('Adding window line...');
+
       var opts = {
         title: title || 'Window Line',
         windowTypeId: windowTypeId,
@@ -680,6 +700,8 @@
         window.UIComponents.showToast('Error adding window line', 'error');
       }
       closeOverlay();
+    } finally {
+      hideWizardLoader(loaderShown);
     }
   }
 
@@ -1172,6 +1194,7 @@
   }
 
   function handlePressureWizardApply() {
+    var loaderShown = false;
     try {
       if (!window.APP || typeof APP.addPressureLine !== 'function') {
         if (window.UIComponents && window.UIComponents.showToast) {
@@ -1209,6 +1232,8 @@
       var soilLevel = $('wizPrSoil') && $('wizPrSoil').value ? $('wizPrSoil').value : 'medium';
       var access = $('wizPrAccess') && $('wizPrAccess').value ? $('wizPrAccess').value : 'easy';
 
+      loaderShown = showWizardLoader('Adding pressure line...');
+
       var opts = {
         title: title || 'Pressure Line',
         surfaceId: surfaceId,
@@ -1233,6 +1258,8 @@
         window.UIComponents.showToast('Error adding pressure line', 'error');
       }
       closeOverlay();
+    } finally {
+      hideWizardLoader(loaderShown);
     }
   }
 

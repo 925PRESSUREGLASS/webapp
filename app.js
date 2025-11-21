@@ -387,10 +387,34 @@
     renderPressureLines();
   }
 
+  function renderLinesEmpty(container, title, message) {
+    var empty = createEl("div", "lines-empty");
+
+    var heading = createEl("div", "lines-empty__title");
+    heading.textContent = title;
+
+    var desc = createEl("div", "lines-empty__message");
+    desc.textContent = message;
+
+    empty.appendChild(heading);
+    empty.appendChild(desc);
+
+    container.appendChild(empty);
+  }
+
   function renderWindowLines() {
     var container = $("windowLinesContainer");
     if (!container) return;
     container.innerHTML = "";
+
+    if (state.windowLines.length === 0) {
+      renderLinesEmpty(
+        container,
+        "No window lines added",
+        "Use Quick Add or the Window Wizard to start building your quote."
+      );
+      return;
+    }
 
     for (var i = 0; i < state.windowLines.length; i++) {
       var line = state.windowLines[i];
@@ -403,6 +427,15 @@
     var container = $("pressureLinesContainer");
     if (!container) return;
     container.innerHTML = "";
+
+    if (state.pressureLines.length === 0) {
+      renderLinesEmpty(
+        container,
+        "No pressure lines added",
+        "Add a quick line or open the Pressure Wizard to include surfaces."
+      );
+      return;
+    }
 
     for (var i = 0; i < state.pressureLines.length; i++) {
       var line = state.pressureLines[i];
@@ -1087,6 +1120,25 @@ $("totalIncGstDisplay").textContent = formatMoney(totalIncGst);
     var select = $("savedQuotesSelect");
     if (!select) return;
 
+    var savedQuotesPanel = $("savedQuotesBody");
+
+    function showSavedQuotesLoader(message) {
+      if (window.LoadingState && savedQuotesPanel) {
+        window.LoadingState.showElement(savedQuotesPanel, {
+          message: message,
+          reducedMotion: true
+        });
+        return true;
+      }
+      return false;
+    }
+
+    function hideSavedQuotesLoader(active) {
+      if (active && window.LoadingState && savedQuotesPanel) {
+        window.LoadingState.hideElement(savedQuotesPanel);
+      }
+    }
+
     var savedQuotes = AppStorage.loadSavedQuotes() || [];
     renderSavedQuotesOptions(savedQuotes);
 
@@ -1108,21 +1160,28 @@ $("totalIncGstDisplay").textContent = formatMoney(totalIncGst);
         return;
       }
 
-      var newQuote = {
-        id: "q" + Date.now(),
-        title: quoteName.trim(),
-        state: currentState,
-        savedAt: new Date().toISOString()
-      };
+      var loaderShown = showSavedQuotesLoader('Saving quote...');
+      try {
+        var newQuote = {
+          id: "q" + Date.now(),
+          title: quoteName.trim(),
+          state: currentState,
+          savedAt: new Date().toISOString()
+        };
 
-      savedQuotes.push(newQuote);
-      AppStorage.saveSavedQuotes(savedQuotes);
-      renderSavedQuotesOptions(savedQuotes);
+        savedQuotes.push(newQuote);
+        AppStorage.saveSavedQuotes(savedQuotes);
+        renderSavedQuotesOptions(savedQuotes);
 
-      if (window.UIComponents && window.UIComponents.showToast) {
-        window.UIComponents.showToast('Quote "' + quoteName + '" saved successfully!', 'success');
-      } else if (window.showToast) {
-        window.showToast('Quote "' + quoteName + '" saved successfully!', 'success');
+        if (window.UIComponents && window.UIComponents.showToast) {
+          window.UIComponents.showToast('Quote "' + quoteName + '" saved successfully!', 'success');
+        } else if (window.showToast) {
+          window.showToast('Quote "' + quoteName + '" saved successfully!', 'success');
+        }
+      } catch (err) {
+        console.error('[APP] Error saving quote', err);
+      } finally {
+        hideSavedQuotesLoader(loaderShown);
       }
     });
 
@@ -1141,13 +1200,21 @@ $("totalIncGstDisplay").textContent = formatMoney(totalIncGst);
 
       if (!found) return;
 
-      state = found.state || state;
-      applyStateToUI();
+      var loaderShown = showSavedQuotesLoader('Loading quote...');
 
-      if (window.UIComponents && window.UIComponents.showToast) {
-        window.UIComponents.showToast('Quote "' + found.title + '" loaded successfully!', 'success');
-      } else if (window.showToast) {
-        window.showToast('Quote "' + found.title + '" loaded successfully!', 'success');
+      try {
+        state = found.state || state;
+        applyStateToUI();
+
+        if (window.UIComponents && window.UIComponents.showToast) {
+          window.UIComponents.showToast('Quote "' + found.title + '" loaded successfully!', 'success');
+        } else if (window.showToast) {
+          window.showToast('Quote "' + found.title + '" loaded successfully!', 'success');
+        }
+      } catch (err) {
+        console.error('[APP] Error loading saved quote', err);
+      } finally {
+        hideSavedQuotesLoader(loaderShown);
       }
     });
 
@@ -1170,16 +1237,24 @@ $("totalIncGstDisplay").textContent = formatMoney(totalIncGst);
         return;
       }
 
-      savedQuotes = savedQuotes.filter(function (q) {
-        return q.id !== id;
-      });
-      AppStorage.saveSavedQuotes(savedQuotes);
-      renderSavedQuotesOptions(savedQuotes);
+      var loaderShown = showSavedQuotesLoader('Deleting quote...');
 
-      if (window.UIComponents && window.UIComponents.showToast) {
-        window.UIComponents.showToast('Quote "' + found.title + '" deleted!', 'info');
-      } else if (window.showToast) {
-        window.showToast('Quote "' + found.title + '" deleted!', 'info');
+      try {
+        savedQuotes = savedQuotes.filter(function (q) {
+          return q.id !== id;
+        });
+        AppStorage.saveSavedQuotes(savedQuotes);
+        renderSavedQuotesOptions(savedQuotes);
+
+        if (window.UIComponents && window.UIComponents.showToast) {
+          window.UIComponents.showToast('Quote "' + found.title + '" deleted!', 'info');
+        } else if (window.showToast) {
+          window.showToast('Quote "' + found.title + '" deleted!', 'info');
+        }
+      } catch (err) {
+        console.error('[APP] Error deleting saved quote', err);
+      } finally {
+        hideSavedQuotesLoader(loaderShown);
       }
     });
 
@@ -1821,19 +1896,49 @@ $("totalIncGstDisplay").textContent = formatMoney(totalIncGst);
 
   // iOS Safari compatible DOM ready check
   function tryInit() {
+    var initLoaderShown = false;
+
+    function hideInitLoader() {
+      if (initLoaderShown && window.LoadingState) {
+        window.LoadingState.hide();
+        initLoaderShown = false;
+      }
+    }
+
+    if (window.LoadingState) {
+      window.LoadingState.show({
+        message: 'Preparing workspace...',
+        reducedMotion: true
+      });
+      initLoaderShown = true;
+    }
+
     try {
       initApp();
 
       // Trigger bootstrap initialization after app is ready
       if (window.APP && typeof APP.init === 'function') {
-        APP.init().then(function() {
-          window.DEBUG.log('[APP] Bootstrap initialization complete');
-        }).catch(function(error) {
-          console.error('[APP] Bootstrap initialization error:', error);
-        });
+        var initResult = APP.init();
+
+        if (initResult && typeof initResult.then === 'function') {
+          initResult
+            .then(function() {
+              window.DEBUG.log('[APP] Bootstrap initialization complete');
+              hideInitLoader();
+            })
+            .catch(function(error) {
+              console.error('[APP] Bootstrap initialization error:', error);
+              hideInitLoader();
+            });
+        } else {
+          hideInitLoader();
+        }
+      } else {
+        hideInitLoader();
       }
     } catch (e) {
       console.error("Error during initApp", e);
+      hideInitLoader();
     }
   }
 
