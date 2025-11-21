@@ -5,6 +5,10 @@
 (function() {
   'use strict';
 
+  // Configuration constants
+  var GST_RATE = 0.1; // 10% GST rate for Australia
+  var GST_VALIDATION_TOLERANCE = 1; // Allow $1 difference in GST calculation
+
   // CSV parsing helper
   function parseCSV(csvText) {
     var lines = csvText.split(/\r?\n/);
@@ -143,7 +147,7 @@
 
     // Calculate GST if not provided
     if (quote.total && !quote.gstAmount) {
-      quote.gstAmount = quote.total * 0.1 / 1.1;
+      quote.gstAmount = quote.total * GST_RATE / (1 + GST_RATE);
       quote.subtotal = quote.total - quote.gstAmount;
     }
 
@@ -166,12 +170,12 @@
       errors.push('Invalid GST amount');
     }
 
-    // Check GST is ~10% of subtotal
+    // Check GST is correct percentage of subtotal
     if (quote.subtotal > 0 && quote.gstAmount > 0) {
-      var expectedGST = quote.subtotal * 0.1;
+      var expectedGST = quote.subtotal * GST_RATE;
       var diff = Math.abs(quote.gstAmount - expectedGST);
-      if (diff > 1) { // Allow $1 difference
-        errors.push('GST does not match 10% of subtotal');
+      if (diff > GST_VALIDATION_TOLERANCE) {
+        errors.push('GST does not match ' + (GST_RATE * 100) + '% of subtotal');
       }
     }
 
@@ -209,7 +213,7 @@
           '<div class="csv-import-step" id="csvUploadStep">' +
             '<h3>Step 1: Select CSV File</h3>' +
             '<p>Upload a CSV or Excel file containing quote data.</p>' +
-            '<input type="file" id="csvFileInput" accept=".csv,.txt" style="display: none;" />' +
+            '<input type="file" id="csvFileInput" accept=".csv" style="display: none;" />' +
             '<button type="button" class="btn btn-primary" id="selectCSVBtn">Select CSV File</button>' +
             '<div class="csv-import-help">' +
               '<p><strong>Expected columns:</strong> Client Name, Location, Date, Total, Notes, etc.</p>' +
@@ -384,8 +388,8 @@
 
     // Preview button
     modal.querySelector('#csvPreviewBtn').onclick = function() {
-      // Validate mapping
-      if (!columnMapping.clientName && columnMapping.clientName !== 0) {
+      // Validate mapping - check if clientName is mapped
+      if (columnMapping.clientName === undefined || columnMapping.clientName === null) {
         if (window.ErrorHandler) {
           window.ErrorHandler.showError('Client Name is required');
         }
