@@ -142,9 +142,16 @@
    */
   function collectInputValues(inputIds) {
     var values = {};
+    var elementsCache = {};
     
+    // Cache all elements first (single batch query would be ideal but IDs are specific)
     inputIds.forEach(function(id) {
-      var element = document.getElementById(id);
+      elementsCache[id] = document.getElementById(id);
+    });
+    
+    // Now collect values from cached elements
+    inputIds.forEach(function(id) {
+      var element = elementsCache[id];
       if (element) {
         values[id] = element.value || '';
       }
@@ -187,6 +194,9 @@
       }, delay);
     };
   }
+
+  // Configuration for initialization delay
+  var INIT_DELAY_MS = 1000; // Configurable initialization delay
 
   /**
    * Optimize APP.recalculate if available
@@ -273,6 +283,15 @@
   }
 
   /**
+   * Configure optimization settings
+   */
+  function configure(config) {
+    if (config.initDelay !== undefined) {
+      INIT_DELAY_MS = config.initDelay;
+    }
+  }
+
+  /**
    * Initialize optimizations
    */
   function init() {
@@ -281,12 +300,12 @@
       document.addEventListener('DOMContentLoaded', function() {
         setTimeout(function() {
           optimizeAppRecalculate();
-        }, 1000);
+        }, INIT_DELAY_MS);
       });
     } else {
       setTimeout(function() {
         optimizeAppRecalculate();
-      }, 1000);
+      }, INIT_DELAY_MS);
     }
 
     console.log('[CALC-OPTIMIZER] Calculation optimizer initialized');
@@ -301,6 +320,7 @@
     collectInputValues: collectInputValues,
     clearCache: clearCache,
     getStats: getStats,
+    configure: configure,
     init: init,
     optimizeAppRecalculate: optimizeAppRecalculate
   };

@@ -211,7 +211,7 @@
    */
   function applyDebounce(element, callback, customDelay) {
     var delay = customDelay !== undefined ? customDelay : getDebounceDelay(element);
-    var elementId = element.id || 'element_' + Math.random().toString(36).substr(2, 9);
+    var elementId = element.id || 'element_' + Math.random().toString(36).slice(2, 11);
 
     // Cancel existing debounce if any
     if (debounceTimers[elementId]) {
@@ -271,6 +271,19 @@
   }
 
   /**
+   * Handler factory for input elements
+   */
+  function createInputHandler(callback) {
+    return function() {
+      if (callback) {
+        callback.call(this);
+      } else if (window.APP && window.APP.recalculate) {
+        window.APP.recalculate();
+      }
+    };
+  }
+
+  /**
    * Auto-apply debouncing to all inputs in a container
    */
   function autoApplyDebouncing(container, callback) {
@@ -293,13 +306,8 @@
         continue;
       }
 
-      var debouncedHandler = applyDebounce(input, function() {
-        if (callback) {
-          callback.call(input);
-        } else if (window.APP && window.APP.recalculate) {
-          window.APP.recalculate();
-        }
-      });
+      var handler = createInputHandler(callback);
+      var debouncedHandler = applyDebounce(input, handler);
 
       input.addEventListener('input', debouncedHandler);
       input.dataset.debounced = 'true';
