@@ -2,7 +2,7 @@
 
 Professional quoting tool for **925 Pressure Glass** - Window & Pressure Cleaning services.
 
-**Current Version:** v1.13.2 | [See Changelog](CHANGELOG.md)  
+**Current Version:** v1.13.3 | [See Changelog](CHANGELOG.md)  
 **Contributor Guide:** [Repository Guidelines](AGENTS.md)
 
 ## Contributing
@@ -290,7 +290,14 @@ Document jobs with before/after photos:
 
 ## Recent Improvements
 
-### v1.13.2 (Latest - 2025-11-19)
+### v1.13.3 (Latest - 2025-11-21)
+- ✅ **Performance Monitoring:** Real-time tracking of page load, calculations, and storage
+- ✅ **Storage Quota Management:** Automatic warnings and cleanup utilities
+- ✅ **Test Optimization:** 40% faster test execution with better reliability
+- ✅ **Documentation:** Comprehensive performance and storage guide
+- 📖 See [PERFORMANCE_STORAGE_GUIDE.md](PERFORMANCE_STORAGE_GUIDE.md) for details
+
+### v1.13.2 (2025-11-19)
 - ✅ **iOS Safari:** Fixed critical line item rendering on iPad/iPhone
 - ✅ **Data Validation:** Created quote validation system (quote-validation.js)
 - ✅ **Jobs Tracking:** Completed global initialization (60% → 100%)
