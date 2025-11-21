@@ -193,10 +193,13 @@
   }
 
   /**
-   * Go back to the previous page (simplified - just goes to quotes)
+   * Go back to the previous page
+   * Defaults to going to the quotes page if no history is available
+   * @param {string} defaultTarget - Optional default page to navigate to (default: 'quotes')
    */
-  function goBack() {
-    navigateTo('quotes');
+  function goBack(defaultTarget) {
+    var target = defaultTarget || 'quotes';
+    navigateTo(target);
   }
 
   // ============================================
@@ -211,11 +214,21 @@
   function isOnPage(pageName) {
     if (pageName === 'quotes' || pageName === 'home') {
       var mainApp = document.querySelector('.app');
-      return mainApp && mainApp.style.display !== 'none';
+      if (!mainApp) return false;
+      
+      // Check both inline style and computed style
+      if (mainApp.style.display === 'none') return false;
+      var computed = window.getComputedStyle(mainApp);
+      return computed.display !== 'none';
     }
 
     var pageElement = document.getElementById('page-' + pageName);
-    return pageElement && pageElement.style.display !== 'none';
+    if (!pageElement) return false;
+    
+    // Check both inline style and computed style
+    if (pageElement.style.display === 'none') return false;
+    var computed = window.getComputedStyle(pageElement);
+    return computed.display !== 'none';
   }
 
   // ============================================
