@@ -529,19 +529,6 @@
       return;
     }
 
-    if (!state.windowLines || state.windowLines.length === 0) {
-      if (empty) {
-        empty.style.display = "flex";
-        empty.setAttribute("aria-hidden", "false");
-      }
-      return;
-    }
-
-    if (empty) {
-      empty.style.display = "none";
-      empty.setAttribute("aria-hidden", "true");
-    }
-
     for (var i = 0; i < state.windowLines.length; i++) {
       var line = state.windowLines[i];
       var row = renderWindowLineRow(line);
@@ -560,19 +547,6 @@
       renderEmptyRow(body, 7, "No pressure lines added yet.");
       updateSortIcons('pressure');
       return;
-    }
-
-    if (!state.pressureLines || state.pressureLines.length === 0) {
-      if (empty) {
-        empty.style.display = "flex";
-        empty.setAttribute("aria-hidden", "false");
-      }
-      return;
-    }
-
-    if (empty) {
-      empty.style.display = "none";
-      empty.setAttribute("aria-hidden", "true");
     }
 
     for (var i = 0; i < state.pressureLines.length; i++) {
@@ -1947,6 +1921,50 @@
     recalculate();
 
     window.DEBUG.log('[APP] Application initialized successfully');
+  }
+
+  // ————————————————————
+  // DEFERRED PLACEHOLDER UTILITIES
+  // ————————————————————
+
+  /**
+   * Show a loading placeholder for deferred content
+   * @param {string} elementId - The ID of the element to show placeholder in
+   * @param {string} message - The loading message to display
+   */
+  function showDeferredPlaceholder(elementId, message) {
+    var el = $(elementId);
+    if (!el) return;
+    
+    var msg = message || 'Loading...';
+    var placeholder = document.createElement('div');
+    placeholder.className = 'deferred-placeholder';
+    placeholder.setAttribute('data-placeholder-for', elementId);
+    placeholder.style.cssText = 'padding: 2rem; text-align: center; color: var(--color-neutral-600); font-size: 0.875rem;';
+    placeholder.textContent = msg;
+    
+    // Store original content if needed
+    if (el.children.length > 0) {
+      el.setAttribute('data-has-content', 'true');
+    }
+    
+    // Clear and add placeholder
+    el.innerHTML = '';
+    el.appendChild(placeholder);
+  }
+
+  /**
+   * Hide/remove the loading placeholder for deferred content
+   * @param {string} elementId - The ID of the element to hide placeholder from
+   */
+  function hideDeferredPlaceholder(elementId) {
+    var el = $(elementId);
+    if (!el) return;
+    
+    var placeholder = el.querySelector('[data-placeholder-for="' + elementId + '"]');
+    if (placeholder && placeholder.parentNode) {
+      placeholder.parentNode.removeChild(placeholder);
+    }
   }
 
   // ————————————————————
