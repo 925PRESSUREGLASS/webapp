@@ -78,6 +78,50 @@
     return el;
   }
 
+  // Deferred placeholder helpers for lazy modules
+  var deferredPlaceholders = {};
+
+  function showDeferredPlaceholder(elementId, message) {
+    var host = $(elementId);
+    if (!host || deferredPlaceholders[elementId]) {
+      return;
+    }
+
+    var wrapper = createEl('div', 'deferred-placeholder');
+    var content = createEl('div', 'deferred-placeholder__content');
+    var linePrimary = createEl('div', 'deferred-placeholder__shimmer');
+    var lineSecondary = createEl('div', 'deferred-placeholder__shimmer');
+    var text = createEl('div', 'deferred-placeholder__text');
+
+    text.textContent = message || 'Loading...';
+    content.appendChild(linePrimary);
+    content.appendChild(lineSecondary);
+
+    wrapper.appendChild(content);
+    wrapper.appendChild(text);
+
+    host.classList.add('deferred-placeholder-host');
+    host.insertBefore(wrapper, host.firstChild);
+
+    deferredPlaceholders[elementId] = wrapper;
+  }
+
+  function hideDeferredPlaceholder(elementId) {
+    var host = $(elementId);
+    var wrapper = deferredPlaceholders[elementId];
+
+    if (!host || !wrapper) {
+      return;
+    }
+
+    if (host.contains(wrapper)) {
+      host.removeChild(wrapper);
+    }
+
+    host.classList.remove('deferred-placeholder-host');
+    delete deferredPlaceholders[elementId];
+  }
+
   // ————————————————————
   // GLOBAL APP OBJECT
   // ————————————————————
@@ -1807,8 +1851,15 @@ $("totalIncGstDisplay").textContent = formatMoney(totalIncGst);
     loadState: loadInitialState,
     saveState: autosave,
     buildStateFromUI: buildStateFromUI,
-    applyStateToUI: applyStateToUI
+    applyStateToUI: applyStateToUI,
+    showDeferredPlaceholder: showDeferredPlaceholder,
+    hideDeferredPlaceholder: hideDeferredPlaceholder
   };
+
+  if (window.APP) {
+    APP.showDeferredPlaceholder = showDeferredPlaceholder;
+    APP.hideDeferredPlaceholder = hideDeferredPlaceholder;
+  }
 
   // Register with bootstrap
   window.APP.registerModule('app', AppModule);
