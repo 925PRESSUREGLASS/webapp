@@ -7,7 +7,7 @@
     "filesystem": {
       "transport": "stdio",
       "command": "npx",
-      "args": ["-y", "@modelcontextprotocol/server-filesystem", "/Users/gerardvarone/Documents/GitHub/webapp"],
+      "args": ["-y", "@modelcontextprotocol/server-filesystem", "."],
       "env": {}
     },
     "git": {

@@ -38,7 +38,8 @@
     }
 
     // Open key sections by default
-    var defaultOpen = ["configBody", "windowsBody", "summaryBody"];
+    // Keep primary sections open, but leave Job Settings collapsed by default
+    var defaultOpen = ["windowsBody", "summaryBody"];
     for (var j = 0; j < defaultOpen.length; j++) {
       var el = $(defaultOpen[j]);
       if (el) el.classList.add("card-body-open");
