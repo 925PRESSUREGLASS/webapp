@@ -6,6 +6,9 @@
 
   var modal = null;
   var currentIndex = 0;
+  var imageCache = {};
+  var objectUrlCache = {};
+  var activeImageKey = null;
 
   // Create modal HTML
   function createModal() {
@@ -63,7 +66,20 @@
     var nextBtn = modalEl.querySelector('.photo-modal-next');
 
     // Set image and info
-    img.src = photo.base64;
+    img.removeAttribute('src');
+    activeImageKey = getCacheKey(photo);
+    loadOptimizedImage(photo, function(objectUrl) {
+      if (!objectUrl) return;
+
+      if (activeImageKey !== getCacheKey(photo)) {
+        if (objectUrl.indexOf('blob:') === 0) {
+          URL.revokeObjectURL(objectUrl);
+        }
+        return;
+      }
+
+      img.src = objectUrl;
+    });
     img.alt = photo.filename;
     filename.textContent = photo.filename;
     dimensions.textContent = photo.width + ' × ' + photo.height + ' px • ' + formatFileSize(photo.size);
@@ -87,6 +103,7 @@
     document.body.style.overflow = 'hidden';
 
     // Add keyboard listener
+    document.removeEventListener('keydown', handleKeydown);
     document.addEventListener('keydown', handleKeydown);
   }
 
@@ -99,6 +116,9 @@
 
     // Remove keyboard listener
     document.removeEventListener('keydown', handleKeydown);
+
+    cleanupActiveImage();
+    cleanupObjectUrls();
   }
 
   // Show previous photo
@@ -141,6 +161,86 @@
     if (bytes < 1024) return bytes + ' B';
     if (bytes < 1024 * 1024) return (bytes / 1024).toFixed(1) + ' KB';
     return (bytes / (1024 * 1024)).toFixed(1) + ' MB';
+  }
+
+  function getCacheKey(photo) {
+    if (!photo) return 'unknown';
+    return photo.id || photo.filename || String(photo.base64).substr(0, 50);
+  }
+
+  function loadOptimizedImage(photo, callback) {
+    var cacheKey = getCacheKey(photo);
+
+    if (objectUrlCache[cacheKey]) {
+      callback(objectUrlCache[cacheKey]);
+      return;
+    }
+
+    var source = photo.base64 || photo.image || '';
+    if (!source) {
+      callback('');
+      return;
+    }
+
+    function finalize(dataUrl) {
+      try {
+        var blob = dataUrlToBlob(dataUrl);
+        var objectUrl = blob ? URL.createObjectURL(blob) : dataUrl;
+        objectUrlCache[cacheKey] = objectUrl;
+        callback(objectUrl);
+      } catch (error) {
+        console.error('[PHOTO-MODAL] Failed to cache image', error);
+        callback(dataUrl);
+      }
+    }
+
+    if (window.ImageCompression && window.ImageCompression.compress) {
+      ImageCompression.compress(source, { profile: 'high', maxDimension: 1400 }, function(compressed) {
+        imageCache[cacheKey] = compressed;
+        finalize(compressed || source);
+      });
+    } else {
+      finalize(source);
+    }
+  }
+
+  function dataUrlToBlob(dataUrl) {
+    var parts = dataUrl.split(',');
+    if (parts.length < 2) return null;
+
+    var mimeMatch = parts[0].match(/:(.*?);/);
+    var mime = mimeMatch && mimeMatch[1] ? mimeMatch[1] : 'image/jpeg';
+    var binary = atob(parts[1]);
+    var length = binary.length;
+    var array = new Uint8Array(length);
+
+    for (var i = 0; i < length; i++) {
+      array[i] = binary.charCodeAt(i);
+    }
+
+    return new Blob([array], { type: mime });
+  }
+
+  function cleanupActiveImage() {
+    if (!modal) return;
+    var img = modal.querySelector('.photo-modal-image');
+    if (img) {
+      img.removeAttribute('src');
+    }
+    activeImageKey = null;
+  }
+
+  function cleanupObjectUrls() {
+    var keys = Object.keys(objectUrlCache);
+    for (var i = 0; i < keys.length; i++) {
+      try {
+        URL.revokeObjectURL(objectUrlCache[keys[i]]);
+      } catch (error) {
+        console.warn('[PHOTO-MODAL] Failed to revoke URL', error);
+      }
+    }
+    objectUrlCache = {};
+    imageCache = {};
   }
 
   // Initialize
