@@ -1,6 +1,7 @@
 // Debug test to understand APP object loading
 
 const { test, expect } = require('@playwright/test');
+const { gotoApp } = require('./fixtures/app-url');
 
 test.describe('Debug APP Loading', () => {
   test('check what happens on page load', async ({ page }) => {
@@ -8,7 +9,7 @@ test.describe('Debug APP Loading', () => {
     page.on('console', msg => console.log('PAGE LOG:', msg.text()));
     page.on('pageerror', err => console.log('PAGE ERROR:', err.message));
     
-    await page.goto('/index.html?testMode=1');
+    await gotoApp(page);
     
     // Wait a moment for scripts to load
     await page.waitForTimeout(2000);

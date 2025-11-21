@@ -17,6 +17,13 @@ function resolvePath(path) {
   return path.charAt(0) === '/' ? path : '/' + path;
 }
 
+// Helper function to wait for APP object to exist
+async function waitForAppObject(page) {
+  await page.waitForFunction(() => {
+    return typeof window.APP === 'object' && window.APP !== null;
+  }, { timeout: 10000 });
+}
+
 async function gotoApp(page, options) {
   var opts = options || {};
   if (!opts.waitUntil) {
@@ -25,9 +32,7 @@ async function gotoApp(page, options) {
   await page.goto(DEFAULT_APP_URL, opts);
   
   // Wait for APP object to be created by bootstrap.js
-  await page.waitForFunction(() => {
-    return typeof window.APP === 'object' && window.APP !== null;
-  }, { timeout: 10000 });
+  await waitForAppObject(page);
 }
 
 module.exports = {
@@ -46,9 +51,7 @@ module.exports = {
     await page.goto(target, opts);
     
     // Wait for APP object to be created
-    await page.waitForFunction(() => {
-      return typeof window.APP === 'object' && window.APP !== null;
-    }, { timeout: 10000 });
+    await waitForAppObject(page);
   },
   waitForAppReady: async function(page) {
     try {
@@ -63,12 +66,11 @@ module.exports = {
     await page.waitForSelector('.app', { timeout: 10000 });
     
     // Also wait for APP object to exist
-    await page.waitForFunction(() => {
-      return typeof window.APP === 'object' && window.APP !== null;
-    }, { timeout: 10000 });
+    await waitForAppObject(page);
   },
   waitForAppInit: async function(page) {
     async function attempt() {
+      await waitForAppObject(page);
       await page.waitForFunction(() => {
         return window.APP && typeof window.APP.waitForInit === 'function';
       }, { timeout: 45000 });
