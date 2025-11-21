@@ -736,15 +736,35 @@ body {
    QUICK ADD UI - Touch optimized
    ============================================ */
 @media (max-width: 640px) {
-  .quick-add-button {
-    min-width: 60px;
-    min-height: 60px;
-    font-size: 14px;
+  .quick-add-quantity {
+    grid-template-columns: repeat(auto-fit, minmax(72px, 1fr));
+    gap: 10px;
   }
 
-  .quick-add-grid {
-    gap: 12px;
-    padding: 12px;
+  .quick-add-custom {
+    grid-template-columns: 1fr 72px;
+    grid-column: 1 / -1;
+  }
+
+  .quick-add-btn,
+  .quick-add-submit {
+    min-width: 72px;
+    min-height: 68px;
+    font-size: 16px;
+  }
+
+  .quick-add-display {
+    font-size: 15px;
+  }
+
+  .bulk-add-container {
+    max-height: none;
+    padding: 6px;
+  }
+
+  .bulk-add-sticky-summary {
+    position: static;
+    box-shadow: none;
   }
 }
 

@@ -6,6 +6,53 @@
 (function() {
   'use strict';
 
+  var quantityButtonPrototype = null;
+  var addButtonPrototype = null;
+
+  function getQuantityButtonPrototype() {
+    if (!quantityButtonPrototype) {
+      quantityButtonPrototype = document.createElement('button');
+      quantityButtonPrototype.type = 'button';
+      quantityButtonPrototype.className = 'quick-add-btn';
+    }
+    return quantityButtonPrototype;
+  }
+
+  function getAddButtonPrototype() {
+    if (!addButtonPrototype) {
+      addButtonPrototype = document.createElement('button');
+      addButtonPrototype.type = 'button';
+      addButtonPrototype.className = 'quick-add-submit';
+      addButtonPrototype.textContent = '+';
+    }
+    return addButtonPrototype;
+  }
+
+  function attachPressListeners(btn) {
+    btn.addEventListener('pointerdown', function() {
+      btn.classList.add('is-pressed');
+    });
+
+    btn.addEventListener('pointerup', function() {
+      btn.classList.remove('is-pressed');
+    });
+
+    btn.addEventListener('pointercancel', function() {
+      btn.classList.remove('is-pressed');
+    });
+
+    btn.addEventListener('pointerleave', function() {
+      btn.classList.remove('is-pressed');
+    });
+  }
+
+  function animateActivation(btn) {
+    btn.classList.add('is-activated');
+    setTimeout(function() {
+      btn.classList.remove('is-activated');
+    }, 200);
+  }
+
   // Quick-add UI component for wizard
   var QuickAddUI = {
 
@@ -19,9 +66,9 @@
 
       var container = document.createElement('div');
       container.className = 'quick-add-quantity';
-      container.style.cssText = 'display: flex; flex-wrap: wrap; gap: 8px; margin: 12px 0;';
 
       // Create quantity buttons
+      var buttonFragment = document.createDocumentFragment();
       for (var i = 0; i < quantities.length; i++) {
         var qty = quantities[i];
         var btn = this.createQuantityButton(qty, function(amount) {
@@ -29,8 +76,10 @@
           updateDisplay(currentQty);
           onChange(currentQty);
         });
-        container.appendChild(btn);
+        buttonFragment.appendChild(btn);
       }
+
+      container.appendChild(buttonFragment);
 
       // Add custom input button
       var customBtn = this.createCustomInput(function(amount) {
@@ -45,16 +94,14 @@
       // Create display area
       var display = document.createElement('div');
       display.className = 'quick-add-display';
-      display.style.cssText = 'width: 100%; padding: 12px; background: #f1f5f9; border-radius: 6px; margin-top: 8px; font-size: 16px; font-weight: 500;';
       display.textContent = 'Quantity: 0';
       container.appendChild(display);
 
       // Create reset button
       var resetBtn = document.createElement('button');
       resetBtn.type = 'button';
-      resetBtn.className = 'btn btn-ghost btn-small';
+      resetBtn.className = 'btn btn-ghost btn-small quick-add-reset';
       resetBtn.textContent = 'Reset';
-      resetBtn.style.cssText = 'margin-top: 8px;';
       resetBtn.addEventListener('click', function() {
         currentQty = 0;
         updateDisplay(0);
@@ -81,73 +128,16 @@
 
     // Create individual quantity button
     createQuantityButton: function(quantity, onClick) {
-      var btn = document.createElement('button');
-      btn.type = 'button';
-      btn.className = 'quick-add-btn';
+      var btn = getQuantityButtonPrototype().cloneNode(true);
       btn.textContent = '+' + quantity;
       btn.setAttribute('data-qty', quantity);
 
-      // Large touch target - 60x60px minimum
-      btn.style.cssText =
-        'min-width: 60px; ' +
-        'min-height: 60px; ' +
-        'font-size: 18px; ' +
-        'font-weight: 600; ' +
-        'border: 2px solid #cbd5e1; ' +
-        'border-radius: 8px; ' +
-        'background: white; ' +
-        'cursor: pointer; ' +
-        'transition: all 0.2s; ' +
-        'user-select: none; ' +
-        '-webkit-user-select: none; ' +
-        '-webkit-tap-highlight-color: transparent;';
-
-      // Hover/active states
-      btn.addEventListener('mouseenter', function() {
-        btn.style.background = '#f1f5f9';
-        btn.style.borderColor = '#64748b';
-      });
-
-      btn.addEventListener('mouseleave', function() {
-        btn.style.background = 'white';
-        btn.style.borderColor = '#cbd5e1';
-      });
-
-      btn.addEventListener('mousedown', function() {
-        btn.style.transform = 'scale(0.95)';
-        btn.style.background = '#e2e8f0';
-      });
-
-      btn.addEventListener('mouseup', function() {
-        btn.style.transform = 'scale(1)';
-        btn.style.background = '#f1f5f9';
-      });
-
-      // Touch feedback
-      btn.addEventListener('touchstart', function() {
-        btn.style.transform = 'scale(0.95)';
-        btn.style.background = '#e2e8f0';
-      });
-
-      btn.addEventListener('touchend', function() {
-        btn.style.transform = 'scale(1)';
-        btn.style.background = 'white';
-      });
+      attachPressListeners(btn);
 
       btn.addEventListener('click', function(e) {
         e.preventDefault();
         onClick(quantity);
-
-        // Visual feedback
-        btn.style.background = '#10b981';
-        btn.style.borderColor = '#059669';
-        btn.style.color = 'white';
-
-        setTimeout(function() {
-          btn.style.background = 'white';
-          btn.style.borderColor = '#cbd5e1';
-          btn.style.color = '';
-        }, 200);
+        animateActivation(btn);
       });
 
       return btn;
@@ -156,51 +146,24 @@
     // Create custom quantity input
     createCustomInput: function(onSubmit) {
       var wrapper = document.createElement('div');
-      wrapper.style.cssText = 'display: flex; gap: 4px; flex: 1; min-width: 140px;';
+      wrapper.className = 'quick-add-custom';
 
       var input = document.createElement('input');
       input.type = 'number';
       input.placeholder = 'Custom';
       input.min = '1';
       input.max = '999';
-      input.style.cssText =
-        'flex: 1; ' +
-        'min-height: 60px; ' +
-        'font-size: 18px; ' +
-        'padding: 0 12px; ' +
-        'border: 2px solid #cbd5e1; ' +
-        'border-radius: 8px; ' +
-        'text-align: center;';
+      input.className = 'quick-add-input';
 
-      var addBtn = document.createElement('button');
-      addBtn.type = 'button';
-      addBtn.textContent = '+';
-      addBtn.style.cssText =
-        'min-width: 60px; ' +
-        'min-height: 60px; ' +
-        'font-size: 24px; ' +
-        'font-weight: 600; ' +
-        'border: 2px solid #3b82f6; ' +
-        'border-radius: 8px; ' +
-        'background: #3b82f6; ' +
-        'color: white; ' +
-        'cursor: pointer; ' +
-        'transition: all 0.2s;';
+      var addBtn = getAddButtonPrototype().cloneNode(true);
+      attachPressListeners(addBtn);
 
       addBtn.addEventListener('click', function() {
         var val = parseInt(input.value, 10);
         if (!isNaN(val) && val > 0 && val <= 999) {
           onSubmit(val);
           input.value = '';
-
-          // Visual feedback
-          addBtn.style.background = '#10b981';
-          addBtn.style.borderColor = '#059669';
-
-          setTimeout(function() {
-            addBtn.style.background = '#3b82f6';
-            addBtn.style.borderColor = '#3b82f6';
-          }, 200);
+          animateActivation(addBtn);
         }
       });
 
@@ -222,14 +185,13 @@
     createBulkAddInterface: function(windowTypes, onComplete) {
       var container = document.createElement('div');
       container.className = 'bulk-add-container';
-      container.style.cssText = 'max-height: 500px; overflow-y: auto; padding: 4px;';
 
       var selections = {};
 
       // Create UI for each window type
       for (var i = 0; i < windowTypes.length; i++) {
         var wt = windowTypes[i];
-        if (!wt.category || wt.category === 'custom') continue; // Skip custom
+        if (!wt.category || wt.category === 'custom') continue;
 
         var typeRow = this.createBulkTypeRow(wt, function(typeId, quantity) {
           selections[typeId] = quantity;
@@ -240,18 +202,17 @@
 
       // Summary section
       var summary = document.createElement('div');
-      summary.style.cssText = 'position: sticky; bottom: 0; background: white; border-top: 2px solid #e2e8f0; padding: 16px; margin-top: 16px;';
+      summary.className = 'bulk-add-sticky-summary';
 
       var summaryText = document.createElement('div');
-      summaryText.style.cssText = 'font-size: 16px; font-weight: 600; margin-bottom: 12px;';
+      summaryText.className = 'bulk-add-summary-text';
       summaryText.textContent = 'Selected: 0 windows';
       summary.appendChild(summaryText);
 
       var submitBtn = document.createElement('button');
       submitBtn.type = 'button';
-      submitBtn.className = 'btn';
+      submitBtn.className = 'btn bulk-add-submit';
       submitBtn.textContent = 'Add All to Quote';
-      submitBtn.style.cssText = 'width: 100%; min-height: 50px; font-size: 16px;';
       submitBtn.addEventListener('click', function() {
         if (onComplete) {
           onComplete(selections);
@@ -293,17 +254,17 @@
     // Create row for bulk add interface
     createBulkTypeRow: function(windowType, onChange) {
       var row = document.createElement('div');
-      row.style.cssText = 'border: 1px solid #e2e8f0; border-radius: 8px; padding: 12px; margin-bottom: 8px; background: white;';
+      row.className = 'bulk-add-type-row';
 
       var header = document.createElement('div');
-      header.style.cssText = 'display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px;';
+      header.className = 'bulk-add-header';
 
       var title = document.createElement('div');
-      title.style.cssText = 'font-weight: 600; font-size: 14px;';
+      title.className = 'bulk-add-title';
       title.textContent = windowType.name || windowType.label;
 
       var price = document.createElement('div');
-      price.style.cssText = 'color: #10b981; font-weight: 600;';
+      price.className = 'bulk-add-price';
       price.textContent = windowType.basePrice ? '$' + windowType.basePrice.toFixed(0) : '';
 
       header.appendChild(title);
