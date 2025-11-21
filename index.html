@@ -103,22 +103,22 @@
 
 	<!-- CSS -->
 	<!-- Design System - Load FIRST to provide CSS variables and base styles -->
-	<link rel="stylesheet" href="css/design-system.css" />
-	<link rel="stylesheet" href="app.css" />
-	<link rel="stylesheet" href="toast.css" />
-	<link rel="stylesheet" href="loading.css" />
-	<link rel="stylesheet" href="photo-modal.css" />
+        <link rel="stylesheet" href="css/design-system.css" />
+        <link rel="stylesheet" href="app.css" />
+        <link rel="stylesheet" href="toast.css" />
+        <link rel="stylesheet" href="loading.css" />
+        <link rel="preload" as="style" href="photo-modal.css" data-late-style="true" />
 	<link rel="stylesheet" href="client-database.css" />
 	<link rel="stylesheet" href="quote-workflow.css" />
 	<link rel="stylesheet" href="import-export.css" />
 	<link rel="stylesheet" href="invoice.css" />
 	<link rel="stylesheet" href="validation.css" />
-	<link rel="stylesheet" href="shortcuts.css" />
-	<link rel="stylesheet" href="theme-light.css" />
-	<link rel="stylesheet" href="theme-customizer.css" />
-	<link rel="stylesheet" href="analytics.css" />
-	<link rel="stylesheet" href="css/analytics-dashboard.css" />
-	<link rel="stylesheet" href="photos.css" />
+        <link rel="stylesheet" href="shortcuts.css" />
+        <link rel="stylesheet" href="theme-light.css" />
+        <link rel="stylesheet" href="theme-customizer.css" />
+        <link rel="preload" as="style" href="analytics.css" data-late-style="true" />
+        <link rel="preload" as="style" href="css/analytics-dashboard.css" data-late-style="true" />
+        <link rel="preload" as="style" href="photos.css" data-late-style="true" />
 	<link rel="stylesheet" href="css/tasks.css" />
 	<link rel="stylesheet" href="css/contracts.css" />
 	<link rel="stylesheet" href="css/help-system.css" />
@@ -338,71 +338,78 @@
 				</section>
 
 				<!-- WINDOWS PANEL -->
-                                <section class="section" id="windowsPanel">
-                                        <header class="sec-h">
-                                                <h2 class="sec-title">🪟 Windows</h2>
-                                                <div class="card-hdr-actions">
-                                                        <button id="openWindowWizardBtn" type="button" class="btn btn-accent btn-sm" aria-label="Open window wizard for guided entry">
-                                                                🪄 Wizard
-                                                        </button>
-                                                        <button id="addWindowLineBtn" type="button" class="btn btn-sm btn-primary" aria-label="Add window line item manually">
-                                                                + Add Line
-                                                        </button>
-                                                        <button class="card-toggle" type="button" data-target="windowsBody" aria-label="Toggle windows section" aria-expanded="true">▾</button>
-                                                </div>
-                                        </header>
+				<section class="section" id="windowsPanel">
+					<header class="sec-h">
+						<h2 class="sec-title">🪟 Windows</h2>
+						<div class="card-hdr-actions">
+							<button id="openWindowWizardBtn" type="button" class="btn btn-accent btn-sm" aria-label="Open window wizard for guided entry">
+								🪄 Wizard
+							</button>
+							<button id="addWindowLineBtn" type="button" class="btn btn-sm btn-primary" aria-label="Add window line item manually">
+								+ Add Line
+							</button>
+							<button class="card-toggle" type="button" data-target="windowsBody" aria-label="Toggle windows section" aria-expanded="true">▾</button>
+						</div>
+					</header>
                                         <div class="sec-b" id="windowsBody">
-                                                <div class="lines-loading" id="windowLinesSkeleton" aria-hidden="true">
-                                                        <div class="skeleton-line"></div>
-                                                        <div class="skeleton-line"></div>
-                                                        <div class="skeleton-line"></div>
+                                                <div class="lines-table-wrapper">
+                                                        <table class="lines-table" id="windowLinesTable" aria-label="Window lines">
+                                                                <thead>
+                                                                        <tr>
+                                                                                <th scope="col"><button type="button" class="sort-toggle" data-type="window" data-key="title">Title <span class="sort-icon" aria-hidden="true"></span></button></th>
+                                                                                <th scope="col"><button type="button" class="sort-toggle" data-type="window" data-key="type">Type <span class="sort-icon" aria-hidden="true"></span></button></th>
+                                                                                <th scope="col"><button type="button" class="sort-toggle" data-type="window" data-key="panes">Panes <span class="sort-icon" aria-hidden="true"></span></button></th>
+                                                                                <th scope="col">Flags</th>
+                                                                                <th scope="col"><button type="button" class="sort-toggle" data-type="window" data-key="condition">Condition <span class="sort-icon" aria-hidden="true"></span></button></th>
+                                                                                <th scope="col"><button type="button" class="sort-toggle" data-type="window" data-key="access">Access <span class="sort-icon" aria-hidden="true"></span></button></th>
+                                                                                <th scope="col">Tint</th>
+                                                                                <th scope="col"><button type="button" class="sort-toggle" data-type="window" data-key="location">Location <span class="sort-icon" aria-hidden="true"></span></button></th>
+                                                                                <th scope="col" class="actions-col">Actions</th>
+                                                                        </tr>
+                                                                </thead>
+                                                                <tbody id="windowLinesTableBody"></tbody>
+                                                        </table>
                                                 </div>
-                                                <div class="empty-state" id="windowLinesEmpty" aria-live="polite" role="status">
-                                                        <div class="empty-illustration">🪟</div>
-                                                        <p class="empty-title">No window lines yet</p>
-                                                        <p class="empty-body">Add your first window item to begin estimating glass cleaning time.</p>
-                                                        <button id="emptyAddWindowLineBtn" type="button" class="btn btn-primary">+ Add Window Line</button>
-                                                </div>
-                                                <div class="lines-list" id="windowLinesContainer"></div>
                                         </div>
                                 </section>
 
 				<!-- PRESSURE PANEL -->
-                                <section class="section" id="pressurePanel">
-                                        <header class="sec-h">
-                                                <h2 class="sec-title">💦 Pressure Cleaning</h2>
-                                                <div class="card-hdr-actions">
-                                                        <button id="openPressureWizardBtn" type="button" class="btn btn-accent btn-sm" aria-label="Open pressure wizard for guided entry">
-                                                                🪄 Wizard
-                                                        </button>
-                                                        <button id="addPressureLineBtn" type="button" class="btn btn-sm btn-primary" aria-label="Add pressure cleaning line item manually">
-                                                                + Add Line
-                                                        </button>
-                                                        <button class="card-toggle" type="button" data-target="pressureBody" aria-label="Toggle pressure cleaning section" aria-expanded="true">▾</button>
-                                                </div>
-                                        </header>
+				<section class="section" id="pressurePanel">
+					<header class="sec-h">
+						<h2 class="sec-title">💦 Pressure Cleaning</h2>
+						<div class="card-hdr-actions">
+							<button id="openPressureWizardBtn" type="button" class="btn btn-accent btn-sm" aria-label="Open pressure wizard for guided entry">
+								🪄 Wizard
+							</button>
+							<button id="addPressureLineBtn" type="button" class="btn btn-sm btn-primary" aria-label="Add pressure cleaning line item manually">
+								+ Add Line
+							</button>
+							<button class="card-toggle" type="button" data-target="pressureBody" aria-label="Toggle pressure cleaning section" aria-expanded="true">▾</button>
+						</div>
+					</header>
                                         <div class="sec-b" id="pressureBody">
-                                                <div class="lines-loading" id="pressureLinesSkeleton" aria-hidden="true">
-                                                        <div class="skeleton-line"></div>
-                                                        <div class="skeleton-line"></div>
+                                                <div class="lines-table-wrapper">
+                                                        <table class="lines-table" id="pressureLinesTable" aria-label="Pressure lines">
+                                                                <thead>
+                                                                        <tr>
+                                                                                <th scope="col"><button type="button" class="sort-toggle" data-type="pressure" data-key="title">Title <span class="sort-icon" aria-hidden="true"></span></button></th>
+                                                                                <th scope="col"><button type="button" class="sort-toggle" data-type="pressure" data-key="surface">Surface <span class="sort-icon" aria-hidden="true"></span></button></th>
+                                                                                <th scope="col"><button type="button" class="sort-toggle" data-type="pressure" data-key="area">Area (sqm) <span class="sort-icon" aria-hidden="true"></span></button></th>
+                                                                                <th scope="col"><button type="button" class="sort-toggle" data-type="pressure" data-key="soil">Soil <span class="sort-icon" aria-hidden="true"></span></button></th>
+                                                                                <th scope="col"><button type="button" class="sort-toggle" data-type="pressure" data-key="access">Access <span class="sort-icon" aria-hidden="true"></span></button></th>
+                                                                                <th scope="col">Notes</th>
+                                                                                <th scope="col" class="actions-col">Actions</th>
+                                                                        </tr>
+                                                                </thead>
+                                                                <tbody id="pressureLinesTableBody"></tbody>
+                                                        </table>
                                                 </div>
-                                                <div class="empty-state" id="pressureLinesEmpty" aria-live="polite" role="status">
-                                                        <div class="empty-illustration">💦</div>
-                                                        <p class="empty-title">No pressure items</p>
-                                                        <p class="empty-body">Add a driveway, patio, or surface to include pressure cleaning.</p>
-                                                        <button id="emptyAddPressureLineBtn" type="button" class="btn btn-primary">+ Add Pressure Line</button>
-                                                </div>
-                                                <div class="lines-list" id="pressureLinesContainer"></div>
                                         </div>
                                 </section>
-                        </section>
+			</section>
 
-                                        <!-- RIGHT COLUMN -->
-                                        <section class="col col-right" aria-labelledby="totalsColumnHeading">
-                                                <header class="col-header" id="totalsColumnHeading">
-                                                        <h2 class="col-title">Totals & job details</h2>
-                                                        <p class="col-description">Review estimated totals, save quotes, and capture job notes.</p>
-                                                </header>
+			<!-- RIGHT COLUMN -->
+			<section class="col col-right">
 				<!-- SUMMARY PANEL -->
 				<section class="section card-summary" id="summaryPanel">
 					<header class="sec-h">
@@ -2215,13 +2222,15 @@
 	<script src="pdf-components.js" defer></script>
 	<script src="quote-pdf.js" defer></script>
 	<script src="quote-pdf-ui.js" defer></script>
-<!-- Lazy-loaded modules (loaded on demand via LazyLoader) -->
-<!-- Analytics System -->
-<script src="analytics-config.js" defer></script>
-<script src="analytics-engine.js" defer></script>
-<script src="analytics.js" defer></script>
-<!-- <script src="charts.js" defer></script> -->
-<!-- <script src="photo-modal.js" defer></script> -->
+        <!-- Lazy-loaded modules (loaded on demand via LazyLoader) -->
+        <!-- Analytics System -->
+        <script data-late-src="analytics-config.js" data-module="analytics"></script>
+        <script data-late-src="analytics-engine.js" data-module="analytics"></script>
+        <script data-late-src="analytics-dashboard.js" data-module="analytics"></script>
+        <script data-late-src="analytics.js" data-module="analytics"></script>
+        <!-- <script src="charts.js" defer></script> -->
+        <!-- <script src="photo-modal.js" defer></script> -->
+        <script data-late-src="photos.js" data-module="photos"></script>
 
 	<!-- Production Polish & Testing Tools -->
 	<!-- Deployment helper for pre-deployment checks -->
@@ -2236,11 +2245,11 @@
 	<script src="integration-tests.js" defer></script>
 	<script src="performance-tests.js" defer></script>
 	<script src="test-runner.js" defer></script>
-	<script src="test-checklist.js" defer></script>
-	<script src="production-readiness.js" defer></script>
+        <script src="test-checklist.js" defer></script>
+        <script src="production-readiness.js" defer></script>
 
-	<!-- Backup & Restore System -->
-	<script src="backup-manager.js" defer></script>
+        <!-- Backup & Restore System -->
+        <script data-late-src="backup-manager.js" data-module="backup"></script>
 
 	<!-- Job Tracking & Pricing Intelligence System (NEW v1.13.0) -->
 	<script src="job-manager.js" defer></script>
@@ -2249,16 +2258,90 @@
 	<script src="job-tracking-ui.js" defer></script>
 	<script src="job-tracking-global.js" defer></script>
 
-	<!-- Production Configuration (loads last to override development settings) -->
-	<script src="config-production.js" defer></script>
+        <!-- Production Configuration (loads last to override development settings) -->
+        <script src="config-production.js" defer></script>
 
-	<!-- MANUAL TEST SUITES (uncomment for testing, comment out for production) -->
-	<!-- Pricing calculation tests: PricingTests.runAll() -->
-	<!-- <script src="tests/manual/pricing-tests.js" defer></script> -->
-	<!-- Storage operation tests: StorageTests.runAll() -->
-	<!-- <script src="tests/manual/storage-tests.js" defer></script> -->
-	<!-- Performance benchmarks: PerformanceTests.runAll() -->
-	<!-- <script src="tests/manual/performance-tests.js" defer></script> -->
+        <!-- MANUAL TEST SUITES (uncomment for testing, comment out for production) -->
+        <!-- Pricing calculation tests: PricingTests.runAll() -->
+        <!-- <script src="tests/manual/pricing-tests.js" defer></script> -->
+        <!-- Storage operation tests: StorageTests.runAll() -->
+        <!-- <script src="tests/manual/storage-tests.js" defer></script> -->
+        <!-- Performance benchmarks: PerformanceTests.runAll() -->
+        <!-- <script src="tests/manual/performance-tests.js" defer></script> -->
+
+        <!-- Deferred asset loader to hydrate non-critical styles and scripts after DOM is ready -->
+        <script>
+                (function() {
+                        function showDeferredPlaceholders() {
+                                if (window.APP && APP.showDeferredPlaceholder) {
+                                        APP.showDeferredPlaceholder('page-analytics-dashboard', 'Loading analytics toolkit...');
+                                        APP.showDeferredPlaceholder('photos-grid', 'Preparing photo tools...');
+                                        APP.showDeferredPlaceholder('page-settings', 'Loading backup tools...');
+                                }
+                        }
+
+                        function hydrateDeferredStyles() {
+                                var lateStyles = document.querySelectorAll('link[data-late-style]');
+                                for (var i = 0; i < lateStyles.length; i++) {
+                                        var link = lateStyles[i];
+                                        link.rel = 'stylesheet';
+                                        link.removeAttribute('data-late-style');
+                                        link.removeAttribute('as');
+                                }
+                        }
+
+                        function handleLateLoad(moduleName) {
+                                if (!moduleName || !window.APP || !APP.hideDeferredPlaceholder) {
+                                        return;
+                                }
+
+                                if (moduleName === 'analytics') {
+                                        APP.hideDeferredPlaceholder('page-analytics-dashboard');
+                                } else if (moduleName === 'photos') {
+                                        APP.hideDeferredPlaceholder('photos-grid');
+                                } else if (moduleName === 'backup') {
+                                        APP.hideDeferredPlaceholder('page-settings');
+                                }
+                        }
+
+                        function hydrateDeferredScripts() {
+                                var lateScripts = document.querySelectorAll('script[data-late-src]');
+                                for (var i = 0; i < lateScripts.length; i++) {
+                                        var placeholder = lateScripts[i];
+                                        var moduleName = placeholder.getAttribute('data-module');
+                                        var src = placeholder.getAttribute('data-late-src');
+                                        if (!src) {
+                                                continue;
+                                        }
+
+                                        var script = document.createElement('script');
+                                        script.src = src;
+                                        script.defer = true;
+                                        script.async = false;
+
+                                        (function(name) {
+                                                script.onload = function() {
+                                                        handleLateLoad(name);
+                                                };
+                                        })(moduleName);
+
+                                        placeholder.parentNode.replaceChild(script, placeholder);
+                                }
+                        }
+
+                        function initDeferredAssets() {
+                                showDeferredPlaceholders();
+                                hydrateDeferredStyles();
+                                hydrateDeferredScripts();
+                        }
+
+                        if (document.readyState === 'loading') {
+                                document.addEventListener('DOMContentLoaded', initDeferredAssets);
+                        } else {
+                                initDeferredAssets();
+                        }
+                })();
+        </script>
 
 	<!-- Webhook Settings Modal Functions -->
 	<script>

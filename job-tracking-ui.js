@@ -70,6 +70,9 @@
         var container = document.getElementById('work-items-list');
         if (!container) return;
 
+        container.setAttribute('role', 'grid');
+        container.setAttribute('aria-label', 'Work item comparison table');
+
         var html = '';
 
         // Initialize actual items if needed
@@ -83,12 +86,12 @@
             var item = job.actual.items[i];
             var estimate = job.estimate.items[i];
 
-            html += '<div class="work-item" data-index="' + i + '">';
+            html += '<div class="work-item" data-index="' + i + '" tabindex="0" role="row" aria-label="Work item ' + (item.description || 'item ' + (i + 1)) + '">';
 
             // Item header
             html += '<div class="work-item-header">';
             html += '<h4>' + (item.description || '') + '</h4>';
-            html += '<button class="btn btn-sm" onclick="JobTrackingUI.editWorkItem(' + i + ')">Edit</button>';
+            html += '<button class="btn btn-sm" onclick="JobTrackingUI.editWorkItem(' + i + ')" aria-label="Edit ' + (item.description || 'work item') + '">Edit</button>';
             html += '</div>';
 
             // Estimated vs Actual
@@ -164,6 +167,15 @@
         }
 
         container.innerHTML = html || '<p class="text-muted">No work items</p>';
+
+        if (window.EventHandlers && window.EventHandlers.enableKeyboardTableNavigation) {
+            window.EventHandlers.enableKeyboardTableNavigation(container, '.work-item', function(rowEl) {
+                var index = parseInt(rowEl.getAttribute('data-index'), 10);
+                if (!isNaN(index)) {
+                    JobTrackingUI.editWorkItem(index);
+                }
+            });
+        }
     }
 
     /**

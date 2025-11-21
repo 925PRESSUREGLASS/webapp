@@ -78,6 +78,63 @@
     return el;
   }
 
+  var statusTimers = {};
+
+  function showStatus(target, state, message) {
+    var el = typeof target === 'string' ? $(target) : target;
+    if (!el || !el.parentNode) return;
+
+    var statusEl = el.parentNode.querySelector('.inline-status');
+    if (!statusEl) {
+      statusEl = createEl('span', 'inline-status');
+      statusEl.setAttribute('role', 'status');
+      statusEl.setAttribute('aria-live', 'polite');
+      el.parentNode.appendChild(statusEl);
+    }
+
+    if (!el._statusKey) {
+      el._statusKey = el.id || el.getAttribute('data-status-key') || 'status-' + Date.now();
+    }
+    var statusKey = el._statusKey;
+    if (statusTimers[statusKey]) {
+      clearTimeout(statusTimers[statusKey]);
+    }
+
+    if (state === 'clear') {
+      statusEl.className = 'inline-status';
+      statusEl.innerHTML = '';
+      return;
+    }
+
+    statusEl.className = 'inline-status';
+    statusEl.innerHTML = '';
+
+    if (state === 'loading') {
+      statusEl.classList.add('inline-status--loading');
+      var spinner = createEl('span', 'inline-status__spinner');
+      spinner.setAttribute('aria-hidden', 'true');
+      statusEl.appendChild(spinner);
+
+      var label = createEl('span', 'inline-status__label');
+      label.textContent = message || 'Working...';
+      statusEl.appendChild(label);
+    } else if (state === 'success') {
+      statusEl.classList.add('inline-status--success');
+      var check = createEl('span', 'inline-status__check');
+      check.setAttribute('aria-hidden', 'true');
+      check.textContent = '✓';
+      statusEl.appendChild(check);
+
+      var labelSuccess = createEl('span', 'inline-status__label');
+      labelSuccess.textContent = message || 'Done';
+      statusEl.appendChild(labelSuccess);
+
+      statusTimers[statusKey] = setTimeout(function () {
+        showStatus(el, 'clear');
+      }, 2200);
+    }
+  }
+
   // ————————————————————
   // GLOBAL APP OBJECT
   // ————————————————————
@@ -382,22 +439,95 @@
   // RENDERING
   // ————————————————————
 
+
+  var sortState = {
+    window: { key: null, direction: 'asc' },
+    pressure: { key: null, direction: 'asc' }
+  };
+
   function renderLines() {
+    applySort('window');
+    applySort('pressure');
     renderWindowLines();
     renderPressureLines();
   }
 
-  function renderWindowLines() {
-    var container = $("windowLinesContainer");
-    if (!container) return;
-    var skeleton = $("windowLinesSkeleton");
-    var empty = $("windowLinesEmpty");
+  function applySort(type) {
+    var config = sortState[type];
+    if (!config || !config.key) return;
 
-    if (skeleton) {
-      skeleton.style.display = "none";
+    var list = type === 'window' ? state.windowLines : state.pressureLines;
+    list.sort(function (a, b) {
+      var va = getSortValue(type, a, config.key);
+      var vb = getSortValue(type, b, config.key);
+
+      if (typeof va === 'string') va = va.toLowerCase();
+      if (typeof vb === 'string') vb = vb.toLowerCase();
+
+      if (va < vb) return config.direction === 'asc' ? -1 : 1;
+      if (va > vb) return config.direction === 'asc' ? 1 : -1;
+      return 0;
+    });
+  }
+
+  function toggleSort(type, key) {
+    var config = sortState[type];
+    if (!config) return;
+
+    if (config.key === key) {
+      config.direction = config.direction === 'asc' ? 'desc' : 'asc';
+    } else {
+      config.key = key;
+      config.direction = 'asc';
     }
 
-    container.innerHTML = "";
+    renderLines();
+  }
+
+  function updateSortIcons(type) {
+    var config = sortState[type];
+    var toggles = qa('.sort-toggle[data-type="' + type + '"]');
+    var i;
+    for (i = 0; i < toggles.length; i++) {
+      toggles[i].classList.remove('sorted-asc');
+      toggles[i].classList.remove('sorted-desc');
+      if (config && config.key === toggles[i].getAttribute('data-key')) {
+        toggles[i].classList.add(config.direction === 'asc' ? 'sorted-asc' : 'sorted-desc');
+      }
+    }
+  }
+
+  function getSortValue(type, line, key) {
+    if (type === 'window') {
+      if (key === 'title') return line.title || '';
+      if (key === 'type') return getWindowTypeLabel(line.windowTypeId);
+      if (key === 'panes') return typeof line.panes === 'number' ? line.panes : 0;
+      if (key === 'condition') return getWindowConditionLabel(line);
+      if (key === 'access') return getWindowAccessLabel(line);
+      if (key === 'location') return line.location || '';
+    }
+
+    if (type === 'pressure') {
+      if (key === 'title') return line.title || '';
+      if (key === 'surface') return getPressureSurfaceLabel(line.surfaceId);
+      if (key === 'area') return typeof line.areaSqm === 'number' ? line.areaSqm : 0;
+      if (key === 'soil') return line.soilLevel || '';
+      if (key === 'access') return getPressureAccessLabel(line.access);
+    }
+
+    return '';
+  }
+
+  function renderWindowLines() {
+    var body = $("windowLinesTableBody");
+    if (!body) return;
+    body.innerHTML = "";
+
+    if (!state.windowLines.length) {
+      renderEmptyRow(body, 9, "No window lines added yet.");
+      updateSortIcons('window');
+      return;
+    }
 
     if (!state.windowLines || state.windowLines.length === 0) {
       if (empty) {
@@ -414,22 +544,23 @@
 
     for (var i = 0; i < state.windowLines.length; i++) {
       var line = state.windowLines[i];
-      var card = renderWindowLineCard(line);
-      container.appendChild(card);
+      var row = renderWindowLineRow(line);
+      body.appendChild(row);
     }
+
+    updateSortIcons('window');
   }
 
   function renderPressureLines() {
-    var container = $("pressureLinesContainer");
-    if (!container) return;
-    var skeleton = $("pressureLinesSkeleton");
-    var empty = $("pressureLinesEmpty");
+    var body = $("pressureLinesTableBody");
+    if (!body) return;
+    body.innerHTML = "";
 
-    if (skeleton) {
-      skeleton.style.display = "none";
+    if (!state.pressureLines.length) {
+      renderEmptyRow(body, 7, "No pressure lines added yet.");
+      updateSortIcons('pressure');
+      return;
     }
-
-    container.innerHTML = "";
 
     if (!state.pressureLines || state.pressureLines.length === 0) {
       if (empty) {
@@ -446,54 +577,99 @@
 
     for (var i = 0; i < state.pressureLines.length; i++) {
       var line = state.pressureLines[i];
-      var card = renderPressureLineCard(line);
-      container.appendChild(card);
+      var row = renderPressureLineRow(line);
+      body.appendChild(row);
     }
+
+    updateSortIcons('pressure');
   }
 
-  function renderWindowLineCard(line) {
-    var card = createEl("div", "line-card");
-    card.setAttribute("data-id", line.id);
+  function renderEmptyRow(body, columns, message) {
+    var row = createEl('tr', 'lines-empty-row');
+    var cell = createEl('td');
+    cell.colSpan = columns;
+    cell.textContent = message;
+    row.appendChild(cell);
+    body.appendChild(row);
+  }
 
-    var header = createEl("div", "line-card-header");
+  function getWindowTypeLabel(typeId) {
+    for (var i = 0; i < PRICING_DATA.windowTypes.length; i++) {
+      if (PRICING_DATA.windowTypes[i].id === typeId) {
+        return PRICING_DATA.windowTypes[i].label || '';
+      }
+    }
+    return '';
+  }
 
-    var titleEl = createEl("div", "line-card-title");
-    titleEl.textContent = line.title || "Window Line";
+  function getWindowConditionLabel(line) {
+    if (window.CONDITION_MODIFIERS_ARRAY && CONDITION_MODIFIERS_ARRAY.length > 0) {
+      for (var i = 0; i < CONDITION_MODIFIERS_ARRAY.length; i++) {
+        if (CONDITION_MODIFIERS_ARRAY[i].id === line.conditionId) {
+          return CONDITION_MODIFIERS_ARRAY[i].name;
+        }
+      }
+    }
+    return line.soilLevel || '';
+  }
 
-    var tagsEl = createEl("div", "line-card-tags");
+  function getWindowAccessLabel(line) {
+    if (window.ACCESS_MODIFIERS_ARRAY && ACCESS_MODIFIERS_ARRAY.length > 0) {
+      for (var i = 0; i < ACCESS_MODIFIERS_ARRAY.length; i++) {
+        if (ACCESS_MODIFIERS_ARRAY[i].id === line.accessId) {
+          return ACCESS_MODIFIERS_ARRAY[i].name;
+        }
+      }
+    }
+    return line.accessId || '';
+  }
+
+  function getPressureSurfaceLabel(surfaceId) {
+    for (var i = 0; i < PRICING_DATA.pressureSurfaces.length; i++) {
+      if (PRICING_DATA.pressureSurfaces[i].id === surfaceId) {
+        return PRICING_DATA.pressureSurfaces[i].label || '';
+      }
+    }
+    return '';
+  }
+
+  function getPressureAccessLabel(accessId) {
+    return accessId || '';
+  }
+
+  function renderWindowLineRow(line) {
+    var row = createEl('tr');
+    row.setAttribute('data-id', line.id);
+
+    var titleCell = createEl('td');
+    var titleRow = createEl('div', 'line-title-row');
+    var titleEl = createEl('div', 'line-title');
+    titleEl.textContent = line.title || 'Window Line';
+    titleRow.appendChild(titleEl);
+
     var allTags = (line.tags || []).slice(0);
     if (line.location) allTags.push(line.location);
-    if (line.highReach) allTags.push("high reach");
-    if (line.inside && !line.outside) allTags.push("inside only");
-    if (!line.inside && line.outside) allTags.push("outside only");
+    if (line.highReach) allTags.push('high reach');
+    if (line.inside && !line.outside) allTags.push('inside only');
+    if (!line.inside && line.outside) allTags.push('outside only');
 
-    var i;
-    for (i = 0; i < allTags.length; i++) {
-      var tagSpan = createEl("span");
-      tagSpan.textContent = allTags[i];
-      tagsEl.appendChild(tagSpan);
+    if (allTags.length) {
+      var meta = createEl('div', 'line-meta');
+      meta.textContent = allTags.join(' • ');
+      titleRow.appendChild(meta);
     }
 
-    header.appendChild(titleEl);
-    header.appendChild(tagsEl);
+    titleCell.appendChild(titleRow);
+    row.appendChild(titleCell);
 
-    var body = createEl("div", "line-card-body");
-
-    // Column 1 – window type and panes
-    var col1 = createEl("div", "line-field");
-    var labelType = createEl("label");
-    labelType.textContent = "Type";
-
-    var selectType = createEl("select");
-    selectType.className = "window-type-select";
+    var typeCell = createEl('td');
+    var selectType = createEl('select');
+    selectType.className = 'window-type-select';
     selectType.value = line.windowTypeId;
 
-    // Use extended types with categories if available
     var windowTypes = PRICING_DATA.windowTypes;
     var hasCategories = windowTypes.length > 0 && windowTypes[0].category;
-
     if (hasCategories) {
-      // Build grouped options
       var categories = {
         sliding: [],
         awning: [],
@@ -517,7 +693,6 @@
         }
       }
 
-      // Build HTML with optgroups
       var categoryLabels = {
         sliding: 'Sliding Windows',
         awning: 'Awning Windows',
@@ -548,7 +723,6 @@
         }
       }
     } else {
-      // Simple flat list
       for (var j = 0; j < windowTypes.length; j++) {
         var wt = windowTypes[j];
         var opt = createEl("option");
@@ -564,11 +738,10 @@
       scheduleAutosave(true);
       recalculate();
     });
+    typeCell.appendChild(selectType);
+    row.appendChild(typeCell);
 
-    var panesField = createEl("div", "line-field");
-    var panesLabel = createEl("label");
-    panesLabel.textContent = "Panes";
-
+    var panesCell = createEl('td');
     var panesInput = createEl("input");
     panesInput.type = "number";
     panesInput.className = "window-quantity-input";
@@ -581,19 +754,13 @@
       scheduleAutosave(true);
       recalculate();
     });
+    panesCell.appendChild(panesInput);
+    row.appendChild(panesCell);
 
-    col1.appendChild(labelType);
-    col1.appendChild(selectType);
-    panesField.appendChild(panesLabel);
-    panesField.appendChild(panesInput);
+    var flagsCell = createEl('td');
+    var flagsWrapper = createEl('div', 'flag-group');
 
-    // Column 2 – flags
-    var col2 = createEl("div", "line-field");
-    var flagsLabel = createEl("label");
-    flagsLabel.textContent = "Flags";
-
-    var flagsWrapper = createEl("div");
-
+    var insideLabel = createEl('label');
     var insideToggle = createEl("input");
     insideToggle.type = "checkbox";
     insideToggle.checked = line.inside;
@@ -602,10 +769,10 @@
       scheduleAutosave(true);
       recalculate();
     });
+    insideLabel.appendChild(insideToggle);
+    insideLabel.appendChild(document.createTextNode('Inside'));
 
-    var insideLabel = createEl("span");
-    insideLabel.textContent = "Inside";
-
+    var outsideLabel = createEl('label');
     var outsideToggle = createEl("input");
     outsideToggle.type = "checkbox";
     outsideToggle.checked = line.outside;
@@ -614,10 +781,10 @@
       scheduleAutosave(true);
       recalculate();
     });
+    outsideLabel.appendChild(outsideToggle);
+    outsideLabel.appendChild(document.createTextNode('Outside'));
 
-    var outsideLabel = createEl("span");
-    outsideLabel.textContent = "Outside";
-
+    var highReachLabel = createEl('label');
     var highReachToggle = createEl("input");
     highReachToggle.type = "checkbox";
     highReachToggle.checked = line.highReach;
@@ -626,63 +793,46 @@
       scheduleAutosave(true);
       recalculate();
     });
+    highReachLabel.appendChild(highReachToggle);
+    highReachLabel.appendChild(document.createTextNode('High'));
 
-    var highReachLabel = createEl("span");
-    highReachLabel.textContent = "High Reach";
-
-    flagsWrapper.appendChild(insideToggle);
     flagsWrapper.appendChild(insideLabel);
-    flagsWrapper.appendChild(outsideToggle);
     flagsWrapper.appendChild(outsideLabel);
-    flagsWrapper.appendChild(highReachToggle);
     flagsWrapper.appendChild(highReachLabel);
+    flagsCell.appendChild(flagsWrapper);
+    row.appendChild(flagsCell);
 
-    col2.appendChild(flagsLabel);
-    col2.appendChild(flagsWrapper);
-
-    // Column 3 – condition, access, tint, location
-    var col3 = createEl("div", "line-field");
-
-    // Condition dropdown (replaces simple Soil)
-    var conditionLabel = createEl("label");
-    conditionLabel.textContent = "Condition";
-
+    var conditionCell = createEl('td');
     var conditionSelect = createEl("select");
 
-    if (window.WINDOW_CONDITIONS_ARRAY && WINDOW_CONDITIONS_ARRAY.length > 0) {
-      // Use enhanced conditions
-      for (var c = 0; c < WINDOW_CONDITIONS_ARRAY.length; c++) {
-        var cond = WINDOW_CONDITIONS_ARRAY[c];
+    if (window.CONDITION_MODIFIERS_ARRAY && CONDITION_MODIFIERS_ARRAY.length > 0) {
+      for (var c = 0; c < CONDITION_MODIFIERS_ARRAY.length; c++) {
+        var cond = CONDITION_MODIFIERS_ARRAY[c];
         var condOpt = createEl("option");
         condOpt.value = cond.id;
-        condOpt.textContent = cond.name + " (" + (cond.multiplier * 100).toFixed(0) + "%)";
-        if (line.conditionId === cond.id) {
-          condOpt.selected = true;
-        } else if (!line.conditionId && cond.id === "normal_dirt") {
+        condOpt.textContent = cond.name + " (" + cond.multiplier.toFixed(2) + "x)";
+        if (line.conditionId === cond.id || (!line.conditionId && cond.id === 'normal')) {
           condOpt.selected = true;
         }
         conditionSelect.appendChild(condOpt);
       }
     } else {
-      // Fall back to legacy soil levels
       var soilOptions = [
         { v: "light", t: "Light" },
         { v: "medium", t: "Medium" },
         { v: "heavy", t: "Heavy" }
       ];
-      for (var s = 0; s < soilOptions.length; s++) {
-        var so = soilOptions[s];
+      for (var so = 0; so < soilOptions.length; so++) {
         var soEl = createEl("option");
-        soEl.value = so.v;
-        soEl.textContent = so.t;
-        if (line.soilLevel === so.v) soEl.selected = true;
+        soEl.value = soilOptions[so].v;
+        soEl.textContent = soilOptions[so].t;
+        if (line.soilLevel === soilOptions[so].v) soEl.selected = true;
         conditionSelect.appendChild(soEl);
       }
     }
 
     conditionSelect.addEventListener("change", function (e) {
       line.conditionId = e.target.value;
-      // Update soilLevel for backward compatibility
       if (e.target.value === "light_dust") line.soilLevel = "light";
       else if (e.target.value === "normal_dirt") line.soilLevel = "medium";
       else if (e.target.value === "heavy_dirt" || e.target.value === "severe_neglect") line.soilLevel = "heavy";
@@ -690,29 +840,24 @@
       scheduleAutosave(true);
       recalculate();
     });
+    conditionCell.appendChild(conditionSelect);
+    row.appendChild(conditionCell);
 
-    // Access dropdown
-    var accessLabel = createEl("label");
-    accessLabel.textContent = "Access";
-
+    var accessCell = createEl('td');
     var accessSelect = createEl("select");
 
     if (window.ACCESS_MODIFIERS_ARRAY && ACCESS_MODIFIERS_ARRAY.length > 0) {
-      // Use enhanced access modifiers
       for (var a = 0; a < ACCESS_MODIFIERS_ARRAY.length; a++) {
         var acc = ACCESS_MODIFIERS_ARRAY[a];
         var accOpt = createEl("option");
         accOpt.value = acc.id;
         accOpt.textContent = acc.name + " (" + (acc.multiplier * 100).toFixed(0) + "%)";
-        if (line.accessId === acc.id) {
-          accOpt.selected = true;
-        } else if (!line.accessId && acc.id === "ground_level") {
+        if (line.accessId === acc.id || (!line.accessId && acc.id === "ground_level")) {
           accOpt.selected = true;
         }
         accessSelect.appendChild(accOpt);
       }
     } else {
-      // Fall back to legacy access (use highReach checkbox instead)
       var accessOptions = [
         { v: "easy", t: "Easy Access" },
         { v: "ladder", t: "Ladder Required" },
@@ -723,23 +868,23 @@
         var axEl = createEl("option");
         axEl.value = axo.v;
         axEl.textContent = axo.t;
+        if (line.accessId === axo.v) axEl.selected = true;
         accessSelect.appendChild(axEl);
       }
     }
 
     accessSelect.addEventListener("change", function (e) {
       line.accessId = e.target.value;
-      // Set highReach for backward compatibility
       if (e.target.value && e.target.value.indexOf("high") !== -1) {
         line.highReach = true;
       }
       scheduleAutosave(true);
       recalculate();
     });
+    accessCell.appendChild(accessSelect);
+    row.appendChild(accessCell);
 
-    var tintLabel = createEl("label");
-    tintLabel.textContent = "Tint";
-
+    var tintCell = createEl('td');
     var tintSelect = createEl("select");
     var tintOptions = [
       { v: "none", t: "None" },
@@ -747,8 +892,7 @@
       { v: "heavy", t: "Heavy" }
     ];
 
-    var t;
-    for (t = 0; t < tintOptions.length; t++) {
+    for (var t = 0; t < tintOptions.length; t++) {
       var to = tintOptions[t];
       var tEl = createEl("option");
       tEl.value = to.v;
@@ -762,10 +906,10 @@
       scheduleAutosave(true);
       recalculate();
     });
+    tintCell.appendChild(tintSelect);
+    row.appendChild(tintCell);
 
-    var locLabel = createEl("label");
-    locLabel.textContent = "Location / Notes";
-
+    var locationCell = createEl('td');
     var locInput = createEl("input");
     locInput.type = "text";
     locInput.value = line.location || "";
@@ -773,24 +917,11 @@
       line.location = e.target.value;
       scheduleAutosave(true);
     });
+    locationCell.appendChild(locInput);
+    row.appendChild(locationCell);
 
-    col3.appendChild(conditionLabel);
-    col3.appendChild(conditionSelect);
-    col3.appendChild(accessLabel);
-    col3.appendChild(accessSelect);
-    col3.appendChild(tintLabel);
-    col3.appendChild(tintSelect);
-    col3.appendChild(locLabel);
-    col3.appendChild(locInput);
-
-    body.appendChild(col1);
-    body.appendChild(panesField);
-    body.appendChild(col2);
-    body.appendChild(col3);
-
-    var footer = createEl("div", "line-card-footer");
-
-    var actions = createEl("div", "line-actions");
+    var actionsCell = createEl('td');
+    var actions = createEl('div', 'line-actions');
     var dupBtn = createEl("button", "btn btn-small btn-ghost");
     dupBtn.type = "button";
     dupBtn.textContent = "Duplicate";
@@ -807,52 +938,34 @@
 
     actions.appendChild(dupBtn);
     actions.appendChild(delBtn);
+    actionsCell.appendChild(actions);
+    row.appendChild(actionsCell);
 
-    var totalEl = createEl("div", "line-total");
-    totalEl.textContent = "";
-
-    footer.appendChild(actions);
-    footer.appendChild(totalEl);
-
-    card.appendChild(header);
-    card.appendChild(body);
-    card.appendChild(footer);
-
-    return card;
+    return row;
   }
 
-  function renderPressureLineCard(line) {
-    var card = createEl("div", "line-card");
-    card.setAttribute("data-id", line.id);
+  function renderPressureLineRow(line) {
+    var row = createEl('tr');
+    row.setAttribute('data-id', line.id);
 
-    var header = createEl("div", "line-card-header");
+    var titleCell = createEl('td');
+    var titleRow = createEl('div', 'line-title-row');
+    var titleEl = createEl('div', 'line-title');
+    titleEl.textContent = line.title || 'Pressure Line';
+    titleRow.appendChild(titleEl);
 
-    var titleEl = createEl("div", "line-card-title");
-    titleEl.textContent = line.title || "Pressure Line";
-
-    var tagsEl = createEl("div", "line-card-tags");
-    var allTags = (line.tags || []).slice(0);
-    if (line.notes) allTags.push(line.notes);
-    var i;
-    for (i = 0; i < allTags.length; i++) {
-      var tagSpan = createEl("span");
-      tagSpan.textContent = allTags[i];
-      tagsEl.appendChild(tagSpan);
+    var meta = createEl('div', 'line-meta');
+    meta.textContent = line.notes || '';
+    if (meta.textContent) {
+      titleRow.appendChild(meta);
     }
 
-    header.appendChild(titleEl);
-    header.appendChild(tagsEl);
+    titleCell.appendChild(titleRow);
+    row.appendChild(titleCell);
 
-    var body = createEl("div", "line-card-body");
-
-    // Surface + area
-    var col1 = createEl("div", "line-field");
-    var surfLabel = createEl("label");
-    surfLabel.textContent = "Surface";
-
+    var surfaceCell = createEl('td');
     var surfSelect = createEl("select");
-    var j;
-    for (j = 0; j < PRICING_DATA.pressureSurfaces.length; j++) {
+    for (var j = 0; j < PRICING_DATA.pressureSurfaces.length; j++) {
       var ps = PRICING_DATA.pressureSurfaces[j];
       var opt = createEl("option");
       opt.value = ps.id;
@@ -865,10 +978,10 @@
       scheduleAutosave(true);
       recalculate();
     });
+    surfaceCell.appendChild(surfSelect);
+    row.appendChild(surfaceCell);
 
-    var areaLabel = createEl("label");
-    areaLabel.textContent = "Area (sqm)";
-
+    var areaCell = createEl('td');
     var areaInput = createEl("input");
     areaInput.type = "number";
     areaInput.min = "0";
@@ -880,25 +993,17 @@
       scheduleAutosave(true);
       recalculate();
     });
+    areaCell.appendChild(areaInput);
+    row.appendChild(areaCell);
 
-    col1.appendChild(surfLabel);
-    col1.appendChild(surfSelect);
-    col1.appendChild(areaLabel);
-    col1.appendChild(areaInput);
-
-    // Soil, access
-    var col2 = createEl("div", "line-field");
-    var soilLabel = createEl("label");
-    soilLabel.textContent = "Soil";
-
+    var soilCell = createEl('td');
     var soilSelect = createEl("select");
     var soilOptions = [
       { v: "light", t: "Light" },
       { v: "medium", t: "Medium" },
       { v: "heavy", t: "Heavy" }
     ];
-    var s;
-    for (s = 0; s < soilOptions.length; s++) {
+    for (var s = 0; s < soilOptions.length; s++) {
       var so = soilOptions[s];
       var soEl = createEl("option");
       soEl.value = so.v;
@@ -911,41 +1016,33 @@
       scheduleAutosave(true);
       recalculate();
     });
+    soilCell.appendChild(soilSelect);
+    row.appendChild(soilCell);
 
-    var accessLabel = createEl("label");
-    accessLabel.textContent = "Access";
-
+    var accessCell = createEl('td');
     var accessSelect = createEl("select");
     var accessOptions = [
       { v: "easy", t: "Easy" },
       { v: "ladder", t: "Ladder" },
       { v: "highReach", t: "High Reach" }
     ];
-    var a;
-    for (a = 0; a < accessOptions.length; a++) {
+    for (var a = 0; a < accessOptions.length; a++) {
       var ao = accessOptions[a];
-      var aEl = createEl("option");
-      aEl.value = ao.v;
-      aEl.textContent = ao.t;
-      if (line.access === ao.v) aEl.selected = true;
-      accessSelect.appendChild(aEl);
+      var axEl = createEl("option");
+      axEl.value = ao.v;
+      axEl.textContent = ao.t;
+      if (line.access === ao.v) axEl.selected = true;
+      accessSelect.appendChild(axEl);
     }
     accessSelect.addEventListener("change", function (e) {
       line.access = e.target.value;
       scheduleAutosave(true);
       recalculate();
     });
+    accessCell.appendChild(accessSelect);
+    row.appendChild(accessCell);
 
-    col2.appendChild(soilLabel);
-    col2.appendChild(soilSelect);
-    col2.appendChild(accessLabel);
-    col2.appendChild(accessSelect);
-
-    // Notes
-    var col3 = createEl("div", "line-field");
-    var notesLabel = createEl("label");
-    notesLabel.textContent = "Notes";
-
+    var notesCell = createEl('td');
     var notesInput = createEl("input");
     notesInput.type = "text";
     notesInput.value = line.notes || "";
@@ -953,16 +1050,11 @@
       line.notes = e.target.value;
       scheduleAutosave(true);
     });
+    notesCell.appendChild(notesInput);
+    row.appendChild(notesCell);
 
-    col3.appendChild(notesLabel);
-    col3.appendChild(notesInput);
-
-    body.appendChild(col1);
-    body.appendChild(col2);
-    body.appendChild(col3);
-
-    var footer = createEl("div", "line-card-footer");
-    var actions = createEl("div", "line-actions");
+    var actionsCell = createEl('td');
+    var actions = createEl('div', 'line-actions');
 
     var dupBtn = createEl("button", "btn btn-small btn-ghost");
     dupBtn.type = "button";
@@ -980,18 +1072,24 @@
 
     actions.appendChild(dupBtn);
     actions.appendChild(delBtn);
+    actionsCell.appendChild(actions);
+    row.appendChild(actionsCell);
 
-    var totalEl = createEl("div", "line-total");
-    totalEl.textContent = "";
+    return row;
+  }
 
-    footer.appendChild(actions);
-    footer.appendChild(totalEl);
-
-    card.appendChild(header);
-    card.appendChild(body);
-    card.appendChild(footer);
-
-    return card;
+  function initSortToggles() {
+    var toggles = qa('.sort-toggle');
+    var i;
+    for (i = 0; i < toggles.length; i++) {
+      (function (btn) {
+        btn.addEventListener('click', function () {
+          var type = btn.getAttribute('data-type');
+          var key = btn.getAttribute('data-key');
+          toggleSort(type, key);
+        });
+      })(toggles[i]);
+    }
   }
 
   // ————————————————————
@@ -1157,6 +1255,8 @@
         return;
       }
 
+      showStatus('saveQuoteBtn', 'loading', 'Saving...');
+
       var newQuote = {
         id: "q" + Date.now(),
         title: quoteName.trim(),
@@ -1167,6 +1267,8 @@
       savedQuotes.push(newQuote);
       AppStorage.saveSavedQuotes(savedQuotes);
       renderSavedQuotesOptions(savedQuotes);
+
+      showStatus('saveQuoteBtn', 'success', 'Saved');
 
       if (window.UIComponents && window.UIComponents.showToast) {
         window.UIComponents.showToast('Quote "' + quoteName + '" saved successfully!', 'success');
@@ -1367,7 +1469,7 @@
           "<td>" +
           (line.highReach ? "✔" : "") +
           "</td>" +
-          "<td style='text-align:right;'>" +
+          "<td class='quote-doc-align-right'>" +
           lineTotalText +
           "</td>" +
           "</tr>";
@@ -1382,7 +1484,7 @@
         "<th>In</th>" +
         "<th>Out</th>" +
         "<th>High</th>" +
-        "<th style='text-align:right;'>Line Total</th>" +
+        "<th class='quote-doc-align-right'>Line Total</th>" +
         "</tr></thead>" +
         "<tbody>" +
         rows +
@@ -1423,7 +1525,7 @@
           "<td>" +
           window.Security.escapeHTML(line.notes || "") +
           "</td>" +
-          "<td style='text-align:right;'>" +
+          "<td class='quote-doc-align-right'>" +
           lineTotalText +
           "</td>" +
           "</tr>";
@@ -1437,7 +1539,7 @@
         "<th>Soil</th>" +
         "<th>Access</th>" +
         "<th>Notes</th>" +
-        "<th style='text-align:right;'>Line Total</th>" +
+        "<th class='quote-doc-align-right'>Line Total</th>" +
         "</tr></thead>" +
         "<tbody>" +
         rows +
@@ -1476,7 +1578,7 @@
         "<div class='quote-doc-totals-row'><div>GST (10%):</div><div>" +
           fmtMoneyExport(gst) +
         "</div></div>" +
-        "<div class='quote-doc-totals-row' style='font-weight:600;'><div>Total (incl. GST):</div><div>" +
+        "<div class='quote-doc-totals-row quote-doc-strong-row'><div>Total (incl. GST):</div><div>" +
           fmtMoneyExport(totalIncGst) +
         "</div></div>" +
       "</div>";
@@ -1548,7 +1650,7 @@
       totalsHtml +
       timeHtml +
       notesHtml +
-      "<div style='margin-top:18px;font-size:11px;color:#6b7280;'>" +
+      "<div class='quote-doc-disclaimer'>" +
       "This quote is based on the information provided and assumes reasonable access. " +
       "Any significant changes in scope or condition may require an updated quote." +
       "</div>" +
@@ -1558,12 +1660,15 @@
   }
 
   function openQuotePrintWindow() {
+    showStatus('generatePdfBtn', 'loading', 'Preparing PDF...');
+
     var html = buildQuoteHtml();
     var win = window.open("", "_blank");
     if (!win) {
       alert(
         "Pop-up blocked. Please allow pop-ups for this site to print or save the quote as PDF."
       );
+      showStatus('generatePdfBtn', 'clear');
       return;
     }
     win.document.open();
@@ -1572,6 +1677,7 @@
     win.focus();
     setTimeout(function () {
       win.print();
+      showStatus('generatePdfBtn', 'success', 'PDF ready');
     }, 300);
   }
 
@@ -1870,8 +1976,15 @@
     loadState: loadInitialState,
     saveState: autosave,
     buildStateFromUI: buildStateFromUI,
-    applyStateToUI: applyStateToUI
+    applyStateToUI: applyStateToUI,
+    showDeferredPlaceholder: showDeferredPlaceholder,
+    hideDeferredPlaceholder: hideDeferredPlaceholder
   };
+
+  if (window.APP) {
+    APP.showDeferredPlaceholder = showDeferredPlaceholder;
+    APP.hideDeferredPlaceholder = hideDeferredPlaceholder;
+  }
 
   // Register with bootstrap
   window.APP.registerModule('app', AppModule);

@@ -63,6 +63,13 @@
   box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
 }
 
+.task-card:focus,
+.task-card:focus-visible {
+  outline: 3px solid var(--color-info, #3b82f6);
+  outline-offset: 2px;
+  box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.25);
+}
+
 /* Priority border colors */
 .task-card.task-priority-urgent {
   border-left-color: var(--color-error, #ef4444);
@@ -170,6 +177,13 @@
   display: flex;
   gap: 0.5rem;
   justify-content: flex-end;
+}
+
+.task-actions .btn:focus,
+.task-actions .btn:focus-visible {
+  outline: 3px solid var(--color-warning, #f59e0b);
+  outline-offset: 2px;
+  box-shadow: 0 0 0 3px rgba(245, 158, 11, 0.25);
 }
 
 @media (max-width: 480px) {
