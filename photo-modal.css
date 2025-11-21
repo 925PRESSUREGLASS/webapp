@@ -6,7 +6,7 @@
   left: 0;
   width: 100%;
   height: 100%;
-  background: rgba(0, 0, 0, 0.9);
+  background: rgba(0, 0, 0, 0.82);
   display: flex;
   align-items: center;
   justify-content: center;
@@ -28,7 +28,7 @@
   display: flex;
   flex-direction: column;
   align-items: center;
-  animation: modalZoom 0.3s ease;
+  animation: modalZoom 0.2s ease;
 }
 
 @keyframes modalZoom {
@@ -45,17 +45,16 @@
   max-height: 80vh;
   object-fit: contain;
   border-radius: 8px;
-  box-shadow: 0 20px 60px rgba(0, 0, 0, 0.5);
+  box-shadow: 0 10px 28px rgba(0, 0, 0, 0.35);
 }
 
 .photo-modal-info {
   margin-top: 20px;
   text-align: center;
   color: #e5e7eb;
-  background: rgba(15, 23, 42, 0.8);
+  background: rgba(15, 23, 42, 0.7);
   padding: 12px 20px;
   border-radius: 8px;
-  backdrop-filter: blur(10px);
 }
 
 .photo-modal-filename {
@@ -85,18 +84,17 @@
   display: flex;
   align-items: center;
   justify-content: center;
-  transition: all 0.2s ease;
-  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
+  transition: background 0.2s ease;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.25);
   z-index: 10001;
 }
 
 .photo-modal-close:hover {
-  background: rgba(220, 38, 38, 1);
-  transform: scale(1.1);
+  background: rgba(220, 38, 38, 0.95);
 }
 
 .photo-modal-close:active {
-  transform: scale(0.95);
+  opacity: 0.9;
 }
 
 /* Navigation buttons */
@@ -116,18 +114,17 @@
   display: flex;
   align-items: center;
   justify-content: center;
-  transition: all 0.2s ease;
-  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
+  transition: background 0.2s ease;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.25);
   z-index: 10001;
 }
 
 .photo-modal-nav:hover {
-  background: rgba(14, 165, 233, 1);
-  transform: translateY(-50%) scale(1.1);
+  background: rgba(14, 165, 233, 0.95);
 }
 
 .photo-modal-nav:active {
-  transform: translateY(-50%) scale(0.95);
+  opacity: 0.85;
 }
 
 .photo-modal-nav.disabled {
@@ -156,7 +153,6 @@
   border-radius: 20px;
   font-size: 13px;
   font-weight: 500;
-  backdrop-filter: blur(10px);
   z-index: 10001;
 }
 
@@ -242,7 +238,6 @@
   padding: 8px 12px;
   border-radius: 6px;
   font-size: 11px;
-  backdrop-filter: blur(10px);
   z-index: 10001;
 }
 
