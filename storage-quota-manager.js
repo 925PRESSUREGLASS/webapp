@@ -29,12 +29,10 @@
       var itemCount = 0;
 
       for (var key in localStorage) {
-        if (localStorage.hasOwnProperty(key)) {
-          var value = localStorage[key];
-          // UTF-16: 2 bytes per character
-          totalBytes += (key.length + value.length) * 2;
-          itemCount++;
-        }
+        var value = localStorage[key];
+        // UTF-16: 2 bytes per character
+        totalBytes += (key.length + value.length) * 2;
+        itemCount++;
       }
 
       var quotaBytes = ESTIMATED_QUOTA_MB * 1024 * 1024;
@@ -82,11 +80,13 @@
       }
     }
 
-    // Calculate percentages
-    for (var pfx in breakdown) {
-      if (breakdown.hasOwnProperty(pfx)) {
-        breakdown[pfx].mb = breakdown[pfx].bytes / (1024 * 1024);
-        breakdown[pfx].percent = (breakdown[pfx].bytes / totalSize) * 100;
+    // Calculate percentages (handle empty storage)
+    if (totalSize > 0) {
+      for (var pfx in breakdown) {
+        if (breakdown.hasOwnProperty(pfx)) {
+          breakdown[pfx].mb = breakdown[pfx].bytes / (1024 * 1024);
+          breakdown[pfx].percent = (breakdown[pfx].bytes / totalSize) * 100;
+        }
       }
     }
 

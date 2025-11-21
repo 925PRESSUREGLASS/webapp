@@ -277,8 +277,26 @@
     exportMetrics: exportMetrics,
     reset: reset,
     setThreshold: function(name, value) {
-      if (thresholds.hasOwnProperty(name + 'Ms') || thresholds.hasOwnProperty(name + 'Pct') || thresholds.hasOwnProperty(name + 'MB')) {
-        thresholds[name] = value;
+      // Map name to correct threshold key with suffix
+      var thresholdKey = null;
+      if (name === 'pageLoad') {
+        thresholdKey = 'pageLoadMs';
+      } else if (name === 'calcTime') {
+        thresholdKey = 'calcTimeMs';
+      } else if (name === 'storageQuota') {
+        thresholdKey = 'storageQuotaPct';
+      } else if (name === 'memoryUsage') {
+        thresholdKey = 'memoryUsageMB';
+      } else if (thresholds.hasOwnProperty(name)) {
+        // Direct key match
+        thresholdKey = name;
+      }
+      
+      if (thresholdKey && thresholds.hasOwnProperty(thresholdKey)) {
+        thresholds[thresholdKey] = value;
+        console.log('[PERF-MONITOR] Threshold "' + thresholdKey + '" set to ' + value);
+      } else {
+        console.warn('[PERF-MONITOR] Unknown threshold: ' + name);
       }
     }
   };
