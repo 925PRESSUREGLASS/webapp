@@ -390,7 +390,27 @@
   function renderWindowLines() {
     var container = $("windowLinesContainer");
     if (!container) return;
+    var skeleton = $("windowLinesSkeleton");
+    var empty = $("windowLinesEmpty");
+
+    if (skeleton) {
+      skeleton.style.display = "none";
+    }
+
     container.innerHTML = "";
+
+    if (!state.windowLines || state.windowLines.length === 0) {
+      if (empty) {
+        empty.style.display = "flex";
+        empty.setAttribute("aria-hidden", "false");
+      }
+      return;
+    }
+
+    if (empty) {
+      empty.style.display = "none";
+      empty.setAttribute("aria-hidden", "true");
+    }
 
     for (var i = 0; i < state.windowLines.length; i++) {
       var line = state.windowLines[i];
@@ -402,7 +422,27 @@
   function renderPressureLines() {
     var container = $("pressureLinesContainer");
     if (!container) return;
+    var skeleton = $("pressureLinesSkeleton");
+    var empty = $("pressureLinesEmpty");
+
+    if (skeleton) {
+      skeleton.style.display = "none";
+    }
+
     container.innerHTML = "";
+
+    if (!state.pressureLines || state.pressureLines.length === 0) {
+      if (empty) {
+        empty.style.display = "flex";
+        empty.setAttribute("aria-hidden", "false");
+      }
+      return;
+    }
+
+    if (empty) {
+      empty.style.display = "none";
+      empty.setAttribute("aria-hidden", "true");
+    }
 
     for (var i = 0; i < state.pressureLines.length; i++) {
       var line = state.pressureLines[i];
@@ -1010,13 +1050,22 @@
     $("highReachDisplay").textContent = formatMoney(money.highReach);
     // totalDisplay element doesn't exist in HTML, skip it
     // $("totalDisplay").textContent = formatMoney(money.total);
-		// GST & total incl GST (10%)
-// GST should be calculated on subtotal, not total (which includes minimum job adjustment)
-var gst = money.subtotal * 0.10;
-var totalIncGst = money.total + gst;
+    // GST & total incl GST (10%)
+    // GST should be calculated on subtotal, not total (which includes minimum job adjustment)
+    var gst = money.subtotal * 0.10;
+    var totalIncGst = money.total + gst;
 
-$("gstDisplay").textContent = formatMoney(gst);
-$("totalIncGstDisplay").textContent = formatMoney(totalIncGst);
+    $("gstDisplay").textContent = formatMoney(gst);
+    $("totalIncGstDisplay").textContent = formatMoney(totalIncGst);
+
+    var workspaceStatus = $("workspaceStatusLive");
+    if (workspaceStatus) {
+      var totalLines = (state.windowLines || []).length +
+        (state.pressureLines || []).length;
+      workspaceStatus.textContent =
+        totalLines + " line" + (totalLines === 1 ? "" : "s") +
+        " · " + formatMoney(totalIncGst) + " incl. GST";
+    }
 
     // Time
     $("windowsTimeDisplay").textContent =
@@ -1731,9 +1780,23 @@ $("totalIncGstDisplay").textContent = formatMoney(totalIncGst);
       addWindowLine({});
     });
 
+    var emptyWindowBtn = $("emptyAddWindowLineBtn");
+    if (emptyWindowBtn) {
+      emptyWindowBtn.addEventListener("click", function () {
+        addWindowLine({});
+      });
+    }
+
     $("addPressureLineBtn").addEventListener("click", function () {
       addPressureLine({});
     });
+
+    var emptyPressureBtn = $("emptyAddPressureLineBtn");
+    if (emptyPressureBtn) {
+      emptyPressureBtn.addEventListener("click", function () {
+        addPressureLine({});
+      });
+    }
 
     var wwBtn = $("openWindowWizardBtn");
     if (wwBtn) {

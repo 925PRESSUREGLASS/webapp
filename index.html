@@ -217,11 +217,26 @@
 			</div>
 		</header>
 
-		<!-- MAIN -->
-		<main class="main">
-			<!-- LEFT COLUMN -->
-			<section class="col col-left">
-				<!-- CONFIG PANEL -->
+                <!-- MAIN -->
+                <main class="main" id="mainContent">
+                        <section class="workspace-panel" aria-labelledby="quoteWorkspaceHeading">
+                                <header class="workspace-header">
+                                        <div class="workspace-titles">
+                                                <p class="workspace-eyebrow">Quote Builder</p>
+                                                <h1 class="workspace-title" id="quoteWorkspaceHeading">Build the quote, capture job details, and review totals</h1>
+                                        </div>
+                                        <div class="workspace-status" aria-live="polite" role="status" id="workspaceStatusLive"></div>
+                                </header>
+
+                                <div class="panel-grid" role="presentation">
+                                        <!-- LEFT COLUMN -->
+                                        <section class="col col-left" aria-labelledby="builderColumnHeading">
+                                                <header class="col-header" id="builderColumnHeading">
+                                                        <h2 class="col-title">Job setup & line items</h2>
+                                                        <p class="col-description">Configure rates, add windows or pressure cleaning lines, and keep items organized.</p>
+                                                </header>
+
+                                                <!-- CONFIG PANEL -->
 				<section class="section" id="configPanel">
 					<header class="sec-h">
 						<h2 class="sec-title">⚙️ Job Settings</h2>
@@ -323,46 +338,71 @@
 				</section>
 
 				<!-- WINDOWS PANEL -->
-				<section class="section" id="windowsPanel">
-					<header class="sec-h">
-						<h2 class="sec-title">🪟 Windows</h2>
-						<div class="card-hdr-actions">
-							<button id="openWindowWizardBtn" type="button" class="btn btn-accent btn-sm" aria-label="Open window wizard for guided entry">
-								🪄 Wizard
-							</button>
-							<button id="addWindowLineBtn" type="button" class="btn btn-sm btn-primary" aria-label="Add window line item manually">
-								+ Add Line
-							</button>
-							<button class="card-toggle" type="button" data-target="windowsBody" aria-label="Toggle windows section" aria-expanded="true">▾</button>
-						</div>
-					</header>
-					<div class="sec-b" id="windowsBody">
-						<div class="lines-list" id="windowLinesContainer"></div>
-					</div>
-				</section>
+                                <section class="section" id="windowsPanel">
+                                        <header class="sec-h">
+                                                <h2 class="sec-title">🪟 Windows</h2>
+                                                <div class="card-hdr-actions">
+                                                        <button id="openWindowWizardBtn" type="button" class="btn btn-accent btn-sm" aria-label="Open window wizard for guided entry">
+                                                                🪄 Wizard
+                                                        </button>
+                                                        <button id="addWindowLineBtn" type="button" class="btn btn-sm btn-primary" aria-label="Add window line item manually">
+                                                                + Add Line
+                                                        </button>
+                                                        <button class="card-toggle" type="button" data-target="windowsBody" aria-label="Toggle windows section" aria-expanded="true">▾</button>
+                                                </div>
+                                        </header>
+                                        <div class="sec-b" id="windowsBody">
+                                                <div class="lines-loading" id="windowLinesSkeleton" aria-hidden="true">
+                                                        <div class="skeleton-line"></div>
+                                                        <div class="skeleton-line"></div>
+                                                        <div class="skeleton-line"></div>
+                                                </div>
+                                                <div class="empty-state" id="windowLinesEmpty" aria-live="polite" role="status">
+                                                        <div class="empty-illustration">🪟</div>
+                                                        <p class="empty-title">No window lines yet</p>
+                                                        <p class="empty-body">Add your first window item to begin estimating glass cleaning time.</p>
+                                                        <button id="emptyAddWindowLineBtn" type="button" class="btn btn-primary">+ Add Window Line</button>
+                                                </div>
+                                                <div class="lines-list" id="windowLinesContainer"></div>
+                                        </div>
+                                </section>
 
 				<!-- PRESSURE PANEL -->
-				<section class="section" id="pressurePanel">
-					<header class="sec-h">
-						<h2 class="sec-title">💦 Pressure Cleaning</h2>
-						<div class="card-hdr-actions">
-							<button id="openPressureWizardBtn" type="button" class="btn btn-accent btn-sm" aria-label="Open pressure wizard for guided entry">
-								🪄 Wizard
-							</button>
-							<button id="addPressureLineBtn" type="button" class="btn btn-sm btn-primary" aria-label="Add pressure cleaning line item manually">
-								+ Add Line
-							</button>
-							<button class="card-toggle" type="button" data-target="pressureBody" aria-label="Toggle pressure cleaning section" aria-expanded="true">▾</button>
-						</div>
-					</header>
-					<div class="sec-b" id="pressureBody">
-						<div class="lines-list" id="pressureLinesContainer"></div>
-					</div>
-				</section>
-			</section>
+                                <section class="section" id="pressurePanel">
+                                        <header class="sec-h">
+                                                <h2 class="sec-title">💦 Pressure Cleaning</h2>
+                                                <div class="card-hdr-actions">
+                                                        <button id="openPressureWizardBtn" type="button" class="btn btn-accent btn-sm" aria-label="Open pressure wizard for guided entry">
+                                                                🪄 Wizard
+                                                        </button>
+                                                        <button id="addPressureLineBtn" type="button" class="btn btn-sm btn-primary" aria-label="Add pressure cleaning line item manually">
+                                                                + Add Line
+                                                        </button>
+                                                        <button class="card-toggle" type="button" data-target="pressureBody" aria-label="Toggle pressure cleaning section" aria-expanded="true">▾</button>
+                                                </div>
+                                        </header>
+                                        <div class="sec-b" id="pressureBody">
+                                                <div class="lines-loading" id="pressureLinesSkeleton" aria-hidden="true">
+                                                        <div class="skeleton-line"></div>
+                                                        <div class="skeleton-line"></div>
+                                                </div>
+                                                <div class="empty-state" id="pressureLinesEmpty" aria-live="polite" role="status">
+                                                        <div class="empty-illustration">💦</div>
+                                                        <p class="empty-title">No pressure items</p>
+                                                        <p class="empty-body">Add a driveway, patio, or surface to include pressure cleaning.</p>
+                                                        <button id="emptyAddPressureLineBtn" type="button" class="btn btn-primary">+ Add Pressure Line</button>
+                                                </div>
+                                                <div class="lines-list" id="pressureLinesContainer"></div>
+                                        </div>
+                                </section>
+                        </section>
 
-			<!-- RIGHT COLUMN -->
-			<section class="col col-right">
+                                        <!-- RIGHT COLUMN -->
+                                        <section class="col col-right" aria-labelledby="totalsColumnHeading">
+                                                <header class="col-header" id="totalsColumnHeading">
+                                                        <h2 class="col-title">Totals & job details</h2>
+                                                        <p class="col-description">Review estimated totals, save quotes, and capture job notes.</p>
+                                                </header>
 				<!-- SUMMARY PANEL -->
 				<section class="section card-summary" id="summaryPanel">
 					<header class="sec-h">
@@ -705,9 +745,10 @@
 							</div>
 						</div>
 					</div>
-				</section>
-			</section>
-		</main>
+                                </section>
+                        </div>
+                </section>
+        </main>
 	</div> <!-- /.app -->
 
 	<!-- TASK DASHBOARD PAGE (Hidden by default) -->
@@ -2174,15 +2215,13 @@
 	<script src="pdf-components.js" defer></script>
 	<script src="quote-pdf.js" defer></script>
 	<script src="quote-pdf-ui.js" defer></script>
-	<!-- Lazy-loaded modules (loaded on demand via LazyLoader) -->
-	<!-- Analytics System -->
-	<script src="analytics-config.js" defer></script>
-	<script src="analytics-engine.js" defer></script>
-	<script src="analytics-dashboard.js" defer></script>
-	<script src="analytics.js" defer></script>
-	<!-- <script src="charts.js" defer></script> -->
-	<!-- <script src="photo-modal.js" defer></script> -->
-	<script src="photos.js" defer></script>
+<!-- Lazy-loaded modules (loaded on demand via LazyLoader) -->
+<!-- Analytics System -->
+<script src="analytics-config.js" defer></script>
+<script src="analytics-engine.js" defer></script>
+<script src="analytics.js" defer></script>
+<!-- <script src="charts.js" defer></script> -->
+<!-- <script src="photo-modal.js" defer></script> -->
 
 	<!-- Production Polish & Testing Tools -->
 	<!-- Deployment helper for pre-deployment checks -->
