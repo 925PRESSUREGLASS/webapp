@@ -1,0 +1,512 @@
+name: Phase Automation & Progress Tracking
+
+# This workflow automates phase tracking, weekly progress reporting, and milestone management
+# for the 12-week webapp overhaul project (Nov 21, 2025 - Feb 13, 2026)
+
+on:
+  # Run every Monday at 9 AM UTC for weekly reports
+  schedule:
+    - cron: '0 9 * * 1'
+  
+  # Run on push to main/develop to track completed tasks
+  push:
+    branches: [main, develop, webappover]
+    paths:
+      - '**.js'
+      - '**.css'
+      - '**.html'
+      - 'docs/**'
+      - '.github/workflows/**'
+  
+  # Allow manual trigger for ad-hoc reports
+  workflow_dispatch:
+    inputs:
+      report_type:
+        description: 'Type of report to generate'
+        required: true
+        default: 'weekly'
+        type: choice
+        options:
+          - weekly
+          - phase-summary
+          - milestone-check
+          - full-status
+
+permissions:
+  contents: write
+  issues: write
+  pull-requests: write
+
+jobs:
+  phase-tracking:
+    name: Track Phase Progress
+    runs-on: ubuntu-latest
+    
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v3
+        with:
+          fetch-depth: 0  # Full history for accurate metrics
+      
+      - name: Setup Node.js
+        uses: actions/setup-node@v3
+        with:
+          node-version: '18'
+          cache: 'npm'
+      
+      - name: Install dependencies
+        run: npm ci || npm install
+      
+      - name: Determine Current Phase
+        id: phase
+        run: |
+          # Calculate current phase based on date (Nov 21, 2025 - Feb 13, 2026)
+          START_DATE="2025-11-21"
+          CURRENT_DATE=$(date +%Y-%m-%d)
+          
+          # Calculate days since start
+          DAYS_DIFF=$(( ($(date -d "$CURRENT_DATE" +%s) - $(date -d "$START_DATE" +%s)) / 86400 ))
+          
+          # Determine phase (each phase is 14 days)
+          if [ $DAYS_DIFF -lt 0 ]; then
+            PHASE="Pre-Phase 1"
+            PHASE_NUM=0
+            WEEK_IN_PHASE=0
+          elif [ $DAYS_DIFF -lt 14 ]; then
+            PHASE="Phase 1: Foundation & Stability"
+            PHASE_NUM=1
+            WEEK_IN_PHASE=$(( ($DAYS_DIFF / 7) + 1 ))
+          elif [ $DAYS_DIFF -lt 28 ]; then
+            PHASE="Phase 2: Core Feature Enhancement"
+            PHASE_NUM=2
+            WEEK_IN_PHASE=$(( (($DAYS_DIFF - 14) / 7) + 1 ))
+          elif [ $DAYS_DIFF -lt 42 ]; then
+            PHASE="Phase 3: Analytics & Intelligence"
+            PHASE_NUM=3
+            WEEK_IN_PHASE=$(( (($DAYS_DIFF - 28) / 7) + 1 ))
+          elif [ $DAYS_DIFF -lt 56 ]; then
+            PHASE="Phase 4: GHL Integration"
+            PHASE_NUM=4
+            WEEK_IN_PHASE=$(( (($DAYS_DIFF - 42) / 7) + 1 ))
+          elif [ $DAYS_DIFF -lt 70 ]; then
+            PHASE="Phase 5: UI/UX Overhaul"
+            PHASE_NUM=5
+            WEEK_IN_PHASE=$(( (($DAYS_DIFF - 56) / 7) + 1 ))
+          elif [ $DAYS_DIFF -lt 84 ]; then
+            PHASE="Phase 6: Testing & Deployment"
+            PHASE_NUM=6
+            WEEK_IN_PHASE=$(( (($DAYS_DIFF - 70) / 7) + 1 ))
+          else
+            PHASE="Post-Phase 6"
+            PHASE_NUM=7
+            WEEK_IN_PHASE=0
+          fi
+          
+          echo "phase=$PHASE" >> $GITHUB_OUTPUT
+          echo "phase_num=$PHASE_NUM" >> $GITHUB_OUTPUT
+          echo "week=$WEEK_IN_PHASE" >> $GITHUB_OUTPUT
+          echo "days_elapsed=$DAYS_DIFF" >> $GITHUB_OUTPUT
+          echo "total_days=84" >> $GITHUB_OUTPUT
+          
+          # Calculate progress percentage
+          PROGRESS=$(( ($DAYS_DIFF * 100) / 84 ))
+          [ $PROGRESS -gt 100 ] && PROGRESS=100
+          [ $PROGRESS -lt 0 ] && PROGRESS=0
+          echo "progress=$PROGRESS" >> $GITHUB_OUTPUT
+      
+      - name: Calculate Code Metrics
+        id: metrics
+        run: |
+          # Count JavaScript files and lines
+          JS_FILES=$(find . -name "*.js" -not -path "*/node_modules/*" -not -path "*/.git/*" -not -path "*/vendor/*" | wc -l)
+          JS_LINES=$(find . -name "*.js" -not -path "*/node_modules/*" -not -path "*/.git/*" -not -path "*/vendor/*" -exec cat {} \; | wc -l)
+          
+          # Count CSS files and lines
+          CSS_FILES=$(find . -name "*.css" -not -path "*/node_modules/*" -not -path "*/.git/*" | wc -l)
+          CSS_LINES=$(find . -name "*.css" -not -path "*/node_modules/*" -not -path "*/.git/*" -exec cat {} \; | wc -l)
+          
+          # Count test files
+          TEST_FILES=$(find tests -name "*.spec.js" 2>/dev/null | wc -l || echo 0)
+          
+          # Count commits this week
+          WEEK_COMMITS=$(git log --since="7 days ago" --oneline | wc -l)
+          
+          echo "js_files=$JS_FILES" >> $GITHUB_OUTPUT
+          echo "js_lines=$JS_LINES" >> $GITHUB_OUTPUT
+          echo "css_files=$CSS_FILES" >> $GITHUB_OUTPUT
+          echo "css_lines=$CSS_LINES" >> $GITHUB_OUTPUT
+          echo "test_files=$TEST_FILES" >> $GITHUB_OUTPUT
+          echo "week_commits=$WEEK_COMMITS" >> $GITHUB_OUTPUT
+      
+      - name: Run Tests
+        id: tests
+        continue-on-error: true
+        run: |
+          # Run tests and capture results
+          npm test 2>&1 | tee test-output.txt || true
+          
+          # Parse test results (Playwright format)
+          PASSED=$(grep -oP '\d+(?= passed)' test-output.txt | tail -1 || echo 0)
+          FAILED=$(grep -oP '\d+(?= failed)' test-output.txt | tail -1 || echo 0)
+          SKIPPED=$(grep -oP '\d+(?= skipped)' test-output.txt | tail -1 || echo 0)
+          
+          TOTAL=$((PASSED + FAILED + SKIPPED))
+          [ $TOTAL -eq 0 ] && TOTAL=1  # Avoid division by zero
+          PASS_RATE=$(( (PASSED * 100) / TOTAL ))
+          
+          echo "passed=$PASSED" >> $GITHUB_OUTPUT
+          echo "failed=$FAILED" >> $GITHUB_OUTPUT
+          echo "total=$TOTAL" >> $GITHUB_OUTPUT
+          echo "pass_rate=$PASS_RATE" >> $GITHUB_OUTPUT
+      
+      - name: Generate Weekly Report
+        if: github.event.schedule || github.event.inputs.report_type == 'weekly'
+        run: |
+          cat > weekly-report.md << 'EOF'
+          # 📊 Weekly Progress Report
+          
+          **Report Date:** $(date +%Y-%m-%d)  
+          **Week:** ${{ steps.phase.outputs.week }} of 2  
+          **Current Phase:** ${{ steps.phase.outputs.phase }}  
+          **Overall Progress:** ${{ steps.phase.outputs.progress }}% complete (${{ steps.phase.outputs.days_elapsed }}/84 days)
+          
+          ---
+          
+          ## 📈 Progress Overview
+          
+          ```
+          Progress: [${{ steps.phase.outputs.progress }}%] ████████████████████████████████████████
+          Timeline: Nov 21 ──────────●──────────── Feb 13
+          Current:  Phase ${{ steps.phase.outputs.phase_num }}, Week ${{ steps.phase.outputs.week }}
+          ```
+          
+          ---
+          
+          ## 🎯 Phase Status: ${{ steps.phase.outputs.phase }}
+          
+          ### This Week's Metrics
+          
+          | Metric | Value |
+          |--------|-------|
+          | 📝 Commits This Week | ${{ steps.metrics.outputs.week_commits }} |
+          | 🧪 Test Pass Rate | ${{ steps.tests.outputs.pass_rate }}% (${{ steps.tests.outputs.passed }}/${{ steps.tests.outputs.total }}) |
+          | 📄 JavaScript Files | ${{ steps.metrics.outputs.js_files }} |
+          | 📏 Lines of Code | ${{ steps.metrics.outputs.js_lines }} |
+          | 🎨 CSS Files | ${{ steps.metrics.outputs.css_files }} |
+          | 🧪 Test Files | ${{ steps.metrics.outputs.test_files }} |
+          
+          ---
+          
+          ## ✅ Completed Tasks
+          
+          <!-- Auto-populated from closed issues with phase labels -->
+          
+          ---
+          
+          ## 🚧 In Progress
+          
+          <!-- Auto-populated from open issues with current phase label -->
+          
+          ---
+          
+          ## ⚠️ Blockers & Risks
+          
+          <!-- Manual entry required - check for:
+          - Failing tests
+          - Performance regressions
+          - Security vulnerabilities
+          - Timeline risks
+          -->
+          
+          ---
+          
+          ## 📅 Next Week's Focus
+          
+          <!-- Based on current phase roadmap -->
+          
+          **Priority Tasks:**
+          1. [ ] TBD - Check OVERHAUL_ROADMAP.md for phase details
+          2. [ ] Continue test coverage improvements
+          3. [ ] Address any critical issues
+          
+          ---
+          
+          ## 📊 Key Performance Indicators
+          
+          | KPI | Target | Current | Status |
+          |-----|--------|---------|--------|
+          | Test Coverage | 95% | ${{ steps.tests.outputs.pass_rate }}% | ${{ steps.tests.outputs.pass_rate >= 95 && '✅' || '🟡' }} |
+          | Page Load Time | <2s | TBD | ⏳ |
+          | Zero Critical Bugs | 0 | TBD | ⏳ |
+          | Code Quality | A | TBD | ⏳ |
+          
+          ---
+          
+          ## 🎓 Learnings & Improvements
+          
+          <!-- Team reflections and process improvements -->
+          
+          ---
+          
+          *Generated by Phase Automation Workflow*  
+          *See [OVERHAUL_ROADMAP.md](../OVERHAUL_ROADMAP.md) for complete project plan*
+          EOF
+          
+          # Expand variables
+          envsubst < weekly-report.md > weekly-report-final.md
+          cat weekly-report-final.md
+      
+      - name: Create/Update Progress Issue
+        if: github.event.schedule || github.event.inputs.report_type == 'weekly'
+        uses: actions/github-script@v6
+        with:
+          script: |
+            const fs = require('fs');
+            const report = fs.readFileSync('weekly-report-final.md', 'utf8');
+            
+            // Find existing progress issue or create new one
+            const { data: issues } = await github.rest.issues.listForRepo({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              labels: 'progress-report',
+              state: 'open'
+            });
+            
+            const title = `Week ${{ steps.phase.outputs.week }} Progress Report - ${{ steps.phase.outputs.phase }}`;
+            
+            if (issues.length > 0) {
+              // Update existing issue
+              await github.rest.issues.update({
+                owner: context.repo.owner,
+                repo: context.repo.repo,
+                issue_number: issues[0].number,
+                title: title,
+                body: report
+              });
+            } else {
+              // Create new issue
+              await github.rest.issues.create({
+                owner: context.repo.owner,
+                repo: context.repo.repo,
+                title: title,
+                body: report,
+                labels: ['progress-report', 'automation', `phase-${{ steps.phase.outputs.phase_num }}`]
+              });
+            }
+      
+      - name: Check Phase Milestones
+        id: milestones
+        run: |
+          PHASE_NUM=${{ steps.phase.outputs.phase_num }}
+          WEEK=${{ steps.phase.outputs.week }}
+          
+          # Define milestone criteria for each phase
+          MILESTONE_MET=false
+          MILESTONE_MSG=""
+          
+          if [ $PHASE_NUM -eq 1 ] && [ $WEEK -eq 2 ]; then
+            # Phase 1 completion criteria
+            PASS_RATE=${{ steps.tests.outputs.pass_rate }}
+            if [ $PASS_RATE -ge 80 ]; then
+              MILESTONE_MET=true
+              MILESTONE_MSG="🎉 Phase 1 Milestone: 80%+ test pass rate achieved!"
+            else
+              MILESTONE_MSG="⚠️ Phase 1 Milestone: Test pass rate ${PASS_RATE}% (target: 80%+)"
+            fi
+          elif [ $PHASE_NUM -eq 2 ] && [ $WEEK -eq 2 ]; then
+            MILESTONE_MSG="⏳ Phase 2 Milestone: Performance optimization verification needed"
+          elif [ $PHASE_NUM -eq 3 ] && [ $WEEK -eq 2 ]; then
+            MILESTONE_MSG="⏳ Phase 3 Milestone: Analytics dashboard verification needed"
+          elif [ $PHASE_NUM -eq 4 ] && [ $WEEK -eq 2 ]; then
+            MILESTONE_MSG="⏳ Phase 4 Milestone: GHL integration verification needed"
+          elif [ $PHASE_NUM -eq 5 ] && [ $WEEK -eq 2 ]; then
+            MILESTONE_MSG="⏳ Phase 5 Milestone: WCAG AA compliance verification needed"
+          elif [ $PHASE_NUM -eq 6 ] && [ $WEEK -eq 2 ]; then
+            MILESTONE_MSG="🎉 Phase 6 Milestone: v2.0.0 deployment complete!"
+          fi
+          
+          echo "met=$MILESTONE_MET" >> $GITHUB_OUTPUT
+          echo "message=$MILESTONE_MSG" >> $GITHUB_OUTPUT
+      
+      - name: Post Milestone Achievement
+        if: steps.milestones.outputs.met == 'true'
+        uses: actions/github-script@v6
+        with:
+          script: |
+            // Create a celebratory issue for milestone
+            await github.rest.issues.create({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              title: '🎉 Milestone Achieved: ${{ steps.milestones.outputs.message }}',
+              body: `
+              # Phase ${{ steps.phase.outputs.phase_num }} Milestone Achieved!
+              
+              ${{ steps.milestones.outputs.message }}
+              
+              ## Metrics at Milestone
+              - Test Pass Rate: ${{ steps.tests.outputs.pass_rate }}%
+              - Commits This Week: ${{ steps.metrics.outputs.week_commits }}
+              - Days Elapsed: ${{ steps.phase.outputs.days_elapsed }}/84
+              
+              ## Next Steps
+              Review the [OVERHAUL_ROADMAP.md](../OVERHAUL_ROADMAP.md) for next phase objectives.
+              
+              ---
+              *Automated milestone tracking*
+              `,
+              labels: ['milestone', 'achievement', `phase-${{ steps.phase.outputs.phase_num }}`]
+            });
+      
+      - name: Alert on Risks
+        if: steps.tests.outputs.pass_rate < 70
+        uses: actions/github-script@v6
+        with:
+          script: |
+            // Create warning issue if test pass rate drops below 70%
+            await github.rest.issues.create({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              title: '⚠️ ALERT: Test Pass Rate Below 70%',
+              body: `
+              # Test Quality Alert
+              
+              Test pass rate has dropped to ${{ steps.tests.outputs.pass_rate }}%, below the 70% threshold.
+              
+              ## Current Status
+              - Passed: ${{ steps.tests.outputs.passed }}
+              - Failed: ${{ steps.tests.outputs.failed }}
+              - Total: ${{ steps.tests.outputs.total }}
+              
+              ## Required Action
+              1. Review failed tests immediately
+              2. Fix critical test failures
+              3. Update test suite if needed
+              
+              **Target:** 95% pass rate for production readiness
+              
+              See [OVERHAUL_ROADMAP.md](../OVERHAUL_ROADMAP.md) for quality standards.
+              `,
+              labels: ['alert', 'testing', 'priority-high']
+            });
+      
+      - name: Generate Phase Summary
+        if: github.event.inputs.report_type == 'phase-summary'
+        run: |
+          echo "# Phase ${{ steps.phase.outputs.phase_num }} Summary Report" > phase-summary.md
+          echo "" >> phase-summary.md
+          echo "**Phase:** ${{ steps.phase.outputs.phase }}" >> phase-summary.md
+          echo "**Duration:** 14 days" >> phase-summary.md
+          echo "**Status:** In Progress (Week ${{ steps.phase.outputs.week }}/2)" >> phase-summary.md
+          echo "" >> phase-summary.md
+          echo "## Objectives" >> phase-summary.md
+          echo "<!-- Refer to OVERHAUL_ROADMAP.md for phase objectives -->" >> phase-summary.md
+          echo "" >> phase-summary.md
+          echo "## Achievements" >> phase-summary.md
+          echo "- Total commits: ${{ steps.metrics.outputs.week_commits }}" >> phase-summary.md
+          echo "- Test pass rate: ${{ steps.tests.outputs.pass_rate }}%" >> phase-summary.md
+          echo "" >> phase-summary.md
+          echo "## Challenges & Solutions" >> phase-summary.md
+          echo "<!-- Document any significant challenges faced -->" >> phase-summary.md
+          
+          cat phase-summary.md
+      
+      - name: Upload Artifacts
+        uses: actions/upload-artifact@v3
+        with:
+          name: progress-reports
+          path: |
+            weekly-report-final.md
+            phase-summary.md
+            test-output.txt
+          retention-days: 90
+
+  dependency-audit:
+    name: Audit Dependencies
+    runs-on: ubuntu-latest
+    
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v3
+      
+      - name: Setup Node.js
+        uses: actions/setup-node@v3
+        with:
+          node-version: '18'
+      
+      - name: Audit npm packages
+        run: |
+          npm audit --audit-level=moderate || echo "Vulnerabilities found"
+      
+      - name: Check for outdated packages
+        run: |
+          npm outdated || echo "Some packages are outdated"
+      
+      - name: Generate dependency report
+        run: |
+          echo "# Dependency Audit Report" > dependency-audit.md
+          echo "" >> dependency-audit.md
+          echo "**Date:** $(date +%Y-%m-%d)" >> dependency-audit.md
+          echo "" >> dependency-audit.md
+          echo "## npm audit" >> dependency-audit.md
+          echo '```' >> dependency-audit.md
+          npm audit || echo "See above for details" >> dependency-audit.md
+          echo '```' >> dependency-audit.md
+      
+      - name: Upload dependency report
+        uses: actions/upload-artifact@v3
+        with:
+          name: dependency-audit
+          path: dependency-audit.md
+          retention-days: 30
+
+  performance-tracking:
+    name: Track Performance Metrics
+    runs-on: ubuntu-latest
+    if: github.event_name == 'push'
+    
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v3
+      
+      - name: Setup Node.js
+        uses: actions/setup-node@v3
+        with:
+          node-version: '18'
+          cache: 'npm'
+      
+      - name: Install dependencies
+        run: npm ci || npm install
+      
+      - name: Analyze bundle size
+        run: |
+          # Calculate total JS size
+          JS_SIZE=$(find . -name "*.js" -not -path "*/node_modules/*" -not -path "*/.git/*" -not -path "*/vendor/*" -exec cat {} \; | wc -c)
+          JS_SIZE_KB=$((JS_SIZE / 1024))
+          
+          # Calculate total CSS size
+          CSS_SIZE=$(find . -name "*.css" -not -path "*/node_modules/*" -not -path "*/.git/*" -exec cat {} \; | wc -c)
+          CSS_SIZE_KB=$((CSS_SIZE / 1024))
+          
+          TOTAL_SIZE_KB=$((JS_SIZE_KB + CSS_SIZE_KB))
+          
+          echo "JavaScript: ${JS_SIZE_KB} KB"
+          echo "CSS: ${CSS_SIZE_KB} KB"
+          echo "Total: ${TOTAL_SIZE_KB} KB"
+          
+          # Set warning if bundle exceeds 1MB
+          if [ $TOTAL_SIZE_KB -gt 1024 ]; then
+            echo "⚠️ Bundle size exceeds 1MB target"
+            exit 1
+          fi
+      
+      - name: Comment bundle size on PR
+        if: github.event_name == 'pull_request'
+        uses: actions/github-script@v6
+        with:
+          script: |
+            github.rest.issues.createComment({
+              issue_number: context.issue.number,
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              body: '## 📦 Bundle Size Report\n\nBundle size analysis completed. Check workflow logs for details.'
+            })

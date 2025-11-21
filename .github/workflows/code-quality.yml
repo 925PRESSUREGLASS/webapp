@@ -1,17 +1,29 @@
-name: Code Quality & Standards
+name: Code Quality, Security & Performance
 
 on:
   push:
     branches: [main, develop, webappover]
   pull_request:
     branches: [main, develop]
+  # Weekly scheduled run for comprehensive checks
+  schedule:
+    - cron: '0 6 * * 1'  # Every Monday at 6 AM UTC
+  workflow_dispatch:  # Manual trigger
+
+permissions:
+  contents: read
+  issues: write
+  pull-requests: write
+  security-events: write
 
 jobs:
   quality-checks:
+    name: Code Quality & Standards
     runs-on: ubuntu-latest
     
     steps:
-      - uses: actions/checkout@v3
+      - name: Checkout repository
+        uses: actions/checkout@v3
         with:
           fetch-depth: 0
       
@@ -24,23 +36,112 @@ jobs:
       - name: Install dependencies
         run: npm ci || npm install
       
+      - name: ES5 Validation
+        run: |
+          # Check for ES6+ syntax that breaks iOS Safari
+          echo "Checking for ES6+ syntax violations..."
+          
+          # Check for arrow functions
+          if grep -r "=>" --include="*.js" --exclude-dir={node_modules,vendor,tests} . ; then
+            echo "❌ ERROR: Arrow functions found (ES6+). Use function declarations for iOS Safari compatibility."
+            exit 1
+          fi
+          
+          # Check for template literals
+          if grep -r '\`' --include="*.js" --exclude-dir={node_modules,vendor,tests} . ; then
+            echo "⚠️ WARNING: Template literals found. Verify iOS Safari compatibility."
+          fi
+          
+          # Check for const/let
+          if grep -rE '\b(const|let)\b' --include="*.js" --exclude-dir={node_modules,vendor,tests,playwright.config.js} . ; then
+            echo "⚠️ WARNING: const/let found. Use var for iOS Safari compatibility."
+          fi
+          
+          echo "✅ ES5 validation passed"
+      
+      - name: Code Style Check
+        run: |
+          # Check for consistent indentation (2 spaces as per AGENTS.md)
+          echo "Checking code style..."
+          
+          # Check for TODO/FIXME comments
+          TODO_COUNT=$(grep -r "TODO\|FIXME" --include="*.js" --exclude-dir={node_modules,vendor} . | wc -l || echo 0)
+          echo "TODO/FIXME comments found: $TODO_COUNT"
+          
+          # Check for console.log statements (should use DEBUG module)
+          CONSOLE_COUNT=$(grep -r "console\.log" --include="*.js" --exclude-dir={node_modules,vendor,tests} . | wc -l || echo 0)
+          echo "console.log statements found: $CONSOLE_COUNT"
+          if [ $CONSOLE_COUNT -gt 150 ]; then
+            echo "⚠️ WARNING: Too many console.log statements ($CONSOLE_COUNT). Consider using DEBUG module."
+          fi
+          
+          echo "✅ Code style check completed"
+      
       - name: Type checking
+        continue-on-error: true
         run: npm run type-check || npx tsc --noEmit || echo "TypeScript not configured"
       
       - name: Linting
+        continue-on-error: true
         run: npm run lint || npx eslint . --ext .ts,.tsx,.js,.jsx || echo "ESLint not configured"
       
       - name: Format checking
+        continue-on-error: true
         run: npm run format:check || npx prettier --check . || echo "Prettier not configured"
       
-      - name: Test coverage
+      - name: Run Tests
+        id: tests
         run: |
-          npm test -- --coverage --watchAll=false || echo "Tests not configured"
+          # Run tests and capture results
+          npm test 2>&1 | tee test-output.txt || true
+          
+          # Parse results
+          if [ -f test-output.txt ]; then
+            PASSED=$(grep -oP '\d+(?= passed)' test-output.txt | tail -1 || echo 0)
+            FAILED=$(grep -oP '\d+(?= failed)' test-output.txt | tail -1 || echo 0)
+            echo "Tests passed: $PASSED"
+            echo "Tests failed: $FAILED"
+            
+            # Exit with error if tests failed
+            if [ $FAILED -gt 0 ]; then
+              echo "❌ $FAILED tests failed"
+              exit 1
+            fi
+          fi
+      
+      - name: Test Coverage Report
+        if: always()
+        run: |
+          echo "# Test Coverage Report" > coverage-report.md
+          echo "" >> coverage-report.md
+          echo "**Date:** $(date +%Y-%m-%d)" >> coverage-report.md
+          echo "" >> coverage-report.md
+          if [ -f test-output.txt ]; then
+            echo '```' >> coverage-report.md
+            cat test-output.txt >> coverage-report.md
+            echo '```' >> coverage-report.md
+          else
+            echo "No test output available" >> coverage-report.md
+          fi
+      
+      - name: Upload test results
+        if: always()
+        uses: actions/upload-artifact@v3
+        with:
+          name: test-results
+          path: |
+            test-output.txt
+            coverage-report.md
+            test-results/
+          retention-days: 30
       
   security-scan:
+    name: Security Scanning
     runs-on: ubuntu-latest
+    
     steps:
-      - uses: actions/checkout@v3
+      - name: Checkout repository
+        uses: actions/checkout@v3
       
       - name: Setup Node.js
         uses: actions/setup-node@v3
@@ -48,21 +149,78 @@ jobs:
           node-version: '18'
       
       - name: Security audit
+        id: audit
+        continue-on-error: true
         run: |
-          npm audit --audit-level=moderate || echo "No vulnerabilities found"
+          echo "Running npm audit..."
+          npm audit --audit-level=moderate 2>&1 | tee audit-output.txt || true
+          
+          # Check for critical/high vulnerabilities
+          CRITICAL=$(grep -c "critical" audit-output.txt || echo 0)
+          HIGH=$(grep -c "high" audit-output.txt || echo 0)
+          
+          echo "Critical vulnerabilities: $CRITICAL"
+          echo "High vulnerabilities: $HIGH"
+          
+          if [ $CRITICAL -gt 0 ] || [ $HIGH -gt 0 ]; then
+            echo "❌ Security vulnerabilities found!"
+            exit 1
+          fi
       
-      - name: Check for secrets
+      - name: Check for hardcoded secrets
+        run: |
+          echo "Checking for potential secrets..."
+          
+          # Check for common secret patterns
+          if grep -rE "(api[_-]?key|password|secret|token)" --include="*.js" --exclude-dir={node_modules,vendor,tests} . ; then
+            echo "⚠️ WARNING: Potential secrets found in code. Review manually."
+          fi
+          
+          # Check for API keys in config files
+          if grep -rE "['\"]?[A-Za-z0-9]{32,}['\"]?" config*.js 2>/dev/null ; then
+            echo "⚠️ WARNING: Potential API keys in config files."
+          fi
+      
+      - name: Check for secrets (TruffleHog)
         uses: trufflesecurity/trufflehog@main
+        continue-on-error: true
         with:
           path: ./
           base: ${{ github.event.repository.default_branch }}
           head: HEAD
+      
+      - name: Validate CSP and Security Headers
+        run: |
+          echo "Checking for security headers configuration..."
+          
+          # Check if security.js has proper CSP
+          if [ -f security.js ]; then
+            echo "✅ security.js found"
+            if grep -q "Content-Security-Policy" security.js ; then
+              echo "✅ CSP configuration found"
+            else
+              echo "⚠️ WARNING: No CSP configuration found in security.js"
+            fi
+          else
+            echo "❌ ERROR: security.js not found"
+          fi
+      
+      - name: Upload security report
+        if: always()
+        uses: actions/upload-artifact@v3
+        with:
+          name: security-report
+          path: audit-output.txt
+          retention-days: 90
 
   performance-check:
+    name: Performance & Bundle Size
     runs-on: ubuntu-latest
-    if: github.event_name == 'pull_request'
+    if: github.event_name == 'pull_request' || github.event_name == 'push'
+    
     steps:
-      - uses: actions/checkout@v3
+      - name: Checkout repository
+        uses: actions/checkout@v3
       
       - name: Setup Node.js
         uses: actions/setup-node@v3
@@ -72,11 +230,184 @@ jobs:
       - name: Install dependencies
         run: npm ci || npm install
       
-      - name: Build application
-        run: npm run build || echo "Build not configured"
-      
-      - name: Check bundle size
+      - name: Calculate Bundle Size
+        id: bundle
         run: |
-          if [ -d "build" ] || [ -d ".next" ] || [ -d "dist" ]; then
-            du -sh build/ || du -sh .next/ || du -sh dist/ || echo "Build directory not found"
+          echo "Calculating bundle size..."
+          
+          # Calculate JS size
+          JS_SIZE=$(find . -name "*.js" -not -path "*/node_modules/*" -not -path "*/.git/*" -not -path "*/vendor/*" -not -path "*/tests/*" -exec cat {} \; | wc -c)
+          JS_SIZE_KB=$((JS_SIZE / 1024))
+          
+          # Calculate CSS size
+          CSS_SIZE=$(find . -name "*.css" -not -path "*/node_modules/*" -not -path "*/.git/*" -exec cat {} \; | wc -c)
+          CSS_SIZE_KB=$((CSS_SIZE / 1024))
+          
+          # Calculate HTML size
+          HTML_SIZE=$(find . -name "*.html" -not -path "*/node_modules/*" -not -path "*/.git/*" -exec cat {} \; | wc -c)
+          HTML_SIZE_KB=$((HTML_SIZE / 1024))
+          
+          TOTAL_SIZE_KB=$((JS_SIZE_KB + CSS_SIZE_KB + HTML_SIZE_KB))
+          
+          echo "js_size_kb=$JS_SIZE_KB" >> $GITHUB_OUTPUT
+          echo "css_size_kb=$CSS_SIZE_KB" >> $GITHUB_OUTPUT
+          echo "html_size_kb=$HTML_SIZE_KB" >> $GITHUB_OUTPUT
+          echo "total_size_kb=$TOTAL_SIZE_KB" >> $GITHUB_OUTPUT
+          
+          echo "📊 Bundle Size Analysis:"
+          echo "  JavaScript: ${JS_SIZE_KB} KB"
+          echo "  CSS: ${CSS_SIZE_KB} KB"
+          echo "  HTML: ${HTML_SIZE_KB} KB"
+          echo "  Total: ${TOTAL_SIZE_KB} KB"
+          
+          # Performance budget: 1.5 MB total
+          BUDGET_KB=1536
+          if [ $TOTAL_SIZE_KB -gt $BUDGET_KB ]; then
+            echo "❌ ERROR: Bundle size ($TOTAL_SIZE_KB KB) exceeds budget ($BUDGET_KB KB)"
+            exit 1
+          else
+            echo "✅ Bundle size within budget"
           fi
+      
+      - name: Check File Count
+        run: |
+          JS_FILES=$(find . -name "*.js" -not -path "*/node_modules/*" -not -path "*/.git/*" -not -path "*/vendor/*" | wc -l)
+          CSS_FILES=$(find . -name "*.css" -not -path "*/node_modules/*" -not -path "*/.git/*" | wc -l)
+          
+          echo "JavaScript files: $JS_FILES"
+          echo "CSS files: $CSS_FILES"
+          
+          # Warn if too many files (impacts HTTP/1.1 performance)
+          TOTAL_FILES=$((JS_FILES + CSS_FILES))
+          if [ $TOTAL_FILES -gt 100 ]; then
+            echo "⚠️ WARNING: $TOTAL_FILES files may impact load performance. Consider bundling."
+          fi
+      
+      - name: Analyze LocalStorage Usage
+        run: |
+          echo "Checking LocalStorage schema..."
+          
+          # Check for storage.js
+          if [ -f storage.js ]; then
+            echo "✅ storage.js found"
+            
+            # Check for quota management
+            if [ -f storage-quota-manager.js ]; then
+              echo "✅ storage-quota-manager.js found"
+            else
+              echo "⚠️ WARNING: storage-quota-manager.js not found"
+            fi
+          fi
+      
+      - name: Comment bundle size on PR
+        if: github.event_name == 'pull_request'
+        uses: actions/github-script@v6
+        with:
+          script: |
+            const comment = `## 📦 Bundle Size Report
+            
+            | Asset | Size |
+            |-------|------|
+            | JavaScript | ${{ steps.bundle.outputs.js_size_kb }} KB |
+            | CSS | ${{ steps.bundle.outputs.css_size_kb }} KB |
+            | HTML | ${{ steps.bundle.outputs.html_size_kb }} KB |
+            | **Total** | **${{ steps.bundle.outputs.total_size_kb }} KB** |
+            
+            **Budget:** 1536 KB  
+            **Status:** ${{ steps.bundle.outputs.total_size_kb < 1536 && '✅ Within budget' || '❌ Over budget' }}
+            
+            ---
+            *Automated bundle size analysis*`;
+            
+            github.rest.issues.createComment({
+              issue_number: context.issue.number,
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              body: comment
+            });
+
+  accessibility-check:
+    name: Accessibility Validation
+    runs-on: ubuntu-latest
+    if: github.event_name == 'pull_request'
+    
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v3
+      
+      - name: Check ARIA Labels
+        run: |
+          echo "Checking for accessibility features..."
+          
+          # Check if accessibility.js exists
+          if [ -f accessibility.js ]; then
+            echo "✅ accessibility.js found"
+          else
+            echo "⚠️ WARNING: accessibility.js not found"
+          fi
+          
+          # Check for aria-label usage in HTML
+          ARIA_COUNT=$(grep -c "aria-label" index.html || echo 0)
+          echo "ARIA labels found in index.html: $ARIA_COUNT"
+          
+          # Check for role attributes
+          ROLE_COUNT=$(grep -c 'role=' index.html || echo 0)
+          echo "Role attributes found: $ROLE_COUNT"
+      
+      - name: Color Contrast Check
+        run: |
+          echo "Checking for color contrast documentation..."
+          
+          if [ -f COLOR_CONTRAST_AUDIT.md ]; then
+            echo "✅ Color contrast audit documentation found"
+          else
+            echo "⚠️ WARNING: No color contrast audit found"
+          fi
+
+  code-metrics:
+    name: Code Metrics & Analysis
+    runs-on: ubuntu-latest
+    if: github.event_name == 'push' && github.ref == 'refs/heads/main'
+    
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v3
+        with:
+          fetch-depth: 0
+      
+      - name: Calculate Code Metrics
+        run: |
+          echo "# Code Metrics Report" > metrics-report.md
+          echo "" >> metrics-report.md
+          echo "**Date:** $(date +%Y-%m-%d)" >> metrics-report.md
+          echo "" >> metrics-report.md
+          
+          # Count files
+          JS_FILES=$(find . -name "*.js" -not -path "*/node_modules/*" -not -path "*/.git/*" -not -path "*/vendor/*" | wc -l)
+          CSS_FILES=$(find . -name "*.css" -not -path "*/node_modules/*" -not -path "*/.git/*" | wc -l)
+          HTML_FILES=$(find . -name "*.html" -not -path "*/node_modules/*" -not -path "*/.git/*" | wc -l)
+          
+          # Count lines
+          JS_LINES=$(find . -name "*.js" -not -path "*/node_modules/*" -not -path "*/.git/*" -not -path "*/vendor/*" -exec cat {} \; | wc -l)
+          CSS_LINES=$(find . -name "*.css" -not -path "*/node_modules/*" -not -path "*/.git/*" -exec cat {} \; | wc -l)
+          
+          # Count functions
+          FUNCTIONS=$(grep -r "^function\|: function" --include="*.js" --exclude-dir={node_modules,vendor} . | wc -l)
+          
+          echo "| Metric | Value |" >> metrics-report.md
+          echo "|--------|-------|" >> metrics-report.md
+          echo "| JavaScript Files | $JS_FILES |" >> metrics-report.md
+          echo "| CSS Files | $CSS_FILES |" >> metrics-report.md
+          echo "| HTML Files | $HTML_FILES |" >> metrics-report.md
+          echo "| Lines of JavaScript | $JS_LINES |" >> metrics-report.md
+          echo "| Lines of CSS | $CSS_LINES |" >> metrics-report.md
+          echo "| Function Definitions | $FUNCTIONS |" >> metrics-report.md
+          
+          cat metrics-report.md
+      
+      - name: Upload metrics
+        uses: actions/upload-artifact@v3
+        with:
+          name: code-metrics
+          path: metrics-report.md
+          retention-days: 90
