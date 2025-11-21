@@ -2,12 +2,13 @@
 // Tests quote history tracking, analytics calculations, and CSV export
 
 const { test, expect } = require('@playwright/test');
+const { gotoApp, waitForAppInit } = require('./fixtures/app-url');
 
 test.describe('Quote Analytics', () => {
   test.beforeEach(async ({ page }) => {
-    await page.goto('http://localhost:8080');
+    await gotoApp(page);
     await page.waitForSelector('.app');
-    await page.waitForFunction(() => window.APP && window.APP.initialized);
+    await waitForAppInit(page);
     await page.waitForFunction(() => window.QuoteAnalytics);
 
     // Clear history before each test

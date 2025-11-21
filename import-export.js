@@ -255,6 +255,11 @@
             '<button type="button" class="btn btn-primary" id="createBackupBtn">Create Full Backup</button>' +
           '</div>' +
           '<div class="backup-section">' +
+            '<h3>📦 Selective Export</h3>' +
+            '<p>Export specific data types (quotes, clients, templates, etc.).</p>' +
+            '<button type="button" class="btn btn-accent" id="selectiveExportBtn">Choose What to Export</button>' +
+          '</div>' +
+          '<div class="backup-section">' +
             '<h3>📥 Restore Backup</h3>' +
             '<p>Import data from a previous backup file.</p>' +
             '<div class="restore-options">' +
@@ -269,6 +274,11 @@
             '</div>' +
             '<input type="file" id="backupFileInput" accept=".json" style="display: none;" />' +
             '<button type="button" class="btn btn-secondary" id="selectBackupBtn">Select Backup File</button>' +
+          '</div>' +
+          '<div class="backup-section">' +
+            '<h3>📊 Import from CSV</h3>' +
+            '<p>Import quotes from a CSV or Excel file with column mapping.</p>' +
+            '<button type="button" class="btn btn-accent" id="csvImportBtn">Import CSV</button>' +
           '</div>' +
           '<div class="backup-section backup-warning">' +
             '<strong>⚠️ Important:</strong> Always create a backup before restoring! ' +
@@ -313,6 +323,48 @@
         importBackup(file, mode);
       }
     };
+
+    // CSV Import button
+    var csvImportBtn = modal.querySelector('#csvImportBtn');
+    if (csvImportBtn) {
+      csvImportBtn.onclick = function() {
+        // Close this modal
+        modal.classList.remove('active');
+        setTimeout(function() { modal.remove(); }, 300);
+        
+        // Open CSV import modal if available
+        if (window.CSVImport && window.CSVImport.showImportModal) {
+          setTimeout(function() {
+            window.CSVImport.showImportModal();
+          }, 400);
+        } else {
+          if (window.ErrorHandler) {
+            window.ErrorHandler.showError('CSV import module not loaded');
+          }
+        }
+      };
+    }
+
+    // Selective Export button
+    var selectiveExportBtn = modal.querySelector('#selectiveExportBtn');
+    if (selectiveExportBtn) {
+      selectiveExportBtn.onclick = function() {
+        // Close this modal
+        modal.classList.remove('active');
+        setTimeout(function() { modal.remove(); }, 300);
+        
+        // Open selective export modal if available
+        if (window.SelectiveExport && window.SelectiveExport.showModal) {
+          setTimeout(function() {
+            window.SelectiveExport.showModal();
+          }, 400);
+        } else {
+          if (window.ErrorHandler) {
+            window.ErrorHandler.showError('Selective export module not loaded');
+          }
+        }
+      };
+    }
 
     return modal;
   }
