@@ -29,14 +29,16 @@
       var itemCount = 0;
 
       for (var key in localStorage) {
-        var value = localStorage[key];
-        // UTF-16: 2 bytes per character
-        totalBytes += (key.length + value.length) * 2;
-        itemCount++;
+        if (localStorage.hasOwnProperty(key)) {
+          var value = localStorage[key];
+          // UTF-16: 2 bytes per character
+          totalBytes += (key.length + value.length) * 2;
+          itemCount++;
+        }
       }
 
       var quotaBytes = ESTIMATED_QUOTA_MB * 1024 * 1024;
-      var usagePercent = (totalBytes / quotaBytes) * 100;
+      var usagePercent = quotaBytes > 0 ? (totalBytes / quotaBytes) * 100 : 0;
 
       return {
         usedBytes: totalBytes,
@@ -150,9 +152,9 @@
 
       localStorage.setItem(historyKey, JSON.stringify(cleaned));
 
-      console.log('[STORAGE-QUOTA] Cleaned up ' + removed + ' old quote(s), kept ' + keepCount);
+      console.log('[STORAGE-QUOTA] Cleaned up ' + removed + ' old quote(s), kept ' + cleaned.length);
       
-      return { removed: removed, kept: keepCount };
+      return { removed: removed, kept: cleaned.length };
     } catch (e) {
       console.error('[STORAGE-QUOTA] Quote cleanup failed:', e);
       return { removed: 0, kept: 0, error: e.message };
