@@ -1927,8 +1927,15 @@ $("totalIncGstDisplay").textContent = formatMoney(totalIncGst);
     loadState: loadInitialState,
     saveState: autosave,
     buildStateFromUI: buildStateFromUI,
-    applyStateToUI: applyStateToUI
+    applyStateToUI: applyStateToUI,
+    showDeferredPlaceholder: showDeferredPlaceholder,
+    hideDeferredPlaceholder: hideDeferredPlaceholder
   };
+
+  if (window.APP) {
+    APP.showDeferredPlaceholder = showDeferredPlaceholder;
+    APP.hideDeferredPlaceholder = hideDeferredPlaceholder;
+  }
 
   // Register with bootstrap
   window.APP.registerModule('app', AppModule);

@@ -89,6 +89,50 @@
     console.log('[LAZY-INIT] Lazy loading configured - modules load on-demand only');
 
     // ============================================
+    // VIEWPORT-BASED LOADING FOR HEAVY WIDGETS
+    // ============================================
+
+    var analyticsSection = document.getElementById('page-analytics-dashboard');
+    if (analyticsSection && window.LazyLoader) {
+      window.LazyLoader.loadOnVisible(analyticsSection, 'charts', function(error) {
+        if (window.APP && APP.hideDeferredPlaceholder) {
+          APP.hideDeferredPlaceholder('page-analytics-dashboard');
+        }
+
+        if (error) {
+          console.error('[LAZY-INIT] Failed to hydrate analytics dashboard:', error);
+          return;
+        }
+
+        if (window.AnalyticsDashboard && window.AnalyticsDashboard.updateDashboard) {
+          window.AnalyticsDashboard.updateDashboard();
+        }
+      }, {
+        rootMargin: '0px 0px -160px 0px',
+        threshold: 0.35,
+        loader: function(cb) {
+          loadCharts(cb);
+        }
+      });
+    }
+
+    var photosGrid = document.getElementById('photos-grid');
+    if (photosGrid && window.LazyLoader) {
+      window.LazyLoader.loadOnVisible(photosGrid, 'photo-modal', function(error) {
+        if (window.APP && APP.hideDeferredPlaceholder) {
+          APP.hideDeferredPlaceholder('photos-grid');
+        }
+
+        if (error) {
+          console.error('[LAZY-INIT] Failed to hydrate photo modal:', error);
+        }
+      }, {
+        rootMargin: '0px 0px -140px 0px',
+        threshold: 0.4
+      });
+    }
+
+    // ============================================
     // PHOTO MODAL MODULE
     // ============================================
 
