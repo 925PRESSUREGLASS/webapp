@@ -78,6 +78,63 @@
     return el;
   }
 
+  var statusTimers = {};
+
+  function showStatus(target, state, message) {
+    var el = typeof target === 'string' ? $(target) : target;
+    if (!el || !el.parentNode) return;
+
+    var statusEl = el.parentNode.querySelector('.inline-status');
+    if (!statusEl) {
+      statusEl = createEl('span', 'inline-status');
+      statusEl.setAttribute('role', 'status');
+      statusEl.setAttribute('aria-live', 'polite');
+      el.parentNode.appendChild(statusEl);
+    }
+
+    if (!el._statusKey) {
+      el._statusKey = el.id || el.getAttribute('data-status-key') || 'status-' + Date.now();
+    }
+    var statusKey = el._statusKey;
+    if (statusTimers[statusKey]) {
+      clearTimeout(statusTimers[statusKey]);
+    }
+
+    if (state === 'clear') {
+      statusEl.className = 'inline-status';
+      statusEl.innerHTML = '';
+      return;
+    }
+
+    statusEl.className = 'inline-status';
+    statusEl.innerHTML = '';
+
+    if (state === 'loading') {
+      statusEl.classList.add('inline-status--loading');
+      var spinner = createEl('span', 'inline-status__spinner');
+      spinner.setAttribute('aria-hidden', 'true');
+      statusEl.appendChild(spinner);
+
+      var label = createEl('span', 'inline-status__label');
+      label.textContent = message || 'Working...';
+      statusEl.appendChild(label);
+    } else if (state === 'success') {
+      statusEl.classList.add('inline-status--success');
+      var check = createEl('span', 'inline-status__check');
+      check.setAttribute('aria-hidden', 'true');
+      check.textContent = '✓';
+      statusEl.appendChild(check);
+
+      var labelSuccess = createEl('span', 'inline-status__label');
+      labelSuccess.textContent = message || 'Done';
+      statusEl.appendChild(labelSuccess);
+
+      statusTimers[statusKey] = setTimeout(function () {
+        showStatus(el, 'clear');
+      }, 2200);
+    }
+  }
+
   // ————————————————————
   // GLOBAL APP OBJECT
   // ————————————————————
@@ -1108,6 +1165,8 @@ $("totalIncGstDisplay").textContent = formatMoney(totalIncGst);
         return;
       }
 
+      showStatus('saveQuoteBtn', 'loading', 'Saving...');
+
       var newQuote = {
         id: "q" + Date.now(),
         title: quoteName.trim(),
@@ -1118,6 +1177,8 @@ $("totalIncGstDisplay").textContent = formatMoney(totalIncGst);
       savedQuotes.push(newQuote);
       AppStorage.saveSavedQuotes(savedQuotes);
       renderSavedQuotesOptions(savedQuotes);
+
+      showStatus('saveQuoteBtn', 'success', 'Saved');
 
       if (window.UIComponents && window.UIComponents.showToast) {
         window.UIComponents.showToast('Quote "' + quoteName + '" saved successfully!', 'success');
@@ -1509,12 +1570,15 @@ $("totalIncGstDisplay").textContent = formatMoney(totalIncGst);
   }
 
   function openQuotePrintWindow() {
+    showStatus('generatePdfBtn', 'loading', 'Preparing PDF...');
+
     var html = buildQuoteHtml();
     var win = window.open("", "_blank");
     if (!win) {
       alert(
         "Pop-up blocked. Please allow pop-ups for this site to print or save the quote as PDF."
       );
+      showStatus('generatePdfBtn', 'clear');
       return;
     }
     win.document.open();
@@ -1523,6 +1587,7 @@ $("totalIncGstDisplay").textContent = formatMoney(totalIncGst);
     win.focus();
     setTimeout(function () {
       win.print();
+      showStatus('generatePdfBtn', 'success', 'PDF ready');
     }, 300);
   }
 
