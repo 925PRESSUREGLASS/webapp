@@ -246,6 +246,180 @@
   };
 
   // ============================================
+  // KEYBOARD ACCESSIBILITY HELPERS
+  // ============================================
+
+  /**
+   * Get focusable elements within a container
+   * @param {HTMLElement} container
+   * @returns {Array}
+   */
+  function getFocusable(container) {
+    if (!container) return [];
+    var focusableSelectors = 'button, [href], input, select, textarea, [tabindex]:not([tabindex="-1"])';
+    var nodes = container.querySelectorAll(focusableSelectors);
+    var elements = [];
+    for (var i = 0; i < nodes.length; i++) {
+      if (!nodes[i].disabled && nodes[i].offsetParent !== null) {
+        elements.push(nodes[i]);
+      }
+    }
+    return elements;
+  }
+
+  /**
+   * Enable keyboard navigation for modal overlays
+   * @param {HTMLElement} overlay
+   * @param {Object} options
+   */
+  function setupModalNavigation(overlay, options) {
+    if (!overlay) return;
+
+    var modal = overlay.querySelector('.modal');
+    if (modal) {
+      modal.setAttribute('tabindex', '-1');
+      if (!modal.getAttribute('role')) {
+        modal.setAttribute('role', 'dialog');
+      }
+      if (options && options.labelledBy) {
+        modal.setAttribute('aria-labelledby', options.labelledBy);
+      }
+    }
+
+    var closeHandler = options && options.onClose ? options.onClose : null;
+    var submitHandler = options && options.onSubmit ? options.onSubmit : null;
+    var initialSelector = options && options.initialFocusSelector ? options.initialFocusSelector : null;
+
+    var focusables = getFocusable(overlay);
+    setTimeout(function() {
+      var initialEl = initialSelector ? overlay.querySelector(initialSelector) : focusables[0];
+      if (initialEl) {
+        initialEl.focus();
+      } else if (modal) {
+        modal.focus();
+      }
+    }, 0);
+
+    overlay.addEventListener('keydown', function(event) {
+      var key = event.key || event.keyCode;
+      if (key === 'Escape' || key === 'Esc' || key === 27) {
+        event.preventDefault();
+        if (closeHandler) {
+          closeHandler();
+        }
+        return;
+      }
+
+      if (key === 'Enter' || key === 13) {
+        if (submitHandler && event.target.tagName !== 'TEXTAREA') {
+          event.preventDefault();
+          submitHandler();
+        }
+        return;
+      }
+
+      if (key === 'Tab' || key === 9) {
+        focusables = getFocusable(overlay);
+        if (focusables.length === 0) return;
+        var active = document.activeElement;
+        var idx = focusables.indexOf ? focusables.indexOf(active) : Array.prototype.indexOf.call(focusables, active);
+        var nextIdx = idx;
+
+        if (event.shiftKey) {
+          nextIdx = idx <= 0 ? focusables.length - 1 : idx - 1;
+        } else {
+          nextIdx = idx >= focusables.length - 1 ? 0 : idx + 1;
+        }
+
+        if (focusables[nextIdx]) {
+          event.preventDefault();
+          focusables[nextIdx].focus();
+        }
+        return;
+      }
+
+      if (key === 'ArrowDown' || key === 'Down' || key === 40 || key === 'ArrowRight' || key === 'Right' || key === 39) {
+        focusables = getFocusable(overlay);
+        var current = document.activeElement;
+        var currentIdx = focusables.indexOf ? focusables.indexOf(current) : Array.prototype.indexOf.call(focusables, current);
+        var forward = currentIdx >= 0 ? currentIdx + 1 : 0;
+        if (forward >= focusables.length) forward = 0;
+        if (focusables[forward]) {
+          event.preventDefault();
+          focusables[forward].focus();
+        }
+      }
+
+      if (key === 'ArrowUp' || key === 'Up' || key === 38 || key === 'ArrowLeft' || key === 'Left' || key === 37) {
+        focusables = getFocusable(overlay);
+        var activeEl = document.activeElement;
+        var activeIdx = focusables.indexOf ? focusables.indexOf(activeEl) : Array.prototype.indexOf.call(focusables, activeEl);
+        var backward = activeIdx <= 0 ? focusables.length - 1 : activeIdx - 1;
+        if (focusables[backward]) {
+          event.preventDefault();
+          focusables[backward].focus();
+        }
+      }
+    });
+  }
+
+  /**
+   * Enable arrow-key navigation for table-like containers
+   * @param {HTMLElement} container
+   * @param {string} itemSelector
+   * @param {Function} activateCallback
+   */
+  function enableKeyboardTableNavigation(container, itemSelector, activateCallback) {
+    if (!container) return;
+
+    container.setAttribute('role', 'grid');
+
+    function ensureFocusable() {
+      var rows = container.querySelectorAll(itemSelector);
+      for (var i = 0; i < rows.length; i++) {
+        rows[i].setAttribute('tabindex', rows[i].getAttribute('tabindex') || '0');
+        rows[i].setAttribute('role', rows[i].getAttribute('role') || 'row');
+      }
+    }
+
+    ensureFocusable();
+
+    container.addEventListener('keydown', function(event) {
+      var key = event.key || event.keyCode;
+      var rows = container.querySelectorAll(itemSelector);
+      if (!rows.length) return;
+
+      var active = document.activeElement;
+      var index = Array.prototype.indexOf.call(rows, active);
+
+      if (key === 'ArrowDown' || key === 'Down' || key === 40 || key === 'ArrowRight' || key === 'Right' || key === 39) {
+        var next = index >= 0 ? index + 1 : 0;
+        if (next >= rows.length) next = rows.length - 1;
+        if (rows[next]) {
+          event.preventDefault();
+          rows[next].focus();
+        }
+      } else if (key === 'ArrowUp' || key === 'Up' || key === 38 || key === 'ArrowLeft' || key === 'Left' || key === 37) {
+        var prev = index >= 0 ? index - 1 : 0;
+        if (prev < 0) prev = 0;
+        if (rows[prev]) {
+          event.preventDefault();
+          rows[prev].focus();
+        }
+      } else if (key === 'Enter' || key === 13) {
+        if (activateCallback && rows[index]) {
+          event.preventDefault();
+          activateCallback(rows[index]);
+        }
+      } else if (key === 'Escape' || key === 'Esc' || key === 27) {
+        if (active && active.blur) {
+          active.blur();
+        }
+      }
+    });
+  }
+
+  // ============================================
   // EVENT DELEGATION HANDLER
   // ============================================
 
@@ -346,7 +520,9 @@
       init: init,
       registerAction: function(name, handler) {
         actionHandlers[name] = handler;
-      }
+      },
+      setupModalNavigation: setupModalNavigation,
+      enableKeyboardTableNavigation: enableKeyboardTableNavigation
     });
   }
 
@@ -356,7 +532,9 @@
     registerAction: function(name, handler) {
       actionHandlers[name] = handler;
       console.log('[EVENT-HANDLERS] Registered custom action:', name);
-    }
+    },
+    setupModalNavigation: setupModalNavigation,
+    enableKeyboardTableNavigation: enableKeyboardTableNavigation
   };
 
 })();

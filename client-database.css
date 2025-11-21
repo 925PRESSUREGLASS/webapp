@@ -447,6 +447,14 @@
   border-color: rgba(56, 189, 248, 0.4);
 }
 
+.customer-card:focus,
+.customer-card:focus-within {
+  outline: 3px solid #38bdf8;
+  outline-offset: 2px;
+  box-shadow: 0 0 0 3px rgba(56, 189, 248, 0.25);
+  border-color: rgba(56, 189, 248, 0.6);
+}
+
 .customer-card .card-header {
   padding: 1.25rem;
   border-bottom: 1px solid rgba(148, 163, 184, 0.15);
@@ -460,6 +468,13 @@
   display: flex;
   gap: 0.5rem;
   flex-wrap: wrap;
+}
+
+.customer-card-actions .btn:focus,
+.customer-card-actions .btn:focus-visible {
+  outline: 3px solid #a855f7;
+  outline-offset: 2px;
+  box-shadow: 0 0 0 3px rgba(168, 85, 247, 0.2);
 }
 
 /* Empty State */

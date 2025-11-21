@@ -100,6 +100,9 @@
       return;
     }
 
+    listContainer.setAttribute('role', 'grid');
+    listContainer.setAttribute('aria-label', 'Task list');
+
     // Get filters
     var statusFilter = document.getElementById('task-status-filter');
     var priorityFilter = document.getElementById('task-priority-filter');
@@ -144,6 +147,15 @@
       var taskCard = createTaskCard(task);
       listContainer.appendChild(taskCard);
     }
+
+    if (window.EventHandlers && window.EventHandlers.enableKeyboardTableNavigation) {
+      window.EventHandlers.enableKeyboardTableNavigation(listContainer, '.task-card', function(cardEl) {
+        var taskId = cardEl.getAttribute('data-task-id');
+        if (taskId) {
+          viewTask(taskId);
+        }
+      });
+    }
   }
 
   /**
@@ -153,6 +165,9 @@
     var card = document.createElement('div');
     card.className = 'card task-card task-priority-' + task.priority;
     card.setAttribute('data-task-id', task.id);
+    card.setAttribute('tabindex', '0');
+    card.setAttribute('role', 'row');
+    card.setAttribute('aria-label', 'Task ' + task.title + ', ' + task.priority + ' priority');
 
     // Create priority badge
     var priorityBadge = document.createElement('span');
@@ -225,11 +240,13 @@
     var viewBtn = document.createElement('button');
     viewBtn.className = 'btn btn-secondary btn-sm';
     viewBtn.textContent = 'View';
+    viewBtn.setAttribute('aria-label', 'View details for ' + task.title);
     viewBtn.onclick = function() { viewTask(task.id); };
 
     var completeBtn = document.createElement('button');
     completeBtn.className = 'btn btn-primary btn-sm';
     completeBtn.textContent = 'Complete';
+    completeBtn.setAttribute('aria-label', 'Complete task ' + task.title);
     completeBtn.onclick = function() { completeTaskWithConfirm(task.id); };
 
     actions.appendChild(viewBtn);
@@ -460,6 +477,15 @@
     document.getElementById('close-new-task-modal').addEventListener('click', closeNewTaskModal);
     document.getElementById('cancel-new-task').addEventListener('click', closeNewTaskModal);
     document.getElementById('save-new-task').addEventListener('click', saveNewTask);
+
+    if (window.EventHandlers && window.EventHandlers.setupModalNavigation) {
+      window.EventHandlers.setupModalNavigation(document.getElementById('new-task-modal-overlay'), {
+        onClose: closeNewTaskModal,
+        onSubmit: saveNewTask,
+        initialFocusSelector: '#task-title',
+        labelledBy: 'new-task-title'
+      });
+    }
 
     // Focus on title input
     setTimeout(function() {

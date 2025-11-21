@@ -904,3 +904,17 @@ body.accordion-mode .card-body.card-body-open {
   position: relative;
   z-index: 1;
 }
+
+/* Accessibility focus enhancements */
+.modal:focus,
+.modal:focus-visible {
+  outline: 3px solid #10b981;
+  outline-offset: 4px;
+  box-shadow: 0 0 0 3px rgba(16, 185, 129, 0.25);
+}
+
+.modal-close:focus,
+.modal-close:focus-visible {
+  outline: 3px solid #ef4444;
+  outline-offset: 2px;
+}
