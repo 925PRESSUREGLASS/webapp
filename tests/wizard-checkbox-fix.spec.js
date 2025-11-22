@@ -2,7 +2,7 @@
 // Tests the fix for checkboxes not ticking in wizards
 
 var test = require('./fixtures/fresh-context').test;
-var expect = require('fixtures/fresh-context').expect;
+var expect = require('./fixtures/fresh-context').expect;
 var gotoApp = require('./fixtures/app-url').gotoApp;
 
 test.describe('Wizard Checkbox Fix', function() {
