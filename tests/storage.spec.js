@@ -1,8 +1,7 @@
 // storage.spec.js - LocalStorage Wrapper Tests
 // Tests direct storage operations, persistence, and error handling
 
-const { test } = require('./fixtures/isolated-page');
-const { expect } = require('@playwright/test');
+const { test, expect } = require('@playwright/test');
 const { gotoApp, waitForAppReady } = require('./fixtures/app-url');
 
 test.describe('Storage Module', () => {
@@ -15,10 +14,31 @@ test.describe('Storage Module', () => {
     
     // Wait for AppStorage to exist
     await page.waitForFunction(() => window.AppStorage, { timeout: 10000 });
+    
+    // Clear localStorage and reload to ensure truly clean state
+    await page.evaluate(() => {
+      localStorage.clear();
+      sessionStorage.clear();
+    });
+    
+    // Reload the page so app loads with clean storage
+    await page.reload({ waitUntil: 'domcontentloaded' });
+    
+    // Wait for APP and AppStorage again after reload
+    await page.waitForFunction(() => {
+      return typeof window.APP === 'object' && window.APP !== null;
+    }, { timeout: 10000 });
+    
+    await page.waitForFunction(() => window.AppStorage, { timeout: 10000 });
   });
 
   test.describe('State Persistence', () => {
     test('should save and load state', async ({ page }) => {
+      // Clear any existing state first
+      await page.evaluate(() => {
+        localStorage.clear();
+      });
+
       const state = {
         quoteTitle: 'Test Quote',
         clientName: 'Test Client',
@@ -44,6 +64,11 @@ test.describe('Storage Module', () => {
     });
 
     test('should return null for non-existent state', async ({ page }) => {
+      // Explicitly clear storage to ensure clean state
+      await page.evaluate(() => {
+        localStorage.clear();
+      });
+
       const loaded = await page.evaluate(() => {
         return window.AppStorage.loadState();
       });
@@ -52,6 +77,11 @@ test.describe('Storage Module', () => {
     });
 
     test('should clear state', async ({ page }) => {
+      // Clear any existing state first
+      await page.evaluate(() => {
+        localStorage.clear();
+      });
+
       await page.evaluate(() => {
         window.AppStorage.saveState({ test: 'data' });
         window.AppStorage.clearState();
@@ -65,7 +95,9 @@ test.describe('Storage Module', () => {
     });
 
     test('should handle corrupted state gracefully', async ({ page }) => {
+      // Clear first, then add corrupted data
       await page.evaluate(() => {
+        localStorage.clear();
         localStorage.setItem('tictacstick_autosave_state_v1', 'invalid json {{{');
       });
 
@@ -79,6 +111,11 @@ test.describe('Storage Module', () => {
 
   test.describe('Presets Persistence', () => {
     test('should save and load presets', async ({ page }) => {
+      // Clear any existing presets first
+      await page.evaluate(() => {
+        localStorage.clear();
+      });
+
       const presets = [
         { name: 'Preset 1', baseFee: 120, hourlyRate: 95 },
         { name: 'Preset 2', baseFee: 150, hourlyRate: 110 }
@@ -98,6 +135,11 @@ test.describe('Storage Module', () => {
     });
 
     test('should return empty array for non-existent presets', async ({ page }) => {
+      // Explicitly clear to ensure no presets exist
+      await page.evaluate(() => {
+        localStorage.clear();
+      });
+
       const loaded = await page.evaluate(() => {
         return window.AppStorage.loadPresets();
       });
@@ -106,7 +148,9 @@ test.describe('Storage Module', () => {
     });
 
     test('should handle null presets gracefully', async ({ page }) => {
+      // Clear first
       await page.evaluate(() => {
+        localStorage.clear();
         window.AppStorage.savePresets(null);
       });
 
@@ -118,7 +162,9 @@ test.describe('Storage Module', () => {
     });
 
     test('should handle corrupted presets gracefully', async ({ page }) => {
+      // Clear first, then add corrupted data
       await page.evaluate(() => {
+        localStorage.clear();
         localStorage.setItem('tictacstick_presets_v1', 'invalid json');
       });
 
@@ -132,6 +178,11 @@ test.describe('Storage Module', () => {
 
   test.describe('Saved Quotes Persistence', () => {
     test('should save and load saved quotes', async ({ page }) => {
+      // Clear any existing quotes first
+      await page.evaluate(() => {
+        localStorage.clear();
+      });
+
       const quotes = [
         {
           id: 'quote_1',
@@ -161,6 +212,11 @@ test.describe('Storage Module', () => {
     });
 
     test('should return empty array for non-existent quotes', async ({ page }) => {
+      // Explicitly clear to ensure no quotes exist
+      await page.evaluate(() => {
+        localStorage.clear();
+      });
+
       const loaded = await page.evaluate(() => {
         return window.AppStorage.loadSavedQuotes();
       });
@@ -169,7 +225,9 @@ test.describe('Storage Module', () => {
     });
 
     test('should handle corrupted saved quotes gracefully', async ({ page }) => {
+      // Clear first, then add corrupted data
       await page.evaluate(() => {
+        localStorage.clear();
         localStorage.setItem('tictacstick_saved_quotes_v1', '{corrupted');
       });
 
@@ -183,6 +241,11 @@ test.describe('Storage Module', () => {
 
   test.describe('Error Handling', () => {
     test('should not crash on quota exceeded', async ({ page }) => {
+      // Clear first
+      await page.evaluate(() => {
+        localStorage.clear();
+      });
+
       // We can't easily trigger quota exceeded, but we can test that save doesn't throw
       const result = await page.evaluate(() => {
         try {
@@ -222,6 +285,11 @@ test.describe('Storage Module', () => {
 
   test.describe('Data Integrity', () => {
     test('should preserve complex nested objects', async ({ page }) => {
+      // Clear first
+      await page.evaluate(() => {
+        localStorage.clear();
+      });
+
       const complexState = {
         quoteTitle: 'Complex',
         config: {
@@ -252,6 +320,11 @@ test.describe('Storage Module', () => {
     });
 
     test('should handle special characters', async ({ page }) => {
+      // Clear first
+      await page.evaluate(() => {
+        localStorage.clear();
+      });
+
       const stateWithSpecialChars = {
         quoteTitle: 'Quote "with quotes" & special <chars>',
         clientName: "O'Brien & Associates (Pty) Ltd."
@@ -270,6 +343,11 @@ test.describe('Storage Module', () => {
     });
 
     test('should handle empty/null values', async ({ page }) => {
+      // Clear first
+      await page.evaluate(() => {
+        localStorage.clear();
+      });
+
       const state = {
         quoteTitle: '',
         clientName: null,
@@ -292,7 +370,9 @@ test.describe('Storage Module', () => {
 
   test.describe('LocalStorage Keys', () => {
     test('should use correct key for autosave state', async ({ page }) => {
+      // Clear first
       await page.evaluate(() => {
+        localStorage.clear();
         window.AppStorage.saveState({ test: 'autosave' });
       });
 
@@ -304,7 +384,9 @@ test.describe('Storage Module', () => {
     });
 
     test('should use correct key for presets', async ({ page }) => {
+      // Clear first
       await page.evaluate(() => {
+        localStorage.clear();
         window.AppStorage.savePresets([{ name: 'test' }]);
       });
 
