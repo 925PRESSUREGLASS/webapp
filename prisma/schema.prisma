@@ -1,0 +1,74 @@
+generator client {
+  provider = "prisma-client-js"
+  output   = "../apps/meta-api/node_modules/.prisma/client"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model Project {
+  id          String    @id
+  name        String
+  description String
+  status      String
+  features    Feature[]
+  assets      ProjectAsset[]
+  createdAt   DateTime  @default(now())
+  updatedAt   DateTime  @updatedAt
+}
+
+model Feature {
+  id          String   @id
+  name        String
+  summary     String
+  status      String
+  project     Project  @relation(fields: [projectId], references: [id])
+  projectId   String
+  assets      FeatureAsset[]
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+}
+
+model Asset {
+  id          String          @id
+  title       String
+  description String
+  type        String
+  status      String
+  link        String?
+  tags        String[]
+  versions    AssetVersion[]
+  projects    ProjectAsset[]
+  features    FeatureAsset[]
+  createdAt   DateTime        @default(now())
+  updatedAt   DateTime        @updatedAt
+}
+
+model AssetVersion {
+  id        String   @id
+  version   String
+  changelog String?
+  isCurrent Boolean
+  asset     Asset    @relation(fields: [assetId], references: [id])
+  assetId   String
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+model ProjectAsset {
+  id        String  @id @default(uuid())
+  project   Project @relation(fields: [projectId], references: [id])
+  projectId String
+  asset     Asset   @relation(fields: [assetId], references: [id])
+  assetId   String
+}
+
+model FeatureAsset {
+  id        String  @id @default(uuid())
+  feature   Feature @relation(fields: [featureId], references: [id])
+  featureId String
+  asset     Asset   @relation(fields: [assetId], references: [id])
+  assetId   String
+}

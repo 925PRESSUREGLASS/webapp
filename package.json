@@ -14,7 +14,8 @@
   "license": "MIT",
   "devDependencies": {
     "@playwright/test": "1.56.1",
-    "http-server": "14.1.1"
+    "http-server": "14.1.1",
+    "prisma": "^5.14.0"
   },
   "dependencies": {
     "@capacitor/android": "6.0.0",
@@ -28,6 +29,7 @@
     "@capacitor/push-notifications": "6.0.0",
     "@capacitor/share": "6.0.0",
     "@capacitor/status-bar": "6.0.0",
+    "@prisma/client": "^5.14.0",
     "jsdom": "27.2.0"
   },
   "engines": {

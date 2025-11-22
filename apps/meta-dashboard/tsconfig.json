@@ -13,6 +13,6 @@
     "strict": true,
     "noEmit": true
   },
-  "include": ["src"],
+  "include": ["src", "../domain/**/*.ts"],
   "references": [{ "path": "./tsconfig.node.json" }]
 }

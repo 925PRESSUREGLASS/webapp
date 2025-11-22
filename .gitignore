@@ -21,9 +21,15 @@ npm-debug.log*
 # Environment
 .env
 .env.local
+.env.local
+.env.local.example
 
 # Backup files
 *.bak
 *.backup
 *.backup-*
 *~
+
+# Build output
+apps/meta-api/dist/
+apps/meta-dashboard/dist/
