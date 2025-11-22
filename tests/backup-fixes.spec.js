@@ -1,7 +1,7 @@
 // tests/backup-fixes.spec.js - Verification test for backup system bug fixes
 // Tests Bug #1 (double stringification) and Bug #2 (return value handling)
 
-const { test, expect } = require('@playwright/test');
+const { test, expect } = require('./fixtures/fresh-context');
 const { resolvePath } = require('./fixtures/app-url');
 
 const VERIFY_URL = resolvePath('tests/verify-backup-fixes.html');

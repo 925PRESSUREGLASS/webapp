@@ -1,7 +1,7 @@
 // Test Suite: Wizard Functionality
 // Tests the quick-entry wizard dialogs for windows and pressure cleaning
 
-const { test, expect } = require('@playwright/test');
+const { test, expect } = require('./fixtures/fresh-context');
 const { initializeApp } = require('./test-helpers');
 const { gotoApp, waitForAppReady } = require('./fixtures/app-url');
 

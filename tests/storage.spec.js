@@ -1,7 +1,7 @@
 // storage.spec.js - LocalStorage Wrapper Tests
 // Tests direct storage operations, persistence, and error handling
 
-const { test, expect } = require('@playwright/test');
+const { test, expect } = require('./fixtures/fresh-context');
 const { gotoApp, waitForAppReady } = require('./fixtures/app-url');
 
 test.describe('Storage Module', () => {

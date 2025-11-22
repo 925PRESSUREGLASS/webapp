@@ -13,7 +13,7 @@
  *   });
  */
 
-const { test: base, expect } = require('@playwright/test');
+const { test: base, expect } = require('./fresh-context');
 const { createHelpers } = require('./helpers');
 const { gotoApp } = require('./app-url');
 

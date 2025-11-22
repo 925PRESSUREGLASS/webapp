@@ -1,6 +1,6 @@
 // Test to check for console errors during initialization
 
-const { test, expect } = require('@playwright/test');
+const { test, expect } = require('./fixtures/fresh-context');
 const { gotoApp, waitForAppReady } = require('./fixtures/app-url');
 
 test.describe('Console Error Check', () => {

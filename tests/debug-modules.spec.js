@@ -1,7 +1,7 @@
 // debug-modules.spec.js - Test module-specific debug controls
 // Tests the newly implemented module-specific debug functionality
 
-const { test, expect } = require('@playwright/test');
+const { test, expect } = require('./fixtures/fresh-context');
 const { gotoApp } = require('./fixtures/app-url');
 
 test.describe('Module-specific debug controls', () => {

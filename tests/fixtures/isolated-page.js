@@ -2,7 +2,7 @@
 // Custom Playwright fixture that provides a fresh browser context for each test
 // This ensures complete test isolation by preventing state leakage between tests
 
-const { test: base } = require('@playwright/test');
+const { test: base } = require('./fresh-context');
 
 /**
  * Custom fixture that creates a fresh browser context for each test.

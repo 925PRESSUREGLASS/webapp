@@ -1,7 +1,7 @@
 // encryption-settings.spec.js - Test user-configurable encryption setting
 // Tests the TODO implementation: Make encryption user-configurable via settings UI
 
-const { test, expect } = require('@playwright/test');
+const { test, expect } = require('./fixtures/fresh-context');
 const { gotoApp } = require('./fixtures/app-url');
 
 test.describe('Invoice Encryption Settings', function() {

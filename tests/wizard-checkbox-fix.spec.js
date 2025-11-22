@@ -1,8 +1,8 @@
 // wizard-checkbox-fix.spec.js - Test that wizard checkboxes are visible and functional
 // Tests the fix for checkboxes not ticking in wizards
 
-var test = require('@playwright/test').test;
-var expect = require('@playwright/test').expect;
+var test = require('./fixtures/fresh-context').test;
+var expect = require('fixtures/fresh-context').expect;
 var gotoApp = require('./fixtures/app-url').gotoApp;
 
 test.describe('Wizard Checkbox Fix', function() {

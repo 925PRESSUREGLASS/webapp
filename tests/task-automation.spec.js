@@ -1,7 +1,7 @@
 // tests/task-automation.spec.js - Task Automation Tests
 // Tests for Task Manager, Follow-up Automation, and GHL sync
 
-const { test, expect } = require('@playwright/test');
+const { test, expect } = require('./fixtures/fresh-context');
 const { gotoApp } = require('./fixtures/app-url');
 
 test.describe('Task Management System', () => {

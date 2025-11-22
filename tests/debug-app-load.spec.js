@@ -1,6 +1,6 @@
 // Debug test to understand APP object loading
 
-const { test, expect } = require('@playwright/test');
+const { test, expect } = require('./fixtures/fresh-context');
 const { gotoApp } = require('./fixtures/app-url');
 
 test.describe('Debug APP Loading', () => {
