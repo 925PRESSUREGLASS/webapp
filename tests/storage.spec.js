@@ -7,29 +7,14 @@ const { gotoApp, waitForAppReady } = require('./fixtures/app-url');
 
 test.describe('Storage Module', () => {
   test.beforeEach(async ({ page }) => {
-    // Navigate to app and wait for it to be ready
+    // Navigate to app
     await gotoApp(page);
-    await waitForAppReady(page);
     
-    // Wait for APP initialization
-    await page.evaluate(async () => {
-      if (window.APP && typeof window.APP.waitForInit === 'function') {
-        await window.APP.waitForInit();
-      }
-    });
+    // Wait for page to be ready
+    await page.waitForSelector('.app', { timeout: 10000 });
     
-    // Wait for AppStorage to be available
-    await page.waitForFunction(() => window.AppStorage, { timeout: 5000 });
-    
-    // Clear all storage to ensure clean state
-    await page.evaluate(() => {
-      try {
-        localStorage.clear();
-        sessionStorage.clear();
-      } catch (e) {
-        console.warn('[TEST] Storage clear failed:', e);
-      }
-    });
+    // Wait for AppStorage to exist
+    await page.waitForFunction(() => window.AppStorage, { timeout: 10000 });
   });
 
   test.describe('State Persistence', () => {
