@@ -1,8 +1,22 @@
 {
-  "name": "tic-tac-stick-quote-engine",
+  "name": "meta-platform-workspace",
   "version": "1.13.0",
-  "description": "Professional quoting tool for 925 Pressure Glass - Window & Pressure Cleaning",
+  "description": "Meta-platform workspace including the legacy quoting tool and new metabuild foundations.",
+  "private": true,
+  "type": "module",
+  "workspaces": [
+    "apps/*"
+  ],
   "scripts": {
+    "dev": "concurrently \"npm run dev:api\" \"npm run dev:dashboard\"",
+    "dev:api": "npm --workspace meta-api run dev",
+    "dev:dashboard": "npm --workspace meta-dashboard run dev",
+    "build": "npm run build:api && npm run build:dashboard",
+    "build:api": "npm --workspace meta-api run build",
+    "build:dashboard": "npm --workspace meta-dashboard run build",
+    "lint": "npm run lint:api && npm run lint:dashboard",
+    "lint:api": "npm --workspace meta-api run lint",
+    "lint:dashboard": "npm --workspace meta-dashboard run lint",
     "test": "playwright test",
     "test:headed": "playwright test --headed",
     "test:ui": "playwright test --ui",
@@ -25,6 +39,7 @@
   "license": "MIT",
   "devDependencies": {
     "@playwright/test": "^1.56.1",
+    "concurrently": "^9.0.1",
     "http-server": "^14.1.1"
   },
   "dependencies": {
