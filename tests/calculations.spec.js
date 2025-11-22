@@ -2,24 +2,11 @@
 // Tests the core pricing engine for windows and pressure cleaning
 
 const { test, expect } = require('@playwright/test');
-const { gotoApp, waitForAppReady } = require('./fixtures/app-url');
+const { initializeApp } = require('./test-helpers');
 
 test.describe('Quote Calculations', () => {
   test.beforeEach(async ({ page }) => {
-    await gotoApp(page);
-    await waitForAppReady(page);
-
-    // Clear any autosaved data
-    await page.evaluate(() => localStorage.clear());
-    await page.reload();
-    await waitForAppReady(page);
-
-    // Wait for app to be fully initialized using APP.waitForInit()
-    await page.evaluate(async () => {
-      if (window.APP && typeof window.APP.waitForInit === 'function') {
-        await window.APP.waitForInit();
-      }
-    });
+    await initializeApp(page);
   });
 
   test('should load with default configuration values', async ({ page }) => {

@@ -2,19 +2,14 @@
 // Tests direct storage operations, persistence, and error handling
 
 const { test, expect } = require('@playwright/test');
-const { gotoApp } = require('./fixtures/app-url');
+const { initializeApp } = require('./test-helpers');
 
 test.describe('Storage Module', () => {
   test.beforeEach(async ({ page }) => {
-    await gotoApp(page);
-    await page.waitForSelector('.app');
-    await page.waitForFunction(() => window.APP && window.APP.initialized);
-    await page.waitForFunction(() => window.AppStorage);
-
-    // Clear all storage before each test
-    await page.evaluate(() => {
-      localStorage.clear();
-    });
+    await initializeApp(page);
+    
+    // Wait for AppStorage to be available
+    await page.waitForFunction(() => window.AppStorage, { timeout: 5000 });
   });
 
   test.describe('State Persistence', () => {

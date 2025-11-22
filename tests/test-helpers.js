@@ -15,7 +15,13 @@ async function initializeApp(page) {
   
   // Clear localStorage for clean test state
   await page.evaluate(() => localStorage.clear());
-  await page.reload();
+  await page.reload({ waitUntil: 'domcontentloaded' });
+  
+  // After reload, wait for APP object to be recreated
+  await page.waitForFunction(() => {
+    return typeof window.APP === 'object' && window.APP !== null;
+  }, { timeout: 10000 });
+  
   await waitForAppReady(page);
   
   // Wait for APP to be fully initialized
