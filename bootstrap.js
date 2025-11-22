@@ -124,6 +124,31 @@
       return this.init();
     },
 
+    // Reset APP state for testing
+    // Clears initialization state but preserves registered modules
+    // This allows tests to have clean initialization state without losing module references
+    reset: function() {
+      console.log('[BOOTSTRAP] Resetting APP state...');
+      
+      // Reset initialization state
+      this.initialized = false;
+      this.isInitialized = false;
+      this.initPromise = null;
+      
+      // DON'T clear modules - they're already registered and clearing them
+      // would break the app since modules won't auto-re-register without page reload
+      
+      // Reset placeholder methods to null (they'll be repopulated if needed)
+      this.addWindowLine = null;
+      this.addPressureLine = null;
+      this.recalculate = null;
+      this.duplicateWindowLine = null;
+      this.duplicatePressureLine = null;
+      this.getState = null;
+      
+      console.log('[BOOTSTRAP] APP state reset complete');
+    },
+
     // Placeholder methods that will be populated by app.js
     addWindowLine: null,
     addPressureLine: null,
