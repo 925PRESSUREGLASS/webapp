@@ -13,6 +13,27 @@ const test = base.test.extend({
     // Proactively clear any lingering client-side storage as soon as a page starts.
     await context.addInitScript(function() {
       try {
+        if (window && window.localStorage && window.sessionStorage) {
+          window.localStorage.clear();
+          window.sessionStorage.clear();
+        }
+
+        if (window && window.caches && window.caches.keys) {
+          window.caches.keys().then(function(names) {
+            names.forEach(function(name) {
+              window.caches.delete(name);
+            });
+          });
+        }
+
+        if (window && window.navigator && window.navigator.serviceWorker && window.navigator.serviceWorker.getRegistrations) {
+          window.navigator.serviceWorker.getRegistrations().then(function(registrations) {
+            registrations.forEach(function(reg) {
+              reg.unregister();
+            });
+          });
+        }
+
         if (window && window.indexedDB && window.indexedDB.databases) {
           window.indexedDB.databases().then(function(dbs) {
             dbs.forEach(function(db) {
