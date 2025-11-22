@@ -212,7 +212,8 @@ function buildServer(): FastifyInstance {
         projectsTracked: projectsStore.length,
         appsTracked: sampleApps.length,
         assetsTracked: assetsStore.length,
-        featuresTracked: featuresStore.length
+        featuresTracked: featuresStore.length,
+        dbMode: 'memory'
       };
     }
 
@@ -225,7 +226,8 @@ function buildServer(): FastifyInstance {
         projectsTracked: projectCount,
         appsTracked: sampleApps.length,
         assetsTracked: assetCount,
-        featuresTracked: featureCount
+        featuresTracked: featureCount,
+        dbMode: 'prisma'
       };
     } catch (e) {
       return {
@@ -233,7 +235,8 @@ function buildServer(): FastifyInstance {
         projectsTracked: projectsStore.length,
         appsTracked: sampleApps.length,
         assetsTracked: assetsStore.length,
-        featuresTracked: featuresStore.length
+        featuresTracked: featuresStore.length,
+        dbMode: 'memory'
       };
     }
   });

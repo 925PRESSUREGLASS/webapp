@@ -9,7 +9,11 @@
     "build": "tsc",
     "prisma:generate": "prisma generate --schema ../../prisma/schema.prisma",
     "prisma:migrate": "prisma migrate dev --schema ../../prisma/schema.prisma",
-    "prisma:seed": "node dist/meta-api/src/seed.js"
+    "prisma:deploy": "prisma migrate deploy --schema ../../prisma/schema.prisma",
+    "prisma:reset": "prisma migrate reset --schema ../../prisma/schema.prisma --force --skip-generate",
+    "prisma:push": "prisma db push --schema ../../prisma/schema.prisma",
+    "prisma:seed": "node dist/meta-api/src/seed.js",
+    "smoke": "node scripts/smoke.js"
   },
   "dependencies": {
     "@prisma/client": "5.14.0",

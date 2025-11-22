@@ -14,6 +14,7 @@ function fetchHealth(): Promise<{
   appsTracked?: number;
   assetsTracked?: number;
   featuresTracked?: number;
+  dbMode?: string;
 }> {
   return fetch(apiBaseUrl + '/health').then(function (response) {
     if (!response.ok) {

@@ -194,6 +194,7 @@ function Dashboard(): JSX.Element {
   var [reloadToken, setReloadToken] = React.useState<number>(0);
   var [lastRefreshedAt, setLastRefreshedAt] = React.useState<string | null>(null);
   var [apiHealthy, setApiHealthy] = React.useState<'unknown' | 'ok' | 'error'>('unknown');
+  var [dbMode, setDbMode] = React.useState<string | null>(null);
   var [projectFilter, setProjectFilter] = React.useState<string>('');
   var [appFilter, setAppFilter] = React.useState<string>('');
   var [assetFilter, setAssetFilter] = React.useState<string>('');
@@ -726,6 +727,9 @@ function Dashboard(): JSX.Element {
         }
         if (payload && payload.status === 'ok') {
           setApiHealthy('ok');
+          if (payload.dbMode) {
+            setDbMode(payload.dbMode);
+          }
           var details = [];
           if (typeof payload.projectsTracked === 'number') {
             details.push('projects ' + payload.projectsTracked);
@@ -746,6 +750,7 @@ function Dashboard(): JSX.Element {
           }
         } else {
           setApiHealthy('error');
+          setDbMode(null);
           setHealthDetails(null);
         }
       })
@@ -754,6 +759,7 @@ function Dashboard(): JSX.Element {
           return;
         }
         setApiHealthy('error');
+        setDbMode(null);
         setHealthDetails(null);
       });
     tasks.push(healthPromise);
@@ -990,6 +996,11 @@ function Dashboard(): JSX.Element {
             API health: {apiHealthy === 'ok' ? 'OK' : apiHealthy === 'error' ? 'Error' : 'Checking...'}
             {healthDetails ? ' (' + healthDetails + ')' : ''}
           </p>
+          {dbMode ? (
+            <p style={{ margin: '2px 0 0', color: '#93c5fd', fontSize: '12px', fontWeight: 700 }}>
+              DB mode: {dbMode}
+            </p>
+          ) : null}
             <button
               onClick={function () {
                 setReloadToken(function (token) {
