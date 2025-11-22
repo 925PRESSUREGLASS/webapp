@@ -2,29 +2,14 @@
 // Tests direct storage operations, persistence, and error handling
 
 const { test, expect } = require('./fixtures/fresh-context');
-const { gotoApp, waitForAppReady } = require('./fixtures/app-url');
+const { initializeApp } = require('./test-helpers');
 
 test.describe('Storage Module', () => {
   test.beforeEach(async ({ page }) => {
-    // Navigate to app
-    await gotoApp(page);
-    
-    // Wait for page to be ready
-    await page.waitForSelector('.app', { timeout: 10000 });
-    
+    await initializeApp(page);
+
     // Wait for AppStorage to exist
     await page.waitForFunction(() => window.AppStorage, { timeout: 10000 });
-    
-    // Clear localStorage and reset APP state for clean test isolation
-    await page.evaluate(() => {
-      localStorage.clear();
-      sessionStorage.clear();
-      
-      // Reset APP object to clear in-memory state
-      if (window.APP && typeof window.APP.reset === 'function') {
-        window.APP.reset();
-      }
-    });
   });
 
   test.describe('State Persistence', () => {
