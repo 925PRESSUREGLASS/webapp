@@ -1,11 +1,12 @@
 const { test, expect } = require('@playwright/test');
-const { gotoApp } = require('./fixtures/app-url');
+const { initializeApp } = require('./test-helpers');
 
 test.describe('Quote Validation', () => {
   test.beforeEach(async ({ page }) => {
-    await gotoApp(page);
-    await page.waitForSelector('.app');
-    await page.waitForFunction(() => window.APP && window.QuoteValidation);
+    await initializeApp(page);
+    
+    // Wait for QuoteValidation to be available
+    await page.waitForFunction(() => window.QuoteValidation, { timeout: 5000 });
   });
 
   test.describe('Quote validation rules', () => {
