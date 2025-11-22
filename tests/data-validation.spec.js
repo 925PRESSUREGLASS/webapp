@@ -1,7 +1,7 @@
 // data-validation.spec.js - Data Structure Validation Tests
 // Tests pricing data, window types, surface types, and modifiers
 
-const { test, expect } = require('@playwright/test');
+const { test, expect } = require('./fixtures/fresh-context');
 const { gotoApp } = require('./fixtures/app-url');
 
 test.describe('Pricing Data Validation', () => {

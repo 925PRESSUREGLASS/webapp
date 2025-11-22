@@ -2,7 +2,7 @@
 // Comprehensive tests for enhanced pricing logic modules
 // Tests window-types-extended.js, conditions-modifiers.js, pressure-surfaces-extended.js
 
-const { test, expect } = require('@playwright/test');
+const { test, expect } = require('./fixtures/fresh-context');
 const { gotoApp } = require('./fixtures/app-url');
 
 test.describe('Window Types Extended', () => {

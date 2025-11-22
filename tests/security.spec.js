@@ -5,7 +5,7 @@
  * @test-suite Security
  */
 
-const { test, expect } = require('@playwright/test');
+const { test, expect } = require('./fixtures/fresh-context');
 
 test.describe('Security: XSS Prevention', () => {
 

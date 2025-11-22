@@ -1,4 +1,4 @@
-const { test, expect } = require('@playwright/test');
+const { test, expect } = require('./fixtures/fresh-context');
 const { initializeApp } = require('./test-helpers');
 
 test.describe('Quote Validation', () => {

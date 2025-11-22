@@ -1,7 +1,7 @@
 // analytics.spec.js - Quote Analytics and History Tests
 // Tests quote history tracking, analytics calculations, and CSV export
 
-const { test, expect } = require('@playwright/test');
+const { test, expect } = require('./fixtures/fresh-context');
 const { gotoApp, waitForAppInit } = require('./fixtures/app-url');
 
 test.describe('Quote Analytics', () => {

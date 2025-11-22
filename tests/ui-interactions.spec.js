@@ -1,7 +1,7 @@
 // Test Suite: UI Interactions and Features
 // Tests user interface functionality, wizards, and data persistence
 
-const { test, expect } = require('@playwright/test');
+const { test, expect } = require('./fixtures/fresh-context');
 const { gotoApp, waitForAppReady } = require('./fixtures/app-url');
 
 test.describe('UI Interactions', () => {

@@ -1,7 +1,7 @@
 // export.spec.js - CSV Export Tests
 // Tests CSV generation, Excel compatibility, and file download
 
-const { test, expect } = require('@playwright/test');
+const { test, expect } = require('./fixtures/fresh-context');
 const { gotoApp } = require('./fixtures/app-url');
 
 test.describe('Quote Export (CSV)', () => {

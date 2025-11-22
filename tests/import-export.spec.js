@@ -2,7 +2,7 @@
 // Tests data backup, restore, and import/export functionality
 // PHASE 1: Critical Data Integrity Tests
 
-const { test, expect } = require('@playwright/test');
+const { test, expect } = require('./fixtures/fresh-context');
 const { gotoApp, waitForAppReady } = require('./fixtures/app-url');
 
 test.describe('Import/Export System - Backup & Restore', () => {

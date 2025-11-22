@@ -1,7 +1,7 @@
 // Test Suite: Bootstrap and Initialization Edge Cases
 // Tests the new bootstrap.js initialization system for reliability and edge cases
 
-const { test, expect } = require('@playwright/test');
+const { test, expect } = require('./fixtures/fresh-context');
 const { gotoApp, waitForAppReady } = require('./fixtures/app-url');
 
 test.describe('Bootstrap System', () => {

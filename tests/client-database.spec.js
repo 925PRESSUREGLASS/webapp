@@ -1,7 +1,7 @@
 // client-database.spec.js - Client Database (CRM) Tests
 // Tests client CRUD operations, search, validation, and persistence
 
-const { test, expect } = require('@playwright/test');
+const { test, expect } = require('./fixtures/fresh-context');
 const { gotoApp } = require('./fixtures/app-url');
 
 test.describe('Client Database', () => {
