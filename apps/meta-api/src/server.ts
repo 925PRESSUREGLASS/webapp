@@ -262,7 +262,7 @@ function buildServer(): FastifyInstance {
       };
     }
 
-    var updatedAt = new Date('2025-11-22T00:00:00Z').toISOString();
+    var updatedAt = new Date().toISOString();
     return {
       data: projectsStore,
       updatedAt: updatedAt
@@ -350,7 +350,7 @@ function buildServer(): FastifyInstance {
     var summary = buildProjectSummary(projectsStore);
     return {
       data: summary,
-      updatedAt: new Date('2025-11-22T00:00:00Z').toISOString()
+      updatedAt: new Date().toISOString()
     };
   });
 
