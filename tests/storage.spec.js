@@ -15,21 +15,16 @@ test.describe('Storage Module', () => {
     // Wait for AppStorage to exist
     await page.waitForFunction(() => window.AppStorage, { timeout: 10000 });
     
-    // Clear localStorage and reload to ensure truly clean state
+    // Clear localStorage and reset APP state for clean test isolation
     await page.evaluate(() => {
       localStorage.clear();
       sessionStorage.clear();
+      
+      // Reset APP object to clear in-memory state
+      if (window.APP && typeof window.APP.reset === 'function') {
+        window.APP.reset();
+      }
     });
-    
-    // Reload the page so app loads with clean storage
-    await page.reload({ waitUntil: 'domcontentloaded' });
-    
-    // Wait for APP and AppStorage again after reload
-    await page.waitForFunction(() => {
-      return typeof window.APP === 'object' && window.APP !== null;
-    }, { timeout: 10000 });
-    
-    await page.waitForFunction(() => window.AppStorage, { timeout: 10000 });
   });
 
   test.describe('State Persistence', () => {
