@@ -3,6 +3,11 @@
 
 const { test, expect } = require('./fixtures/fresh-context');
 const { gotoApp, waitForAppReady } = require('./fixtures/app-url');
+const { aggressiveCleanup } = require('./test-helpers');
+
+test.beforeEach(async ({ page }) => {
+  await aggressiveCleanup(page);
+});
 
 test.describe('Bootstrap System', () => {
   test('APP object exists before any module loads', async ({ page }) => {

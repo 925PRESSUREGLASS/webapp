@@ -11,8 +11,69 @@
  */
 const { gotoApp, waitForAppReady } = require('./fixtures/app-url');
 
+/**
+ * Perform aggressive cleanup between tests
+ * Clears all possible browser state
+ * @param {Page} page - Playwright page object
+ */
+async function aggressiveCleanup(page) {
+  try {
+    await page.context().clearCookies();
+    await page.context().clearPermissions();
+  } catch (err) {
+    console.warn('[TEST] Context cleanup failed:', err);
+  }
+
+  await page.evaluate(async function() {
+    try {
+      if (window && window.localStorage) {
+        window.localStorage.clear();
+      }
+
+      if (window && window.sessionStorage) {
+        window.sessionStorage.clear();
+      }
+
+      if (window && window.caches && window.caches.keys) {
+        var cacheNames = await window.caches.keys();
+        await Promise.all(cacheNames.map(function(name) {
+          return window.caches.delete(name);
+        }));
+      }
+
+      if (window && window.navigator && window.navigator.serviceWorker && window.navigator.serviceWorker.getRegistrations) {
+        var registrations = await window.navigator.serviceWorker.getRegistrations();
+        await Promise.all(registrations.map(function(reg) {
+          return reg.unregister();
+        }));
+      }
+
+      if (window && window.indexedDB && window.indexedDB.databases) {
+        var databases = await window.indexedDB.databases();
+        await Promise.all(databases.map(function(db) {
+          if (db && db.name) {
+            return new Promise(function(resolve) {
+              var request = window.indexedDB.deleteDatabase(db.name);
+              request.onsuccess = function() { resolve(); };
+              request.onerror = function() { resolve(); };
+              request.onblocked = function() { resolve(); };
+            });
+          }
+          return Promise.resolve();
+        }));
+      }
+    } catch (e) {
+      console.warn('[TEST] Cleanup failed:', e);
+    }
+  });
+}
+
 async function initializeApp(page, options) {
   options = options || {};
+
+  if (!options.skipCleanup) {
+    await aggressiveCleanup(page);
+  }
   
   await gotoApp(page);
   await waitForAppReady(page);
@@ -71,32 +132,6 @@ async function waitForAppInit(page) {
 async function isAppInitialized(page) {
   return await page.evaluate(() => {
     return window.APP && (window.APP.initialized === true || window.APP.isInitialized === true);
-  });
-}
-
-/**
- * Perform aggressive cleanup between tests
- * Clears all possible browser state
- * @param {Page} page - Playwright page object
- */
-async function aggressiveCleanup(page) {
-  await page.evaluate(() => {
-    try {
-      // Clear all storage
-      localStorage.clear();
-      sessionStorage.clear();
-      
-      // Clear any cached data
-      if (window.caches) {
-        caches.keys().then(function(names) {
-          names.forEach(function(name) {
-            caches.delete(name);
-          });
-        });
-      }
-    } catch (e) {
-      console.warn('[TEST] Cleanup failed:', e);
-    }
   });
 }
 
