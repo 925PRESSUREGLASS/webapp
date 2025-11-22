@@ -144,7 +144,8 @@
   // AUTOSAVE / LOAD
   // ————————————————————
 
-  var autosaveEnabled = true;
+  // Disable autosave in test mode to prevent interference with tests
+  var autosaveEnabled = !window.APP_TEST_MODE;
   var autosaveTimer = null;
   var AUTOSAVE_DELAY_MS = 600;
 
