@@ -3,98 +3,249 @@
 You are working inside the `metabuild` branch of the 925PRESSUREGLASS/webapp repo.
 
 ## HIGH-LEVEL CONTEXT
-- This repo contains:
-  1) The Tic-Tac-Stick Quote Engine:
-     - A production-ready PWA for window & pressure cleaning quotes.
-     - Pure HTML/CSS + ES5-compatible JavaScript.
-     - Client-only, LocalStorage-based persistence.
-     - Fully documented with extensive guides in /docs (roadmaps, testing, performance, UI themes, etc.).
+- This repo contains TWO distinct but coordinated projects:
 
-  2) The early MetaBuild platform:
-     - New `apps/` folder: home for future backend/frontend apps (meta-api, meta-dashboard, etc.).
-     - New `prisma/` folder: Prisma schema and client config for a PostgreSQL-style database.
-     - New `migration/` folder: database migration scripts.
-     - AI/agent scaffolding: `.mcp.json`, `.claude/`, `AGENTS.md`, `CLAUDE.md`, etc.
-     - Meta documentation: `METABUILD_NEXT_STEPS.md`, `MVP_STATUS_SUMMARY.md`, `MVP_WEEK1_PRACTICAL_PLAN.md`.
+  1) **The Tic-Tac-Stick Quote Engine** (production-ready PWA):
+     - Window & pressure cleaning quotes for 925 Pressure Glass
+     - Pure HTML/CSS + ES5-compatible JavaScript (iOS Safari 12+ compatible)
+     - Client-only, LocalStorage-based persistence, fully offline-capable
+     - Current version: v1.13.3 (see CHANGELOG.md)
+     - Comprehensive documentation: README.md, CLAUDE.md, AGENTS.md, and /docs
+     - Testing: Playwright test suite + manual testing checklists
+     - Native wrappers: Capacitor for mobile/native features
 
-- Goal for this branch:
-  - Keep the existing PWA stable and vanilla (ES5, no SPA framework).
-  - Gradually build out a MetaBuild backend + dashboard using Prisma + Node/TS.
-  - Treat the PWA as a "child project" registered in the MetaBuild project registry.
+  2) **The MetaBuild Platform** (early stage):
+     - `apps/meta-api` - Node/TypeScript API with Fastify + Prisma (already scaffolded)
+     - `apps/meta-dashboard` - React/TypeScript dashboard UI (already scaffolded)
+     - `prisma/` - Prisma schema defining projects, features, assets (v0.1 schema exists)
+     - `migration/` - Database migration scripts
+     - AI/agent scaffolding: `.mcp.json`, `.claude/`, coordination docs
+     - MetaBuild docs: `METABUILD_NEXT_STEPS.md`, `MVP_STATUS_SUMMARY.md`, `MVP_WEEK1_PRACTICAL_PLAN.md`
+
+- **Current State:**
+  - PWA: Production-ready with ~35,000 lines of ES5 JavaScript + CSS
+  - MetaBuild: Basic scaffolding in place, needs schema refinement and integration
+
+- **Goal for this branch:**
+  - Keep the existing PWA stable and vanilla (ES5, no SPA framework)
+  - Build out MetaBuild backend + dashboard using Prisma + Node/TS
+  - Register the PWA as the first "child project" in the MetaBuild registry
 
 ## CODING RULES
-- For the PWA (core quote engine):
-  - Do NOT introduce frameworks (no React/Vue/etc.).
-  - Keep code ES5-compatible.
-  - Respect existing structure and business logic.
-  - Any user-facing changes must be reflected in CHANGELOG.md and relevant docs.
 
-- For MetaBuild (apps/ + prisma/ + migration/):
-  - You MAY use TypeScript and modern Node tooling.
-  - Data models belong in `prisma/schema.prisma`.
-  - Migrations go under `migration/` following the existing style.
-  - Keep the initial scope focused:
-    - Project registry (store and list projects, including this PWA).
-    - Eventually: assets, features, and business logic entities.
+### For the PWA (root-level quote engine files):
+  - **CRITICAL:** NO frameworks (React/Vue/etc.), NO build tools, NO ES6+ syntax
+  - ES5-only: use `var`, `function`, string concatenation (no `const`, `let`, arrows, template literals)
+  - Follow IIFE module pattern writing to `APP` namespace (see `app.js`, `calc.js` examples)
+  - Maintain script load order in `index.html` (bootstrap.js must be first)
+  - All money calculations MUST use integer arithmetic via `calc.js` Money utilities
+  - Sanitize all user input with `security.js` to prevent XSS
+  - Test changes with Playwright (`npm test`) before committing
+  - Read `AGENTS.md` for full coding style, `CLAUDE.md` for module architecture
+  - User-facing changes MUST update `CHANGELOG.md` with version bump
+
+### For MetaBuild (apps/ + prisma/ + migration/):
+  - You MAY use TypeScript and modern Node/React tooling (ESM, async/await, etc.)
+  - Data models belong in `prisma/schema.prisma` (current v0.1 schema has basic Project model)
+  - Migrations go under `migration/` following existing naming/style
+  - API follows Fastify conventions (see `apps/meta-api/src/server.ts`)
+  - Dashboard uses React + TypeScript (see `apps/meta-dashboard/src/`)
+  - Keep initial scope focused:
+    - **Project registry:** Store and list projects (PWA is first project entry)
+    - **Asset tracking:** File versions, deployments
+    - **Feature catalog:** Reusable components and business logic
+  - Follow existing package.json scripts for dev/build/test
 
 ## BEFORE MAKING CHANGES
 Always:
-1) Confirm which part you are working on:
-   - PWA-only changes? -> stay in vanilla JS files and docs.
-   - MetaBuild backend or dashboard? -> work under `apps/`, `prisma/`, and `migration/`.
+1) **Confirm which part** you are working on:
+   - PWA-only changes? → Root-level `.js` files (app.js, calc.js, etc.) + tests/
+   - MetaBuild backend? → `apps/meta-api/`, `prisma/`, `migration/`
+   - MetaBuild dashboard? → `apps/meta-dashboard/`
+   - Documentation? → README.md, CLAUDE.md, AGENTS.md, docs/, or this file
 
-2) Read relevant docs:
-   - For PWA behavior:
-     - README.md
-     - OVERHAUL_ROADMAP.md
-     - PROJECT_STATE.md
-     - Any PHASE_* or *_SUMMARY.md related to the area you’re touching.
-   - For MetaBuild direction:
-     - METABUILD_NEXT_STEPS.md
-     - MVP_STATUS_SUMMARY.md
-     - MVP_WEEK1_PRACTICAL_PLAN.md
+2) **Read relevant docs FIRST:**
+   - **For PWA behavior and architecture:**
+     - `README.md` - Feature overview, current version, getting started
+     - `CLAUDE.md` - Complete technical guide (4,800+ lines): architecture, modules, patterns, testing
+     - `AGENTS.md` - Repository rules: structure, ES5 style, testing, PRs
+     - `.github/copilot-instructions.md` - Quick AI assistant reference
+     - `CHANGELOG.md` - Version history and user-facing changes
+     - `docs/fixes/P0_IMMEDIATE_FIXES.md` - Known critical issues (Service Worker test hang, iOS Safari)
+     - `docs/fixes/MASTER_TODO_FIXES.md` - Complete fix roadmap
+     - `MANUAL_TESTING_GUIDE_v1.13.0.md` - Manual testing checklist
+     - `PERFORMANCE_STORAGE_GUIDE.md` - Performance and storage best practices
 
-3) Restate the task in your own words and propose a short plan before large edits.
+   - **For MetaBuild direction and setup:**
+     - `METABUILD_NEXT_STEPS.md` - Implementation roadmap (Week 1-4 plan)
+     - `MVP_STATUS_SUMMARY.md` - Current status and gaps
+     - `MVP_WEEK1_PRACTICAL_PLAN.md` - Tactical first-week tasks
+     - `apps/README.md` - MetaBuild apps overview
+     - `prisma/schema.prisma` - Current data models (v0.1)
+
+3) **Understand the scope:**
+   - Small fixes (< 50 lines): proceed after reading relevant section of CLAUDE.md
+   - Medium changes (50-200 lines): review module architecture and dependencies
+   - Large changes (> 200 lines): propose plan in PR description referencing design docs
+   - Breaking changes: MUST update migration notes in CLAUDE.md + comprehensive tests
+
+4) **Verify your environment:**
+   - Run `npm install` (first time or after package.json changes)
+   - Start local server: `python3 -m http.server 8080`
+   - Run tests BEFORE changes: `npm test` (should see baseline pass/fail state)
+   - For Capacitor changes: `npm run cap:sync` + `npm run cap:copy`
 
 ## DEFAULT META TASKS YOU CAN HELP WITH
 When asked to "continue MetaBuild work", prefer to:
 
-1) Strengthen Prisma + DB layer:
-   - Open `prisma/schema.prisma` and check current models.
+1) **Strengthen Prisma + DB layer:**
+   - Open `prisma/schema.prisma` and check current models
+   - Current v0.1 schema has: Project model (basic structure)
    - Add or refine models for:
-     - Project (name, slug, type, repoUrl, status, techStack JSON, timestamps).
-     - Later: Feature, Asset, AssetVersion, ProjectAsset.
-   - Generate migrations and keep them small and clear.
+     - Project (name, slug, type, repoUrl, status, techStack JSON, timestamps)
+     - Feature (reusable components/logic across projects)
+     - Asset (file tracking: icons, images, documents)
+     - AssetVersion (version history for assets)
+     - ProjectAsset (linking assets to projects)
+   - Generate migrations: `cd apps/meta-api && npx prisma migrate dev --name descriptive_name`
+   - Keep migrations small, focused, and reversible
 
-2) Prepare MetaBuild apps:
-   - If not yet present, scaffold:
-     - apps/meta-api (Node/TS with Prisma, simple API endpoints for projects).
-     - apps/meta-dashboard (frontend client that can list projects from the API).
-   - Keep the API minimal at first:
-     - GET /projects
-     - POST /projects (for future use)
-     - Seed one "Tic-Tac-Stick" project entry that points back to this repo/app.
+2) **Develop MetaBuild apps:**
+   - **meta-api** (already scaffolded):
+     - Location: `apps/meta-api/`
+     - Stack: Node/TypeScript + Fastify + Prisma
+     - Start dev: `cd apps/meta-api && npm run dev`
+     - Current endpoints: Basic health check
+     - Next steps: Add project CRUD endpoints:
+       - GET /api/projects - List all projects
+       - GET /api/projects/:id - Get project details
+       - POST /api/projects - Create project (for future use)
+       - PUT /api/projects/:id - Update project
+     - Seed data: Create "Tic-Tac-Stick PWA" as first project entry
 
-3) Add integration docs:
-   - Create or update a doc like docs/METABUILD_INTEGRATION.md that explains:
-     - How the PWA is registered as a project in MetaBuild.
-     - Where to add new backend models and migrations.
-     - How agents (Claude/Codex/Copilot) should use Prisma and apps/ structure.
+   - **meta-dashboard** (already scaffolded):
+     - Location: `apps/meta-dashboard/`
+     - Stack: React + TypeScript + Vite
+     - Start dev: `cd apps/meta-dashboard && npm run dev`
+     - Current state: Basic React scaffolding
+     - Next steps: Build project list view consuming meta-api endpoints
+     - Use React Router for navigation, TailwindCSS/similar for styling
+
+3) **Add integration documentation:**
+   - Create `docs/METABUILD_INTEGRATION.md` explaining:
+     - How the PWA is registered as a MetaBuild project
+     - Database schema overview and relationships
+     - API endpoint contracts and examples
+     - Dashboard component architecture
+     - Agent coordination patterns (which agent handles what)
+     - Local development workflow (running both PWA and MetaBuild together)
+
+4) **Testing strategy:**
+   - PWA tests: Keep using Playwright (`npm test` at root)
+   - meta-api tests: Add Jest/Vitest for unit tests, Supertest for API tests
+   - meta-dashboard tests: Add Vitest + React Testing Library
+   - Integration tests: Document how to test PWA ↔ MetaBuild registration flow
+
+## QUICK START COMMANDS
+
+### PWA Development:
+```bash
+# Install dependencies
+npm install
+
+# Run tests
+npm test                    # Headless
+npm run test:ui             # Interactive UI
+npm run test:headed         # See browser
+
+# Serve locally
+python3 -m http.server 8080  # Visit http://localhost:8080
+
+# Capacitor (native)
+npm run cap:sync            # Sync plugins and config
+npm run cap:copy            # Copy web assets to native
+```
+
+### MetaBuild API Development:
+```bash
+# Navigate and install
+cd apps/meta-api
+npm install
+
+# Database setup
+npx prisma migrate dev      # Apply migrations
+npx prisma generate         # Generate Prisma Client
+npm run seed                # Seed with sample data
+
+# Development
+npm run dev                 # Start dev server
+npm test                    # Run API tests
+npm run lint                # Check code style
+```
+
+### MetaBuild Dashboard Development:
+```bash
+# Navigate and install
+cd apps/meta-dashboard
+npm install
+
+# Development
+npm run dev                 # Start Vite dev server
+npm run build               # Build for production
+npm run preview             # Preview production build
+npm test                    # Run component tests
+```
 
 ## PARALLEL / MULTI-AGENT WORK
-If you are coordinating with other Codex instances:
+If you are coordinating with other Codex/Cursor/Claude instances:
 
-- Suggest splitting work like:
-  - Instance A: Prisma schema & migrations.
-  - Instance B: meta-api scaffolding (apps/meta-api).
-  - Instance C: meta-dashboard UI skeleton (apps/meta-dashboard).
-  - Instance D: docs + PWA/MetaBuild integration notes.
+- **Suggested work split:**
+  - Agent A: Prisma schema & migrations (Project, Feature, Asset models)
+  - Agent B: meta-api endpoints and business logic
+  - Agent C: meta-dashboard UI components and API integration
+  - Agent D: Integration docs + PWA/MetaBuild linking guide
 
-- Make sure shared contracts (Prisma models, API types) are written down in:
-  - prisma/schema.prisma
-  - a small design doc (e.g., docs/METABUILD_DATA_MODEL.md).
+- **Shared contracts** (write down first to avoid conflicts):
+  - Database schema: `prisma/schema.prisma`
+  - API types/interfaces: `apps/meta-api/src/types/`
+  - Data model docs: `docs/METABUILD_DATA_MODEL.md`
+
+- **Coordination checklist:**
+  - Lock shared files before major changes
+  - Update docs immediately when changing contracts
+  - Test integration points after each agent's changes
+  - Use feature branches, merge frequently to avoid drift
+
+## COMMON PITFALLS TO AVOID
+
+### PWA-specific:
+- ❌ Don't add ES6+ syntax (`const`, `let`, arrows, template literals) - breaks iOS Safari 12
+- ❌ Don't skip sanitization when displaying user input - XSS vulnerability
+- ❌ Don't use floating-point math for money - precision errors
+- ❌ Don't modify script load order in index.html without testing - breaks APP namespace
+- ❌ Don't forget to update CHANGELOG.md for user-facing changes
+
+### MetaBuild-specific:
+- ❌ Don't skip Prisma migrations - schema and DB will be out of sync
+- ❌ Don't hardcode database URLs - use environment variables (.env files)
+- ❌ Don't mix PWA ES5 code with MetaBuild TypeScript - keep strict separation
+- ❌ Don't forget to run `prisma generate` after schema changes - Prisma Client won't update
+
+### Cross-cutting:
+- ❌ Don't commit secrets or API keys - use .env files (see .env.example files)
+- ❌ Don't skip tests before committing - catches regressions early
+- ❌ Don't make large PRs without a plan - break into smaller, reviewable chunks
+- ❌ Don't ignore linter warnings - they catch real bugs
 
 ## PRIMARY OBJECTIVE
 Help Gerard evolve this branch into:
-- A solid, documented MetaBuild backbone (Prisma + simple API + basic dashboard),
-- While preserving and respecting the existing Tic-Tac-Stick PWA and its ES5 constraints.
+- **A solid, documented MetaBuild backbone:** Prisma schema + API + dashboard + integration docs
+- **While preserving the PWA:** Respect ES5 constraints, don't break existing functionality
+- **With clear separation:** PWA and MetaBuild can evolve independently but coordinate through the project registry
+
+Success metrics:
+- PWA continues to work standalone (all tests passing)
+- MetaBuild API can CRUD projects programmatically
+- MetaBuild Dashboard displays the PWA as a registered project
+- Documentation enables any developer to extend either system
+- Agent coordination patterns are documented and repeatable
