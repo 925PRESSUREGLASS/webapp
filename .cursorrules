@@ -1,0 +1,100 @@
+# MetaBuild branch workspace guardrails
+
+You are working inside the `metabuild` branch of the 925PRESSUREGLASS/webapp repo.
+
+## HIGH-LEVEL CONTEXT
+- This repo contains:
+  1) The Tic-Tac-Stick Quote Engine:
+     - A production-ready PWA for window & pressure cleaning quotes.
+     - Pure HTML/CSS + ES5-compatible JavaScript.
+     - Client-only, LocalStorage-based persistence.
+     - Fully documented with extensive guides in /docs (roadmaps, testing, performance, UI themes, etc.).
+
+  2) The early MetaBuild platform:
+     - New `apps/` folder: home for future backend/frontend apps (meta-api, meta-dashboard, etc.).
+     - New `prisma/` folder: Prisma schema and client config for a PostgreSQL-style database.
+     - New `migration/` folder: database migration scripts.
+     - AI/agent scaffolding: `.mcp.json`, `.claude/`, `AGENTS.md`, `CLAUDE.md`, etc.
+     - Meta documentation: `METABUILD_NEXT_STEPS.md`, `MVP_STATUS_SUMMARY.md`, `MVP_WEEK1_PRACTICAL_PLAN.md`.
+
+- Goal for this branch:
+  - Keep the existing PWA stable and vanilla (ES5, no SPA framework).
+  - Gradually build out a MetaBuild backend + dashboard using Prisma + Node/TS.
+  - Treat the PWA as a "child project" registered in the MetaBuild project registry.
+
+## CODING RULES
+- For the PWA (core quote engine):
+  - Do NOT introduce frameworks (no React/Vue/etc.).
+  - Keep code ES5-compatible.
+  - Respect existing structure and business logic.
+  - Any user-facing changes must be reflected in CHANGELOG.md and relevant docs.
+
+- For MetaBuild (apps/ + prisma/ + migration/):
+  - You MAY use TypeScript and modern Node tooling.
+  - Data models belong in `prisma/schema.prisma`.
+  - Migrations go under `migration/` following the existing style.
+  - Keep the initial scope focused:
+    - Project registry (store and list projects, including this PWA).
+    - Eventually: assets, features, and business logic entities.
+
+## BEFORE MAKING CHANGES
+Always:
+1) Confirm which part you are working on:
+   - PWA-only changes? -> stay in vanilla JS files and docs.
+   - MetaBuild backend or dashboard? -> work under `apps/`, `prisma/`, and `migration/`.
+
+2) Read relevant docs:
+   - For PWA behavior:
+     - README.md
+     - OVERHAUL_ROADMAP.md
+     - PROJECT_STATE.md
+     - Any PHASE_* or *_SUMMARY.md related to the area you’re touching.
+   - For MetaBuild direction:
+     - METABUILD_NEXT_STEPS.md
+     - MVP_STATUS_SUMMARY.md
+     - MVP_WEEK1_PRACTICAL_PLAN.md
+
+3) Restate the task in your own words and propose a short plan before large edits.
+
+## DEFAULT META TASKS YOU CAN HELP WITH
+When asked to "continue MetaBuild work", prefer to:
+
+1) Strengthen Prisma + DB layer:
+   - Open `prisma/schema.prisma` and check current models.
+   - Add or refine models for:
+     - Project (name, slug, type, repoUrl, status, techStack JSON, timestamps).
+     - Later: Feature, Asset, AssetVersion, ProjectAsset.
+   - Generate migrations and keep them small and clear.
+
+2) Prepare MetaBuild apps:
+   - If not yet present, scaffold:
+     - apps/meta-api (Node/TS with Prisma, simple API endpoints for projects).
+     - apps/meta-dashboard (frontend client that can list projects from the API).
+   - Keep the API minimal at first:
+     - GET /projects
+     - POST /projects (for future use)
+     - Seed one "Tic-Tac-Stick" project entry that points back to this repo/app.
+
+3) Add integration docs:
+   - Create or update a doc like docs/METABUILD_INTEGRATION.md that explains:
+     - How the PWA is registered as a project in MetaBuild.
+     - Where to add new backend models and migrations.
+     - How agents (Claude/Codex/Copilot) should use Prisma and apps/ structure.
+
+## PARALLEL / MULTI-AGENT WORK
+If you are coordinating with other Codex instances:
+
+- Suggest splitting work like:
+  - Instance A: Prisma schema & migrations.
+  - Instance B: meta-api scaffolding (apps/meta-api).
+  - Instance C: meta-dashboard UI skeleton (apps/meta-dashboard).
+  - Instance D: docs + PWA/MetaBuild integration notes.
+
+- Make sure shared contracts (Prisma models, API types) are written down in:
+  - prisma/schema.prisma
+  - a small design doc (e.g., docs/METABUILD_DATA_MODEL.md).
+
+## PRIMARY OBJECTIVE
+Help Gerard evolve this branch into:
+- A solid, documented MetaBuild backbone (Prisma + simple API + basic dashboard),
+- While preserving and respecting the existing Tic-Tac-Stick PWA and its ES5 constraints.
