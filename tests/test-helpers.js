@@ -17,55 +17,66 @@ const { gotoApp, waitForAppReady } = require('./fixtures/app-url');
  * @param {Page} page - Playwright page object
  */
 async function aggressiveCleanup(page) {
+  // Try context cleanup first
   try {
     await page.context().clearCookies();
+  } catch (err) {
+    // Ignore - context may be closed
+  }
+  
+  try {
     await page.context().clearPermissions();
   } catch (err) {
-    console.warn('[TEST] Context cleanup failed:', err);
+    // Ignore - context may be closed
   }
 
-  await page.evaluate(async function() {
-    try {
-      if (window && window.localStorage) {
-        window.localStorage.clear();
-      }
+  // Only attempt page cleanup if evaluate works (indicates page is open)
+  try {
+    await page.evaluate(async function() {
+      try {
+        if (window && window.localStorage) {
+          window.localStorage.clear();
+        }
 
-      if (window && window.sessionStorage) {
-        window.sessionStorage.clear();
-      }
+        if (window && window.sessionStorage) {
+          window.sessionStorage.clear();
+        }
 
-      if (window && window.caches && window.caches.keys) {
-        var cacheNames = await window.caches.keys();
-        await Promise.all(cacheNames.map(function(name) {
-          return window.caches.delete(name);
-        }));
-      }
+        if (window && window.caches && window.caches.keys) {
+          var cacheNames = await window.caches.keys();
+          await Promise.all(cacheNames.map(function(name) {
+            return window.caches.delete(name);
+          }));
+        }
 
-      if (window && window.navigator && window.navigator.serviceWorker && window.navigator.serviceWorker.getRegistrations) {
-        var registrations = await window.navigator.serviceWorker.getRegistrations();
-        await Promise.all(registrations.map(function(reg) {
-          return reg.unregister();
-        }));
-      }
+        if (window && window.navigator && window.navigator.serviceWorker && window.navigator.serviceWorker.getRegistrations) {
+          var registrations = await window.navigator.serviceWorker.getRegistrations();
+          await Promise.all(registrations.map(function(reg) {
+            return reg.unregister();
+          }));
+        }
 
-      if (window && window.indexedDB && window.indexedDB.databases) {
-        var databases = await window.indexedDB.databases();
-        await Promise.all(databases.map(function(db) {
-          if (db && db.name) {
-            return new Promise(function(resolve) {
-              var request = window.indexedDB.deleteDatabase(db.name);
-              request.onsuccess = function() { resolve(); };
-              request.onerror = function() { resolve(); };
-              request.onblocked = function() { resolve(); };
-            });
-          }
-          return Promise.resolve();
-        }));
+        if (window && window.indexedDB && window.indexedDB.databases) {
+          var databases = await window.indexedDB.databases();
+          await Promise.all(databases.map(function(db) {
+            if (db && db.name) {
+              return new Promise(function(resolve) {
+                var request = window.indexedDB.deleteDatabase(db.name);
+                request.onsuccess = function() { resolve(); };
+                request.onerror = function() { resolve(); };
+                request.onblocked = function() { resolve(); };
+              });
+            }
+            return Promise.resolve();
+          }));
+        }
+      } catch (e) {
+        // Silently handle cleanup errors
       }
-    } catch (e) {
-      console.warn('[TEST] Cleanup failed:', e);
-    }
-  });
+    });
+  } catch (err) {
+    // Ignore - page may be closed or navigating
+  }
 }
 
 async function initializeApp(page, options) {

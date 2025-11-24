@@ -51,13 +51,27 @@ const test = base.test.extend({
     try {
       await use(context);
     } finally {
+      // Improved cleanup with better error handling
+      // Note: We rely entirely on try-catch rather than checking internal state
+      // since context closure state should be handled by error handling
       try {
         await context.clearCookies();
-        await context.clearPermissions();
-      } catch (err) {
-        console.warn('[TEST] context cleanup failed', err);
+      } catch (cookieErr) {
+        // Ignore - context may already be closed
       }
-      await context.close();
+      
+      try {
+        await context.clearPermissions();
+      } catch (permErr) {
+        // Ignore - context may already be closed
+      }
+      
+      // Close context - will throw if already closed, which we catch
+      try {
+        await context.close();
+      } catch (closeErr) {
+        // Context may have been closed by page closure or test failure
+      }
     }
   },
 
@@ -66,7 +80,12 @@ const test = base.test.extend({
     try {
       await use(page);
     } finally {
-      await page.close();
+      // Close page gracefully - rely on try-catch for state checking
+      try {
+        await page.close();
+      } catch (err) {
+        // Page may have been closed already by test or context closure
+      }
     }
   }
 });
