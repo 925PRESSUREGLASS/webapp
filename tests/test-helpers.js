@@ -17,11 +17,7 @@ const { gotoApp, waitForAppReady } = require('./fixtures/app-url');
  * @param {Page} page - Playwright page object
  */
 async function aggressiveCleanup(page) {
-  // Check if page is still valid
-  if (!page || page.isClosed()) {
-    return;
-  }
-  
+  // Try context cleanup first
   try {
     await page.context().clearCookies();
   } catch (err) {
@@ -34,8 +30,8 @@ async function aggressiveCleanup(page) {
     // Ignore - context may be closed
   }
 
-  // Only attempt cleanup if page is still open
-  if (!page.isClosed()) {
+  // Only attempt page cleanup if evaluate works (indicates page is open)
+  try {
     await page.evaluate(async function() {
       try {
         if (window && window.localStorage) {
@@ -77,9 +73,9 @@ async function aggressiveCleanup(page) {
       } catch (e) {
         // Silently handle cleanup errors
       }
-    }).catch(function() {
-      // Ignore evaluation errors (page may be navigating)
     });
+  } catch (err) {
+    // Ignore - page may be closed or navigating
   }
 }
 

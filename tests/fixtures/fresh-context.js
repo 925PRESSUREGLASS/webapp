@@ -52,31 +52,25 @@ const test = base.test.extend({
       await use(context);
     } finally {
       // Improved cleanup with better error handling
+      // Note: We rely entirely on try-catch rather than checking internal state
+      // since context closure state should be handled by error handling
       try {
-        // Check if context is still valid before cleanup
-        if (context && !context._closed) {
-          try {
-            await context.clearCookies();
-          } catch (cookieErr) {
-            // Ignore - context may already be closed
-          }
-          try {
-            await context.clearPermissions();
-          } catch (permErr) {
-            // Ignore - context may already be closed
-          }
-        }
-      } catch (err) {
-        // Silently handle - context cleanup is best-effort
+        await context.clearCookies();
+      } catch (cookieErr) {
+        // Ignore - context may already be closed
       }
       
-      // Close context if not already closed
       try {
-        if (context && !context._closed) {
-          await context.close();
-        }
+        await context.clearPermissions();
+      } catch (permErr) {
+        // Ignore - context may already be closed
+      }
+      
+      // Close context - will throw if already closed, which we catch
+      try {
+        await context.close();
       } catch (closeErr) {
-        // Context may have been closed by page closure
+        // Context may have been closed by page closure or test failure
       }
     }
   },
@@ -86,13 +80,11 @@ const test = base.test.extend({
     try {
       await use(page);
     } finally {
-      // Close page gracefully
+      // Close page gracefully - rely on try-catch for state checking
       try {
-        if (page && !page.isClosed()) {
-          await page.close();
-        }
+        await page.close();
       } catch (err) {
-        // Page may have been closed already
+        // Page may have been closed already by test or context closure
       }
     }
   }
