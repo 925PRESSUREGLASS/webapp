@@ -51,13 +51,33 @@ const test = base.test.extend({
     try {
       await use(context);
     } finally {
+      // Improved cleanup with better error handling
       try {
-        await context.clearCookies();
-        await context.clearPermissions();
+        // Check if context is still valid before cleanup
+        if (context && !context._closed) {
+          try {
+            await context.clearCookies();
+          } catch (cookieErr) {
+            // Ignore - context may already be closed
+          }
+          try {
+            await context.clearPermissions();
+          } catch (permErr) {
+            // Ignore - context may already be closed
+          }
+        }
       } catch (err) {
-        console.warn('[TEST] context cleanup failed', err);
+        // Silently handle - context cleanup is best-effort
       }
-      await context.close();
+      
+      // Close context if not already closed
+      try {
+        if (context && !context._closed) {
+          await context.close();
+        }
+      } catch (closeErr) {
+        // Context may have been closed by page closure
+      }
     }
   },
 
@@ -66,7 +86,14 @@ const test = base.test.extend({
     try {
       await use(page);
     } finally {
-      await page.close();
+      // Close page gracefully
+      try {
+        if (page && !page.isClosed()) {
+          await page.close();
+        }
+      } catch (err) {
+        // Page may have been closed already
+      }
     }
   }
 });
