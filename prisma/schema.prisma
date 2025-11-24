@@ -35,8 +35,8 @@ model Asset {
   id          String          @id
   title       String
   description String
-  type        String
-  status      String
+  type        AssetType
+  status      AssetStatus
   link        String?
   tags        String[]
   versions    AssetVersion[]
@@ -71,4 +71,157 @@ model FeatureAsset {
   featureId String
   asset     Asset   @relation(fields: [assetId], references: [id])
   assetId   String
+}
+
+model Business {
+  id            String          @id
+  name          String
+  slug          String          @unique
+  status        BusinessStatus
+  region        String?
+  contactEmail  String?
+  contactPhone  String?
+  website       String?
+  currency      String?
+  defaultMarkup Float?
+  serviceLines  ServiceLine[]
+  marketAreas   MarketArea[]
+  priceBooks    PriceBookVersion[]
+  packages      Package[]
+  modifiers     Modifier[]
+  createdAt     DateTime        @default(now())
+  updatedAt     DateTime        @updatedAt
+}
+
+model ServiceLine {
+  id          String        @id
+  business    Business      @relation(fields: [businessId], references: [id])
+  businessId  String
+  name        String
+  description String?
+  category    String?
+  tags        String[]
+  serviceTypes ServiceType[]
+  createdAt   DateTime      @default(now())
+  updatedAt   DateTime      @updatedAt
+}
+
+model ServiceType {
+  id               String           @id
+  serviceLine      ServiceLine      @relation(fields: [serviceLineId], references: [id])
+  serviceLineId    String
+  code             String
+  name             String
+  description      String?
+  unit             String
+  baseRate         Float?
+  baseMinutesPerUnit Float?
+  riskLevel        String?
+  pressureMethod   String?
+  tags             String[]
+  isActive         Boolean          @default(true)
+  modifiers        Modifier[]
+  priceBookRates   PriceBookRate[]
+  packageItems     PackageItem[]
+  createdAt        DateTime         @default(now())
+  updatedAt        DateTime         @updatedAt
+}
+
+model Modifier {
+  id           String       @id
+  business     Business?    @relation(fields: [businessId], references: [id])
+  businessId   String?
+  scope        String
+  name         String
+  description  String?
+  multiplier   Float?
+  flatAdjust   Float?
+  appliesTo    String?
+  tags         String[]
+  isActive     Boolean      @default(true)
+  serviceTypes ServiceType[]
+  createdAt    DateTime     @default(now())
+  updatedAt    DateTime     @updatedAt
+}
+
+model MarketArea {
+  id           String    @id
+  business     Business  @relation(fields: [businessId], references: [id])
+  businessId   String
+  name         String
+  postalCodes  String[]
+  travelFee    Float?
+  minJobValue  Float?
+  notes        String?
+  createdAt    DateTime  @default(now())
+  updatedAt    DateTime  @updatedAt
+}
+
+model PriceBookVersion {
+  id          String          @id
+  business    Business        @relation(fields: [businessId], references: [id])
+  businessId  String
+  version     String
+  changelog   String?
+  isCurrent   Boolean
+  rates       PriceBookRate[]
+  createdAt   DateTime        @default(now())
+  updatedAt   DateTime        @updatedAt
+}
+
+model PriceBookRate {
+  id              String            @id
+  priceBook       PriceBookVersion  @relation(fields: [priceBookId], references: [id])
+  priceBookId     String
+  serviceType     ServiceType       @relation(fields: [serviceTypeId], references: [id])
+  serviceTypeId   String
+  rate            Float?
+  minutesPerUnit  Float?
+  currency        String?
+  notes           String?
+}
+
+model Package {
+  id          String        @id
+  business    Business      @relation(fields: [businessId], references: [id])
+  businessId  String
+  name        String
+  description String?
+  discountPct Float?
+  tags        String[]
+  isActive    Boolean       @default(true)
+  items       PackageItem[]
+  createdAt   DateTime      @default(now())
+  updatedAt   DateTime      @updatedAt
+}
+
+model PackageItem {
+  id             String      @id
+  package        Package     @relation(fields: [packageId], references: [id])
+  packageId      String
+  serviceType    ServiceType @relation(fields: [serviceTypeId], references: [id])
+  serviceTypeId  String
+  quantity       Float?
+  unitOverride   String?
+}
+
+enum AssetStatus {
+  draft
+  active
+  deprecated
+}
+
+enum AssetType {
+  snippet
+  component
+  template
+  static
+  doc
+  prompt
+}
+
+enum BusinessStatus {
+  active
+  paused
+  archived
 }

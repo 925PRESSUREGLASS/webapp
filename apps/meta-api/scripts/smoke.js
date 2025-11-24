@@ -1,20 +1,37 @@
-/* Simple smoke test for running API against localhost */
-/* Requires the API to be running on port 4000 */
-var endpoints = ['/health', '/projects', '/features', '/assets'];
+var fetch = global.fetch || require('node-fetch');
 
-function logResult(path, status, detail) {
-  console.log(path + ' -> ' + status + (detail ? ' (' + detail + ')' : ''));
+function check(path) {
+  var headers = {};
+  if (process.env.API_KEY) {
+    headers['x-api-key'] = process.env.API_KEY;
+  }
+  return fetch('http://localhost:4000' + path, { headers: headers })
+    .then(function (res) {
+      if (!res.ok) {
+        throw new Error(path + ' HTTP ' + res.status);
+      }
+      return res.json();
+    })
+    .then(function (json) {
+      return { path: path, ok: true, data: json };
+    })
+    .catch(function (err) {
+      return { path: path, ok: false, error: err && err.message ? err.message : String(err) };
+    });
 }
 
-(async function () {
-  for (var i = 0; i < endpoints.length; i++) {
-    var path = endpoints[i];
-    try {
-      var res = await fetch('http://localhost:4000' + path);
-      var text = await res.text();
-      logResult(path, res.status, text ? text.substring(0, 100) + (text.length > 100 ? '...' : '') : '');
-    } catch (e) {
-      logResult(path, 'error', e && e.message ? e.message : 'unknown error');
+Promise.all([check('/health'), check('/projects'), check('/businesses'), check('/packages')])
+  .then(function (results) {
+    var failures = results.filter(function (r) {
+      return !r.ok;
+    });
+    if (failures.length) {
+      console.error('Smoke failures:', failures);
+      process.exit(1);
     }
-  }
-})();
+    console.log('Smoke ok:', results.map(function (r) { return r.path; }).join(', '));
+  })
+  .catch(function (err) {
+    console.error('Smoke error:', err);
+    process.exit(1);
+  });

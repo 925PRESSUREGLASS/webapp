@@ -1,21 +1,29 @@
 # MetaBuild TODO (next steps)
 
 ## Backend (meta-api)
-- Add Prisma/Postgres schema for Project, Feature, Asset, AssetVersion; seed with current sample data.
-- Implement CRUD endpoints for projects (list/get/create/update/delete), features (project-scoped), assets/versions; return consistent DTOs.
-- Add validation/error responses and logging around CRUD; keep `/health` reflecting DB connectivity.
-- Wire Prisma client (optional fallback to in-memory when `DATABASE_URL` is absent). Add `prisma generate`, `prisma migrate dev`, `prisma db seed`, and `prisma db push` scripts plus a smoke script to hit `/health`, `/projects`, `/features`, `/assets` when the API is running locally.
+- ✅ Prisma/Postgres schema for Project, Feature, Asset, AssetVersion with seeds.
+- ✅ Added Business, ServiceLine, ServiceType, Modifier, MarketArea, PriceBookVersion/Rate, Package models and migrations.
+- ✅ CRUD/list endpoints for projects/features/assets plus new endpoints (create/update/delete/list) for businesses, service lines, service types, market areas, packages, and current price book; `/health` reflects DB connectivity.
+- TODO: Validation/error logging across all endpoints; tighten DTOs; add modifier CRUD and package items management.
 
 ## Frontend (meta-dashboard)
-- Wire Projects view to real CRUD API; add create/edit modal for projects.
-- Add feature list per project with create/edit; later surface asset versions.
-- Keep filters/refresh/health indicators; add form validation and inline status.
+- ✅ Projects/features/assets wired to API with CRUD and filters.
+- ✅ Service catalog section with business switcher, quick create for lines/types, service lines/types table, market areas, packages, and current price book view.
+- TODO: Add inline toasts, disable during async across all forms, and add edit/delete flows for catalog entries in UI.
+  - Progress: toasts added and delete flows for lines/types/areas/packages; remaining: modifier CRUD UI, package items UI, and edit flows for catalog entries.
+
+## Data/Seeds
+- ✅ Seed script populates projects/features/assets plus 925 Pressure Glass and Jim’s Cottesloe service catalog (window, pressure, softwash, add-ons) with price books and packages.
+- TODO: Expand seeds with more surface types, modifiers per category, and additional market areas.
+- Run seeds locally with `DATABASE_URL=postgresql://<user>:<pass>@localhost:5432/metabuild npm run prisma:seed --prefix apps/meta-api`.
 
 ## Dev Experience
-- Add .env.example for meta-api (DATABASE_URL) and document migrations.
-- Add scripts: `dev:api`, `dev:dashboard`, `build:api`, `build:dashboard`, optional lint tasks.
-- Update docs/meta-context.md and docs/metabuild-foundation.md after CRUD lands.
+- ✅ .env examples for meta-api with `DATABASE_URL`.
+- ✅ Scripts: prisma generate/migrate/deploy/reset/push/seed + smoke test.
+- ✅ Top-level `dev:api`/`dev:dashboard`/`dev` scripts wired to app prefixes.
+- TODO: Document catalog endpoints in meta-context and add env validation notes (DATABASE_URL zod check).
+  - Catalog endpoints: `/businesses`, `/service-lines`, `/service-types`, `/market-areas`, `/packages`, `/pricebook/current?businessId=...`.
 
 ## Deployment
 - Vercel preview plan: static dashboard build + API base env; consider serverless functions for API.
-- CI: install + build both apps; optional lint; publish dashboard artifact.
+- CI: install + build both apps; optional lint; publish dashboard artifact. Track Postgres env setup for preview branches.

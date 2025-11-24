@@ -1,11 +1,12 @@
 import { PrismaClient as PrismaClientDefault } from '@prisma/client';
 import { PrismaClient as PrismaClientEdge } from '@prisma/client/edge';
 import withAccelerate from '@prisma/extension-accelerate';
+import { env } from '../config/env';
 
 var prisma: PrismaClientDefault | any = null;
 
 function getPrismaClient() {
-  if (!process.env.DATABASE_URL && !process.env.PRISMA_ACCELERATE_URL) {
+  if (!env.DATABASE_URL && !process.env.PRISMA_ACCELERATE_URL) {
     return null;
   }
 

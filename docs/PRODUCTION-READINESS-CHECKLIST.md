@@ -195,6 +195,46 @@
 
 ---
 
+## Meta Platform (meta-api / meta-dashboard)
+
+### Environment & Migrations
+- [x] DATABASE_URL set for target env
+- [x] Prisma enums applied (`20251123155731_enum_enforce`)
+- [x] Seeds run (`npm run prisma:seed --prefix apps/meta-api`)
+- [ ] Rollback plan captured
+
+### API
+- [x] Health endpoint reports DB mode
+- [x] Input validation (zod) on projects/features/assets/catalog
+- [x] Auth optional (API key support)
+- [x] Error logging enabled
+- [x] CORS restricted to dashboard origin (configurable)
+- [ ] Rate limiting configured (set `RATE_LIMIT_PER_MIN` for prod)
+
+### Frontend
+- [x] Catalog UI supports package items add/remove and modifier edit
+- [x] CRUD forms use validation, toasts show errors
+- [ ] API base/keys configured per environment
+
+### CI/CD
+- [x] CI builds API + dashboard
+- [x] Smoke script (health/projects/businesses/packages)
+- [ ] Turbo cache enabled in CI
+
+### Docs
+- [x] `docs/metabuild-foundation.md` updated
+- [x] `docs/data-crud-phase.md` updated
+- [ ] Prod runbook / rollback steps documented
+
+### Runbook (meta)
+- [x] Deploy sequence: set env (`DATABASE_URL`, `API_KEY`, `ALLOWED_ORIGIN`, dashboard `VITE_META_API_URL`, `VITE_META_API_KEY`), `npm run prisma:migrate --prefix apps/meta-api`, `npm run prisma:seed --prefix apps/meta-api`, build & deploy API/dashboard, run smoke (`npm run smoke`).
+- [ ] Rollback: restore DB backup or roll back migration, redeploy last known good build, rerun smoke.
+  - Step 1: Stop new writes, take note of current migration/applied version.
+  - Step 2: Restore DB backup (per hosting backup path) or `prisma migrate resolve --rolled-back "<migration>"` then redeploy previous build. Backup: `pg_dump $DATABASE_URL > backup.sql` (local) or provider snapshot (specify command/UI link).
+  - Step 3: Rerun smoke (`npm run smoke`) and basic UI check.
+
+---
+
 ## Assets & Resources
 
 ### Images
