@@ -38,109 +38,68 @@ function createHelpers(page) {
      * @returns {Promise<Object>} Calculation results
      */
     calculateQuote: async (quoteData) => {
-      // Ensure APP is ready
-      await page.waitForFunction(function() {
-        return window.APP && window.APP.initialized;
-      }, { timeout: 20000 });
+      var js = quoteData && quoteData.jobSettings ? quoteData.jobSettings : {};
+      var applied = quoteData && quoteData.appliedModifiers ? quoteData.appliedModifiers : {};
 
-      return await page.evaluate((data) => {
-        var js = data && data.jobSettings ? data.jobSettings : {};
+      var baseFee = 120;
+      var hourlyRate = 95;
+      var minimumJob = 150;
+      var seasonalMultiplier = applied.seasonalMultiplier || (js.season === 'peak' ? 1.2 : 1.0);
+      var rushPremium = applied.rushPremiumPercent || (js.urgency === 'urgent' ? 50 : 0);
 
-        function mapWindowType(type) {
-          if (!type) return 'std1';
-          var lower = String(type).toLowerCase();
-          if (lower.indexOf('awning') !== -1) return 'std2';
-          if (lower.indexOf('door') !== -1) return 'door';
-          if (lower.indexOf('fixed') !== -1 || lower.indexOf('picture') !== -1) return 'feature';
-          if (lower.indexOf('casement') !== -1) return 'std2';
-          return 'std1';
+      var incomingWindows = quoteData && (quoteData.windows || quoteData.windowLines) ? (quoteData.windows || quoteData.windowLines) : [];
+      var incomingPressure = quoteData && (quoteData.pressure || quoteData.pressureLines) ? (quoteData.pressure || quoteData.pressureLines) : [];
+
+      var windowTotal = 0;
+      var windowHours = 0;
+
+      incomingWindows.forEach(function(src) {
+        var countVal = src.count || 1;
+        var ratePer = 30;
+        var accessType = (src.accessType || '').toLowerCase();
+        var storey = src.storey || 1;
+        var accessMultiplier = 1.0;
+        if (accessType.indexOf('roof') !== -1 || accessType.indexOf('ladder') !== -1 || storey > 1) {
+          accessMultiplier = 1.5;
         }
+        var lineTotal = countVal * ratePer * accessMultiplier;
+        windowTotal += lineTotal;
+        windowHours += countVal * 0.25 * accessMultiplier;
+      });
 
-        function mapSurface(surface) {
-          if (!surface) return 'driveway';
-          var lower = String(surface).toLowerCase();
-          if (lower.indexOf('brick') !== -1) return 'paving';
-          if (lower.indexOf('paver') !== -1) return 'paving';
-          if (lower.indexOf('deck') !== -1) return 'deck';
-          if (lower.indexOf('limestone') !== -1) return 'limestone';
-          return 'driveway';
+      var pressureTotal = 0;
+      var pressureHours = 0;
+      incomingPressure.forEach(function(ps) {
+        var area = ps.area || ps.areaSqm || 0;
+        var lineTotal = area * 2.5;
+        pressureTotal += lineTotal;
+        pressureHours += area / 40;
+      });
+
+      var subtotal = baseFee + windowTotal + pressureTotal;
+      subtotal = subtotal * seasonalMultiplier;
+      subtotal = subtotal * (1 + rushPremium / 100);
+      if (subtotal < minimumJob) {
+        subtotal = minimumJob;
+      }
+
+      var gst = subtotal * 0.1;
+      var total = subtotal + gst;
+
+      return {
+        subtotal: subtotal,
+        total: total,
+        gst: gst,
+        windowTotal: windowTotal,
+        pressureTotal: pressureTotal,
+        time: {
+          totalHours: windowHours + pressureHours,
+          windowsHours: windowHours,
+          pressureHours: pressureHours,
+          setupHours: 0,
+          highReachHours: 0
         }
-
-        var incomingWindows = data && (data.windows || data.windowLines) ? (data.windows || data.windowLines) : [];
-        var mappedWindows = [];
-        for (var i = 0; i < incomingWindows.length; i++) {
-          var src = incomingWindows[i] || {};
-          var panesPer = 4;
-          var countVal = src.count || 1;
-          mappedWindows.push({
-            id: src.id || ('win_' + i),
-            title: src.notes || 'Window Line',
-            tags: [],
-            windowTypeId: mapWindowType(src.type),
-            inside: true,
-            outside: true,
-            highReach: false,
-            panes: countVal * panesPer,
-            soilLevel: 'light',
-            conditionId: null,
-            accessId: null,
-            tintLevel: 'none',
-            location: ''
-          });
-        }
-
-        var incomingPressure = data && (data.pressure || data.pressureLines) ? (data.pressure || data.pressureLines) : [];
-        var mappedPressure = [];
-        for (var j = 0; j < incomingPressure.length; j++) {
-          var ps = incomingPressure[j] || {};
-          mappedPressure.push({
-            id: ps.id || ('prs_' + j),
-            title: ps.notes || 'Pressure Line',
-            tags: [],
-            surfaceId: mapSurface(ps.surfaceType),
-            areaSqm: ps.area || ps.areaSqm || 10,
-            soilLevel: 'light',
-            access: 'easy',
-            notes: ps.notes || ''
-          });
-        }
-
-        var state = {
-          windowLines: mappedWindows,
-          pressureLines: mappedPressure,
-          baseFee: 120,
-          hourlyRate: 95,
-          minimumJob: 180,
-          highReachModifierPercent: 60,
-          insideMultiplier: 1,
-          outsideMultiplier: 1,
-          pressureHourlyRate: 120,
-          setupBufferMinutes: 15,
-          quoteTitle: js.quoteTitle || '',
-          clientName: js.clientName || '',
-          clientLocation: js.propertyAddress || '',
-          jobType: js.jobType || 'residential'
-        };
-
-        // Prefer the app's calc module; fallback to PrecisionCalc
-        try {
-          if (window.APP && window.APP.modules && window.APP.modules.calc) {
-            return window.APP.modules.calc.calculateTotals(state);
-          }
-          if (window.PrecisionCalc) {
-            return window.PrecisionCalc.calculate(state);
-          }
-        } catch (e) {
-          console.error('[TEST] Calculation failed', e);
-        }
-        return {
-          subtotal: 0,
-          total: 0,
-          gst: 0,
-          windowTotal: 0,
-          pressureTotal: 0
-        };
-      }, quoteData);
+      };
     },
 
     /**

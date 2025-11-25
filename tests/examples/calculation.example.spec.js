@@ -22,8 +22,7 @@ const {
   PEAK_SEASON
 } = require('../fixtures/test-data');
 
-// TODO: Re-enable after full factory → PRICING_DATA mapper yields valid totals/time.
-test.describe.skip('Calculation Engine (mapped factories)', () => {
+test.describe('Calculation Engine (mapped factories)', () => {
   test('calculates small residential job correctly', async ({ appReady, helpers }) => {
     // Use pre-defined test data
     const result = await helpers.calculateQuote(SMALL_RESIDENTIAL());
