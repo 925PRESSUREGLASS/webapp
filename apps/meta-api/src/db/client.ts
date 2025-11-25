@@ -6,7 +6,9 @@ import { env } from '../config/env';
 var prisma: PrismaClientDefault | any = null;
 
 function getPrismaClient() {
-  if (!env.DATABASE_URL && !process.env.PRISMA_ACCELERATE_URL) {
+  var accelerateUrl = env.PRISMA_ACCELERATE_URL || process.env.PRISMA_ACCELERATE_URL;
+
+  if (!env.DATABASE_URL && !accelerateUrl) {
     return null;
   }
 
@@ -15,9 +17,9 @@ function getPrismaClient() {
   }
 
   // Prefer Accelerate if provided
-  if (process.env.PRISMA_ACCELERATE_URL) {
+  if (accelerateUrl) {
     prisma = (new (PrismaClientEdge as any)({
-      datasourceUrl: process.env.PRISMA_ACCELERATE_URL
+      datasourceUrl: accelerateUrl
     }) as any).$extends(withAccelerate({}));
     return prisma;
   }
