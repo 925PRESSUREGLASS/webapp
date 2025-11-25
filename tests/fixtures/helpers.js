@@ -43,47 +43,19 @@ function createHelpers(page) {
         return window.APP && window.APP.initialized;
       }, { timeout: 20000 });
 
-      await page.evaluate((data) => {
-        if (window.APP && typeof window.APP.waitForInit === 'function') {
-          window.APP.waitForInit();
-        }
+      return await page.evaluate((data) => {
+        var js = data && data.jobSettings ? data.jobSettings : {};
 
-        // Start from existing state as a base
-        var baseState = window.APP && window.APP.getState ? window.APP.getState() : (window.APP && window.APP.modules && window.APP.modules.app ? window.APP.modules.app.state : {});
-        baseState = baseState || {};
-
-        // Map factory-style window lines to app schema
         function mapWindowType(type) {
           if (!type) return 'std1';
           var lower = String(type).toLowerCase();
           if (lower.indexOf('awning') !== -1) return 'std2';
           if (lower.indexOf('door') !== -1) return 'door';
           if (lower.indexOf('fixed') !== -1 || lower.indexOf('picture') !== -1) return 'feature';
+          if (lower.indexOf('casement') !== -1) return 'std2';
           return 'std1';
         }
 
-        var incomingWindows = data && (data.windows || data.windowLines) ? (data.windows || data.windowLines) : [];
-        var mappedWindows = [];
-        for (var i = 0; i < incomingWindows.length; i++) {
-          var src = incomingWindows[i] || {};
-          mappedWindows.push({
-            id: src.id || ('win_' + i),
-            title: src.notes || 'Window Line',
-            tags: [],
-            windowTypeId: mapWindowType(src.type),
-            inside: true,
-            outside: true,
-            highReach: false,
-            panes: src.count || src.panes || 1,
-            soilLevel: 'light',
-            conditionId: null,
-            accessId: null,
-            tintLevel: 'none',
-            location: ''
-          });
-        }
-
-        // Map factory-style pressure lines to app schema
         function mapSurface(surface) {
           if (!surface) return 'driveway';
           var lower = String(surface).toLowerCase();
@@ -92,6 +64,29 @@ function createHelpers(page) {
           if (lower.indexOf('deck') !== -1) return 'deck';
           if (lower.indexOf('limestone') !== -1) return 'limestone';
           return 'driveway';
+        }
+
+        var incomingWindows = data && (data.windows || data.windowLines) ? (data.windows || data.windowLines) : [];
+        var mappedWindows = [];
+        for (var i = 0; i < incomingWindows.length; i++) {
+          var src = incomingWindows[i] || {};
+          var panesPer = 4;
+          var countVal = src.count || 1;
+          mappedWindows.push({
+            id: src.id || ('win_' + i),
+            title: src.notes || 'Window Line',
+            tags: [],
+            windowTypeId: mapWindowType(src.type),
+            inside: true,
+            outside: true,
+            highReach: false,
+            panes: countVal * panesPer,
+            soilLevel: 'light',
+            conditionId: null,
+            accessId: null,
+            tintLevel: 'none',
+            location: ''
+          });
         }
 
         var incomingPressure = data && (data.pressure || data.pressureLines) ? (data.pressure || data.pressureLines) : [];
@@ -110,49 +105,42 @@ function createHelpers(page) {
           });
         }
 
-        baseState.windowLines = mappedWindows;
-        baseState.pressureLines = mappedPressure;
+        var state = {
+          windowLines: mappedWindows,
+          pressureLines: mappedPressure,
+          baseFee: 120,
+          hourlyRate: 95,
+          minimumJob: 180,
+          highReachModifierPercent: 60,
+          insideMultiplier: 1,
+          outsideMultiplier: 1,
+          pressureHourlyRate: 120,
+          setupBufferMinutes: 15,
+          quoteTitle: js.quoteTitle || '',
+          clientName: js.clientName || '',
+          clientLocation: js.propertyAddress || '',
+          jobType: js.jobType || 'residential'
+        };
 
-        // Apply job settings
-        var js = data && data.jobSettings ? data.jobSettings : {};
-        baseState.baseFee = baseState.baseFee || 120;
-        baseState.hourlyRate = baseState.hourlyRate || 95;
-        baseState.minimumJob = baseState.minimumJob || 180;
-        baseState.quoteTitle = js.quoteTitle || baseState.quoteTitle || '';
-        baseState.clientName = js.clientName || baseState.clientName || '';
-        baseState.clientLocation = js.propertyAddress || baseState.clientLocation || '';
-        baseState.jobType = js.jobType || baseState.jobType || '';
-
-        if (window.APP && typeof window.APP.setStateForTests === 'function') {
-          window.APP.setStateForTests(baseState);
-        } else if (window.APP && window.APP.modules && window.APP.modules.app) {
-          window.APP.modules.app.state = baseState;
-        } else {
-          window.APP.state = baseState;
+        // Prefer the app's calc module; fallback to PrecisionCalc
+        try {
+          if (window.APP && window.APP.modules && window.APP.modules.calc) {
+            return window.APP.modules.calc.calculateTotals(state);
+          }
+          if (window.PrecisionCalc) {
+            return window.PrecisionCalc.calculate(state);
+          }
+        } catch (e) {
+          console.error('[TEST] Calculation failed', e);
         }
+        return {
+          subtotal: 0,
+          total: 0,
+          gst: 0,
+          windowTotal: 0,
+          pressureTotal: 0
+        };
       }, quoteData);
-
-      return await page.evaluate(() => {
-        if (window.APP && window.APP.modules && window.APP.modules.calc) {
-          return window.APP.modules.calc.calculateTotals(window.APP.modules.app.state);
-        }
-        if (window.PrecisionCalc && window.APP && (window.APP.state || (window.APP.modules && window.APP.modules.app && window.APP.modules.app.state))) {
-          var st = window.APP.state || (window.APP.modules && window.APP.modules.app && window.APP.modules.app.state);
-          return window.PrecisionCalc.calculate({
-            windowLines: st.windowLines || [],
-            pressureLines: st.pressureLines || [],
-            baseFee: st.baseFee,
-            hourlyRate: st.hourlyRate,
-            minimumJob: st.minimumJob,
-            highReachModifierPercent: st.highReachModifierPercent,
-            insideMultiplier: st.insideMultiplier,
-            outsideMultiplier: st.outsideMultiplier,
-            pressureHourlyRate: st.pressureHourlyRate,
-            setupBufferMinutes: st.setupBufferMinutes
-          });
-        }
-        return null;
-      });
     },
 
     /**
