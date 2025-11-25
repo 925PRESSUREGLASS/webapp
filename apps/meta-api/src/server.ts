@@ -14,6 +14,7 @@ import { getPrismaClient } from './db/client';
 import { z } from 'zod';
 import { env } from './config/env';
 import { registerLogging } from './plugins/logging';
+import { aiBridge } from './ai/bridge';
 
 var projectStatusEnum = ['draft', 'in-progress', 'complete'] as const;
 var assetStatusEnum = ['draft', 'active', 'deprecated'] as const;
@@ -409,6 +410,29 @@ function buildServer(): FastifyInstance {
         featuresTracked: featuresStore.length,
         dbMode: 'memory'
       };
+    }
+  });
+
+  app.post('/ai/ask', async function (request, reply) {
+    if (!aiBridge.isConfigured()) {
+      reply.code(503);
+      return { error: 'AI embeddings service not configured' };
+    }
+    var body = request.body as { question?: string; k?: number; sources?: string[] };
+    if (!body || !body.question) {
+      reply.code(400);
+      return { error: 'question is required' };
+    }
+    var k = body.k && body.k > 0 ? body.k : 5;
+    var sources = body.sources && Array.isArray(body.sources) ? body.sources : undefined;
+
+    try {
+      var result = await aiBridge.ask(body.question, k, sources);
+      return result;
+    } catch (err: any) {
+      var message = err && err.message ? err.message : 'AI service unavailable';
+      reply.code(502);
+      return { error: 'AI service unavailable', detail: message };
     }
   });
 
