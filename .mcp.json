@@ -22,10 +22,24 @@
       "args": ["-y", "playwright-mcp"],
       "env": {}
     },
+    "vscode": {
+      "transport": "stdio",
+      "command": "npx",
+      "args": ["-y", "@modelcontextprotocol/server-vscode"],
+      "env": {
+        "VSCODE_WORKSPACE_ROOT": "/Users/gerardvarone/Desktop/webap5p"
+      }
+    },
     "fetch": {
       "transport": "stdio",
       "command": "npx",
       "args": ["-y", "@modelcontextprotocol/server-fetch"],
+      "env": {}
+    },
+    "huggingface": {
+      "transport": "stdio",
+      "command": "npx",
+      "args": ["-y", "mcp-remote", "https://huggingface.co/mcp?login"],
       "env": {}
     }
   }
