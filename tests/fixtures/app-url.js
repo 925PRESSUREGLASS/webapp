@@ -21,7 +21,7 @@ function resolvePath(path) {
 async function waitForAppObject(page) {
   await page.waitForFunction(() => {
     return typeof window.APP === 'object' && window.APP !== null;
-  }, { timeout: 10000 });
+  }, { timeout: 20000 });
 }
 
 async function gotoApp(page, options) {

@@ -9,6 +9,10 @@ const test = base.test.extend({
       storageState: { cookies: [], origins: [] },
       ignoreHTTPSErrors: true
     });
+    let contextClosed = false;
+    context.on('close', () => {
+      contextClosed = true;
+    });
 
     // Proactively clear any lingering client-side storage as soon as a page starts.
     await context.addInitScript(function() {
@@ -52,12 +56,21 @@ const test = base.test.extend({
       await use(context);
     } finally {
       try {
-        await context.clearCookies();
-        await context.clearPermissions();
+        if (!contextClosed) {
+          await context.clearCookies();
+          await context.clearPermissions();
+        }
       } catch (err) {
         console.warn('[TEST] context cleanup failed', err);
       }
-      await context.close();
+      try {
+        if (!contextClosed) {
+          await context.close();
+          contextClosed = true;
+        }
+      } catch (err) {
+        console.warn('[TEST] context close failed', err);
+      }
     }
   },
 
@@ -66,7 +79,13 @@ const test = base.test.extend({
     try {
       await use(page);
     } finally {
-      await page.close();
+      try {
+        if (!page.isClosed()) {
+          await page.close();
+        }
+      } catch (err) {
+        console.warn('[TEST] page close failed', err);
+      }
     }
   }
 });
