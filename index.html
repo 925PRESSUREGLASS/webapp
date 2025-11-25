@@ -172,10 +172,13 @@
 				<button id="helpPageBtn" type="button" class="btn btn-tertiary" title="Help & Documentation" aria-label="Open help system" onclick="navigateTo('help')">
 					❓ Help
 				</button>
-				<button id="settingsPageBtn" type="button" class="btn btn-tertiary" title="Settings & Backup" aria-label="Open settings" onclick="navigateTo('settings')">
-					⚙️ Settings
-				</button>
-				<button id="keyboardShortcutsBtn" type="button" class="btn btn-tertiary" title="Keyboard Shortcuts (Press ?)" aria-label="View keyboard shortcuts" style="display: none;">
+					<button id="settingsPageBtn" type="button" class="btn btn-tertiary" title="Settings & Backup" aria-label="Open settings" onclick="navigateTo('settings')">
+						⚙️ Settings
+					</button>
+					<button id="invoiceSettingsBtn" type="button" class="btn btn-tertiary" title="Invoice Settings" aria-label="Open invoice settings" onclick="if(window.InvoiceSystem && window.InvoiceSystem.showSettingsModal){ window.InvoiceSystem.showSettingsModal(); } else { alert('Invoice settings not available'); }">
+						🧾 Invoice Settings
+					</button>
+					<button id="keyboardShortcutsBtn" type="button" class="btn btn-tertiary" title="Keyboard Shortcuts (Press ?)" aria-label="View keyboard shortcuts" style="display: none;">
 						⌨️ Shortcuts
 					</button>
 					<button id="testRunnerBtn" type="button" class="btn btn-tertiary" title="Test & QA Suite" aria-label="Open test runner" onclick="openTestRunner()">

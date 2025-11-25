@@ -45,6 +45,7 @@ test.describe('Invoice Encryption Settings', function() {
       await page.waitForTimeout(300);
 
       // Check if encryption checkbox exists
+      await page.waitForSelector('#enableEncryption', { timeout: 3000 });
       var checkbox = await page.$('#enableEncryption');
       expect(checkbox).not.toBeNull();
 
@@ -53,14 +54,7 @@ test.describe('Invoice Encryption Settings', function() {
       expect(labelText).toContain('Enable Encrypted Storage');
 
       // Check if hint text exists
-      var hintText = await page.$eval('.form-hint', function(el) {
-        var label = el.previousElementSibling;
-        if (label && label.querySelector('#enableEncryption')) {
-          return el.textContent;
-        }
-        return '';
-      }).catch(function() { return ''; });
-
+      var hintText = await page.textContent('#encryptionHint');
       expect(hintText).toContain('Encrypts invoice data');
     } else {
       console.log('Settings button not found - invoice system may not be initialized');
@@ -104,7 +98,7 @@ test.describe('Invoice Encryption Settings', function() {
         var submitBtn = await page.$('#invoiceSettingsForm button[type="submit"]');
         if (submitBtn) {
           await submitBtn.click();
-          await page.waitForTimeout(500);
+          await page.waitForSelector('#enableEncryption', { timeout: 3000 });
 
           // Verify setting was saved
           var newState = await page.evaluate(function() {
@@ -119,7 +113,9 @@ test.describe('Invoice Encryption Settings', function() {
           // Verify it persists after reload
           await page.reload();
           await page.waitForSelector('.app');
-          await page.waitForTimeout(500);
+          await page.waitForFunction(function() {
+            return window.InvoiceSystem && window.InvoiceSystem.getSettings;
+          }, { timeout: 5000 });
 
           var persistedState = await page.evaluate(function() {
             if (window.InvoiceSystem && window.InvoiceSystem.getSettings) {
@@ -216,6 +212,7 @@ test.describe('Invoice Encryption Settings', function() {
         await page.waitForTimeout(300);
 
         // Get current checkbox state
+        await page.waitForSelector('#enableEncryption', { timeout: 3000 });
         var isChecked = await page.$eval('#enableEncryption', function(el) {
           return el.checked;
         });

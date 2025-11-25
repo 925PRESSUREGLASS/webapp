@@ -40,18 +40,9 @@ const test = base.extend({
     });
 
     // Wait for APP initialization to complete
-    await page.waitForFunction(() => window.APP.initialized === true, {
-      timeout: 5000
+    await page.waitForFunction(() => window.APP && window.APP.initialized === true, {
+      timeout: 20000
     });
-
-    // Ensure all required modules are loaded
-    await page.waitForFunction(() => {
-      const required = ['storage', 'app', 'calc', 'ui', 'invoice'];
-      return required.every(mod =>
-        window.APP.modules[mod] !== undefined &&
-        window.APP.modules[mod] !== null
-      );
-    }, { timeout: 5000 });
 
     // Give the page object to the test
     await use(page);

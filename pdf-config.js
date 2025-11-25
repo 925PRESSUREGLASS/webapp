@@ -6,11 +6,6 @@
 (function() {
   'use strict';
 
-  if (typeof window !== 'undefined' && window.APP_TEST_MODE) {
-    console.log('[PDF-CONFIG] Skipped in test mode');
-    return;
-  }
-
   /**
    * PDF Configuration
    * Page setup, margins, colors, fonts, and layout specifications

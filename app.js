@@ -1988,6 +1988,17 @@
   window.APP.getState = function() {
     return buildStateFromUI(true);
   };
+  // Test helper: allow Playwright tests to inject full state quickly
+  window.APP.setStateForTests = function(newState) {
+    try {
+      state = newState || state;
+      applyStateToUI();
+      return true;
+    } catch (e) {
+      console.error('[APP] setStateForTests failed', e);
+      return false;
+    }
+  };
 
   // Create app module for registration
   var AppModule = {

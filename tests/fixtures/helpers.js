@@ -38,12 +38,32 @@ function createHelpers(page) {
      * @returns {Promise<Object>} Calculation results
      */
     calculateQuote: async (quoteData) => {
+      // Ensure APP and calc module are ready
+      await page.waitForFunction(function() {
+        return window.APP && window.APP.initialized;
+      }, { timeout: 10000 });
+
       await page.evaluate((data) => {
-        window.APP.modules.app.state = data;
+        if (window.APP && typeof window.APP.waitForInit === 'function') {
+          window.APP.waitForInit();
+        }
+        if (window.APP && typeof window.APP.setStateForTests === 'function') {
+          window.APP.setStateForTests(data);
+        } else if (window.APP && window.APP.modules && window.APP.modules.app) {
+          window.APP.modules.app.state = data;
+        } else {
+          window.APP.state = data;
+        }
       }, quoteData);
 
       return await page.evaluate(() => {
-        return window.APP.modules.calc.calculateTotals(window.APP.modules.app.state);
+        if (window.APP && window.APP.modules && window.APP.modules.calc) {
+          return window.APP.modules.calc.calculateTotals(window.APP.modules.app.state);
+        }
+        if (window.PrecisionCalc && window.APP && window.APP.state) {
+          return window.PrecisionCalc.calculate(window.APP.state);
+        }
+        return null;
       });
     },
 

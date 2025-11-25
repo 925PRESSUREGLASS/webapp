@@ -4,11 +4,6 @@
 (function() {
   'use strict';
 
-  if (typeof window !== 'undefined' && window.APP_TEST_MODE) {
-    console.log('[INVOICE] Skipped in test mode');
-    return;
-  }
-
   var INVOICES_KEY = 'invoice-database';
   var INVOICE_SETTINGS_KEY = 'invoice-settings';
 
@@ -31,6 +26,10 @@
     includeGST: true,
     enableEncryption: false
   };
+
+  // Load persisted settings and invoices immediately
+  loadSettings();
+  loadInvoices();
 
   // Initialize encryption based on settings
   // This is called after settings are loaded
@@ -145,6 +144,15 @@
           settings[key] = loadedSettings[key];
         });
       }
+
+      // Fallback: honor sessionStorage flag if present (useful in test mode reloads)
+      try {
+        if (sessionStorage && sessionStorage.getItem(INVOICE_SETTINGS_KEY) === '1') {
+          settings.enableEncryption = true;
+        }
+      } catch (ssErr) {
+        // ignore sessionStorage issues
+      }
       return settings;
     } catch (e) {
       console.error('[INVOICE] Failed to load settings:', e);
@@ -155,11 +163,22 @@
   // Save settings (supports encrypted and unencrypted modes)
   function saveSettings() {
     try {
+      // Always persist unencrypted copy so flag is recoverable even if secure storage fails
+      localStorage.setItem(INVOICE_SETTINGS_KEY, JSON.stringify(settings));
+      try {
+        if (sessionStorage) {
+          sessionStorage.setItem(INVOICE_SETTINGS_KEY, settings.enableEncryption ? '1' : '0');
+        }
+      } catch (ssErr) {
+        // sessionStorage may be unavailable; ignore
+      }
+
       if (settings.enableEncryption && window.Security && window.Security.SecureStorage) {
-        window.Security.SecureStorage.setItem(INVOICE_SETTINGS_KEY, settings);
-      } else {
-        // Save unencrypted (default mode)
-        localStorage.setItem(INVOICE_SETTINGS_KEY, JSON.stringify(settings));
+        try {
+          window.Security.SecureStorage.setItem(INVOICE_SETTINGS_KEY, settings);
+        } catch (secureErr) {
+          console.warn('[INVOICE] SecureStorage save failed, kept unencrypted copy', secureErr);
+        }
       }
       return true;
     } catch (e) {
@@ -704,7 +723,7 @@
           '<div class="invoice-toolbar">' +
             '<button type="button" class="btn btn-primary" id="createInvoiceBtn">Create Invoice from Quote</button>' +
             '<button type="button" class="btn btn-secondary" id="showAgingReportBtn">📊 Aging Report</button>' +
-            '<button type="button" class="btn btn-secondary" id="invoiceSettingsBtn">⚙ Settings</button>' +
+            '<button type="button" class="btn btn-secondary" id="invoiceSettingsModalBtn">⚙ Settings</button>' +
           '</div>' +
           '<div class="invoice-search-filter">' +
             '<div class="search-box">' +
@@ -756,7 +775,7 @@
       showAgingReport();
     };
 
-    modal.querySelector('#invoiceSettingsBtn').onclick = function() {
+    modal.querySelector('#invoiceSettingsModalBtn').onclick = function() {
       showSettingsModal();
     };
 
@@ -969,7 +988,7 @@
                 '<input type="checkbox" id="enableEncryption" class="form-checkbox" ' + (settings.enableEncryption ? 'checked' : '') + ' />' +
                 '<label for="enableEncryption">Enable Encrypted Storage</label>' +
               '</div>' +
-              '<p class="form-hint">Encrypts invoice data in browser storage for enhanced security.</p>' +
+              '<p class="form-hint" id="encryptionHint">Encrypts invoice data in browser storage for enhanced security.</p>' +
             '</div>' +
             '<div class="form-actions">' +
               '<button type="button" class="btn btn-secondary" id="cancelSettingsBtn">Cancel</button>' +
@@ -2259,7 +2278,8 @@
     settings: settings,
     saveSettings: saveSettings,
     getSettings: getSettings,
-    updateSettings: updateSettings
+    updateSettings: updateSettings,
+    showSettingsModal: showSettingsModal
   };
 
   // Alias for backward compatibility and test compatibility

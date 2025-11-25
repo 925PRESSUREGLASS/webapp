@@ -5,11 +5,6 @@
 (function() {
   'use strict';
 
-  if (typeof window !== 'undefined' && window.APP_TEST_MODE) {
-    console.log('[WEBHOOK] Skipped in test mode');
-    return;
-  }
-
   // Event queue
   var _eventQueue = [];
   var _processing = false;
