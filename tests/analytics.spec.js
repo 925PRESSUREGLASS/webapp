@@ -4,6 +4,23 @@
 const { test, expect } = require('./fixtures/fresh-context');
 const { gotoApp, waitForAppInit } = require('./fixtures/app-url');
 
+async function addWindowLine(page, quantity) {
+  await page.click('#addWindowLineBtn');
+  await page.waitForSelector('.window-type-select', { timeout: 5000 });
+  await page.evaluate(function(qty) {
+    var select = document.querySelector('.window-type-select');
+    if (select && select.options && select.options.length) {
+      select.value = select.options[0].value || 'std1';
+      select.dispatchEvent(new Event('change', { bubbles: true }));
+    }
+    var qtyInput = document.querySelector('.window-quantity-input');
+    if (qtyInput) {
+      qtyInput.value = qty;
+      qtyInput.dispatchEvent(new Event('input', { bubbles: true }));
+    }
+  }, quantity);
+}
+
 test.describe('Quote Analytics', () => {
   test.beforeEach(async ({ page }) => {
     await gotoApp(page);
@@ -21,9 +38,7 @@ test.describe('Quote Analytics', () => {
     test('should save quote to history', async ({ page }) => {
       // Create a quote with line items
       await page.fill('#hourlyRateInput', '100');
-      await page.click('#addWindowLineBtn');
-      await page.selectOption('.window-type-select', 'standard');
-      await page.fill('.window-quantity-input', '10');
+      await addWindowLine(page, '10');
       await page.fill('#clientNameInput', 'Test Client');
       await page.fill('#clientLocationInput', 'Perth');
 
@@ -71,9 +86,7 @@ test.describe('Quote Analytics', () => {
       await page.fill('#hourlyRateInput', '100');
       await page.fill('#baseFeeInput', '150');
 
-      await page.click('#addWindowLineBtn');
-      await page.selectOption('.window-type-select', 'standard');
-      await page.fill('.window-quantity-input', '20');
+      await addWindowLine(page, '20');
 
       await page.click('body');
       await page.waitForTimeout(100);
@@ -97,9 +110,7 @@ test.describe('Quote Analytics', () => {
     test('should capture time estimates', async ({ page }) => {
       await page.fill('#hourlyRateInput', '100');
 
-      await page.click('#addWindowLineBtn');
-      await page.selectOption('.window-type-select', 'standard');
-      await page.fill('.window-quantity-input', '10');
+      await addWindowLine(page, '10');
 
       await page.click('body');
       await page.waitForTimeout(100);
@@ -150,9 +161,7 @@ test.describe('Quote Analytics', () => {
       // Add first quote
       await page.fill('#hourlyRateInput', '100');
       await page.fill('#clientNameInput', 'First Client');
-      await page.click('#addWindowLineBtn');
-      await page.selectOption('.window-type-select', 'standard');
-      await page.fill('.window-quantity-input', '5');
+      await addWindowLine(page, '5');
       await page.click('body');
       await page.waitForTimeout(50);
       await page.evaluate(() => window.QuoteAnalytics.save());
@@ -160,9 +169,7 @@ test.describe('Quote Analytics', () => {
       // Clear and add second quote
       await page.click('#clearAllBtn');
       await page.fill('#clientNameInput', 'Second Client');
-      await page.click('#addWindowLineBtn');
-      await page.selectOption('.window-type-select', 'standard');
-      await page.fill('.window-quantity-input', '5');
+      await addWindowLine(page, '5');
       await page.click('body');
       await page.waitForTimeout(50);
       await page.evaluate(() => window.QuoteAnalytics.save());
@@ -485,9 +492,7 @@ test.describe('Quote Analytics', () => {
     test('should persist history to localStorage', async ({ page }) => {
       await page.fill('#hourlyRateInput', '100');
       await page.fill('#clientNameInput', 'Persistent Client');
-      await page.click('#addWindowLineBtn');
-      await page.selectOption('.window-type-select', 'standard');
-      await page.fill('.window-quantity-input', '5');
+      await addWindowLine(page, '5');
       await page.click('body');
       await page.waitForTimeout(50);
 
@@ -563,9 +568,7 @@ test.describe('Quote Analytics', () => {
       await page.fill('#clientLocationInput', 'Full Location');
       await page.selectOption('#jobType', 'residential');
 
-      await page.click('#addWindowLineBtn');
-      await page.selectOption('.window-type-select', 'standard');
-      await page.fill('.window-quantity-input', '10');
+      await addWindowLine(page, '10');
 
       await page.click('body');
       await page.waitForTimeout(100);
@@ -596,9 +599,7 @@ test.describe('Quote Analytics', () => {
 
     test('should calculate GST correctly (10% of total)', async ({ page }) => {
       await page.fill('#hourlyRateInput', '100');
-      await page.click('#addWindowLineBtn');
-      await page.selectOption('.window-type-select', 'standard');
-      await page.fill('.window-quantity-input', '10');
+      await addWindowLine(page, '10');
       await page.click('body');
       await page.waitForTimeout(100);
 

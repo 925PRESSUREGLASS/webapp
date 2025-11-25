@@ -1,7 +1,6 @@
 const base = require('@playwright/test');
 
-// Provide a guaranteed fresh browser context and page for every test.
-// This prevents storage, caches, and module state from leaking between tests.
+// Fresh browser context and page per test to avoid cross-test contamination.
 const test = base.test.extend({
   context: async ({ browser, baseURL }, use) => {
     const context = await browser.newContext({
@@ -14,7 +13,7 @@ const test = base.test.extend({
       contextClosed = true;
     });
 
-    // Proactively clear any lingering client-side storage as soon as a page starts.
+    // Clear storage/cache/service workers before pages run.
     await context.addInitScript(function() {
       try {
         if (window && window.localStorage && window.sessionStorage) {
@@ -66,7 +65,6 @@ const test = base.test.extend({
       try {
         if (!contextClosed) {
           await context.close();
-          contextClosed = true;
         }
       } catch (err) {
         console.warn('[TEST] context close failed', err);
@@ -75,6 +73,8 @@ const test = base.test.extend({
   },
 
   page: async ({ context }, use) => {
+    // Small delay before creating page to let heavy bootstrap settle
+    await new Promise(function(resolve) { setTimeout(resolve, 50); });
     const page = await context.newPage();
     try {
       await use(page);
