@@ -22,8 +22,7 @@ const {
   PEAK_SEASON
 } = require('../fixtures/test-data');
 
-// Skipped in automation: example fixtures use factory data that doesn't align with runtime calc state.
-// TODO: Map factory quote schema to app state or expose a dedicated calculation endpoint.
+// TODO: Re-enable after mapping factory schema to PRICING_DATA/state used by calc engine.
 test.describe.skip('Calculation Engine', () => {
   test('calculates small residential job correctly', async ({ appReady, helpers }) => {
     // Use pre-defined test data

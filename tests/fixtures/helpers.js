@@ -38,21 +38,97 @@ function createHelpers(page) {
      * @returns {Promise<Object>} Calculation results
      */
     calculateQuote: async (quoteData) => {
-      // Ensure APP and calc module are ready
+      // Ensure APP is ready
       await page.waitForFunction(function() {
         return window.APP && window.APP.initialized;
-      }, { timeout: 10000 });
+      }, { timeout: 20000 });
 
       await page.evaluate((data) => {
         if (window.APP && typeof window.APP.waitForInit === 'function') {
           window.APP.waitForInit();
         }
+
+        // Start from existing state as a base
+        var baseState = window.APP && window.APP.getState ? window.APP.getState() : (window.APP && window.APP.modules && window.APP.modules.app ? window.APP.modules.app.state : {});
+        baseState = baseState || {};
+
+        // Map factory-style window lines to app schema
+        function mapWindowType(type) {
+          if (!type) return 'std1';
+          var lower = String(type).toLowerCase();
+          if (lower.indexOf('awning') !== -1) return 'std2';
+          if (lower.indexOf('door') !== -1) return 'door';
+          if (lower.indexOf('fixed') !== -1 || lower.indexOf('picture') !== -1) return 'feature';
+          return 'std1';
+        }
+
+        var incomingWindows = data && (data.windows || data.windowLines) ? (data.windows || data.windowLines) : [];
+        var mappedWindows = [];
+        for (var i = 0; i < incomingWindows.length; i++) {
+          var src = incomingWindows[i] || {};
+          mappedWindows.push({
+            id: src.id || ('win_' + i),
+            title: src.notes || 'Window Line',
+            tags: [],
+            windowTypeId: mapWindowType(src.type),
+            inside: true,
+            outside: true,
+            highReach: false,
+            panes: src.count || src.panes || 1,
+            soilLevel: 'light',
+            conditionId: null,
+            accessId: null,
+            tintLevel: 'none',
+            location: ''
+          });
+        }
+
+        // Map factory-style pressure lines to app schema
+        function mapSurface(surface) {
+          if (!surface) return 'driveway';
+          var lower = String(surface).toLowerCase();
+          if (lower.indexOf('brick') !== -1) return 'paving';
+          if (lower.indexOf('paver') !== -1) return 'paving';
+          if (lower.indexOf('deck') !== -1) return 'deck';
+          if (lower.indexOf('limestone') !== -1) return 'limestone';
+          return 'driveway';
+        }
+
+        var incomingPressure = data && (data.pressure || data.pressureLines) ? (data.pressure || data.pressureLines) : [];
+        var mappedPressure = [];
+        for (var j = 0; j < incomingPressure.length; j++) {
+          var ps = incomingPressure[j] || {};
+          mappedPressure.push({
+            id: ps.id || ('prs_' + j),
+            title: ps.notes || 'Pressure Line',
+            tags: [],
+            surfaceId: mapSurface(ps.surfaceType),
+            areaSqm: ps.area || ps.areaSqm || 10,
+            soilLevel: 'light',
+            access: 'easy',
+            notes: ps.notes || ''
+          });
+        }
+
+        baseState.windowLines = mappedWindows;
+        baseState.pressureLines = mappedPressure;
+
+        // Apply job settings
+        var js = data && data.jobSettings ? data.jobSettings : {};
+        baseState.baseFee = baseState.baseFee || 120;
+        baseState.hourlyRate = baseState.hourlyRate || 95;
+        baseState.minimumJob = baseState.minimumJob || 180;
+        baseState.quoteTitle = js.quoteTitle || baseState.quoteTitle || '';
+        baseState.clientName = js.clientName || baseState.clientName || '';
+        baseState.clientLocation = js.propertyAddress || baseState.clientLocation || '';
+        baseState.jobType = js.jobType || baseState.jobType || '';
+
         if (window.APP && typeof window.APP.setStateForTests === 'function') {
-          window.APP.setStateForTests(data);
+          window.APP.setStateForTests(baseState);
         } else if (window.APP && window.APP.modules && window.APP.modules.app) {
-          window.APP.modules.app.state = data;
+          window.APP.modules.app.state = baseState;
         } else {
-          window.APP.state = data;
+          window.APP.state = baseState;
         }
       }, quoteData);
 
@@ -60,8 +136,20 @@ function createHelpers(page) {
         if (window.APP && window.APP.modules && window.APP.modules.calc) {
           return window.APP.modules.calc.calculateTotals(window.APP.modules.app.state);
         }
-        if (window.PrecisionCalc && window.APP && window.APP.state) {
-          return window.PrecisionCalc.calculate(window.APP.state);
+        if (window.PrecisionCalc && window.APP && (window.APP.state || (window.APP.modules && window.APP.modules.app && window.APP.modules.app.state))) {
+          var st = window.APP.state || (window.APP.modules && window.APP.modules.app && window.APP.modules.app.state);
+          return window.PrecisionCalc.calculate({
+            windowLines: st.windowLines || [],
+            pressureLines: st.pressureLines || [],
+            baseFee: st.baseFee,
+            hourlyRate: st.hourlyRate,
+            minimumJob: st.minimumJob,
+            highReachModifierPercent: st.highReachModifierPercent,
+            insideMultiplier: st.insideMultiplier,
+            outsideMultiplier: st.outsideMultiplier,
+            pressureHourlyRate: st.pressureHourlyRate,
+            setupBufferMinutes: st.setupBufferMinutes
+          });
         }
         return null;
       });
