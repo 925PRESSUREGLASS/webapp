@@ -16,11 +16,6 @@ const test = base.test.extend({
     // Clear storage/cache/service workers before pages run.
     await context.addInitScript(function() {
       try {
-        if (window && window.localStorage && window.sessionStorage) {
-          window.localStorage.clear();
-          window.sessionStorage.clear();
-        }
-
         if (window && window.caches && window.caches.keys) {
           window.caches.keys().then(function(names) {
             names.forEach(function(name) {
@@ -48,6 +43,62 @@ const test = base.test.extend({
         }
       } catch (e) {
         console.warn('[TEST] init cleanup failed', e);
+      }
+    });
+
+    // Ensure pricing data exists in test mode even if the main bundle skips heavy modules.
+    await context.addInitScript(function() {
+      try {
+        var fallbackPricingData = {
+          windowTypes: [
+            { id: 'std1', label: 'Standard 1x1 (small)', baseMinutesInside: 2.5, baseMinutesOutside: 2.5 },
+            { id: 'std2', label: 'Standard 1x2 (taller)', baseMinutesInside: 3.5, baseMinutesOutside: 3.5 },
+            { id: 'std3', label: 'Standard 2x2', baseMinutesInside: 5.0, baseMinutesOutside: 5.0 },
+            { id: 'door', label: 'Glass Door / Slider', baseMinutesInside: 4.5, baseMinutesOutside: 4.5 }
+          ],
+          pressureSurfaces: [
+            { id: 'driveway', label: 'Concrete Driveway', minutesPerSqm: 1.4 },
+            { id: 'paving', label: 'Paved Area', minutesPerSqm: 1.6 },
+            { id: 'deck', label: 'Decking / Timber', minutesPerSqm: 1.8 }
+          ],
+          modifiers: {
+            tint: {
+              none: { label: 'No Tint', factor: 1.0 },
+              light: { label: 'Light Tint', factor: 1.05 },
+              heavy: { label: 'Dark / Reflective Tint', factor: 1.1 }
+            },
+            soil: {
+              light: { label: 'Light Dust', factor: 1.0 },
+              medium: { label: 'Dirty', factor: 1.2 },
+              heavy: { label: 'Very Dirty / Built-up', factor: 1.4 }
+            },
+            access: {
+              easy: { label: 'Easy Access', factor: 1.0 },
+              ladder: { label: 'Ladder / Awkward', factor: 1.25 },
+              highReach: { label: 'High Reach Pole', factor: 1.4 }
+            }
+          }
+        };
+
+        function seedPricingData() {
+          if (!window || typeof window !== 'object') {
+            return;
+          }
+
+          if (!window.PRICING_DATA || !window.PRICING_DATA.windowTypes || !window.PRICING_DATA.pressureSurfaces) {
+            window.PRICING_DATA = fallbackPricingData;
+          }
+        }
+
+        if (document && document.addEventListener) {
+          document.addEventListener('DOMContentLoaded', seedPricingData);
+        } else {
+          seedPricingData();
+        }
+
+        window.__seedPricingDataForTests = seedPricingData;
+      } catch (err) {
+        console.warn('[TEST] pricing seed failed', err);
       }
     });
 

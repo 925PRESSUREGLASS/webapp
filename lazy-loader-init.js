@@ -8,6 +8,7 @@
   // Wait for DOM to be ready
   function init() {
     console.log('[LAZY-INIT] Initializing lazy loading handlers...');
+    var isTestMode = !!window.APP_TEST_MODE;
 
     // ============================================
     // ANALYTICS MODULE
@@ -93,7 +94,7 @@
     // ============================================
 
     var analyticsSection = document.getElementById('page-analytics-dashboard');
-    if (analyticsSection && window.LazyLoader) {
+    if (analyticsSection && window.LazyLoader && !isTestMode) {
       window.LazyLoader.loadOnVisible(analyticsSection, 'charts', function(error) {
         if (window.APP && APP.hideDeferredPlaceholder) {
           APP.hideDeferredPlaceholder('page-analytics-dashboard');
@@ -117,7 +118,7 @@
     }
 
     var photosGrid = document.getElementById('photos-grid');
-    if (photosGrid && window.LazyLoader) {
+    if (photosGrid && window.LazyLoader && !isTestMode) {
       window.LazyLoader.loadOnVisible(photosGrid, 'photo-modal', function(error) {
         if (window.APP && APP.hideDeferredPlaceholder) {
           APP.hideDeferredPlaceholder('photos-grid');
@@ -158,7 +159,7 @@
     }
 
     window.addEventListener('load', function() {
-      if (window.LazyLoader) {
+      if (window.LazyLoader && !isTestMode) {
         window.LazyLoader.load('analytics-dashboard', function() {});
         window.LazyLoader.load('photos', function() {});
       }

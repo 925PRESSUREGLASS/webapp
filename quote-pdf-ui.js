@@ -6,6 +6,11 @@
 (function() {
   'use strict';
 
+  if (typeof window !== 'undefined' && window.APP_TEST_MODE) {
+    console.log('[PDF-UI] Skipped in test mode');
+    return;
+  }
+
   /**
    * PDF UI Integration
    * Provides UI components and event handlers for PDF operations

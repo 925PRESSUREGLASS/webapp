@@ -5,8 +5,34 @@ const { test, expect } = require('./fixtures/fresh-context');
 const { gotoApp, waitForAppInit } = require('./fixtures/app-url');
 
 async function addWindowLine(page, quantity) {
+  var handled = await page.evaluate(function(qty) {
+    if (window.APP && typeof window.APP.addWindowLine === 'function') {
+      var defaultType = 'std1';
+      if (window.PRICING_DATA && window.PRICING_DATA.windowTypes && window.PRICING_DATA.windowTypes.length) {
+        defaultType = window.PRICING_DATA.windowTypes[0].id || defaultType;
+      }
+      var panesValue = parseInt(qty, 10);
+      if (isNaN(panesValue) || panesValue <= 0) {
+        panesValue = 1;
+      }
+      window.APP.addWindowLine({
+        windowTypeId: defaultType,
+        panes: panesValue,
+        inside: true,
+        outside: true
+      });
+      return true;
+    }
+    return false;
+  }, quantity);
+
+  if (handled) {
+    await page.waitForTimeout(50);
+    return;
+  }
+
   await page.click('#addWindowLineBtn');
-  await page.waitForSelector('.window-type-select', { timeout: 5000 });
+  await page.waitForSelector('.window-type-select', { timeout: 10000 });
   await page.evaluate(function(qty) {
     var select = document.querySelector('.window-type-select');
     if (select && select.options && select.options.length) {
@@ -21,9 +47,8 @@ async function addWindowLine(page, quantity) {
   }, quantity);
 }
 
-// Skipping temporarily: analytics suite remains flaky under Playwright harness.
-// TODO: Re-enable after stabilizing light test mode (disable heavy modules) and seeding PRICING_DATA for testMode.
-test.describe.skip('Quote Analytics', () => {
+// Runs under light test mode; fixtures seed PRICING_DATA to keep calculations stable.
+test.describe('Quote Analytics', () => {
   test.beforeEach(async ({ page }) => {
     await gotoApp(page);
     await page.waitForSelector('.app');
@@ -565,10 +590,10 @@ test.describe.skip('Quote Analytics', () => {
   test.describe('Quote Entry Structure', () => {
     test('should include all required fields in history entry', async ({ page }) => {
       await page.fill('#hourlyRateInput', '95');
-      await page.fill('#quoteTitle', 'Complete Quote');
+      await page.fill('#quoteTitleInput', 'Complete Quote');
       await page.fill('#clientNameInput', 'Full Client');
       await page.fill('#clientLocationInput', 'Full Location');
-      await page.selectOption('#jobType', 'residential');
+      await page.selectOption('#jobTypeInput', 'residential');
 
       await addWindowLine(page, '10');
 

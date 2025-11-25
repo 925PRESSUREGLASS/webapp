@@ -2286,6 +2286,10 @@
         <!-- Deferred asset loader to hydrate non-critical styles and scripts after DOM is ready -->
         <script>
                 (function() {
+                        var isTestMode = !!window.APP_TEST_MODE;
+                        var skipLateModules = window.APP_TEST_SKIP_MODULES || ['photos', 'backup'];
+                        var skipLateStyles = window.APP_TEST_SKIP_STYLES || ['photo-modal.css', 'photos.css'];
+
                         function showDeferredPlaceholders() {
                                 if (window.APP && APP.showDeferredPlaceholder) {
                                         APP.showDeferredPlaceholder('page-analytics-dashboard', 'Loading analytics toolkit...');
@@ -2294,10 +2298,28 @@
                                 }
                         }
 
+                        function shouldSkipStyle(link) {
+                                if (!isTestMode) {
+                                        return false;
+                                }
+
+                                var href = link.getAttribute('href') || '';
+                                for (var i = 0; i < skipLateStyles.length; i++) {
+                                        if (href.indexOf(skipLateStyles[i]) !== -1) {
+                                                return true;
+                                        }
+                                }
+
+                                return false;
+                        }
+
                         function hydrateDeferredStyles() {
                                 var lateStyles = document.querySelectorAll('link[data-late-style]');
                                 for (var i = 0; i < lateStyles.length; i++) {
                                         var link = lateStyles[i];
+                                        if (shouldSkipStyle(link)) {
+                                                continue;
+                                        }
                                         link.rel = 'stylesheet';
                                         link.removeAttribute('data-late-style');
                                         link.removeAttribute('as');
@@ -2325,6 +2347,10 @@
                                         var moduleName = placeholder.getAttribute('data-module');
                                         var src = placeholder.getAttribute('data-late-src');
                                         if (!src) {
+                                                continue;
+                                        }
+
+                                        if (isTestMode && moduleName && skipLateModules.indexOf(moduleName) !== -1) {
                                                 continue;
                                         }
 

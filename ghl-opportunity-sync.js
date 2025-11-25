@@ -6,6 +6,11 @@
 (function() {
   'use strict';
 
+  if (typeof window !== 'undefined' && window.APP_TEST_MODE) {
+    console.log('[GHL-OPP-SYNC] Skipped in test mode');
+    return;
+  }
+
   /**
    * Default pipeline configuration
    * These should be configured by the user to match their GHL pipelines

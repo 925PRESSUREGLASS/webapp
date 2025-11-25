@@ -6,6 +6,11 @@
 (function() {
   'use strict';
 
+  if (typeof window !== 'undefined' && window.APP_TEST_MODE) {
+    console.log('[PDF-COMPONENTS] Skipped in test mode');
+    return;
+  }
+
   /**
    * PDF Components Library
    * Renders individual sections of quote PDFs

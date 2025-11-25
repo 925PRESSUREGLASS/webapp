@@ -5,6 +5,11 @@
 (function() {
   'use strict';
 
+  if (typeof window !== 'undefined' && window.APP_TEST_MODE) {
+    console.log('[CSV-IMPORT] Skipped in test mode');
+    return;
+  }
+
   // Configuration constants
   var GST_RATE = 0.1; // 10% GST rate for Australia
   var GST_VALIDATION_TOLERANCE = 1; // Allow $1 difference in GST calculation

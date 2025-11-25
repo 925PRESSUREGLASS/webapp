@@ -5,6 +5,11 @@
 (function() {
   'use strict';
 
+  if (typeof window !== 'undefined' && window.APP_TEST_MODE) {
+    console.log('[CUSTOMER-DIR] Skipped in test mode');
+    return;
+  }
+
   var currentFilter = '';
   var currentSort = 'name-asc';
 

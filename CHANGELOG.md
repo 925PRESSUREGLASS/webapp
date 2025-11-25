@@ -8,7 +8,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ## [Unreleased]
 
 ### Tests
-- Temporarily skipped Playwright analytics suite (`tests/analytics.spec.js`) due to flakiness; will re-enable after adding a light test mode and seeding pricing data in test mode.
+- Re-enabled Playwright analytics suite (`tests/analytics.spec.js`) with light test mode (skips heavy modules), seeded pricing data in fixtures, and Playwright launch settings tuned for stability.
 
 
 ### Added

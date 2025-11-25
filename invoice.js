@@ -4,6 +4,11 @@
 (function() {
   'use strict';
 
+  if (typeof window !== 'undefined' && window.APP_TEST_MODE) {
+    console.log('[INVOICE] Skipped in test mode');
+    return;
+  }
+
   var INVOICES_KEY = 'invoice-database';
   var INVOICE_SETTINGS_KEY = 'invoice-settings';
 

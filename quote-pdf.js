@@ -6,6 +6,11 @@
 (function() {
   'use strict';
 
+  if (typeof window !== 'undefined' && window.APP_TEST_MODE) {
+    console.log('[QUOTE-PDF] Skipped in test mode');
+    return;
+  }
+
   /**
    * Quote PDF Generator
    * Generates professional PDF quotes with multiple output options

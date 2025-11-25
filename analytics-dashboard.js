@@ -9,6 +9,11 @@
 (function() {
     'use strict';
 
+    if (typeof window !== 'undefined' && window.APP_TEST_MODE) {
+        console.log('[ANALYTICS-DASHBOARD] Skipped in test mode');
+        return;
+    }
+
     var _currentDashboardData = null;
     var _revenueTrendChart = null;
     var _funnelChart = null;

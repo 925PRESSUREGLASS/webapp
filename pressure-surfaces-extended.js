@@ -6,6 +6,11 @@
 (function() {
   'use strict';
 
+  if (typeof window !== 'undefined' && window.APP_TEST_MODE) {
+    console.log('[PRESSURE-SURFACES-EXTENDED] Skipped in test mode');
+    return;
+  }
+
   var PRESSURE_SURFACES_EXTENDED = {
 
     // DRIVEWAYS

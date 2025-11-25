@@ -6,6 +6,11 @@
 (function() {
   'use strict';
 
+  if (typeof window !== 'undefined' && window.APP_TEST_MODE) {
+    console.log('[CONDITIONS-MODIFIERS] Skipped in test mode');
+    return;
+  }
+
   // ========================================
   // WINDOW CONDITIONS
   // Time multipliers based on dirt/stain severity

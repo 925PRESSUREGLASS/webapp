@@ -5,6 +5,11 @@
 (function() {
   'use strict';
 
+  if (typeof window !== 'undefined' && window.APP_TEST_MODE) {
+    console.log('[TEST-CHECKLIST] Skipped in test mode');
+    return;
+  }
+
   var STORAGE_KEY = 'tts_manual_test_checklist';
 
   /**

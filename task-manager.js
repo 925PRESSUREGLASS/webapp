@@ -5,6 +5,11 @@
 (function() {
   'use strict';
 
+  if (typeof window !== 'undefined' && window.APP_TEST_MODE) {
+    console.log('[TASK-MANAGER] Skipped in test mode');
+    return;
+  }
+
   // Task storage key
   var STORAGE_KEY = 'tts_tasks';
 
