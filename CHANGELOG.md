@@ -7,6 +7,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Added
+- Meta API `/ai/ask` proxy that calls the configured embeddings service (`AI_EMBEDDINGS_URL`/`AI_EMBEDDINGS_TIMEOUT_MS`) and returns upstream results or a 503 when disabled.
+- Python pgvector toolkit (`ai/ingest.py`, `ai/query.py`, `ai/api.py`, `ai/requirements.txt`) plus `docs/AI_EMBEDDING_SETUP.md` for indexing docs with BGE-small and serving a FastAPI bridge.
+
 ## [1.13.3] - 2025-11-21
 
 ### Added
