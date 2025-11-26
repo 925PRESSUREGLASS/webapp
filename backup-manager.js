@@ -388,17 +388,85 @@
    * @param {string} email - Email address
    */
   function emailBackup(email) {
-    console.log('[BACKUP] Email backup not yet implemented');
-    // TODO: Integrate with email service or backend
-    // For now, just download the backup
-    downloadBackup();
-
-    if (window.UIComponents && window.UIComponents.showToast) {
-      window.UIComponents.showToast(
-        'Email backup not yet available. Backup downloaded instead.',
-        'info'
-      );
+    // Validate email
+    if (!email || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
+      if (window.UIComponents && window.UIComponents.showToast) {
+        window.UIComponents.showToast('Please enter a valid email address', 'warning');
+      }
+      return;
     }
+
+    // Check if API endpoint is available
+    var apiUrl = window.APP && window.APP.config && window.APP.config.apiUrl;
+
+    if (!apiUrl) {
+      console.log('[BACKUP] No API configured, falling back to download');
+      downloadBackup();
+      if (window.UIComponents && window.UIComponents.showToast) {
+        window.UIComponents.showToast(
+          'Email not configured. Backup downloaded instead.',
+          'info'
+        );
+      }
+      return;
+    }
+
+    // Show loading
+    if (window.UIComponents && window.UIComponents.showToast) {
+      window.UIComponents.showToast('Sending backup to email...', 'info');
+    }
+
+    // Generate backup data and convert to base64
+    var backupJson = exportAllData();
+    var backupBase64 = btoa(unescape(encodeURIComponent(backupJson)));
+
+    // Send via API
+    fetch(apiUrl + '/email/send-backup', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json'
+      },
+      body: JSON.stringify({
+        to: email,
+        subject: 'TicTacStick Backup - ' + new Date().toLocaleDateString(),
+        body: 'Attached is your TicTacStick data backup.\n\nThis file contains all your quotes, clients, settings, and other data.\n\nTo restore this backup, go to Settings > Backups > Import Backup.',
+        attachment: backupBase64,
+        filename: 'tictacstick-backup-' + new Date().toISOString().split('T')[0] + '.json'
+      })
+    })
+    .then(function(response) {
+      return response.json().then(function(data) {
+        return { ok: response.ok, data: data };
+      });
+    })
+    .then(function(result) {
+      if (result.ok && result.data.success) {
+        if (window.UIComponents && window.UIComponents.showToast) {
+          window.UIComponents.showToast('Backup sent to ' + email, 'success');
+        }
+      } else {
+        // API returned error, fall back to download
+        console.warn('[BACKUP] API email failed:', result.data.error);
+        downloadBackup();
+        if (window.UIComponents && window.UIComponents.showToast) {
+          window.UIComponents.showToast(
+            'Email failed. Backup downloaded instead.',
+            'warning'
+          );
+        }
+      }
+    })
+    .catch(function(err) {
+      // Network error, fall back to download
+      console.warn('[BACKUP] Email error:', err);
+      downloadBackup();
+      if (window.UIComponents && window.UIComponents.showToast) {
+        window.UIComponents.showToast(
+          'Email failed. Backup downloaded instead.',
+          'warning'
+        );
+      }
+    });
   }
 
   // ============================================

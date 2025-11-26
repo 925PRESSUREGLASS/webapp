@@ -15,6 +15,8 @@ import { z } from 'zod';
 import { env } from './config/env';
 import { registerLogging } from './plugins/logging';
 import { aiBridge } from './ai/bridge';
+import { emailService } from './services/email.service';
+import { registerEmailRoutes } from './routes/email';
 
 var projectStatusEnum = ['draft', 'in-progress', 'complete'] as const;
 var assetStatusEnum = ['draft', 'active', 'deprecated'] as const;
@@ -270,6 +272,24 @@ function buildServer(): FastifyInstance {
   });
 
   registerLogging(app, allowedOrigin);
+
+  // Configure email service if SMTP settings are provided
+  if (env.SMTP_HOST && env.SMTP_USER && env.SMTP_PASS) {
+    emailService.configure({
+      host: env.SMTP_HOST,
+      port: env.SMTP_PORT ? parseInt(env.SMTP_PORT, 10) : 587,
+      secure: env.SMTP_SECURE === 'true',
+      user: env.SMTP_USER,
+      pass: env.SMTP_PASS,
+      from: env.SMTP_FROM || env.SMTP_USER
+    });
+    console.log('[EMAIL] Email service configured with host:', env.SMTP_HOST);
+  } else {
+    console.log('[EMAIL] Email service not configured (missing SMTP_HOST, SMTP_USER, or SMTP_PASS)');
+  }
+
+  // Register email routes
+  registerEmailRoutes(app, allowedOrigin);
 
   // Simple mutable copies for in-memory CRUD (placeholder until DB)
   var projectsStore = sampleProjects.slice();

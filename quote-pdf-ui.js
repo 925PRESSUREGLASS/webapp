@@ -388,6 +388,7 @@
      * Send email
      */
     sendEmail: function() {
+      var self = this;
       // Get form values
       var to = document.getElementById('email-to').value.trim();
       var subject = document.getElementById('email-subject').value.trim();
@@ -409,8 +410,76 @@
         return;
       }
 
-      // For now, open mailto link
-      // In production, this would send via backend API
+      // Check if API endpoint is available
+      var apiUrl = window.APP && window.APP.config && window.APP.config.apiUrl;
+      
+      if (apiUrl) {
+        // Try to send via backend API with PDF attachment
+        UIComponents.showToast('Sending email...', 'info');
+        
+        // Generate PDF as base64
+        var quoteNumber = window._emailData && window._emailData.quoteNumber ? window._emailData.quoteNumber : 'Quote';
+        var pdfBase64 = null;
+        
+        // Try to get PDF data if available
+        if (window.jspdf && window._emailData) {
+          try {
+            var doc = PDFHelpers.generateQuotePDF(window._emailData);
+            if (doc) {
+              pdfBase64 = doc.output('datauristring').split(',')[1]; // Get base64 part
+            }
+          } catch (err) {
+            console.warn('[QUOTE-PDF] Could not generate PDF for attachment:', err);
+          }
+        }
+        
+        // Send via API
+        fetch(apiUrl + '/email/send-quote', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json'
+          },
+          body: JSON.stringify({
+            to: to,
+            subject: subject,
+            body: body,
+            attachment: pdfBase64,
+            quoteNumber: quoteNumber
+          })
+        })
+        .then(function(response) {
+          return response.json().then(function(data) {
+            return { ok: response.ok, data: data };
+          });
+        })
+        .then(function(result) {
+          if (result.ok && result.data.success) {
+            self.closeEmailModal();
+            UIComponents.showToast('Email sent successfully!', 'success');
+          } else {
+            // API returned error, fall back to mailto
+            console.warn('[QUOTE-PDF] API email failed:', result.data.error);
+            self._sendViaMailto(to, subject, body);
+          }
+        })
+        .catch(function(err) {
+          // Network error, fall back to mailto
+          console.warn('[QUOTE-PDF] API email error:', err);
+          self._sendViaMailto(to, subject, body);
+        });
+      } else {
+        // No API configured, use mailto fallback
+        this._sendViaMailto(to, subject, body);
+      }
+    },
+
+    /**
+     * Fallback email via mailto link
+     * @param {string} to - Recipient email
+     * @param {string} subject - Email subject
+     * @param {string} body - Email body
+     */
+    _sendViaMailto: function(to, subject, body) {
       var mailtoLink = 'mailto:' + encodeURIComponent(to) +
         '?subject=' + encodeURIComponent(subject) +
         '&body=' + encodeURIComponent(body);
@@ -420,9 +489,6 @@
       this.closeEmailModal();
 
       UIComponents.showToast('Email client opened. Please attach the PDF manually.', 'info');
-
-      // TODO: Implement backend email sending with attachment
-      // This would require a server-side endpoint to handle PDF attachment
     },
 
     /**
