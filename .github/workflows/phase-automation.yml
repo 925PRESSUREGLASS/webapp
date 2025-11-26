@@ -44,7 +44,7 @@ jobs:
     
     steps:
       - name: Checkout repository
-        uses: actions/checkout@v3
+        uses: actions/checkout@v6
         with:
           fetch-depth: 0  # Full history for accurate metrics
       
@@ -426,7 +426,7 @@ jobs:
     
     steps:
       - name: Checkout repository
-        uses: actions/checkout@v3
+        uses: actions/checkout@v6
       
       - name: Setup Node.js
         uses: actions/setup-node@v3
@@ -466,7 +466,7 @@ jobs:
     
     steps:
       - name: Checkout repository
-        uses: actions/checkout@v3
+        uses: actions/checkout@v6
       
       - name: Setup Node.js
         uses: actions/setup-node@v3
