@@ -15,8 +15,8 @@
   "devDependencies": {
     "@playwright/test": "1.56.1",
     "http-server": "14.1.1",
-    "prisma": "^5.14.0",
-    "turbo": "^2.0.5"
+    "prisma": "5.14.0",
+    "turbo": "2.0.5"
   },
   "dependencies": {
     "@capacitor/android": "6.0.0",
@@ -30,7 +30,7 @@
     "@capacitor/push-notifications": "6.0.0",
     "@capacitor/share": "6.0.0",
     "@capacitor/status-bar": "6.0.0",
-    "@prisma/client": "^5.14.0",
+    "@prisma/client": "5.14.0",
     "jsdom": "27.2.0"
   },
   "engines": {
@@ -44,10 +44,12 @@
     "test:debug": "playwright test --debug",
     "cap:sync": "npx cap sync",
     "cap:copy": "npx cap copy",
+    "cap:verify": "node scripts/cap-verify.js",
     "cap:open:ios": "npx cap open ios",
     "cap:open:android": "npx cap open android",
     "cap:update": "npx cap update",
     "audit:daily": "npm audit --omit=dev",
+    "validate:config": "node scripts/validate-config.js",
     "dev:api": "npm run dev --prefix apps/meta-api",
     "dev:dashboard": "npm run dev --prefix apps/meta-dashboard",
     "dev": "npm run dev:api & npm run dev:dashboard",
