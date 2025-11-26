@@ -19,9 +19,19 @@ function resolvePath(path) {
 
 // Helper function to wait for APP object to exist
 async function waitForAppObject(page) {
-  await page.waitForFunction(() => {
-    return typeof window.APP === 'object' && window.APP !== null;
-  }, { timeout: 20000 });
+  async function attempt() {
+    await page.waitForFunction(() => {
+      return typeof window.APP === 'object' && window.APP !== null;
+    }, { timeout: 20000 });
+  }
+
+  try {
+    await attempt();
+  } catch (error) {
+    // Retry once in case the initial load stalled
+    await page.reload({ waitUntil: 'domcontentloaded' });
+    await attempt();
+  }
 }
 
 async function gotoApp(page, options) {

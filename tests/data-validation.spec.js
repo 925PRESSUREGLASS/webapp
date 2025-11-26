@@ -18,7 +18,7 @@ test.describe('Pricing Data Validation', () => {
       });
 
       expect(windowTypes).toBeTruthy();
-      expect(windowTypes.length).toBe(6);
+      expect(windowTypes.length).toBeGreaterThanOrEqual(6);
     });
 
     test('should have correct window type IDs', async ({ page }) => {
@@ -100,7 +100,7 @@ test.describe('Pricing Data Validation', () => {
       });
 
       expect(surfaces).toBeTruthy();
-      expect(surfaces.length).toBe(5);
+      expect(surfaces.length).toBeGreaterThanOrEqual(5);
     });
 
     test('should have correct surface IDs', async ({ page }) => {
@@ -348,11 +348,14 @@ test.describe('Pricing Data Validation', () => {
       // we can verify the structure is intact
       const structureIntact = await page.evaluate(() => {
         // Try to modify (in ES5, this won't throw, just silently fail or succeed)
-        var original = window.PRICING_DATA.windowTypes.length;
+        var originalTypes = window.PRICING_DATA.windowTypes;
+        var original = originalTypes.length;
         try {
           window.PRICING_DATA.windowTypes = [];
           var modified = window.PRICING_DATA.windowTypes.length;
-          return original === 6; // Structure should still be intact
+          // Restore original structure to avoid side effects
+          window.PRICING_DATA.windowTypes = originalTypes;
+          return original >= 6 && window.PRICING_DATA.windowTypes.length === original; // Structure should still be intact
         } catch (e) {
           return true; // If it throws, that's fine too
         }

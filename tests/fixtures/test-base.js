@@ -57,7 +57,7 @@ const test = base.extend({
    * @param {Function} use - Fixture use function
    */
   helpers: async ({ appReady }, use) => {
-    const helpers = createHelpers(appReady);
+    const helpers = await createHelpers(appReady);
     await use(helpers);
   },
 

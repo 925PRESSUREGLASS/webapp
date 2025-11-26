@@ -129,6 +129,9 @@ test.describe('Client Database', () => {
           email: 'original@example.com'
         });
 
+        var start = Date.now();
+        while (Date.now() - start < 5) {}
+
         // Update client
         var updated = window.ClientDatabase.save({
           id: original.id,

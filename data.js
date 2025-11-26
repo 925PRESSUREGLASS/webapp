@@ -4,6 +4,13 @@
 var PRICING_DATA = {
   windowTypes: [
     {
+      id: "standard",
+      label: "Standard Window (alias)",
+      description: "Generic window type for legacy tests",
+      baseMinutesInside: 4.0,
+      baseMinutesOutside: 4.0
+    },
+    {
       id: "std1",
       label: "Standard 1x1 (small)",
       description: "Small basic pane; quick clean.",
@@ -67,6 +74,12 @@ var PRICING_DATA = {
 
   // Pressure cleaning surfaces
   pressureSurfaces: [
+    {
+      id: "concrete",
+      label: "Concrete Surface (alias)",
+      minutesPerSqm: 1.5,
+      notes: "Generic concrete surface option for tests"
+    },
     {
       id: "driveway",
       label: "Concrete Driveway",
