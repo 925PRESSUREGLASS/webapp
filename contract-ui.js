@@ -220,13 +220,23 @@
   function editContractFromDetail() {
     if (!_currentContractId) return;
 
-    if (window.UIComponents) {
-      window.UIComponents.showToast('Edit functionality coming soon!', 'info');
-    }
+    // Close detail modal first
+    closeContractDetail();
 
-    // TODO: Implement edit mode in wizard
-    // closeContractDetail();
-    // openContractWizard(_currentContractId);
+    // Open wizard in edit mode
+    if (typeof openContractWizardForEdit === 'function') {
+      openContractWizardForEdit(_currentContractId);
+    } else if (window.ContractWizard && window.ContractWizard.initEditMode) {
+      var modal = document.getElementById('contract-wizard-modal');
+      if (modal) {
+        modal.style.display = 'flex';
+        window.ContractWizard.initEditMode(_currentContractId);
+      }
+    } else {
+      if (window.UIComponents) {
+        window.UIComponents.showToast('Edit functionality not available', 'error');
+      }
+    }
   }
 
   /**

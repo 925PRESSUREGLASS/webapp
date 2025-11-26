@@ -10,14 +10,19 @@
     return;
   }
 
+  // Wizard state
   var _currentStep = 1;
+  var _editMode = false;
+  var _editContractId = null;
   var _contractData = {};
 
   /**
-   * Initialize wizard
+   * Initialize wizard (for new contracts)
    */
   function init() {
     _currentStep = 1;
+    _editMode = false;
+    _editContractId = null;
     _contractData = {
       type: null,
       client: {},
@@ -28,6 +33,12 @@
       schedule: {},
       payment: {}
     };
+
+    // Update modal title
+    var titleEl = document.getElementById('contract-wizard-title');
+    if (titleEl) {
+      titleEl.textContent = 'New Contract';
+    }
 
     showStep(1);
     populateClientDropdown();
@@ -745,13 +756,22 @@
     }
 
     _contractData.status = 'draft';
-    var contract = window.ContractManager.createContract(_contractData);
-
-    if (window.UIComponents) {
-      window.UIComponents.showToast('Contract saved as draft', 'success');
+    
+    // In edit mode, update existing contract
+    if (_editMode && _editContractId) {
+      window.ContractManager.updateContract(_editContractId, _contractData);
+      if (window.UIComponents) {
+        window.UIComponents.showToast('Contract updated as draft', 'success');
+      }
+    } else {
+      window.ContractManager.createContract(_contractData);
+      if (window.UIComponents) {
+        window.UIComponents.showToast('Contract saved as draft', 'success');
+      }
     }
 
-    // Navigate to contracts page
+    // Close wizard and navigate to contracts page
+    closeContractWizard();
     if (window.navigateTo) {
       window.navigateTo('contracts');
     }
@@ -767,21 +787,190 @@
     }
 
     _contractData.status = 'pending';
-    var contract = window.ContractManager.createContract(_contractData);
-
-    if (window.UIComponents) {
-      window.UIComponents.showToast('Contract created successfully!', 'success');
+    
+    // In edit mode, update existing contract
+    if (_editMode && _editContractId) {
+      window.ContractManager.updateContract(_editContractId, _contractData);
+      if (window.UIComponents) {
+        window.UIComponents.showToast('Contract updated successfully!', 'success');
+      }
+    } else {
+      window.ContractManager.createContract(_contractData);
+      if (window.UIComponents) {
+        window.UIComponents.showToast('Contract created successfully!', 'success');
+      }
     }
 
-    // Navigate to contracts page
+    // Close wizard and navigate to contracts page
+    closeContractWizard();
     if (window.navigateTo) {
       window.navigateTo('contracts');
     }
   }
 
+  /**
+   * Initialize wizard in edit mode with existing contract
+   * @param {string} contractId - The ID of the contract to edit
+   */
+  function initEditMode(contractId) {
+    if (!window.ContractManager) {
+      console.error('[CONTRACT-WIZARD] ContractManager not available');
+      return;
+    }
+
+    var contract = window.ContractManager.getContract(contractId);
+    if (!contract) {
+      if (window.UIComponents) {
+        window.UIComponents.showToast('Contract not found', 'error');
+      }
+      return;
+    }
+
+    // Set edit mode
+    _editMode = true;
+    _editContractId = contractId;
+    _currentStep = 1;
+
+    // Populate contract data from existing contract
+    _contractData = {
+      type: contract.type || null,
+      client: {
+        id: contract.clientId || null,
+        name: contract.clientName || '',
+        phone: contract.clientPhone || '',
+        email: contract.clientEmail || '',
+        address: contract.clientAddress || ''
+      },
+      services: contract.services || [],
+      category: contract.category || 'windows',
+      frequency: {
+        id: contract.frequency || '',
+        interval: contract.frequencyInterval || 1,
+        unit: contract.frequencyUnit || 'month'
+      },
+      terms: {
+        startDate: contract.startDate || '',
+        endDate: contract.endDate || '',
+        duration: contract.duration || 12,
+        autoRenew: contract.autoRenew || false,
+        noticePeriod: contract.noticePeriod || 30
+      },
+      schedule: {
+        preferredDay: contract.preferredDay || null,
+        preferredTime: contract.preferredTime || '',
+        flexible: contract.flexible || false
+      },
+      payment: {
+        method: contract.paymentMethod || 'invoice',
+        terms: contract.paymentTerms || 'due-on-completion'
+      },
+      notes: contract.notes || ''
+    };
+
+    // Update modal title
+    var titleEl = document.getElementById('contract-wizard-title');
+    if (titleEl) {
+      titleEl.textContent = 'Edit Contract';
+    }
+
+    // Pre-fill form fields
+    prefillFormFields();
+
+    // Show wizard
+    showStep(1);
+    populateClientDropdown();
+    setupRealtimeValidation();
+
+    console.log('[CONTRACT-WIZARD] Edit mode initialized for contract:', contractId);
+  }
+
+  /**
+   * Pre-fill wizard form fields with existing contract data
+   */
+  function prefillFormFields() {
+    // Step 1: Contract Type - highlight selected type card
+    if (_contractData.type) {
+      var cards = document.querySelectorAll('.contract-type-card');
+      for (var i = 0; i < cards.length; i++) {
+        cards[i].classList.remove('selected');
+        var cardType = cards[i].getAttribute('data-type') || cards[i].getAttribute('onclick');
+        if (cardType && cardType.indexOf(_contractData.type) !== -1) {
+          cards[i].classList.add('selected');
+        }
+      }
+      var nextBtn = document.getElementById('contract-step1-next');
+      if (nextBtn) {
+        nextBtn.disabled = false;
+      }
+    }
+
+    // Step 2: Client Information
+    var clientSelect = document.getElementById('contract-client-select');
+    if (clientSelect && _contractData.client.id) {
+      clientSelect.value = _contractData.client.id;
+    }
+
+    var nameField = document.getElementById('contract-client-name');
+    var phoneField = document.getElementById('contract-client-phone');
+    var emailField = document.getElementById('contract-client-email');
+    var addressField = document.getElementById('contract-client-address');
+
+    if (nameField) nameField.value = _contractData.client.name || '';
+    if (phoneField) phoneField.value = _contractData.client.phone || '';
+    if (emailField) emailField.value = _contractData.client.email || '';
+    if (addressField) addressField.value = _contractData.client.address || '';
+
+    // Step 3: Services and frequency will be populated when step is shown
+    renderServicesList();
+
+    // Step 4: Contract terms
+    var startDateField = document.getElementById('contract-start-date');
+    var durationField = document.getElementById('contract-duration');
+    var autoRenewField = document.getElementById('contract-auto-renew');
+    var noticePeriodField = document.getElementById('contract-notice-period');
+    var paymentMethodField = document.getElementById('contract-payment-method');
+    var paymentTermsField = document.getElementById('contract-payment-terms');
+
+    if (startDateField && _contractData.terms.startDate) {
+      startDateField.value = _contractData.terms.startDate;
+    }
+    if (durationField) durationField.value = _contractData.terms.duration || 12;
+    if (autoRenewField) autoRenewField.checked = _contractData.terms.autoRenew || false;
+    if (noticePeriodField) noticePeriodField.value = _contractData.terms.noticePeriod || 30;
+    if (paymentMethodField) paymentMethodField.value = _contractData.payment.method || 'invoice';
+    if (paymentTermsField) paymentTermsField.value = _contractData.payment.terms || 'due-on-completion';
+
+    // Step 5: Schedule preferences
+    var preferredDayField = document.getElementById('contract-preferred-day');
+    var preferredTimeField = document.getElementById('contract-preferred-time');
+    var flexibleField = document.getElementById('contract-flexible');
+    var notesField = document.getElementById('contract-notes');
+
+    if (preferredDayField && _contractData.schedule.preferredDay !== null) {
+      preferredDayField.value = _contractData.schedule.preferredDay;
+    }
+    if (preferredTimeField) preferredTimeField.value = _contractData.schedule.preferredTime || '';
+    if (flexibleField) flexibleField.checked = _contractData.schedule.flexible || false;
+    if (notesField) notesField.value = _contractData.notes || '';
+  }
+
+  /**
+   * Close contract wizard modal
+   */
+  function closeContractWizard() {
+    var modal = document.getElementById('contract-wizard-modal');
+    if (modal) {
+      modal.style.display = 'none';
+    }
+    // Reset edit mode
+    _editMode = false;
+    _editContractId = null;
+  }
+
   // Public API
   var ContractWizard = {
     init: init,
+    initEditMode: initEditMode,
     selectContractType: selectContractType,
     loadClientDetails: loadClientDetails,
     wizardNext: wizardNext,
@@ -790,7 +979,8 @@
     removeService: removeContractService,
     updatePricing: updateContractPricing,
     saveDraft: saveContractDraft,
-    createFinal: createContractFinal
+    createFinal: createContractFinal,
+    closeWizard: closeContractWizard
   };
 
   // Register module
@@ -864,10 +1054,28 @@ function openContractWizard() {
   }
 }
 
-function closeContractWizard() {
+/**
+ * Open contract wizard in edit mode for an existing contract
+ * @param {string} contractId - The ID of the contract to edit
+ */
+function openContractWizardForEdit(contractId) {
   var modal = document.getElementById('contract-wizard-modal');
   if (modal) {
-    modal.style.display = 'none';
+    modal.style.display = 'flex';
+    if (window.ContractWizard) {
+      window.ContractWizard.initEditMode(contractId);
+    }
+  }
+}
+
+function closeContractWizard() {
+  if (window.ContractWizard) {
+    window.ContractWizard.closeWizard();
+  } else {
+    var modal = document.getElementById('contract-wizard-modal');
+    if (modal) {
+      modal.style.display = 'none';
+    }
   }
 }
 
