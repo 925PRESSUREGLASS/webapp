@@ -30,6 +30,9 @@ jobs:
       - name: Run npm audit
         run: npm audit --omit=dev
 
+      - name: Validate config (no secrets)
+        run: npm run validate:config
+
 
   build:
     runs-on: ubuntu-latest
