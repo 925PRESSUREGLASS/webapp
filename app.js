@@ -831,6 +831,32 @@
     return { cost: cost, minutes: minutes, hours: hours };
   }
 
+  function updateLineEstimates(config) {
+    var cfg = config || buildStateFromUI(true);
+    // Windows
+    if (state.windowLines && state.windowLines.length) {
+      for (var i = 0; i < state.windowLines.length; i++) {
+        var wLine = state.windowLines[i];
+        var el = document.querySelector('tr[data-id="' + wLine.id + '"] .line-estimate');
+        if (el) {
+          var est = computeWindowLineEstimate(wLine, cfg);
+          el.textContent = '$' + est.cost.toFixed(2) + ' · ' + est.hours.toFixed(2) + 'h';
+        }
+      }
+    }
+    // Pressure
+    if (state.pressureLines && state.pressureLines.length) {
+      for (var j = 0; j < state.pressureLines.length; j++) {
+        var pLine = state.pressureLines[j];
+        var pel = document.querySelector('tr[data-id="' + pLine.id + '"] .line-estimate');
+        if (pel) {
+          var pest = computePressureLineEstimate(pLine, cfg);
+          pel.textContent = '$' + pest.cost.toFixed(2) + ' · ' + pest.hours.toFixed(2) + 'h';
+        }
+      }
+    }
+  }
+
   function renderWindowLineRow(line, config) {
     var row = createEl('tr');
     row.setAttribute('data-id', line.id);
@@ -1472,6 +1498,9 @@
       time.setupHours.toFixed(2) + " hrs";
     $("timeEstimateDisplay").textContent =
       time.totalHours.toFixed(2) + " hrs total";
+
+    // Update per-line estimates to reflect latest calculations
+    updateLineEstimates(s);
 
     // Update chart
     updateTimeChart(time);
