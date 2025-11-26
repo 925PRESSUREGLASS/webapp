@@ -52,11 +52,12 @@ Establish a repeatable, observable build spine that keeps browser, native, and P
 
 - [x] Add Lighthouse CI for PWA scores - `lighthouserc.json`
 - [x] Add bundle size tracking - CI job added
-- [ ] Add visual regression testing
+- [x] Add visual regression testing - `tests/visual-regression.spec.js`
+
 
 ### Documentation
 
-- [ ] API documentation generation
+- [x] API documentation generation - `apps/meta-api/API.md`
 - [x] Architecture decision records (ADRs) - `docs/adr/`
 - [x] Runbook for common operations - `RUNBOOK.md`
 

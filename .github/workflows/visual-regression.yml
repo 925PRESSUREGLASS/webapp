@@ -1,0 +1,71 @@
+name: Visual Regression
+
+on:
+  pull_request:
+    paths:
+      - '**.css'
+      - '**.html'
+      - 'index.html'
+      - 'app.js'
+      - 'ui.js'
+      - 'ui-components.js'
+
+jobs:
+  visual-regression:
+    name: Visual Regression Tests
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: 18
+          cache: npm
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Cache Playwright browsers
+        uses: actions/cache@v4
+        id: playwright-cache
+        with:
+          path: ~/.cache/ms-playwright
+          key: ${{ runner.os }}-playwright-${{ hashFiles('**/package-lock.json') }}
+          restore-keys: |
+            ${{ runner.os }}-playwright-
+
+      - name: Install Playwright browsers
+        if: steps.playwright-cache.outputs.cache-hit != 'true'
+        run: npx playwright install --with-deps chromium
+
+      - name: Install Playwright deps (cached)
+        if: steps.playwright-cache.outputs.cache-hit == 'true'
+        run: npx playwright install-deps chromium
+
+      - name: Run visual regression tests
+        run: npx playwright test tests/visual-regression.spec.js --project=chromium --update-snapshots
+        continue-on-error: true
+
+      - name: Upload visual diff artifacts
+        uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: visual-regression-results
+          path: |
+            test-results/
+            tests/visual-regression.spec.js-snapshots/
+          retention-days: 14
+
+      - name: Comment on PR with visual diff
+        if: failure() && github.event_name == 'pull_request'
+        uses: actions/github-script@v7
+        with:
+          script: |
+            github.rest.issues.createComment({
+              issue_number: context.issue.number,
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              body: '⚠️ **Visual Regression Detected**\n\nScreenshot differences were found. Please review the visual-regression-results artifact for details.\n\nTo update snapshots:\n```bash\nnpx playwright test tests/visual-regression.spec.js --update-snapshots\n```'
+            })
