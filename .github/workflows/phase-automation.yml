@@ -258,7 +258,7 @@ jobs:
       
       - name: Create/Update Progress Issue
         if: github.event.schedule || github.event.inputs.report_type == 'weekly'
-        uses: actions/github-script@v6
+        uses: actions/github-script@v8
         with:
           script: |
             const fs = require('fs');
@@ -330,7 +330,7 @@ jobs:
       
       - name: Post Milestone Achievement
         if: steps.milestones.outputs.met == 'true'
-        uses: actions/github-script@v6
+        uses: actions/github-script@v8
         with:
           script: |
             // Create a celebratory issue for milestone
@@ -359,7 +359,7 @@ jobs:
       
       - name: Alert on Risks
         if: steps.tests.outputs.pass_rate < 70
-        uses: actions/github-script@v6
+        uses: actions/github-script@v8
         with:
           script: |
             // Create warning issue if test pass rate drops below 70%
@@ -501,7 +501,7 @@ jobs:
       
       - name: Comment bundle size on PR
         if: github.event_name == 'pull_request'
-        uses: actions/github-script@v6
+        uses: actions/github-script@v8
         with:
           script: |
             github.rest.issues.createComment({
