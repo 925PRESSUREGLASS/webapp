@@ -163,3 +163,65 @@ jobs:
             playwright-report/
             test-results/
           retention-days: 14
+
+  lighthouse:
+    name: Lighthouse PWA Audit
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: 18
+          cache: npm
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Start server
+        run: |
+          npx http-server -p 8080 &
+          sleep 3
+
+      - name: Run Lighthouse
+        uses: treosh/lighthouse-ci-action@v12
+        with:
+          urls: |
+            http://localhost:8080/
+          uploadArtifacts: true
+          temporaryPublicStorage: true
+          configPath: ./lighthouserc.json
+
+  bundle-size:
+    name: Bundle Size Check
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: 18
+          cache: npm
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Build dashboard
+        run: npm run build:dashboard
+
+      - name: Check bundle size
+        run: |
+          echo "## Bundle Size Report" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "| File | Size | Gzipped |" >> $GITHUB_STEP_SUMMARY
+          echo "|------|------|---------|" >> $GITHUB_STEP_SUMMARY
+          for f in apps/meta-dashboard/dist/assets/*.js; do
+            size=$(du -h "$f" | cut -f1)
+            gzip_size=$(gzip -c "$f" | wc -c | awk '{printf "%.1f KB", $1/1024}')
+            name=$(basename "$f")
+            echo "| $name | $size | $gzip_size |" >> $GITHUB_STEP_SUMMARY
+          done
