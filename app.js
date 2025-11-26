@@ -603,17 +603,43 @@
   }
 
   function getAllWindowTypes() {
-    if (window.WINDOW_TYPES_ARRAY && WINDOW_TYPES_ARRAY.length) {
-      return WINDOW_TYPES_ARRAY;
+    var list = [];
+    var map = {};
+    var i;
+    var base = PRICING_DATA.windowTypes || [];
+    for (i = 0; i < base.length; i++) {
+      map[base[i].id] = true;
+      list.push(base[i]);
     }
-    return PRICING_DATA.windowTypes;
+    if (window.WINDOW_TYPES_ARRAY && WINDOW_TYPES_ARRAY.length) {
+      for (i = 0; i < WINDOW_TYPES_ARRAY.length; i++) {
+        if (!map[WINDOW_TYPES_ARRAY[i].id]) {
+          map[WINDOW_TYPES_ARRAY[i].id] = true;
+          list.push(WINDOW_TYPES_ARRAY[i]);
+        }
+      }
+    }
+    return list;
   }
 
   function getAllPressureSurfaces() {
-    if (window.PRESSURE_SURFACES_ARRAY_EXT && PRESSURE_SURFACES_ARRAY_EXT.length) {
-      return PRESSURE_SURFACES_ARRAY_EXT;
+    var list = [];
+    var map = {};
+    var i;
+    var base = PRICING_DATA.pressureSurfaces || [];
+    for (i = 0; i < base.length; i++) {
+      map[base[i].id] = true;
+      list.push(base[i]);
     }
-    return PRICING_DATA.pressureSurfaces;
+    if (window.PRESSURE_SURFACES_ARRAY_EXT && PRESSURE_SURFACES_ARRAY_EXT.length) {
+      for (i = 0; i < PRESSURE_SURFACES_ARRAY_EXT.length; i++) {
+        if (!map[PRESSURE_SURFACES_ARRAY_EXT[i].id]) {
+          map[PRESSURE_SURFACES_ARRAY_EXT[i].id] = true;
+          list.push(PRESSURE_SURFACES_ARRAY_EXT[i]);
+        }
+      }
+    }
+    return list;
   }
 
   function getWindowTypeLabel(typeId) {

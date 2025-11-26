@@ -113,6 +113,71 @@ var PRICING_DATA = {
   ]
 };
 
+// Fallback extended datasets (used when extended arrays are not provided separately)
+var FALLBACK_WINDOW_TYPES_EXT = [
+  { id: "sliding_600", label: "Sliding 600mm", category: "sliding", baseMinutesInside: 4, baseMinutesOutside: 4, basePrice: 20 },
+  { id: "sliding_750", label: "Sliding 750mm", category: "sliding", baseMinutesInside: 4, baseMinutesOutside: 4, basePrice: 22 },
+  { id: "sliding_900", label: "Sliding 900mm", category: "sliding", baseMinutesInside: 4, baseMinutesOutside: 4, basePrice: 24 },
+  { id: "sliding_1200", label: "Sliding 1200mm", category: "sliding", baseMinutesInside: 5, baseMinutesOutside: 5, basePrice: 25 },
+  { id: "sliding_1500", label: "Sliding 1500mm", category: "sliding", baseMinutesInside: 6, baseMinutesOutside: 6, basePrice: 28 },
+  { id: "sliding_1800", label: "Sliding 1800mm", category: "sliding", baseMinutesInside: 7, baseMinutesOutside: 7, basePrice: 30 },
+  { id: "awning_small", label: "Awning Small", category: "awning", baseMinutesInside: 3, baseMinutesOutside: 3, basePrice: 18 },
+  { id: "awning_large", label: "Awning Large", category: "awning", baseMinutesInside: 5, baseMinutesOutside: 5, basePrice: 22 },
+  { id: "fixed_small", label: "Fixed Small", category: "fixed", baseMinutesInside: 3, baseMinutesOutside: 3, basePrice: 16 },
+  { id: "fixed_large", label: "Fixed Large", category: "fixed", baseMinutesInside: 6, baseMinutesOutside: 6, basePrice: 24 },
+  { id: "louvre_300", label: "Louvre 300mm", category: "louvre", baseMinutesInside: 3, baseMinutesOutside: 3, basePrice: 18, difficulty: "hard" },
+  { id: "louvre_600", label: "Louvre 600mm", category: "louvre", baseMinutesInside: 4, baseMinutesOutside: 4, basePrice: 22, difficulty: "hard" },
+  { id: "double_hung_small", label: "Double Hung Small", category: "double", baseMinutesInside: 4, baseMinutesOutside: 4, basePrice: 20 },
+  { id: "double_hung_large", label: "Double Hung Large", category: "double", baseMinutesInside: 6, baseMinutesOutside: 6, basePrice: 26 },
+  { id: "door_glass", label: "Glass Door", category: "door", baseMinutesInside: 4, baseMinutesOutside: 4, basePrice: 25 },
+  { id: "door_slider", label: "Sliding Door", category: "door", baseMinutesInside: 5, baseMinutesOutside: 5, basePrice: 26 },
+  { id: "bay_window", label: "Bay Window", category: "feature", baseMinutesInside: 6, baseMinutesOutside: 6, basePrice: 30 },
+  { id: "picture_window", label: "Picture Window", category: "feature", baseMinutesInside: 6, baseMinutesOutside: 6, basePrice: 32 },
+  { id: "feature_arch", label: "Feature Arch", category: "feature", baseMinutesInside: 7, baseMinutesOutside: 7, basePrice: 34, difficulty: "hard" },
+  { id: "stairwell", label: "Stairwell Window", category: "feature", baseMinutesInside: 8, baseMinutesOutside: 8, basePrice: 36, difficulty: "hard" },
+  { id: "atrium", label: "Atrium Glass", category: "feature", baseMinutesInside: 9, baseMinutesOutside: 9, basePrice: 40, difficulty: "hard" },
+  { id: "shopfront_small", label: "Shopfront Small", category: "commercial", baseMinutesInside: 5, baseMinutesOutside: 5, basePrice: 28 },
+  { id: "shopfront_large", label: "Shopfront Large", category: "commercial", baseMinutesInside: 6, baseMinutesOutside: 6, basePrice: 32 },
+  { id: "skylight_small", label: "Skylight Small", category: "skylight", baseMinutesInside: 6, baseMinutesOutside: 6, basePrice: 30, difficulty: "hard" },
+  { id: "skylight_large", label: "Skylight Large", category: "skylight", baseMinutesInside: 8, baseMinutesOutside: 8, basePrice: 36, difficulty: "hard" },
+  { id: "balcony_glass", label: "Balcony Glass", category: "balustrade", baseMinutesInside: 5, baseMinutesOutside: 5, basePrice: 28, difficulty: "medium" }
+];
+
+var FALLBACK_PRESSURE_SURFACES_EXT = [
+  { id: "driveway_concrete", label: "Driveway - Concrete", category: "driveway", minutesPerSqm: 1.4, baseRate: 8, difficulty: "easy", notes: "Standard concrete" },
+  { id: "driveway_paving", label: "Driveway - Paving", category: "driveway", minutesPerSqm: 1.6, baseRate: 9, difficulty: "medium", notes: "Pavers" },
+  { id: "driveway_exposed", label: "Driveway - Exposed Aggregate", category: "driveway", minutesPerSqm: 1.7, baseRate: 10, difficulty: "medium", notes: "Aggregate" },
+  { id: "driveway_stamped", label: "Driveway - Stamped Concrete", category: "driveway", minutesPerSqm: 1.6, baseRate: 9, difficulty: "medium", notes: "Stamped finish" },
+  { id: "patio_concrete", label: "Patio - Concrete", category: "patio", minutesPerSqm: 1.6, baseRate: 8, difficulty: "easy", notes: "Flat patio concrete" },
+  { id: "patio_limestone", label: "Patio - Limestone", category: "patio", minutesPerSqm: 1.8, baseRate: 10, difficulty: "hard", notes: "SOFT surface" },
+  { id: "patio_paving", label: "Patio - Paving", category: "patio", minutesPerSqm: 1.7, baseRate: 9, difficulty: "medium", notes: "Pavers patio" },
+  { id: "deck_timber", label: "Deck - Timber", category: "decking", minutesPerSqm: 1.9, baseRate: 11, difficulty: "hard", notes: "Delicate timber" },
+  { id: "deck_composite", label: "Deck - Composite", category: "decking", minutesPerSqm: 1.7, baseRate: 10, difficulty: "medium", notes: "Composite boards" },
+  { id: "pool_surround", label: "Pool Surround", category: "patio", minutesPerSqm: 1.6, baseRate: 9, difficulty: "medium", notes: "Mixed surfaces" },
+  { id: "roof_tile", label: "Roof - Tile", category: "roof", minutesPerSqm: 2.2, baseRate: 12, difficulty: "hard", notes: "Roof work" },
+  { id: "roof_metal", label: "Roof - Metal", category: "roof", minutesPerSqm: 2.0, baseRate: 11, difficulty: "hard", notes: "Roof work" },
+  { id: "roof_asbestos", label: "Roof - Asbestos", category: "roof", minutesPerSqm: 3.0, baseRate: 15, difficulty: "extreme", notes: "Special handling" },
+  { id: "wall_brick", label: "Wall - Brick", category: "walls", minutesPerSqm: 1.5, baseRate: 8, difficulty: "medium", notes: "Walls" },
+  { id: "wall_render", label: "Wall - Render", category: "walls", minutesPerSqm: 1.7, baseRate: 9, difficulty: "medium", notes: "Render" },
+  { id: "wall_cladding", label: "Wall - Cladding", category: "walls", minutesPerSqm: 1.6, baseRate: 9, difficulty: "medium", notes: "Cladding" },
+  { id: "path_concrete", label: "Path - Concrete", category: "paths", minutesPerSqm: 1.4, baseRate: 7, difficulty: "easy", notes: "Concrete path" },
+  { id: "path_paver", label: "Path - Paver", category: "paths", minutesPerSqm: 1.6, baseRate: 8, difficulty: "medium", notes: "Paver path" },
+  { id: "garage_floor", label: "Garage Floor", category: "garage", minutesPerSqm: 1.5, baseRate: 8, difficulty: "easy", notes: "Garage" },
+  { id: "carpark", label: "Car Park", category: "commercial", minutesPerSqm: 1.3, baseRate: 7, difficulty: "easy", notes: "Large flat" },
+  { id: "factory_floor", label: "Factory Floor", category: "commercial", minutesPerSqm: 1.5, baseRate: 8, difficulty: "medium", notes: "Factory" },
+  { id: "warehouse", label: "Warehouse", category: "commercial", minutesPerSqm: 1.4, baseRate: 7, difficulty: "easy", notes: "Warehouse" },
+  { id: "tennis_court", label: "Tennis Court", category: "sports", minutesPerSqm: 1.8, baseRate: 10, difficulty: "hard", notes: "Sports court" },
+  { id: "basketball_court", label: "Basketball Court", category: "sports", minutesPerSqm: 1.7, baseRate: 9, difficulty: "medium", notes: "Sports court" },
+  { id: "playground", label: "Playground", category: "public", minutesPerSqm: 1.9, baseRate: 11, difficulty: "hard", notes: "Playground" },
+  { id: "steps", label: "Steps", category: "paths", minutesPerSqm: 1.8, baseRate: 10, difficulty: "medium", notes: "Steps" },
+  { id: "retaining_wall", label: "Retaining Wall", category: "walls", minutesPerSqm: 1.7, baseRate: 9, difficulty: "medium", notes: "Retaining" },
+  { id: "bin_area", label: "Bin Area", category: "commercial", minutesPerSqm: 1.6, baseRate: 9, difficulty: "medium", notes: "Bin area" },
+  { id: "graffiti_wall", label: "Graffiti Wall", category: "walls", minutesPerSqm: 2.0, baseRate: 12, difficulty: "hard", notes: "Graffiti removal" },
+  { id: "solar_panel", label: "Solar Panel Cleaning", category: "roof", minutesPerSqm: 2.5, baseRate: 14, difficulty: "hard", notes: "Roof delicate" },
+  { id: "fence_wood", label: "Fence Wood", category: "fence", minutesPerSqm: 1.6, baseRate: 8, difficulty: "medium", notes: "Fence" },
+  { id: "fence_colorbond", label: "Fence Colorbond", category: "fence", minutesPerSqm: 1.4, baseRate: 7, difficulty: "easy", notes: "Fence" }
+];
+
 // Quick lookup maps
 var windowTypeMap = {};
 var pressureSurfaceMap = {};
@@ -122,15 +187,40 @@ var accessModifierMap = {};
 // Feature flag: enable extended Australian window types
 var USE_EXTENDED_TYPES = true;
 
+function mergeUniqueById(baseArr, extraArr) {
+  var map = {};
+  var result = [];
+  var i;
+  for (i = 0; i < baseArr.length; i++) {
+    map[baseArr[i].id] = true;
+    result.push(baseArr[i]);
+  }
+  for (i = 0; i < extraArr.length; i++) {
+    if (!map[extraArr[i].id]) {
+      map[extraArr[i].id] = true;
+      result.push(extraArr[i]);
+    }
+  }
+  return result;
+}
+
 (function initDataMaps() {
+  // Ensure extended arrays exist even if not provided externally
+  if (!window.WINDOW_TYPES_ARRAY || !window.WINDOW_TYPES_ARRAY.length) {
+    window.WINDOW_TYPES_ARRAY = mergeUniqueById(PRICING_DATA.windowTypes, FALLBACK_WINDOW_TYPES_EXT);
+  }
+  if (!window.PRESSURE_SURFACES_ARRAY_EXT || !window.PRESSURE_SURFACES_ARRAY_EXT.length) {
+    window.PRESSURE_SURFACES_ARRAY_EXT = mergeUniqueById(PRICING_DATA.pressureSurfaces, FALLBACK_PRESSURE_SURFACES_EXT);
+  }
+
   // Build window type map
   var windowTypesToUse = PRICING_DATA.windowTypes;
 
   // If extended types are available and enabled, merge them
   if (USE_EXTENDED_TYPES && window.WINDOW_TYPES_ARRAY) {
     // Keep original types for backward compatibility
-    // Add extended types after
-    windowTypesToUse = PRICING_DATA.windowTypes.concat(WINDOW_TYPES_ARRAY);
+    // Add extended types after, removing duplicates
+    windowTypesToUse = mergeUniqueById(PRICING_DATA.windowTypes, WINDOW_TYPES_ARRAY);
   }
 
   // Build map
