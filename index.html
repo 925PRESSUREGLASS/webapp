@@ -378,22 +378,54 @@
 							</label>
 
 							<!-- PRESSURE CLEAN SETTINGS -->
-							<label class="field">
-								<span class="field-label">Pressure Clean Base Rate ($/hr)</span>
-								<input id="pressureHourlyRateInput" type="number" min="0" step="1" value="120" inputmode="decimal" />
-								<small class="field-help">
-									Used for all surface time calculations.
-								</small>
-							</label>
+								<label class="field">
+									<span class="field-label">Pressure Clean Base Rate ($/hr)</span>
+									<input id="pressureHourlyRateInput" type="number" min="0" step="1" value="120" inputmode="decimal" />
+									<small class="field-help">
+										Used for all surface time calculations.
+									</small>
+								</label>
 
-							<label class="field">
-								<span class="field-label">Travel / Setup Buffer (mins)</span>
-								<input id="setupBufferMinutesInput" type="number" min="0" step="5" value="15" inputmode="numeric" />
-								<small class="field-help">
-									Added once per job to cover hose run, machine setup, etc.
-								</small>
-							</label>
-						</div>
+								<label class="field">
+									<span class="field-label">Travel / Setup Buffer (mins)</span>
+									<input id="setupBufferMinutesInput" type="number" min="0" step="5" value="15" inputmode="numeric" />
+									<small class="field-help">
+										Added once per job to cover hose run, machine setup, etc.
+									</small>
+								</label>
+
+								<label class="field">
+									<span class="field-label">Travel Time (mins)</span>
+									<input id="travelMinutesInput" type="number" min="0" step="5" value="0" inputmode="numeric" />
+									<small class="field-help">
+										Total travel time for this job.
+									</small>
+								</label>
+
+								<label class="field">
+									<span class="field-label">Travel Distance (km)</span>
+									<input id="travelKmInput" type="number" min="0" step="0.1" value="0" inputmode="decimal" />
+									<small class="field-help">
+										Total travel distance (km).
+									</small>
+								</label>
+
+								<label class="field">
+									<span class="field-label">Travel Rate ($/hr)</span>
+									<input id="travelRatePerHourInput" type="number" min="0" step="1" value="95" inputmode="decimal" />
+									<small class="field-help">
+										Hourly travel rate used for travel time.
+									</small>
+								</label>
+
+								<label class="field">
+									<span class="field-label">Travel Rate ($/km)</span>
+									<input id="travelRatePerKmInput" type="number" min="0" step="0.1" value="1.5" inputmode="decimal" />
+									<small class="field-help">
+										Per-kilometer travel rate.
+									</small>
+								</label>
+							</div>
 
 						<!-- AUTOSAVE & PRESETS -->
 						<div class="config-footer">

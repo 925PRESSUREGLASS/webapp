@@ -231,6 +231,18 @@
     var setupBufferMinutes = Math.max(0, parseFloat(
       $("setupBufferMinutesInput").value
     ) || 0);
+    var travelMinutes = Math.max(0, parseFloat(
+      $("travelMinutesInput") ? $("travelMinutesInput").value : 0
+    ) || 0);
+    var travelKm = Math.max(0, parseFloat(
+      $("travelKmInput") ? $("travelKmInput").value : 0
+    ) || 0);
+    var travelRatePerHour = Math.max(0, parseFloat(
+      $("travelRatePerHourInput") ? $("travelRatePerHourInput").value : 0
+    ) || 0);
+    var travelRatePerKm = Math.max(0, parseFloat(
+      $("travelRatePerKmInput") ? $("travelRatePerKmInput").value : 0
+    ) || 0);
 
     var quoteTitle = $("quoteTitleInput").value || "";
     var clientName = $("clientNameInput").value || "";
@@ -264,6 +276,10 @@
       outsideMultiplier: outsideMultiplier,
       pressureHourlyRate: pressureHourlyRate,
       setupBufferMinutes: setupBufferMinutes,
+      travelMinutes: travelMinutes,
+      travelKm: travelKm,
+      travelRatePerHour: travelRatePerHour,
+      travelRatePerKm: travelRatePerKm,
       quoteTitle: quoteTitle,
       clientName: clientName,
       clientLocation: clientLocation,
@@ -300,6 +316,14 @@
     if (typeof state.setupBufferMinutes === "number")
       $("setupBufferMinutesInput").value =
         state.setupBufferMinutes;
+    if (typeof state.travelMinutes === "number" && $("travelMinutesInput"))
+      $("travelMinutesInput").value = state.travelMinutes;
+    if (typeof state.travelKm === "number" && $("travelKmInput"))
+      $("travelKmInput").value = state.travelKm;
+    if (typeof state.travelRatePerHour === "number" && $("travelRatePerHourInput"))
+      $("travelRatePerHourInput").value = state.travelRatePerHour;
+    if (typeof state.travelRatePerKm === "number" && $("travelRatePerKmInput"))
+      $("travelRatePerKmInput").value = state.travelRatePerKm;
 
     $("quoteTitleInput").value = state.quoteTitle || "";
     $("clientNameInput").value = state.clientName || "";
@@ -1464,7 +1488,7 @@
       money.highReach
     );
     $("otherAdjustmentsDisplay").textContent = formatMoney(
-      money.setup || 0
+      (money.setup || 0) + (money.travel || 0)
     );
     $("subtotalDisplay").textContent = formatMoney(money.subtotal);
     $("highReachDisplay").textContent = formatMoney(money.highReach);
