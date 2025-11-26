@@ -44,6 +44,8 @@
   /**
    * Company Configuration
    * Business information for quotes, invoices, and branding
+   * NOTE: These are default values. User-configured values from BusinessSettings
+   * will override these at runtime. Edit via Settings → Business Settings.
    */
   window.COMPANY_CONFIG = {
     // Business details
@@ -51,18 +53,18 @@
     businessName: '925 Pressure Glass',
     tagline: 'Window & Pressure Cleaning Specialists',
 
-    // Contact information (user should update these)
-    abn: 'TBD',  // TODO: Update with real ABN
+    // Contact information (configurable via Settings → Business Settings)
+    abn: '',
     email: 'info@925pressureglass.com.au',
-    phone: '0400 000 000',  // TODO: Update with real phone
+    phone: '',
     website: 'www.925pressureglass.com.au',
 
-    // Address
+    // Address (configurable via Settings → Business Settings)
     address: {
-      street: '',  // TODO: Add street address
+      street: '',
       city: 'Perth',
       state: 'WA',
-      postcode: '',  // TODO: Add postcode
+      postcode: '',
       country: 'Australia'
     },
 
@@ -82,15 +84,15 @@
       gstRate: 0.10  // 10% GST
     },
 
-    // Invoice settings
+    // Invoice settings (bank details configurable via Settings → Business Settings)
     invoice: {
       prefix: 'INV-',
       startNumber: 1000,
       paymentTerms: 'Payment due within 7 days',
       bankDetails: {
-        accountName: '925 Pressure Glass',  // TODO: Update with real account name
-        bsb: '',  // TODO: Update with real BSB
-        accountNumber: ''  // TODO: Update with real account number
+        accountName: '925 Pressure Glass',
+        bsb: '',
+        accountNumber: ''
       }
     }
   };

@@ -129,6 +129,7 @@
 	<link rel="stylesheet" href="quote-pdf.css" />
 	<link rel="stylesheet" href="css/job-tracking.css" />
 	<link rel="stylesheet" href="css/test-runner.css" />
+	<link rel="stylesheet" href="css/business-settings.css" />
 	<link rel="stylesheet" href="print.css" media="print" />
 	<link rel="stylesheet" href="invoice-print.css" media="print" />
 	<link rel="stylesheet" href="photo-print-layout.css" media="print" />
@@ -1087,6 +1088,102 @@
 				<button class="btn btn-primary" onclick="openAddCustomerModal()" style="margin-top: 1rem;">
 					+ Add Your First Customer
 				</button>
+			</div>
+		</div>
+	</div>
+
+	<!-- BUSINESS SETTINGS MODAL -->
+	<div id="business-settings-modal">
+		<div class="modal-dialog">
+			<div class="modal-header">
+				<h2>🏢 Business Settings</h2>
+				<button type="button" class="modal-close" onclick="if(window.BusinessSettings){BusinessSettings.closeModal();}">&times;</button>
+			</div>
+			<div class="modal-body">
+				<div class="settings-info">
+					<span class="settings-info-icon">ℹ️</span>
+					<span class="settings-info-text">These settings are used for quotes, invoices, and all business documents. Changes are saved locally in your browser.</span>
+				</div>
+
+				<!-- Contact Information -->
+				<div class="settings-section">
+					<h3>Contact Information</h3>
+					<div class="settings-grid">
+						<div class="settings-group">
+							<label for="business-abn">ABN</label>
+							<input type="text" id="business-abn" placeholder="XX XXX XXX XXX" maxlength="14">
+							<span class="input-help">Australian Business Number (11 digits)</span>
+						</div>
+						<div class="settings-group">
+							<label for="business-phone">Phone</label>
+							<input type="tel" id="business-phone" placeholder="0400 000 000">
+						</div>
+						<div class="settings-group">
+							<label for="business-email">Email</label>
+							<input type="email" id="business-email" placeholder="info@example.com.au">
+						</div>
+						<div class="settings-group">
+							<label for="business-website">Website</label>
+							<input type="text" id="business-website" placeholder="www.example.com.au">
+						</div>
+					</div>
+				</div>
+
+				<!-- Address -->
+				<div class="settings-section">
+					<h3>Business Address</h3>
+					<div class="settings-grid">
+						<div class="settings-group settings-grid-full">
+							<label for="business-street">Street Address</label>
+							<input type="text" id="business-street" placeholder="123 Main Street">
+						</div>
+						<div class="settings-group">
+							<label for="business-city">City/Suburb</label>
+							<input type="text" id="business-city" placeholder="Perth" value="Perth">
+						</div>
+						<div class="settings-group">
+							<label for="business-state">State</label>
+							<select id="business-state">
+								<option value="WA" selected>WA</option>
+								<option value="NSW">NSW</option>
+								<option value="VIC">VIC</option>
+								<option value="QLD">QLD</option>
+								<option value="SA">SA</option>
+								<option value="TAS">TAS</option>
+								<option value="NT">NT</option>
+								<option value="ACT">ACT</option>
+							</select>
+						</div>
+						<div class="settings-group">
+							<label for="business-postcode">Postcode</label>
+							<input type="text" id="business-postcode" placeholder="6000" maxlength="4">
+						</div>
+					</div>
+				</div>
+
+				<!-- Bank Details -->
+				<div class="settings-section">
+					<h3>Bank Details (for Invoices)</h3>
+					<div class="settings-grid">
+						<div class="settings-group settings-grid-full">
+							<label for="business-account-name">Account Name</label>
+							<input type="text" id="business-account-name" placeholder="925 Pressure Glass">
+						</div>
+						<div class="settings-group">
+							<label for="business-bsb">BSB</label>
+							<input type="text" id="business-bsb" placeholder="XXX-XXX" maxlength="7">
+							<span class="input-help">6 digits (e.g., 123-456)</span>
+						</div>
+						<div class="settings-group">
+							<label for="business-account-number">Account Number</label>
+							<input type="text" id="business-account-number" placeholder="12345678">
+						</div>
+					</div>
+				</div>
+			</div>
+			<div class="modal-footer">
+				<button type="button" class="btn btn-secondary" onclick="if(window.BusinessSettings){BusinessSettings.closeModal();}">Cancel</button>
+				<button type="button" class="btn btn-primary" onclick="if(window.BusinessSettings){BusinessSettings.saveFromModal();}">💾 Save Settings</button>
 			</div>
 		</div>
 	</div>
@@ -2077,6 +2174,30 @@
 				<h1>⚙️ Settings & Configuration</h1>
 			</div>
 
+			<!-- Business Settings Section -->
+			<div class="card" style="margin-bottom: 1.5rem;">
+				<div class="card-header">
+					<h3 class="card-title">🏢 Business Settings</h3>
+				</div>
+				<div class="card-body">
+					<p>Configure your business details for quotes, invoices, and documents. These settings will be used across all generated PDFs.</p>
+					<div style="display: flex; gap: 1rem; align-items: center; margin-top: 1rem; padding: 1rem; background: #f9fafb; border-radius: 0.5rem;">
+						<div style="flex: 1;">
+							<h4 style="margin: 0 0 0.5rem 0;">Business Information</h4>
+							<p style="margin: 0; color: #6b7280; font-size: 0.875rem;">
+								ABN, contact details, address, and bank details for invoices.
+							</p>
+							<p style="margin: 0.5rem 0 0 0; color: #6b7280; font-size: 0.75rem;" id="business-settings-status">
+								Status: Using defaults
+							</p>
+						</div>
+						<button class="btn btn-primary" onclick="if(window.BusinessSettings){BusinessSettings.openModal();}else{alert('Business settings module loading...');}" aria-label="Edit business settings">
+							✏️ Edit Settings
+						</button>
+					</div>
+				</div>
+			</div>
+
 			<!-- Backup & Restore Section -->
 			<div class="card" style="margin-bottom: 1.5rem;">
 				<div class="card-header">
@@ -2247,6 +2368,9 @@
 	<!-- SCRIPTS -->
 	<!-- Config must load FIRST to define global constants -->
 	<script src="config.js"></script>
+
+	<!-- Business Settings loads after config to override with user settings -->
+	<script src="business-settings.js"></script>
 
 	<!-- Bootstrap must load SECOND to create APP namespace -->
 	<script src="bootstrap.js"></script>
@@ -3511,6 +3635,27 @@
 			var checkbox = document.getElementById('auto-backup-enabled');
 			if (checkbox) {
 				checkbox.checked = autoBackupEnabled;
+			}
+
+			// Update business settings status
+			updateBusinessSettingsStatus();
+		}
+
+		// Update business settings status display
+		function updateBusinessSettingsStatus() {
+			var statusEl = document.getElementById('business-settings-status');
+			if (!statusEl) return;
+
+			if (window.BusinessSettings) {
+				var settings = window.BusinessSettings.load();
+				if (settings.lastUpdated) {
+					var date = new Date(settings.lastUpdated);
+					statusEl.textContent = 'Last updated: ' + date.toLocaleDateString();
+					statusEl.style.color = '#059669';
+				} else {
+					statusEl.textContent = 'Status: Using defaults (click Edit to configure)';
+					statusEl.style.color = '#d97706';
+				}
 			}
 		}
 
