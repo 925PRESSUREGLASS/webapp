@@ -1785,6 +1785,15 @@
     if (pdfBtn) {
       pdfBtn.addEventListener("click", openQuotePrintWindow);
     }
+
+    var refreshBtn = $("refreshAppBtn");
+    if (refreshBtn) {
+      refreshBtn.addEventListener("click", function () {
+        refreshBtn.disabled = true;
+        refreshBtn.textContent = "Refreshing...";
+        clearCachesAndReload();
+      });
+    }
   }
 
   // Separate formatting helpers for export document
@@ -1792,6 +1801,32 @@
     if (typeof amount !== "number" || !isFinite(amount)) return "$0.00";
     var fixed = amount.toFixed(2);
     return "$" + fixed.replace(/\B(?=(\d{3})+(?!\d))/g, ",");
+  }
+
+  function clearCachesAndReload() {
+    try {
+      if (navigator.serviceWorker && navigator.serviceWorker.getRegistrations) {
+        navigator.serviceWorker.getRegistrations().then(function (regs) {
+          var i;
+          for (i = 0; i < regs.length; i++) {
+            regs[i].unregister();
+          }
+        });
+      }
+      if (window.caches && caches.keys) {
+        caches.keys().then(function (keys) {
+          var j;
+          for (j = 0; j < keys.length; j++) {
+            caches.delete(keys[j]);
+          }
+        });
+      }
+    } catch (e) {
+      // ignore errors; still reload
+    }
+    setTimeout(function () {
+      window.location.reload(true);
+    }, 300);
   }
 
   function fmtHoursExport(hours) {
