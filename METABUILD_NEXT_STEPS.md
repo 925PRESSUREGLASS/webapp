@@ -46,7 +46,7 @@ Establish a repeatable, observable build spine that keeps browser, native, and P
 ### Performance Optimization
 
 - [x] Add Turborepo remote caching - `turbo.json` configured
-- [ ] Measure and reduce test suite time (target: <15 min)
+- [x] Reduce test suite time with sharding - `ci.yml` (3 browsers × 4 shards = 12 parallel runners)
 
 ### Quality Gates
 
