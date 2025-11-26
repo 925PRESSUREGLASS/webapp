@@ -74,6 +74,10 @@
     lines.push('Inside Multiplier,' + (quote.insideMultiplier || 1));
     lines.push('Outside Multiplier,' + (quote.outsideMultiplier || 1));
     lines.push('Setup Buffer,' + (quote.setupBufferMinutes || 0) + ' mins');
+    lines.push('Travel Time,' + (quote.travelMinutes || 0) + ' mins');
+    lines.push('Travel Distance,' + (quote.travelKm || 0) + ' km');
+    lines.push('Travel Rate (/hr),$' + (quote.travelRatePerHour || 0));
+    lines.push('Travel Rate (/km),$' + (quote.travelRatePerKm || 0));
     lines.push('');
 
     // Window lines
@@ -113,19 +117,32 @@
       lines.push('');
     }
 
-    // Summary (if available from DOM)
-    var summary = getQuoteSummary();
+    // Summary (prefer fresh calculation, fallback to DOM snapshot)
+    var calcSummary = calculateQuote(state);
+    var summary = calcSummary || getQuoteSummary();
     if (summary) {
       lines.push('Quote Summary');
       lines.push('Item,Amount');
+      lines.push('Base Callout,' + summary.baseFee);
+      lines.push('Windows Labour,' + summary.windows);
+      lines.push('Pressure Labour,' + summary.pressure);
+      lines.push('High Reach Premium,' + summary.highReach);
+      lines.push('Setup Buffer,' + summary.setup);
+      lines.push('Travel,' + summary.travel);
+      lines.push('Other Adjustments,' + summary.otherAdjustments);
       lines.push('Subtotal (excl. GST),' + summary.subtotal);
-      lines.push('High Reach Adjustments,' + summary.highReach);
       lines.push('GST (10%),' + summary.gst);
+      if (summary.minimumApplied) {
+        lines.push('Minimum Job Applied,' + summary.minimumApplied);
+      }
       lines.push('Final Total (incl. GST),' + summary.total);
       lines.push('');
       lines.push('Time Estimate,' + summary.timeEstimate);
       lines.push('Windows Time,' + summary.windowsTime);
       lines.push('Pressure Time,' + summary.pressureTime);
+      lines.push('Setup Time,' + summary.setupTime);
+      lines.push('Travel Time,' + summary.travelTime);
+      lines.push('High Reach Time,' + summary.highReachTime);
       lines.push('');
     }
 
@@ -146,18 +163,117 @@
   // Get quote summary from DOM
   function getQuoteSummary() {
     try {
+      var subtotal = getElementText('subtotalDisplay');
+      var highReach = getElementText('highReachDisplay');
+      var gst = getElementText('gstDisplay');
+      var total = getElementText('totalIncGstDisplay');
+      var baseFee = getElementText('baseFeeDisplay');
+      var windows = getElementText('windowsCostDisplay');
+      var pressure = getElementText('pressureCostDisplay');
+      var setup = getElementText('setupCostDisplay') || '0';
+      var travel = getElementText('travelCostDisplay') || '0';
+      var otherAdjustments = getElementText('otherAdjustmentsDisplay') || '0';
+      var minimumApplied = '';
+      var minNote = document.getElementById('minimumAppliedNote');
+      if (minNote && minNote.style.display !== 'none') {
+        minimumApplied = getElementText('minimumAppliedValue');
+      }
+
       return {
-        subtotal: getElementText('subtotalDisplay'),
-        highReach: getElementText('highReachDisplay'),
-        gst: getElementText('gstDisplay'),
-        total: getElementText('totalIncGstDisplay'),
+        baseFee: baseFee,
+        windows: windows,
+        pressure: pressure,
+        highReach: highReach,
+        setup: setup,
+        travel: travel,
+        otherAdjustments: otherAdjustments,
+        subtotal: subtotal,
+        gst: gst,
+        total: total,
+        minimumApplied: minimumApplied,
         timeEstimate: getElementText('timeEstimateDisplay'),
         windowsTime: getElementText('windowsTimeDisplay'),
-        pressureTime: getElementText('pressureTimeDisplay')
+        pressureTime: getElementText('pressureTimeDisplay'),
+        setupTime: getElementText('setupTimeDisplay'),
+        travelTime: getElementText('travelTimeDisplay'),
+        highReachTime: getElementText('highReachTimeDisplay')
       };
     } catch (e) {
       return null;
     }
+  }
+
+  // Calculate totals directly from state when available
+  function calculateQuote(state) {
+    if (!state) return null;
+    var result = null;
+    try {
+      if (window.PrecisionCalc && typeof PrecisionCalc.calculate === 'function') {
+        result = PrecisionCalc.calculate({
+          windowLines: state.windowLines || [],
+          pressureLines: state.pressureLines || [],
+          baseFee: state.baseFee,
+          hourlyRate: state.hourlyRate,
+          minimumJob: state.minimumJob,
+          highReachModifierPercent: state.highReachModifierPercent,
+          insideMultiplier: state.insideMultiplier,
+          outsideMultiplier: state.outsideMultiplier,
+          pressureHourlyRate: state.pressureHourlyRate,
+          setupBufferMinutes: state.setupBufferMinutes,
+          travelMinutes: state.travelMinutes,
+          travelKm: state.travelKm,
+          travelRatePerHour: state.travelRatePerHour,
+          travelRatePerKm: state.travelRatePerKm
+        });
+      } else if (window.Calc && typeof Calc.calculate === 'function') {
+        result = Calc.calculate(state);
+      }
+    } catch (e) {
+      // ignore and fallback
+      result = null;
+    }
+
+    if (!result || !result.money || !result.time) return null;
+
+    var money = result.money;
+    var time = result.time;
+    var gst = (money.subtotal || 0) * 0.10;
+    var minApplied = '';
+    if (money.total > money.subtotal) {
+      minApplied = formatMoney(money.minimumJob || money.total);
+    }
+
+    return {
+      baseFee: formatMoney(money.baseFee || 0),
+      windows: formatMoney(money.windows || 0),
+      pressure: formatMoney(money.pressure || 0),
+      highReach: formatMoney(money.highReach || 0),
+      setup: formatMoney(money.setup || 0),
+      travel: formatMoney(money.travel || 0),
+      otherAdjustments: formatMoney((money.setup || 0) + (money.travel || 0)),
+      subtotal: formatMoney(money.subtotal || 0),
+      gst: formatMoney(gst),
+      total: formatMoney((money.total || 0) + gst),
+      minimumApplied: minApplied,
+      timeEstimate: formatHours(time.totalHours),
+      windowsTime: formatHours(time.windowsHours),
+      pressureTime: formatHours(time.pressureHours),
+      setupTime: formatHours(time.setupHours),
+      travelTime: formatHours(time.travelHours),
+      highReachTime: formatHours(time.highReachHours)
+    };
+  }
+
+  function formatMoney(value) {
+    var n = parseFloat(value);
+    if (isNaN(n)) n = 0;
+    return '$' + n.toFixed(2);
+  }
+
+  function formatHours(value) {
+    var n = parseFloat(value);
+    if (isNaN(n)) n = 0;
+    return n.toFixed(2) + ' hrs';
   }
 
   // Helper to get element text

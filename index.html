@@ -535,11 +535,11 @@
 						<button class="card-toggle" type="button" data-target="summaryBody">▾</button>
 					</header>
 					<div class="sec-b" id="summaryBody">
-						<div class="summary-main">
-							<div class="summary-block">
-								<div class="summary-label">Subtotal (excl. GST)</div>
-								<div class="summary-value" id="subtotalDisplay">$0</div>
-							</div>
+					<div class="summary-main">
+						<div class="summary-block">
+							<div class="summary-label">Subtotal (excl. GST)</div>
+							<div class="summary-value" id="subtotalDisplay">$0</div>
+						</div>
 							<div class="summary-block">
 								<div class="summary-label">High Reach Adjustments</div>
 								<div class="summary-value" id="highReachDisplay">$0</div>
@@ -548,44 +548,66 @@
 								<div class="summary-label">GST (10%)</div>
 								<div class="summary-value" id="gstDisplay">$0</div>
 							</div>
-							<div class="summary-block summary-block-total">
-								<div class="summary-label">Final Total (incl. GST, inc. min job)</div>
-								<div class="summary-value" id="totalIncGstDisplay">$0</div>
-							</div>
+						<div class="summary-block summary-block-total">
+							<div class="summary-label">Final Total (incl. GST, inc. min job)</div>
+							<div class="summary-value" id="totalIncGstDisplay">$0</div>
 						</div>
+					</div>
 
-						<!-- QUOTE ACTION BUTTONS -->
-						<div class="notes-footer" style="margin-top: 1.5rem;">
-							<button id="generatePdfBtn" type="button" class="btn btn-accent">
-								📄 Export PDF
+					<div class="summary-note" id="minimumAppliedNote" style="display: none; font-size: 12px; color: var(--text-secondary); margin-top: 4px;">
+						Minimum job applied to reach <span id="minimumAppliedValue">$0</span>.
+					</div>
+
+					<!-- QUOTE ACTION BUTTONS -->
+					<div class="notes-footer" style="margin-top: 1.5rem;">
+						<button id="generatePdfBtn" type="button" class="btn btn-accent">
+							📄 Export PDF
 							</button>
 							<button id="copySummaryBtn" type="button" class="btn btn-secondary">
 								📋 Copy Summary
 							</button>
 						</div>
 
-						<div class="summary-sub">
-							<div class="summary-sub-col">
-								<h3>Time Estimate</h3>
-								<p id="timeEstimateDisplay">0.00 hrs total</p>
-								<ul class="summary-list">
-									<li><span>Windows Time:</span> <span id="windowsTimeDisplay">0.00 hrs</span></li>
-									<li><span>Pressure Time:</span> <span id="pressureTimeDisplay">0.00 hrs</span></li>
-									<li><span>Setup / Travel:</span> <span id="setupTimeDisplay">0.00 hrs</span></li>
-									<li><span>High Reach Extra:</span> <span id="highReachTimeDisplay">0.00 hrs</span></li>
-								</ul>
-							</div>
-							<div class="summary-sub-col">
-								<h3>Cost Breakdown</h3>
-								<ul class="summary-list">
-									<li><span>Base Callout:</span> <span id="baseFeeDisplay">$0</span></li>
-									<li><span>Windows Labour:</span> <span id="windowsCostDisplay">$0</span></li>
-									<li><span>Pressure Labour:</span> <span id="pressureCostDisplay">$0</span></li>
-									<li><span>High Reach Premium:</span> <span id="highReachCostDisplay">$0</span></li>
-									<li><span>Other Adjustments:</span> <span id="otherAdjustmentsDisplay">$0</span></li>
-								</ul>
-							</div>
+					<div class="summary-sub">
+						<div class="summary-sub-col">
+							<h3>Time Estimate</h3>
+							<p id="timeEstimateDisplay">0.00 hrs total</p>
+							<ul class="summary-list">
+								<li><span>Windows Time:</span> <span id="windowsTimeDisplay">0.00 hrs</span></li>
+								<li><span>Pressure Time:</span> <span id="pressureTimeDisplay">0.00 hrs</span></li>
+								<li><span>Setup:</span> <span id="setupTimeDisplay">0.00 hrs</span></li>
+								<li><span>Travel:</span> <span id="travelTimeDisplay">0.00 hrs</span></li>
+								<li><span>High Reach Extra:</span> <span id="highReachTimeDisplay">0.00 hrs</span></li>
+							</ul>
 						</div>
+						<div class="summary-sub-col">
+							<h3>Cost Breakdown</h3>
+							<ul class="summary-list">
+								<li><span>Base Callout:</span> <span id="baseFeeDisplay">$0</span></li>
+								<li><span>Windows Labour:</span> <span id="windowsCostDisplay">$0</span></li>
+								<li><span>Pressure Labour:</span> <span id="pressureCostDisplay">$0</span></li>
+								<li><span>High Reach Premium:</span> <span id="highReachCostDisplay">$0</span></li>
+								<li><span>Setup Buffer:</span> <span id="setupCostDisplay">$0</span></li>
+								<li><span>Travel:</span> <span id="travelCostDisplay">$0</span></li>
+								<li><span>Other Adjustments:</span> <span id="otherAdjustmentsDisplay">$0</span></li>
+							</ul>
+						</div>
+						<div class="summary-sub-col">
+							<h3>Job Settings Snapshot</h3>
+							<ul class="summary-list">
+								<li><span>Base Callout:</span> <span id="jobSummaryBaseCallout">$120.00</span></li>
+								<li><span>Hourly Rate:</span> <span id="jobSummaryHourlyRate">$95.00</span></li>
+								<li><span>Pressure Rate:</span> <span id="jobSummaryPressureRate">$120.00</span></li>
+								<li><span>Minimum Job:</span> <span id="jobSummaryMinimumJob">$180.00</span></li>
+								<li><span>High Reach %:</span> <span id="jobSummaryHighReach">60%</span></li>
+								<li><span>Inside ×:</span> <span id="jobSummaryInsideMultiplier">1.0×</span></li>
+								<li><span>Outside ×:</span> <span id="jobSummaryOutsideMultiplier">1.0×</span></li>
+								<li><span>Setup Buffer:</span> <span id="jobSummarySetupBuffer">15 mins</span></li>
+								<li><span>Travel Rate (/hr):</span> <span id="jobSummaryTravelHourRate">$95.00</span></li>
+								<li><span>Travel Rate (/km):</span> <span id="jobSummaryTravelKmRate">$1.50</span></li>
+							</ul>
+						</div>
+					</div>
 
 						<div class="summary-chart-wrap">
 							<h3>Time Distribution</h3>

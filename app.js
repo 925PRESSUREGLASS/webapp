@@ -1457,14 +1457,18 @@
         result = PrecisionCalc.calculate({
           windowLines: state.windowLines,
           pressureLines: state.pressureLines,
-          baseFee: s.baseFee,
-          hourlyRate: s.hourlyRate,
-          minimumJob: s.minimumJob,
-          highReachModifierPercent: s.highReachModifierPercent,
-          insideMultiplier: s.insideMultiplier,
-          outsideMultiplier: s.outsideMultiplier,
-          pressureHourlyRate: s.pressureHourlyRate,
-          setupBufferMinutes: s.setupBufferMinutes
+        baseFee: s.baseFee,
+        hourlyRate: s.hourlyRate,
+        minimumJob: s.minimumJob,
+        highReachModifierPercent: s.highReachModifierPercent,
+        insideMultiplier: s.insideMultiplier,
+        outsideMultiplier: s.outsideMultiplier,
+        pressureHourlyRate: s.pressureHourlyRate,
+        setupBufferMinutes: s.setupBufferMinutes,
+        travelMinutes: s.travelMinutes,
+        travelKm: s.travelKm,
+        travelRatePerHour: s.travelRatePerHour,
+        travelRatePerKm: s.travelRatePerKm
         });
       } catch (e) {
         console.error("PrecisionCalc error", e);
@@ -1487,6 +1491,8 @@
     $("highReachCostDisplay").textContent = formatMoney(
       money.highReach
     );
+    $("setupCostDisplay").textContent = formatMoney(money.setup || 0);
+    $("travelCostDisplay").textContent = formatMoney(money.travel || 0);
     $("otherAdjustmentsDisplay").textContent = formatMoney(
       (money.setup || 0) + (money.travel || 0)
     );
@@ -1520,8 +1526,52 @@
       time.highReachHours.toFixed(2) + " hrs";
     $("setupTimeDisplay").textContent =
       time.setupHours.toFixed(2) + " hrs";
+    $("travelTimeDisplay").textContent =
+      (time.travelHours || 0).toFixed(2) + " hrs";
     $("timeEstimateDisplay").textContent =
       time.totalHours.toFixed(2) + " hrs total";
+
+    var minimumNote = $("minimumAppliedNote");
+    if (minimumNote) {
+      if (money.total > money.subtotal) {
+        minimumNote.style.display = "block";
+        $("minimumAppliedValue").textContent = formatMoney(
+          money.minimumJob || money.total
+        );
+      } else {
+        minimumNote.style.display = "none";
+      }
+    }
+
+    var hasJobSummary = $("jobSummaryBaseCallout");
+    if (hasJobSummary) {
+      $("jobSummaryBaseCallout").textContent = formatMoney(
+        s.baseFee || 0
+      );
+      $("jobSummaryHourlyRate").textContent = formatMoney(
+        s.hourlyRate || 0
+      );
+      $("jobSummaryPressureRate").textContent = formatMoney(
+        s.pressureHourlyRate || 0
+      );
+      $("jobSummaryMinimumJob").textContent = formatMoney(
+        s.minimumJob || 0
+      );
+      $("jobSummaryHighReach").textContent =
+        (s.highReachModifierPercent || 0) + "%";
+      $("jobSummaryInsideMultiplier").textContent =
+        (s.insideMultiplier || 1).toFixed(1) + "×";
+      $("jobSummaryOutsideMultiplier").textContent =
+        (s.outsideMultiplier || 1).toFixed(1) + "×";
+      $("jobSummarySetupBuffer").textContent =
+        (s.setupBufferMinutes || 0).toFixed(0) + " mins";
+      $("jobSummaryTravelHourRate").textContent = formatMoney(
+        s.travelRatePerHour || 0
+      );
+      $("jobSummaryTravelKmRate").textContent = formatMoney(
+        s.travelRatePerKm || 0
+      );
+    }
 
     // Update per-line estimates to reflect latest calculations
     updateLineEstimates(s);
@@ -1543,10 +1593,17 @@
       time.windowsHours,
       time.pressureHours,
       time.highReachHours,
-      time.setupHours
+      time.setupHours,
+      time.travelHours || 0
     ];
 
-    var labels = ["Windows", "Pressure", "High Reach", "Setup"];
+    var labels = [
+      "Windows",
+      "Pressure",
+      "High Reach",
+      "Setup",
+      "Travel"
+    ];
 
     if (!timeChart) {
       timeChart = new Chart(ctx, {
@@ -1570,6 +1627,7 @@
         }
       });
     } else {
+      timeChart.data.labels = labels;
       timeChart.data.datasets[0].data = data;
       timeChart.update();
     }
@@ -1760,7 +1818,11 @@
         insideMultiplier: s.insideMultiplier,
         outsideMultiplier: s.outsideMultiplier,
         pressureHourlyRate: s.pressureHourlyRate,
-        setupBufferMinutes: s.setupBufferMinutes
+        setupBufferMinutes: s.setupBufferMinutes,
+        travelMinutes: s.travelMinutes,
+        travelKm: s.travelKm,
+        travelRatePerHour: s.travelRatePerHour,
+        travelRatePerKm: s.travelRatePerKm
       });
     } else if (window.Calc && typeof Calc.calculate === "function") {
       result = Calc.calculate(state);
@@ -1901,7 +1963,7 @@
     var pressureTableHtml = buildPressureTable();
 
     // Totals + GST
-    var gst = (money.total || 0) * 0.10;
+    var gst = (money.subtotal || 0) * 0.10;
     var totalIncGst = (money.total || 0) + gst;
 
     var totalsHtml =
@@ -1918,8 +1980,14 @@
         "<div class='quote-doc-totals-row'><div>High reach premium:</div><div>" +
           fmtMoneyExport(money.highReach || 0) +
         "</div></div>" +
-        "<div class='quote-doc-totals-row'><div>Other adjustments:</div><div>" +
+        "<div class='quote-doc-totals-row'><div>Setup buffer:</div><div>" +
           fmtMoneyExport(money.setup || 0) +
+        "</div></div>" +
+        "<div class='quote-doc-totals-row'><div>Travel:</div><div>" +
+          fmtMoneyExport(money.travel || 0) +
+        "</div></div>" +
+        "<div class='quote-doc-totals-row'><div>Other adjustments:</div><div>" +
+          fmtMoneyExport((money.setup || 0) + (money.travel || 0)) +
         "</div></div>" +
         "<div class='quote-doc-totals-row'><div>Subtotal (excl. GST):</div><div>" +
           fmtMoneyExport(money.subtotal || 0) +
@@ -1942,11 +2010,21 @@
       " · Pressure: " +
       fmtHoursExport(time.pressureHours || 0) +
       "<br/>" +
-      "Travel / setup: " +
+      "Setup: " +
       fmtHoursExport(time.setupHours || 0) +
+      " · Travel: " +
+      fmtHoursExport(time.travelHours || 0) +
       " · High reach overhead: " +
       fmtHoursExport(time.highReachHours || 0) +
       "</p>";
+
+    var minNote = "";
+    if (money.total > money.subtotal) {
+      minNote =
+        "<p class='quote-doc-note'>Minimum job applied: " +
+        fmtMoneyExport(money.minimumJob || money.total) +
+        "</p>";
+    }
 
     var notesHtml = "";
     if (clientNotes) {
@@ -1998,6 +2076,7 @@
       "<div class='quote-doc-section-title'>Totals &amp; time</div>" +
       totalsHtml +
       timeHtml +
+      minNote +
       notesHtml +
       "<div class='quote-doc-disclaimer'>" +
       "This quote is based on the information provided and assumes reasonable access. " +
@@ -2048,7 +2127,11 @@
         insideMultiplier: s.insideMultiplier,
         outsideMultiplier: s.outsideMultiplier,
         pressureHourlyRate: s.pressureHourlyRate,
-        setupBufferMinutes: s.setupBufferMinutes
+        setupBufferMinutes: s.setupBufferMinutes,
+        travelMinutes: s.travelMinutes,
+        travelKm: s.travelKm,
+        travelRatePerHour: s.travelRatePerHour,
+        travelRatePerKm: s.travelRatePerKm
       });
     } else if (window.Calc && typeof Calc.calculate === "function") {
       result = Calc.calculate(state);
@@ -2085,8 +2168,32 @@
         time.windowsHours.toFixed(2) +
         ", Pressure " +
         time.pressureHours.toFixed(2) +
+        ", Setup " +
+        time.setupHours.toFixed(2) +
+        ", Travel " +
+        (time.travelHours || 0).toFixed(2) +
         ")"
     );
+    lines.push(
+      "Costs: Base " +
+        formatMoney(money.baseFee || 0) +
+        ", Windows " +
+        formatMoney(money.windows || 0) +
+        ", Pressure " +
+        formatMoney(money.pressure || 0) +
+        ", High reach " +
+        formatMoney(money.highReach || 0) +
+        ", Setup " +
+        formatMoney(money.setup || 0) +
+        ", Travel " +
+        formatMoney(money.travel || 0)
+    );
+    if (money.total > money.subtotal) {
+      lines.push(
+        "Minimum job applied to reach " +
+          formatMoney(money.minimumJob || money.total)
+      );
+    }
     lines.push("");
 
     if (s.clientNotes) {
