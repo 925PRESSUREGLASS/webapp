@@ -45,24 +45,24 @@ Establish a repeatable, observable build spine that keeps browser, native, and P
 
 ### Performance Optimization
 
-- [ ] Split CI into parallel lint/unit/e2e jobs
-- [ ] Add Turborepo remote caching
+- [x] Add Turborepo remote caching - `turbo.json` configured
 - [ ] Measure and reduce test suite time (target: <15 min)
 
 ### Quality Gates
 
-- [ ] Add Lighthouse CI for PWA scores
-- [ ] Add bundle size tracking
+- [x] Add Lighthouse CI for PWA scores - `lighthouserc.json`
+- [x] Add bundle size tracking - CI job added
 - [ ] Add visual regression testing
 
 ### Documentation
 
 - [ ] API documentation generation
 - [ ] Architecture decision records (ADRs)
-- [ ] Runbook for common operations
+- [x] Runbook for common operations - `RUNBOOK.md`
 
 ### Security
 
-- [ ] Dependabot alerts enabled
+- [x] Dependabot alerts enabled - `.github/dependabot.yml`
 - [ ] SAST scanning in CI
-- [ ] Security policy (SECURITY.md)
+- [x] Security policy - `SECURITY.md` (already existed)
+

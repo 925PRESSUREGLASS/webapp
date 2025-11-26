@@ -1,0 +1,49 @@
+version: 2
+updates:
+  # npm dependencies
+  - package-ecosystem: "npm"
+    directory: "/"
+    schedule:
+      interval: "weekly"
+      day: "monday"
+    open-pull-requests-limit: 5
+    groups:
+      capacitor:
+        patterns:
+          - "@capacitor/*"
+      playwright:
+        patterns:
+          - "@playwright/*"
+          - "playwright"
+      prisma:
+        patterns:
+          - "@prisma/*"
+          - "prisma"
+    ignore:
+      # Ignore major version updates for stability
+      - dependency-name: "*"
+        update-types: ["version-update:semver-major"]
+
+  # npm dependencies for meta-api
+  - package-ecosystem: "npm"
+    directory: "/apps/meta-api"
+    schedule:
+      interval: "weekly"
+      day: "monday"
+    open-pull-requests-limit: 3
+
+  # npm dependencies for meta-dashboard
+  - package-ecosystem: "npm"
+    directory: "/apps/meta-dashboard"
+    schedule:
+      interval: "weekly"
+      day: "monday"
+    open-pull-requests-limit: 3
+
+  # GitHub Actions
+  - package-ecosystem: "github-actions"
+    directory: "/"
+    schedule:
+      interval: "weekly"
+      day: "monday"
+    open-pull-requests-limit: 3
