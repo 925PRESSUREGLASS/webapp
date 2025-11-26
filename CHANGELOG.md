@@ -7,6 +7,39 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Added
+
+#### Email Integration System
+- **apps/meta-api/src/services/email.service.ts** - Email service with Nodemailer (~150 lines)
+  - SMTP configuration via environment variables
+  - Zod validation for email requests
+  - Base64 attachment support for PDFs and JSON
+  - Methods: `configure()`, `isConfigured()`, `send()`, `verify()`
+  - Graceful degradation when SMTP not configured
+
+- **apps/meta-api/src/routes/email.ts** - Email API endpoints (~210 lines)
+  - `POST /email/verify` - Test SMTP connection
+  - `POST /email/send-quote` - Send quote PDF via email
+  - `POST /email/send-invoice` - Send invoice PDF via email
+  - `POST /email/send-backup` - Send backup file via email
+  - `POST /email/send` - Generic email endpoint
+
+- **quote-pdf-ui.js** - Updated email functionality
+  - `sendEmail()` now calls `/email/send-quote` API with PDF attachment
+  - New `_sendViaMailto()` fallback when API unavailable
+  - Automatic base64 PDF generation for attachment
+
+- **backup-manager.js** - Email backup support
+  - `emailBackup()` now calls `/email/send-backup` API
+  - Sends backup JSON as attachment
+  - Graceful fallback to download if API unavailable
+
+- **apps/meta-api/src/config/env.ts** - SMTP environment variables
+  - `SMTP_HOST`, `SMTP_PORT`, `SMTP_SECURE`
+  - `SMTP_USER`, `SMTP_PASS`, `SMTP_FROM`
+
+- **apps/meta-api/.env.example** - SMTP configuration template
+
 ### Tests
 - Re-enabled Playwright analytics suite (`tests/analytics.spec.js`) with light test mode (skips heavy modules), seeded pricing data in fixtures, and Playwright launch settings tuned for stability.
 

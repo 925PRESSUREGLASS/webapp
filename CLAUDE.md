@@ -1,7 +1,7 @@
 # CLAUDE.md - AI Assistant Guide for TicTacStick Quote Engine
 
-**Last Updated:** 2025-11-19
-**Version:** 1.13.0
+**Last Updated:** 2025-11-27
+**Version:** 1.13.4
 **Project:** TicTacStick Quote Engine for 925 Pressure Glass
 
 ---
@@ -19,6 +19,53 @@
 9. [Module Reference](#module-reference)
 10. [Design System](#design-system)
 11. [Troubleshooting](#troubleshooting)
+
+---
+
+## What's New in v1.13.4
+
+### Email Integration System (November 2025)
+
+Complete email integration for sending quotes and backups via SMTP:
+
+**Backend (apps/meta-api/src/):**
+- `services/email.service.ts` - Email service with Nodemailer (~150 lines)
+  - SMTP configuration via environment variables
+  - Zod validation for email requests
+  - Base64 attachment support for PDFs and JSON
+  - Methods: `configure()`, `isConfigured()`, `send()`, `verify()`
+  - Graceful degradation when SMTP not configured
+
+- `routes/email.ts` - Email API endpoints (~210 lines)
+  - `POST /email/verify` - Test SMTP connection
+  - `POST /email/send-quote` - Send quote PDF via email
+  - `POST /email/send-invoice` - Send invoice PDF via email
+  - `POST /email/send-backup` - Send backup file via email
+  - `POST /email/send` - Generic email endpoint
+
+- `config/env.ts` - SMTP environment variables
+  - `SMTP_HOST`, `SMTP_PORT`, `SMTP_SECURE`
+  - `SMTP_USER`, `SMTP_PASS`, `SMTP_FROM`
+
+**Frontend (PWA):**
+- `quote-pdf-ui.js` - Updated `sendEmail()` function
+  - Calls `/email/send-quote` API with base64 PDF attachment
+  - New `_sendViaMailto()` fallback when API unavailable
+  - Graceful degradation to mailto: links
+
+- `backup-manager.js` - Updated `emailBackup()` function
+  - Calls `/email/send-backup` API with JSON attachment
+  - Graceful fallback to download if API unavailable
+
+**Configuration (.env.example):**
+```
+SMTP_HOST=smtp.gmail.com
+SMTP_PORT=587
+SMTP_SECURE=false
+SMTP_USER=your-email@gmail.com
+SMTP_PASS=your-app-password
+SMTP_FROM=TicTacStick <noreply@yourdomain.com>
+```
 
 ---
 
