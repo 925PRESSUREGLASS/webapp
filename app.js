@@ -481,10 +481,11 @@
   };
 
   function renderLines() {
+    var config = buildStateFromUI(true);
     applySort('window');
     applySort('pressure');
-    renderWindowLines();
-    renderPressureLines();
+    renderWindowLines(config);
+    renderPressureLines(config);
   }
 
   function applySort(type) {
@@ -553,7 +554,7 @@
     return '';
   }
 
-  function renderWindowLines() {
+  function renderWindowLines(config) {
     var body = $("windowLinesTableBody");
     if (!body) return;
     body.innerHTML = "";
@@ -566,14 +567,14 @@
 
     for (var i = 0; i < state.windowLines.length; i++) {
       var line = state.windowLines[i];
-      var row = renderWindowLineRow(line);
+      var row = renderWindowLineRow(line, config);
       body.appendChild(row);
     }
 
     updateSortIcons('window');
   }
 
-  function renderPressureLines() {
+  function renderPressureLines(config) {
     var body = $("pressureLinesTableBody");
     if (!body) return;
     body.innerHTML = "";
@@ -586,7 +587,7 @@
 
     for (var i = 0; i < state.pressureLines.length; i++) {
       var line = state.pressureLines[i];
-      var row = renderPressureLineRow(line);
+      var row = renderPressureLineRow(line, config);
       body.appendChild(row);
     }
 
@@ -747,7 +748,90 @@
     return 1.0;
   }
 
-  function renderWindowLineRow(line) {
+  function computeWindowLineEstimate(line, config) {
+    config = config || buildStateFromUI(true);
+    var preset = getWindowPresetById(line.windowTypeId);
+    if (!preset) return { cost: 0, minutes: 0, hours: 0 };
+
+    var baseInside = preset.baseMinutesInside || 0;
+    var baseOutside = preset.baseMinutesOutside || 0;
+    var insideMultiplier = config.insideMultiplier || 1;
+    var outsideMultiplier = config.outsideMultiplier || 1;
+
+    var minutesPerPane = 0;
+    if (line.inside) minutesPerPane += baseInside * insideMultiplier;
+    if (line.outside) minutesPerPane += baseOutside * outsideMultiplier;
+
+    var conditionId = line.conditionId || line.soilLevel;
+    var accessId = line.accessId || (line.highReach ? 'highReach' : null);
+
+    var conditionFactor = typeof getConditionMultiplier === 'function' && conditionId ? getConditionMultiplier(conditionId) : 1.0;
+    var accessFactor = typeof getAccessMultiplier === 'function' && accessId ? getAccessMultiplier(accessId) : 1.0;
+
+    var tintFactor = 1.0;
+    if (line.tintLevel === 'light') tintFactor = 1.05;
+    else if (line.tintLevel === 'heavy') tintFactor = 1.1;
+
+    var modFactor = 1.0;
+    if (line.modifiers && line.modifiers.length) {
+      for (var mi = 0; mi < line.modifiers.length; mi++) {
+        modFactor = modFactor * getModifierMultiplier(line.modifiers[mi]);
+      }
+    }
+
+    var panes = line.panes || 0;
+    var totalMinutes = minutesPerPane * panes * conditionFactor * accessFactor * tintFactor * modFactor;
+
+    var highReachMinutes = 0;
+    if (line.highReach && line.outside) {
+      highReachMinutes = baseOutside * outsideMultiplier * panes;
+      highReachMinutes = highReachMinutes * conditionFactor * tintFactor * modFactor * 0.4;
+    }
+
+    var hours = (totalMinutes + highReachMinutes) / 60;
+    var labourRate = config.hourlyRate || 0;
+    var cost = (hours * labourRate);
+
+    return {
+      cost: cost,
+      minutes: totalMinutes + highReachMinutes,
+      hours: hours
+    };
+  }
+
+  function computePressureLineEstimate(line, config) {
+    config = config || buildStateFromUI(true);
+    var preset = getPressurePresetById(line.surfaceId);
+    if (!preset) return { cost: 0, minutes: 0, hours: 0 };
+
+    var mps = preset.minutesPerSqm || 0;
+    var area = line.areaSqm || 0;
+
+    var soilFactor = 1.0;
+    if (line.soilLevel === 'medium') soilFactor = 1.25;
+    else if (line.soilLevel === 'heavy') soilFactor = 1.5;
+    else if (line.soilLevel && line.soilLevel !== 'light') soilFactor = 1.0;
+
+    var accessFactor = 1.0;
+    if (line.access === 'ladder') accessFactor = 1.2;
+    else if (line.access === 'highReach') accessFactor = 1.35;
+
+    var modFactor = 1.0;
+    if (line.modifiers && line.modifiers.length) {
+      for (var mi = 0; mi < line.modifiers.length; mi++) {
+        modFactor = modFactor * getModifierMultiplier(line.modifiers[mi]);
+      }
+    }
+
+    var minutes = mps * area * soilFactor * accessFactor * modFactor;
+    var hours = minutes / 60;
+    var rate = config.pressureHourlyRate || config.hourlyRate || 0;
+    var cost = hours * rate;
+
+    return { cost: cost, minutes: minutes, hours: hours };
+  }
+
+  function renderWindowLineRow(line, config) {
     var row = createEl('tr');
     row.setAttribute('data-id', line.id);
 
@@ -777,6 +861,10 @@
       meta.textContent = allTags.join(' • ');
       titleRow.appendChild(meta);
     }
+
+    var typeBadge = createEl('div', 'line-type-badge');
+    typeBadge.textContent = getWindowTypeLabel(line.windowTypeId);
+    titleRow.appendChild(typeBadge);
 
     titleCell.appendChild(titleRow);
     row.appendChild(titleCell);
@@ -873,7 +961,26 @@
       scheduleAutosave(true);
       recalculate();
     });
+    var quickRow = createEl('div', 'quick-increments');
+    var increments = [1, 2, 5, 10];
+    for (var qi = 0; qi < increments.length; qi++) {
+      (function(inc) {
+        var btn = createEl('button', 'btn btn-ghost btn-xs');
+        btn.type = 'button';
+        btn.textContent = '+ ' + inc;
+        btn.addEventListener('click', function() {
+          var current = parseInt(panesInput.value, 10) || 0;
+          var next = current + inc;
+          panesInput.value = next;
+          line.panes = next;
+          scheduleAutosave(true);
+          recalculate();
+        });
+        quickRow.appendChild(btn);
+      })(increments[qi]);
+    }
     panesCell.appendChild(panesInput);
+    panesCell.appendChild(quickRow);
     row.appendChild(panesCell);
 
     var flagsCell = createEl('td');
@@ -1039,6 +1146,13 @@
     locationCell.appendChild(locInput);
     row.appendChild(locationCell);
 
+    var estimateCell = createEl('td');
+    var est = computeWindowLineEstimate(line, config);
+    var estText = createEl('div', 'line-estimate');
+    estText.textContent = '$' + est.cost.toFixed(2) + ' · ' + est.hours.toFixed(2) + 'h';
+    estimateCell.appendChild(estText);
+    row.appendChild(estimateCell);
+
     var actionsCell = createEl('td');
     var actions = createEl('div', 'line-actions');
     var dupBtn = createEl("button", "btn btn-small btn-ghost");
@@ -1063,7 +1177,7 @@
     return row;
   }
 
-  function renderPressureLineRow(line) {
+  function renderPressureLineRow(line, config) {
     var row = createEl('tr');
     row.setAttribute('data-id', line.id);
 
@@ -1091,6 +1205,9 @@
     }
 
     titleCell.appendChild(titleRow);
+    var typeBadge = createEl('div', 'line-type-badge');
+    typeBadge.textContent = getPressureSurfaceLabel(line.surfaceId);
+    titleCell.appendChild(typeBadge);
     row.appendChild(titleCell);
 
     var surfaceCell = createEl('td');
@@ -1124,7 +1241,26 @@
       scheduleAutosave(true);
       recalculate();
     });
+    var quickArea = createEl('div', 'quick-increments');
+    var aIncs = [1, 2, 5, 10];
+    for (var qa = 0; qa < aIncs.length; qa++) {
+      (function(inc) {
+        var btn = createEl('button', 'btn btn-ghost btn-xs');
+        btn.type = 'button';
+        btn.textContent = '+ ' + inc;
+        btn.addEventListener('click', function() {
+          var current = parseFloat(areaInput.value) || 0;
+          var next = current + inc;
+          areaInput.value = next;
+          line.areaSqm = next;
+          scheduleAutosave(true);
+          recalculate();
+        });
+        quickArea.appendChild(btn);
+      })(aIncs[qa]);
+    }
     areaCell.appendChild(areaInput);
+    areaCell.appendChild(quickArea);
     row.appendChild(areaCell);
 
     var soilCell = createEl('td');
@@ -1205,6 +1341,13 @@
     });
     notesCell.appendChild(notesInput);
     row.appendChild(notesCell);
+
+    var estimateCell = createEl('td');
+    var est = computePressureLineEstimate(line, config);
+    var estText = createEl('div', 'line-estimate');
+    estText.textContent = '$' + est.cost.toFixed(2) + ' · ' + est.hours.toFixed(2) + 'h';
+    estimateCell.appendChild(estText);
+    row.appendChild(estimateCell);
 
     var actionsCell = createEl('td');
     var actions = createEl('div', 'line-actions');

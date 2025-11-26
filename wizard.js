@@ -231,7 +231,15 @@
     // Quantity
     html += '<div class="form-group">';
     html += '<label class="form-label form-label-required" for="wizWinPanes">Quantity</label>';
-    html += '<input id="wizWinPanes" type="number" min="1" step="1" value="4" class="form-input" aria-required="true" aria-label="Number of windows" />';
+    html += '<div style="display:flex; gap:8px; align-items:center; flex-wrap:wrap;">';
+    html += '<input id="wizWinPanes" type="number" min="1" step="1" value="4" class="form-input" aria-required="true" aria-label="Number of windows" style="flex:1; min-width:120px;" />';
+    html += '<div class="quick-increments" style="display:flex; gap:6px; flex-wrap:wrap;">';
+    html += '<button type="button" class="btn btn-ghost btn-xs" data-inc="1">+1</button>';
+    html += '<button type="button" class="btn btn-ghost btn-xs" data-inc="2">+2</button>';
+    html += '<button type="button" class="btn btn-ghost btn-xs" data-inc="5">+5</button>';
+    html += '<button type="button" class="btn btn-ghost btn-xs" data-inc="10">+10</button>';
+    html += '</div>';
+    html += '</div>';
     html += '<span class="form-hint">Number of windows/panes</span>';
     html += '</div>';
 
@@ -409,6 +417,22 @@
         priceInputs[p].addEventListener('change', updateWindowPriceEstimate);
         priceInputs[p].addEventListener('input', updateWindowPriceEstimate);
       }
+    }
+
+    var qtyButtons = contentEl.querySelectorAll('.quick-increments button[data-inc]');
+    for (var qb = 0; qb < qtyButtons.length; qb++) {
+      (function(btn) {
+        btn.addEventListener('click', function() {
+          var inc = parseFloat(btn.getAttribute('data-inc')) || 0;
+          var target = btn.closest('.form-group').querySelector('input[type="number"]');
+          if (!target) return;
+          var current = parseFloat(target.value) || 0;
+          var next = current + inc;
+          target.value = next;
+          var evt = new Event('input', { bubbles: true });
+          target.dispatchEvent(evt);
+        });
+      })(qtyButtons[qb]);
     }
 
     // Wire buttons
@@ -831,7 +855,15 @@
     // Quantity/Area (dynamic label based on unit)
     html += '<div class="form-group">';
     html += '<label class="form-label form-label-required" for="wizPrArea"><span id="wizPrQuantityLabel">Quantity/Area</span></label>';
-    html += '<input id="wizPrArea" type="number" min="0.1" step="0.1" value="30" class="form-input" aria-required="true" aria-label="Quantity or area" />';
+    html += '<div style="display:flex; gap:8px; align-items:center; flex-wrap:wrap;">';
+    html += '<input id="wizPrArea" type="number" min="0.1" step="0.1" value="30" class="form-input" aria-required="true" aria-label="Quantity or area" style="flex:1; min-width:120px;" />';
+    html += '<div class="quick-increments" style="display:flex; gap:6px; flex-wrap:wrap;">';
+    html += '<button type="button" class="btn btn-ghost btn-xs" data-inc="1">+1</button>';
+    html += '<button type="button" class="btn btn-ghost btn-xs" data-inc="2">+2</button>';
+    html += '<button type="button" class="btn btn-ghost btn-xs" data-inc="5">+5</button>';
+    html += '<button type="button" class="btn btn-ghost btn-xs" data-inc="10">+10</button>';
+    html += '</div>';
+    html += '</div>';
     html += '<span class="form-hint" id="wizPrQuantityHint">Enter area in m²</span>';
     html += '</div>';
 

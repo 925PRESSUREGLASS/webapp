@@ -347,9 +347,9 @@
 					<header class="sec-h">
 						<h2 class="sec-title">🪟 Windows</h2>
 						<div class="card-hdr-actions">
-							<button id="openWindowWizardBtn" type="button" class="btn btn-accent btn-sm" aria-label="Open window wizard for guided entry">
-								🪄 Wizard
-							</button>
+								<button id="openWindowWizardBtn" type="button" class="btn btn-accent btn-sm" aria-label="Open window wizard for guided entry" onclick="if(window.Wizard && window.Wizard.openWindowWizard){ window.Wizard.openWindowWizard(); }">
+									🪄 Wizard
+								</button>
 							<button id="addWindowLineBtn" type="button" class="btn btn-sm btn-primary" aria-label="Add window line item manually">
 								+ Add Line
 							</button>
@@ -369,6 +369,7 @@
                                                                                 <th scope="col"><button type="button" class="sort-toggle" data-type="window" data-key="access">Access <span class="sort-icon" aria-hidden="true"></span></button></th>
                                                                                 <th scope="col">Tint</th>
                                                                                 <th scope="col"><button type="button" class="sort-toggle" data-type="window" data-key="location">Location <span class="sort-icon" aria-hidden="true"></span></button></th>
+                                                                                <th scope="col">Est.</th>
                                                                                 <th scope="col" class="actions-col">Actions</th>
                                                                         </tr>
                                                                 </thead>
@@ -383,9 +384,9 @@
 					<header class="sec-h">
 						<h2 class="sec-title">💦 Pressure Cleaning</h2>
 						<div class="card-hdr-actions">
-							<button id="openPressureWizardBtn" type="button" class="btn btn-accent btn-sm" aria-label="Open pressure wizard for guided entry">
-								🪄 Wizard
-							</button>
+								<button id="openPressureWizardBtn" type="button" class="btn btn-accent btn-sm" aria-label="Open pressure wizard for guided entry" onclick="if(window.Wizard && window.Wizard.openPressureWizard){ window.Wizard.openPressureWizard(); }">
+									🪄 Wizard
+								</button>
 							<button id="addPressureLineBtn" type="button" class="btn btn-sm btn-primary" aria-label="Add pressure cleaning line item manually">
 								+ Add Line
 							</button>
@@ -403,6 +404,7 @@
                                                                                 <th scope="col"><button type="button" class="sort-toggle" data-type="pressure" data-key="soil">Soil <span class="sort-icon" aria-hidden="true"></span></button></th>
                                                                                 <th scope="col"><button type="button" class="sort-toggle" data-type="pressure" data-key="access">Access <span class="sort-icon" aria-hidden="true"></span></button></th>
                                                                                 <th scope="col">Notes</th>
+                                                                                <th scope="col">Est.</th>
                                                                                 <th scope="col" class="actions-col">Actions</th>
                                                                         </tr>
                                                                 </thead>
