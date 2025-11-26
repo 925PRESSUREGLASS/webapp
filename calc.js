@@ -247,7 +247,13 @@ var combinedFactor = conditionFactor * accessFactor * tintFactor;
 
 // Total minutes
 var panes = line.panes || 0;
-var totalMinutes = minutesPerPane * panes * combinedFactor;
+var modFactor = 1.0;
+if (line.modifiers && line.modifiers.length && typeof getModifierMultiplier === 'function') {
+  for (var mi = 0; mi < line.modifiers.length; mi++) {
+    modFactor = modFactor * getModifierMultiplier(line.modifiers[mi]);
+  }
+}
+var totalMinutes = minutesPerPane * panes * combinedFactor * modFactor;
 
 // Return minutes
 return totalMinutes;
@@ -313,7 +319,14 @@ var accessFactor = 1.0;
 if (line.access === 'ladder') accessFactor = 1.2;
 else if (line.access === 'highReach') accessFactor = 1.35;
 
-var minutes = mps * area * soilFactor * accessFactor;
+var modFactor = 1.0;
+if (line.modifiers && line.modifiers.length && typeof getModifierMultiplier === 'function') {
+  for (var mi = 0; mi < line.modifiers.length; mi++) {
+    modFactor = modFactor * getModifierMultiplier(line.modifiers[mi]);
+  }
+}
+
+var minutes = mps * area * soilFactor * accessFactor * modFactor;
 return minutes;
 }
 };

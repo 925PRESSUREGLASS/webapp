@@ -322,34 +322,84 @@
     return "L" + nextLineId++;
   }
 
-  function addWindowLine(options) {
+  // Resolve presets from extended arrays (wizard) or fallback PRICING_DATA
+  function getWindowPresetById(id) {
+    var i;
+    if (window.WINDOW_TYPES_ARRAY && WINDOW_TYPES_ARRAY.length) {
+      for (i = 0; i < WINDOW_TYPES_ARRAY.length; i++) {
+        if (WINDOW_TYPES_ARRAY[i].id === id) return WINDOW_TYPES_ARRAY[i];
+      }
+    }
+    for (i = 0; i < PRICING_DATA.windowTypes.length; i++) {
+      if (PRICING_DATA.windowTypes[i].id === id) return PRICING_DATA.windowTypes[i];
+    }
+    return null;
+  }
+
+  function getPressurePresetById(id) {
+    var i;
+    if (window.PRESSURE_SURFACES_ARRAY_EXT && PRESSURE_SURFACES_ARRAY_EXT.length) {
+      for (i = 0; i < PRESSURE_SURFACES_ARRAY_EXT.length; i++) {
+        if (PRESSURE_SURFACES_ARRAY_EXT[i].id === id) return PRESSURE_SURFACES_ARRAY_EXT[i];
+      }
+    }
+    for (i = 0; i < PRICING_DATA.pressureSurfaces.length; i++) {
+      if (PRICING_DATA.pressureSurfaces[i].id === id) return PRICING_DATA.pressureSurfaces[i];
+    }
+    return null;
+  }
+
+  function buildWindowLine(options) {
     options = options || {};
-    var line = {
+    var defaultType = (PRICING_DATA.windowTypes[2] && PRICING_DATA.windowTypes[2].id) || '';
+    var windowTypeId = options.windowTypeId || defaultType;
+    var preset = getWindowPresetById(windowTypeId);
+
+    return {
       id: makeLineId(),
-      title: options.title || "Window Line",
+      title: options.title || (preset && (preset.label || preset.name)) || "Window Line",
       tags: options.tags || [],
-      windowTypeId:
-        options.windowTypeId ||
-        (PRICING_DATA.windowTypes[2] &&
-          PRICING_DATA.windowTypes[2].id) ||
-        "",
-      inside:
-        typeof options.inside === "boolean"
-          ? options.inside
-          : true,
-      outside:
-        typeof options.outside === "boolean"
-          ? options.outside
-          : true,
+      windowTypeId: windowTypeId,
+      inside: typeof options.inside === "boolean" ? options.inside : true,
+      outside: typeof options.outside === "boolean" ? options.outside : true,
       highReach: !!options.highReach,
       panes: typeof options.panes === "number" ? options.panes : 4,
       soilLevel: options.soilLevel || "medium",
       conditionId: options.conditionId || null,
       accessId: options.accessId || null,
       tintLevel: options.tintLevel || "none",
-      location: options.location || ""
+      location: options.location || "",
+      modifiers: options.modifiers || [],
+      presetLabel: preset ? (preset.label || preset.name || "") : "",
+      presetCategory: preset && preset.category ? preset.category : "",
+      __normalizedLine: true
     };
+  }
 
+  function buildPressureLine(options) {
+    options = options || {};
+    var defaultSurface = (PRICING_DATA.pressureSurfaces[0] && PRICING_DATA.pressureSurfaces[0].id) || '';
+    var surfaceId = options.surfaceId || defaultSurface;
+    var preset = getPressurePresetById(surfaceId);
+
+    return {
+      id: makeLineId(),
+      title: options.title || (preset && (preset.label || preset.name)) || "Pressure Line",
+      tags: options.tags || [],
+      surfaceId: surfaceId,
+      areaSqm: typeof options.areaSqm === "number" ? options.areaSqm : 30,
+      soilLevel: options.soilLevel || "medium",
+      access: options.access || "easy",
+      notes: options.notes || "",
+      modifiers: options.modifiers || [],
+      presetLabel: preset ? (preset.label || preset.name || "") : "",
+      presetCategory: preset && preset.category ? preset.category : "",
+      __normalizedLine: true
+    };
+  }
+
+  function addWindowLine(options) {
+    var line = options && options.__normalizedLine ? options : buildWindowLine(options);
     state.windowLines.push(line);
     renderLines();
     recalculate();
@@ -357,23 +407,7 @@
   }
 
   function addPressureLine(options) {
-    options = options || {};
-    var line = {
-      id: makeLineId(),
-      title: options.title || "Pressure Line",
-      tags: options.tags || [],
-      surfaceId:
-        options.surfaceId ||
-        (PRICING_DATA.pressureSurfaces[0] &&
-          PRICING_DATA.pressureSurfaces[0].id) ||
-        "",
-      areaSqm:
-        typeof options.areaSqm === "number" ? options.areaSqm : 30,
-      soilLevel: options.soilLevel || "medium",
-      access: options.access || "easy",
-      notes: options.notes || ""
-    };
-
+    var line = options && options.__normalizedLine ? options : buildPressureLine(options);
     state.pressureLines.push(line);
     renderLines();
     recalculate();
@@ -568,10 +602,25 @@
     body.appendChild(row);
   }
 
+  function getAllWindowTypes() {
+    if (window.WINDOW_TYPES_ARRAY && WINDOW_TYPES_ARRAY.length) {
+      return WINDOW_TYPES_ARRAY;
+    }
+    return PRICING_DATA.windowTypes;
+  }
+
+  function getAllPressureSurfaces() {
+    if (window.PRESSURE_SURFACES_ARRAY_EXT && PRESSURE_SURFACES_ARRAY_EXT.length) {
+      return PRESSURE_SURFACES_ARRAY_EXT;
+    }
+    return PRICING_DATA.pressureSurfaces;
+  }
+
   function getWindowTypeLabel(typeId) {
-    for (var i = 0; i < PRICING_DATA.windowTypes.length; i++) {
-      if (PRICING_DATA.windowTypes[i].id === typeId) {
-        return PRICING_DATA.windowTypes[i].label || '';
+    var list = getAllWindowTypes();
+    for (var i = 0; i < list.length; i++) {
+      if (list[i].id === typeId) {
+        return list[i].label || list[i].name || '';
       }
     }
     return '';
@@ -600,9 +649,10 @@
   }
 
   function getPressureSurfaceLabel(surfaceId) {
-    for (var i = 0; i < PRICING_DATA.pressureSurfaces.length; i++) {
-      if (PRICING_DATA.pressureSurfaces[i].id === surfaceId) {
-        return PRICING_DATA.pressureSurfaces[i].label || '';
+    var list = getAllPressureSurfaces();
+    for (var i = 0; i < list.length; i++) {
+      if (list[i].id === surfaceId) {
+        return list[i].label || list[i].name || '';
       }
     }
     return '';
@@ -610,6 +660,65 @@
 
   function getPressureAccessLabel(accessId) {
     return accessId || '';
+  }
+
+  function getModifierLabel(mod) {
+    var id = mod && mod.id ? mod.id : mod;
+    if (!id) return '';
+
+    if (window.CONDITION_MODIFIERS_ARRAY) {
+      for (var i = 0; i < CONDITION_MODIFIERS_ARRAY.length; i++) {
+        if (CONDITION_MODIFIERS_ARRAY[i].id === id) {
+          return CONDITION_MODIFIERS_ARRAY[i].name;
+        }
+      }
+    }
+    if (window.ACCESS_MODIFIERS_ARRAY) {
+      for (var j = 0; j < ACCESS_MODIFIERS_ARRAY.length; j++) {
+        if (ACCESS_MODIFIERS_ARRAY[j].id === id) {
+          return ACCESS_MODIFIERS_ARRAY[j].name;
+        }
+      }
+    }
+    if (window.PRESSURE_CONDITIONS_ARRAY) {
+      for (var k = 0; k < PRESSURE_CONDITIONS_ARRAY.length; k++) {
+        if (PRESSURE_CONDITIONS_ARRAY[k].id === id) {
+          return PRESSURE_CONDITIONS_ARRAY[k].label || PRESSURE_CONDITIONS_ARRAY[k].name;
+        }
+      }
+    }
+    if (window.TECHNIQUE_MODIFIERS_ARRAY) {
+      for (var m = 0; m < TECHNIQUE_MODIFIERS_ARRAY.length; m++) {
+        if (TECHNIQUE_MODIFIERS_ARRAY[m].id === id) {
+          return TECHNIQUE_MODIFIERS_ARRAY[m].label || TECHNIQUE_MODIFIERS_ARRAY[m].name;
+        }
+      }
+    }
+    return id;
+  }
+
+  function getModifierMultiplier(mod) {
+    var id = mod && mod.id ? mod.id : mod;
+    if (!id) return 1.0;
+    if (mod && typeof mod.multiplier === 'number') return mod.multiplier;
+
+    var lookup = function(arr, key) {
+      if (!arr) return null;
+      for (var i = 0; i < arr.length; i++) {
+        if (arr[i].id === key) return arr[i];
+      }
+      return null;
+    };
+
+    var found = lookup(window.CONDITION_MODIFIERS_ARRAY, id) ||
+      lookup(window.ACCESS_MODIFIERS_ARRAY, id) ||
+      lookup(window.PRESSURE_CONDITIONS_ARRAY, id) ||
+      lookup(window.TECHNIQUE_MODIFIERS_ARRAY, id);
+
+    if (found && typeof found.multiplier === 'number') {
+      return found.multiplier;
+    }
+    return 1.0;
   }
 
   function renderWindowLineRow(line) {
@@ -627,6 +736,15 @@
     if (line.highReach) allTags.push('high reach');
     if (line.inside && !line.outside) allTags.push('inside only');
     if (!line.inside && line.outside) allTags.push('outside only');
+    if (line.modifiers && line.modifiers.length) {
+      var modLabels = [];
+      for (var m = 0; m < line.modifiers.length; m++) {
+        modLabels.push(getModifierLabel(line.modifiers[m]));
+      }
+      if (modLabels.length) {
+        allTags.push('mods: ' + modLabels.join(', '));
+      }
+    }
 
     if (allTags.length) {
       var meta = createEl('div', 'line-meta');
@@ -642,7 +760,7 @@
     selectType.className = 'window-type-select';
     selectType.value = line.windowTypeId;
 
-    var windowTypes = PRICING_DATA.windowTypes;
+    var windowTypes = getAllWindowTypes();
     var hasCategories = windowTypes.length > 0 && windowTypes[0].category;
     if (hasCategories) {
       var categories = {
@@ -930,7 +1048,18 @@
     titleRow.appendChild(titleEl);
 
     var meta = createEl('div', 'line-meta');
-    meta.textContent = line.notes || '';
+    var metaBits = [];
+    if (line.notes) metaBits.push(line.notes);
+    if (line.modifiers && line.modifiers.length) {
+      var pm = [];
+      for (var pmx = 0; pmx < line.modifiers.length; pmx++) {
+        pm.push(getModifierLabel(line.modifiers[pmx]));
+      }
+      if (pm.length) {
+        metaBits.push('mods: ' + pm.join(', '));
+      }
+    }
+    meta.textContent = metaBits.join(' • ');
     if (meta.textContent) {
       titleRow.appendChild(meta);
     }
@@ -940,11 +1069,12 @@
 
     var surfaceCell = createEl('td');
     var surfSelect = createEl("select");
-    for (var j = 0; j < PRICING_DATA.pressureSurfaces.length; j++) {
-      var ps = PRICING_DATA.pressureSurfaces[j];
+    var surfaces = getAllPressureSurfaces();
+    for (var j = 0; j < surfaces.length; j++) {
+      var ps = surfaces[j];
       var opt = createEl("option");
       opt.value = ps.id;
-      opt.textContent = ps.label;
+      opt.textContent = ps.label || ps.name || '';
       if (ps.id === line.surfaceId) opt.selected = true;
       surfSelect.appendChild(opt);
     }
@@ -973,13 +1103,24 @@
 
     var soilCell = createEl('td');
     var soilSelect = createEl("select");
-    var soilOptions = [
-      { v: "light", t: "Light" },
-      { v: "medium", t: "Medium" },
-      { v: "heavy", t: "Heavy" }
-    ];
-    for (var s = 0; s < soilOptions.length; s++) {
-      var so = soilOptions[s];
+    var soilOptions = null;
+    if (window.PRESSURE_CONDITIONS_ARRAY && PRESSURE_CONDITIONS_ARRAY.length) {
+      soilOptions = [];
+      for (var s = 0; s < PRESSURE_CONDITIONS_ARRAY.length; s++) {
+        soilOptions.push({
+          v: PRESSURE_CONDITIONS_ARRAY[s].id,
+          t: (PRESSURE_CONDITIONS_ARRAY[s].label || PRESSURE_CONDITIONS_ARRAY[s].name) + ' (' + (PRESSURE_CONDITIONS_ARRAY[s].multiplier || 1).toFixed(2) + 'x)'
+        });
+      }
+    } else {
+      soilOptions = [
+        { v: "light", t: "Light" },
+        { v: "medium", t: "Medium" },
+        { v: "heavy", t: "Heavy" }
+      ];
+    }
+    for (var sIdx = 0; sIdx < soilOptions.length; sIdx++) {
+      var so = soilOptions[sIdx];
       var soEl = createEl("option");
       soEl.value = so.v;
       soEl.textContent = so.t;
@@ -996,13 +1137,24 @@
 
     var accessCell = createEl('td');
     var accessSelect = createEl("select");
-    var accessOptions = [
-      { v: "easy", t: "Easy" },
-      { v: "ladder", t: "Ladder" },
-      { v: "highReach", t: "High Reach" }
-    ];
-    for (var a = 0; a < accessOptions.length; a++) {
-      var ao = accessOptions[a];
+    var accessOptions = null;
+    if (window.ACCESS_MODIFIERS_ARRAY && ACCESS_MODIFIERS_ARRAY.length) {
+      accessOptions = [];
+      for (var a = 0; a < ACCESS_MODIFIERS_ARRAY.length; a++) {
+        accessOptions.push({
+          v: ACCESS_MODIFIERS_ARRAY[a].id,
+          t: ACCESS_MODIFIERS_ARRAY[a].name || (ACCESS_MODIFIERS_ARRAY[a].label || ACCESS_MODIFIERS_ARRAY[a].id)
+        });
+      }
+    } else {
+      accessOptions = [
+        { v: "easy", t: "Easy" },
+        { v: "ladder", t: "Ladder" },
+        { v: "highReach", t: "High Reach" }
+      ];
+    }
+    for (var aIdx = 0; aIdx < accessOptions.length; aIdx++) {
+      var ao = accessOptions[aIdx];
       var axEl = createEl("option");
       axEl.value = ao.v;
       axEl.textContent = ao.t;
@@ -1982,6 +2134,8 @@
   // Register core app methods with existing APP object
   window.APP.addWindowLine = addWindowLine;
   window.APP.addPressureLine = addPressureLine;
+  window.APP.buildWindowLine = buildWindowLine;
+  window.APP.buildPressureLine = buildPressureLine;
   window.APP.recalculate = recalculate;
   window.APP.duplicateWindowLine = duplicateWindowLine;
   window.APP.duplicatePressureLine = duplicatePressureLine;

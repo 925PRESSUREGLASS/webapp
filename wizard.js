@@ -651,6 +651,11 @@
 
       var tintLevel = $('wizWinTint') && $('wizWinTint').value ? $('wizWinTint').value : 'none';
 
+      var modifiers = [];
+      if (conditionId) modifiers.push({ id: conditionId, type: 'condition' });
+      if (accessId) modifiers.push({ id: accessId, type: 'access' });
+      if (tintLevel && tintLevel !== 'none') modifiers.push({ id: 'tint_' + tintLevel, type: 'tint' });
+
       var opts = {
         title: title || 'Window Line',
         windowTypeId: windowTypeId,
@@ -662,10 +667,15 @@
         conditionId: conditionId,
         accessId: accessId,
         tintLevel: tintLevel,
-        location: location
+        location: location,
+        modifiers: modifiers
       };
 
-      APP.addWindowLine(opts);
+      if (APP.buildWindowLine) {
+        APP.addWindowLine(APP.buildWindowLine(opts));
+      } else {
+        APP.addWindowLine(opts);
+      }
 
       if (window.UIComponents && window.UIComponents.showToast) {
         window.UIComponents.showToast('Window line added successfully', 'success');
@@ -1209,16 +1219,25 @@
       var soilLevel = $('wizPrSoil') && $('wizPrSoil').value ? $('wizPrSoil').value : 'medium';
       var access = $('wizPrAccess') && $('wizPrAccess').value ? $('wizPrAccess').value : 'easy';
 
+      var modifiers = [];
+      if (soilLevel) modifiers.push({ id: soilLevel, type: 'soil' });
+      if (access) modifiers.push({ id: access, type: 'access' });
+
       var opts = {
         title: title || 'Pressure Line',
         surfaceId: surfaceId,
         areaSqm: area,
         soilLevel: soilLevel,
         access: access,
-        notes: notes
+        notes: notes,
+        modifiers: modifiers
       };
 
-      APP.addPressureLine(opts);
+      if (APP.buildPressureLine) {
+        APP.addPressureLine(APP.buildPressureLine(opts));
+      } else {
+        APP.addPressureLine(opts);
+      }
 
       if (window.UIComponents && window.UIComponents.showToast) {
         window.UIComponents.showToast('Pressure line added successfully', 'success');

@@ -215,6 +215,27 @@
     return highest;
   }
 
+  function getModifierLabel(mod) {
+    var id = mod && mod.id ? mod.id : mod;
+    if (!id) return '';
+    var arrays = [
+      window.CONDITION_MODIFIERS_ARRAY,
+      window.ACCESS_MODIFIERS_ARRAY,
+      window.PRESSURE_CONDITIONS_ARRAY,
+      window.TECHNIQUE_MODIFIERS_ARRAY
+    ];
+    for (var i = 0; i < arrays.length; i++) {
+      var arr = arrays[i];
+      if (!arr) continue;
+      for (var j = 0; j < arr.length; j++) {
+        if (arr[j].id === id) {
+          return arr[j].label || arr[j].name || id;
+        }
+      }
+    }
+    return id;
+  }
+
   /**
    * Generate description for window line item
    * @param {object} line - Window line item from quote
@@ -224,11 +245,19 @@
     var parts = [];
 
     // Window type
-    if (line.windowTypeId) {
-      parts.push(line.windowTypeId.charAt(0).toUpperCase() + line.windowTypeId.slice(1) + ' windows');
-    } else {
-      parts.push('Window cleaning');
+    var typeLabel = line.presetLabel || line.windowTypeLabel;
+    if (!typeLabel && window.PRICING_DATA && window.PRICING_DATA.windowTypes) {
+      for (var i = 0; i < PRICING_DATA.windowTypes.length; i++) {
+        if (PRICING_DATA.windowTypes[i].id === line.windowTypeId) {
+          typeLabel = PRICING_DATA.windowTypes[i].label || PRICING_DATA.windowTypes[i].name;
+          break;
+        }
+      }
     }
+    if (!typeLabel && line.windowTypeId) {
+      typeLabel = line.windowTypeId;
+    }
+    parts.push(typeLabel ? typeLabel : 'Window cleaning');
 
     // Panes
     if (line.panes) {
@@ -253,6 +282,17 @@
       parts.push('at ' + line.location);
     }
 
+    // Modifiers
+    if (line.modifiers && line.modifiers.length) {
+      var mods = [];
+      for (var m = 0; m < line.modifiers.length; m++) {
+        mods.push(getModifierLabel(line.modifiers[m]));
+      }
+      if (mods.length) {
+        parts.push('mods: ' + mods.join(', '));
+      }
+    }
+
     // Use custom title if provided
     if (line.title && line.title !== 'Window Line') {
       return line.title + ' - ' + parts.join(' ');
@@ -270,11 +310,19 @@
     var parts = [];
 
     // Surface type
-    if (line.surfaceId) {
-      parts.push(line.surfaceId.charAt(0).toUpperCase() + line.surfaceId.slice(1) + ' pressure cleaning');
-    } else {
-      parts.push('Pressure cleaning');
+    var surfaceLabel = line.presetLabel || line.surfaceLabel;
+    if (!surfaceLabel && window.PRICING_DATA && PRICING_DATA.pressureSurfaces) {
+      for (var i = 0; i < PRICING_DATA.pressureSurfaces.length; i++) {
+        if (PRICING_DATA.pressureSurfaces[i].id === line.surfaceId) {
+          surfaceLabel = PRICING_DATA.pressureSurfaces[i].label || PRICING_DATA.pressureSurfaces[i].name;
+          break;
+        }
+      }
     }
+    if (!surfaceLabel && line.surfaceId) {
+      surfaceLabel = line.surfaceId;
+    }
+    parts.push(surfaceLabel ? surfaceLabel : 'Pressure cleaning');
 
     // Area
     if (line.areaSqm) {
@@ -289,6 +337,17 @@
     // Notes
     if (line.notes && line.notes.trim() !== '') {
       parts.push('- ' + line.notes);
+    }
+
+    // Modifiers
+    if (line.modifiers && line.modifiers.length) {
+      var mods = [];
+      for (var m = 0; m < line.modifiers.length; m++) {
+        mods.push(getModifierLabel(line.modifiers[m]));
+      }
+      if (mods.length) {
+        parts.push('mods: ' + mods.join(', '));
+      }
     }
 
     // Use custom title if provided
