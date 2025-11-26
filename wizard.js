@@ -585,16 +585,20 @@
             baseFee: s.baseFee,
             hourlyRate: s.hourlyRate,
             minimumJob: s.minimumJob,
-            highReachModifierPercent: s.highReachModifierPercent,
-            insideMultiplier: s.insideMultiplier,
-            outsideMultiplier: s.outsideMultiplier,
-            pressureHourlyRate: s.pressureHourlyRate,
-            setupBufferMinutes: s.setupBufferMinutes
-          });
-        } catch (eCalc) {
-          result = null;
-        }
+          highReachModifierPercent: s.highReachModifierPercent,
+          insideMultiplier: s.insideMultiplier,
+          outsideMultiplier: s.outsideMultiplier,
+          pressureHourlyRate: s.pressureHourlyRate,
+          setupBufferMinutes: s.setupBufferMinutes,
+          travelMinutes: s.travelMinutes,
+          travelKm: s.travelKm,
+          travelRatePerHour: s.travelRatePerHour,
+          travelRatePerKm: s.travelRatePerKm
+        });
+      } catch (eCalc) {
+        result = null;
       }
+    }
       if (!result && window.Calc && typeof Calc.calculate === 'function') {
         try {
           result = Calc.calculate(s);
@@ -1208,17 +1212,21 @@
             pressureLines: s.pressureLines || [],
             baseFee: s.baseFee,
             hourlyRate: s.hourlyRate,
-            minimumJob: s.minimumJob,
-            highReachModifierPercent: s.highReachModifierPercent,
-            insideMultiplier: s.insideMultiplier,
-            outsideMultiplier: s.outsideMultiplier,
-            pressureHourlyRate: s.pressureHourlyRate,
-            setupBufferMinutes: s.setupBufferMinutes
-          });
-        } catch (eCalc) {
-          result = null;
-        }
+          minimumJob: s.minimumJob,
+          highReachModifierPercent: s.highReachModifierPercent,
+          insideMultiplier: s.insideMultiplier,
+          outsideMultiplier: s.outsideMultiplier,
+          pressureHourlyRate: s.pressureHourlyRate,
+          setupBufferMinutes: s.setupBufferMinutes,
+          travelMinutes: s.travelMinutes,
+          travelKm: s.travelKm,
+          travelRatePerHour: s.travelRatePerHour,
+          travelRatePerKm: s.travelRatePerKm
+        });
+      } catch (eCalc) {
+        result = null;
       }
+    }
       if (!result && window.Calc && typeof Calc.calculate === 'function') {
         try {
           result = Calc.calculate(s);
