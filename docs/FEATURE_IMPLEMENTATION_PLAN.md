@@ -6,13 +6,44 @@
 
 ## Overview
 
-| # | Feature | Priority | Effort | Files |
-|---|---------|----------|--------|-------|
-| 1 | Email Integration | High | 3-4 days | 5-7 files |
-| 2 | Contract Wizard Edit | Medium | 2 days | 2-3 files |
-| 3 | Dashboard TanStack Query | Low | ✅ Already done | - |
-| 4 | Business Config UI | Medium | 2-3 days | 3-4 files |
-| 5 | Encryption Settings UI | Low | 1-2 days | 2-3 files |
+| # | Feature | Priority | Effort | Status |
+|---|---------|----------|--------|--------|
+| 1 | Email Integration | High | 3-4 days | ❌ Pending |
+| 2 | Contract Wizard Edit | Medium | 2 days | ✅ Completed |
+| 3 | Dashboard TanStack Query | Low | Already done | ✅ Completed |
+| 4 | Business Config UI | Medium | 2-3 days | ✅ Completed |
+| 5 | Encryption Settings UI | Low | 1-2 days | ✅ Completed |
+
+---
+
+## Summary of Completed Work
+
+### ✅ Business Config UI (Commit: 3bb164d)
+- Created `business-settings.js` - Full ES5-compatible module with localStorage storage
+- Created `css/business-settings.css` - Modal styling with dark mode support
+- Added modal HTML to `index.html` with form sections for Contact, Address, Bank Details
+- Updated `config.js` to use BusinessSettings.applyToConfig() at runtime
+- Added validation for Australian formats: ABN (11 digits), phone (10 digits), BSB (6 digits)
+
+### ✅ Contract Wizard Edit Mode (Commit: 1559b1c)
+- Added `_editMode` and `_editContractId` state variables to `contract-wizard.js`
+- Implemented `initEditMode(contractId)` to load existing contract data
+- Created `prefillFormFields()` to populate wizard forms with contract data
+- Updated `saveContractDraft()` and `createContractFinal()` to handle updates vs creates
+- Added `openContractWizardForEdit(contractId)` global function
+- Updated `contract-ui.js` `editContractFromDetail()` to use new wizard edit mode
+- Modal title changes to "Edit Contract" vs "New Contract" based on mode
+
+### ✅ Encryption Settings UI (Already in invoice.js)
+- Checkbox already exists in invoice settings modal at line 1088
+- `getSettings()` and `updateSettings()` API methods exposed
+- `enableEncryption` setting stored in invoice settings
+- Tests passing in `tests/encryption-settings.spec.js`
+
+### ✅ Dashboard TanStack Query (Already implemented)
+- `QueryClient` and `QueryClientProvider` in `apps/meta-dashboard/src/main.tsx`
+- `useQuery` hooks for projects, assets, features
+- No additional work needed
 
 ---
 
@@ -437,4 +468,5 @@ All frontend code must use:
 
 ---
 
-*Last updated: 2025-11-26*
+*Last updated: 2025-07-11*
+*4/5 features completed. Only Email Integration remains.*
