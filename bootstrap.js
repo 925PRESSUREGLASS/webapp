@@ -93,8 +93,12 @@
             console.log('[BOOTSTRAP] APP initialization complete ✅');
 
             // Dispatch custom event (for analytics, monitoring)
-            if (typeof CustomEvent !== 'undefined') {
-              window.dispatchEvent(new CustomEvent('app:initialized'));
+            try {
+              if (typeof CustomEvent !== 'undefined') {
+                window.dispatchEvent(new CustomEvent('app:initialized'));
+              }
+            } catch (e) {
+              // Ignore dispatch errors in constrained contexts (e.g., tests)
             }
 
             resolve();

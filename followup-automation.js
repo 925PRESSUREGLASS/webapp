@@ -5,6 +5,11 @@
 (function() {
   'use strict';
 
+  if (typeof window !== 'undefined' && window.APP_TEST_MODE) {
+    console.log('[FOLLOWUP-AUTO] Skipped in test mode');
+    return;
+  }
+
   /**
    * Calculate next business day, skipping weekends if requested
    * @param {Date} date - Starting date

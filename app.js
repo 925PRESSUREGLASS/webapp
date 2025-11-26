@@ -231,6 +231,18 @@
     var setupBufferMinutes = Math.max(0, parseFloat(
       $("setupBufferMinutesInput").value
     ) || 0);
+    var travelMinutes = Math.max(0, parseFloat(
+      $("travelMinutesInput") ? $("travelMinutesInput").value : 0
+    ) || 0);
+    var travelKm = Math.max(0, parseFloat(
+      $("travelKmInput") ? $("travelKmInput").value : 0
+    ) || 0);
+    var travelRatePerHour = Math.max(0, parseFloat(
+      $("travelRatePerHourInput") ? $("travelRatePerHourInput").value : 0
+    ) || 0);
+    var travelRatePerKm = Math.max(0, parseFloat(
+      $("travelRatePerKmInput") ? $("travelRatePerKmInput").value : 0
+    ) || 0);
 
     var quoteTitle = $("quoteTitleInput").value || "";
     var clientName = $("clientNameInput").value || "";
@@ -264,6 +276,10 @@
       outsideMultiplier: outsideMultiplier,
       pressureHourlyRate: pressureHourlyRate,
       setupBufferMinutes: setupBufferMinutes,
+      travelMinutes: travelMinutes,
+      travelKm: travelKm,
+      travelRatePerHour: travelRatePerHour,
+      travelRatePerKm: travelRatePerKm,
       quoteTitle: quoteTitle,
       clientName: clientName,
       clientLocation: clientLocation,
@@ -300,6 +316,14 @@
     if (typeof state.setupBufferMinutes === "number")
       $("setupBufferMinutesInput").value =
         state.setupBufferMinutes;
+    if (typeof state.travelMinutes === "number" && $("travelMinutesInput"))
+      $("travelMinutesInput").value = state.travelMinutes;
+    if (typeof state.travelKm === "number" && $("travelKmInput"))
+      $("travelKmInput").value = state.travelKm;
+    if (typeof state.travelRatePerHour === "number" && $("travelRatePerHourInput"))
+      $("travelRatePerHourInput").value = state.travelRatePerHour;
+    if (typeof state.travelRatePerKm === "number" && $("travelRatePerKmInput"))
+      $("travelRatePerKmInput").value = state.travelRatePerKm;
 
     $("quoteTitleInput").value = state.quoteTitle || "";
     $("clientNameInput").value = state.clientName || "";
@@ -322,34 +346,84 @@
     return "L" + nextLineId++;
   }
 
-  function addWindowLine(options) {
+  // Resolve presets from extended arrays (wizard) or fallback PRICING_DATA
+  function getWindowPresetById(id) {
+    var i;
+    if (window.WINDOW_TYPES_ARRAY && WINDOW_TYPES_ARRAY.length) {
+      for (i = 0; i < WINDOW_TYPES_ARRAY.length; i++) {
+        if (WINDOW_TYPES_ARRAY[i].id === id) return WINDOW_TYPES_ARRAY[i];
+      }
+    }
+    for (i = 0; i < PRICING_DATA.windowTypes.length; i++) {
+      if (PRICING_DATA.windowTypes[i].id === id) return PRICING_DATA.windowTypes[i];
+    }
+    return null;
+  }
+
+  function getPressurePresetById(id) {
+    var i;
+    if (window.PRESSURE_SURFACES_ARRAY_EXT && PRESSURE_SURFACES_ARRAY_EXT.length) {
+      for (i = 0; i < PRESSURE_SURFACES_ARRAY_EXT.length; i++) {
+        if (PRESSURE_SURFACES_ARRAY_EXT[i].id === id) return PRESSURE_SURFACES_ARRAY_EXT[i];
+      }
+    }
+    for (i = 0; i < PRICING_DATA.pressureSurfaces.length; i++) {
+      if (PRICING_DATA.pressureSurfaces[i].id === id) return PRICING_DATA.pressureSurfaces[i];
+    }
+    return null;
+  }
+
+  function buildWindowLine(options) {
     options = options || {};
-    var line = {
+    var defaultType = (PRICING_DATA.windowTypes[2] && PRICING_DATA.windowTypes[2].id) || '';
+    var windowTypeId = options.windowTypeId || defaultType;
+    var preset = getWindowPresetById(windowTypeId);
+
+    return {
       id: makeLineId(),
-      title: options.title || "Window Line",
+      title: options.title || (preset && (preset.label || preset.name)) || "Window Line",
       tags: options.tags || [],
-      windowTypeId:
-        options.windowTypeId ||
-        (PRICING_DATA.windowTypes[2] &&
-          PRICING_DATA.windowTypes[2].id) ||
-        "",
-      inside:
-        typeof options.inside === "boolean"
-          ? options.inside
-          : true,
-      outside:
-        typeof options.outside === "boolean"
-          ? options.outside
-          : true,
+      windowTypeId: windowTypeId,
+      inside: typeof options.inside === "boolean" ? options.inside : true,
+      outside: typeof options.outside === "boolean" ? options.outside : true,
       highReach: !!options.highReach,
       panes: typeof options.panes === "number" ? options.panes : 4,
       soilLevel: options.soilLevel || "medium",
       conditionId: options.conditionId || null,
       accessId: options.accessId || null,
       tintLevel: options.tintLevel || "none",
-      location: options.location || ""
+      location: options.location || "",
+      modifiers: options.modifiers || [],
+      presetLabel: preset ? (preset.label || preset.name || "") : "",
+      presetCategory: preset && preset.category ? preset.category : "",
+      __normalizedLine: true
     };
+  }
 
+  function buildPressureLine(options) {
+    options = options || {};
+    var defaultSurface = (PRICING_DATA.pressureSurfaces[0] && PRICING_DATA.pressureSurfaces[0].id) || '';
+    var surfaceId = options.surfaceId || defaultSurface;
+    var preset = getPressurePresetById(surfaceId);
+
+    return {
+      id: makeLineId(),
+      title: options.title || (preset && (preset.label || preset.name)) || "Pressure Line",
+      tags: options.tags || [],
+      surfaceId: surfaceId,
+      areaSqm: typeof options.areaSqm === "number" ? options.areaSqm : 30,
+      soilLevel: options.soilLevel || "medium",
+      access: options.access || "easy",
+      notes: options.notes || "",
+      modifiers: options.modifiers || [],
+      presetLabel: preset ? (preset.label || preset.name || "") : "",
+      presetCategory: preset && preset.category ? preset.category : "",
+      __normalizedLine: true
+    };
+  }
+
+  function addWindowLine(options) {
+    var line = options && options.__normalizedLine ? options : buildWindowLine(options);
     state.windowLines.push(line);
     renderLines();
     recalculate();
@@ -357,23 +431,7 @@
   }
 
   function addPressureLine(options) {
-    options = options || {};
-    var line = {
-      id: makeLineId(),
-      title: options.title || "Pressure Line",
-      tags: options.tags || [],
-      surfaceId:
-        options.surfaceId ||
-        (PRICING_DATA.pressureSurfaces[0] &&
-          PRICING_DATA.pressureSurfaces[0].id) ||
-        "",
-      areaSqm:
-        typeof options.areaSqm === "number" ? options.areaSqm : 30,
-      soilLevel: options.soilLevel || "medium",
-      access: options.access || "easy",
-      notes: options.notes || ""
-    };
-
+    var line = options && options.__normalizedLine ? options : buildPressureLine(options);
     state.pressureLines.push(line);
     renderLines();
     recalculate();
@@ -447,10 +505,11 @@
   };
 
   function renderLines() {
+    var config = buildStateFromUI(true);
     applySort('window');
     applySort('pressure');
-    renderWindowLines();
-    renderPressureLines();
+    renderWindowLines(config);
+    renderPressureLines(config);
   }
 
   function applySort(type) {
@@ -519,7 +578,7 @@
     return '';
   }
 
-  function renderWindowLines() {
+  function renderWindowLines(config) {
     var body = $("windowLinesTableBody");
     if (!body) return;
     body.innerHTML = "";
@@ -532,14 +591,14 @@
 
     for (var i = 0; i < state.windowLines.length; i++) {
       var line = state.windowLines[i];
-      var row = renderWindowLineRow(line);
+      var row = renderWindowLineRow(line, config);
       body.appendChild(row);
     }
 
     updateSortIcons('window');
   }
 
-  function renderPressureLines() {
+  function renderPressureLines(config) {
     var body = $("pressureLinesTableBody");
     if (!body) return;
     body.innerHTML = "";
@@ -552,7 +611,7 @@
 
     for (var i = 0; i < state.pressureLines.length; i++) {
       var line = state.pressureLines[i];
-      var row = renderPressureLineRow(line);
+      var row = renderPressureLineRow(line, config);
       body.appendChild(row);
     }
 
@@ -568,10 +627,51 @@
     body.appendChild(row);
   }
 
+  function getAllWindowTypes() {
+    var list = [];
+    var map = {};
+    var i;
+    var base = PRICING_DATA.windowTypes || [];
+    for (i = 0; i < base.length; i++) {
+      map[base[i].id] = true;
+      list.push(base[i]);
+    }
+    if (window.WINDOW_TYPES_ARRAY && WINDOW_TYPES_ARRAY.length) {
+      for (i = 0; i < WINDOW_TYPES_ARRAY.length; i++) {
+        if (!map[WINDOW_TYPES_ARRAY[i].id]) {
+          map[WINDOW_TYPES_ARRAY[i].id] = true;
+          list.push(WINDOW_TYPES_ARRAY[i]);
+        }
+      }
+    }
+    return list;
+  }
+
+  function getAllPressureSurfaces() {
+    var list = [];
+    var map = {};
+    var i;
+    var base = PRICING_DATA.pressureSurfaces || [];
+    for (i = 0; i < base.length; i++) {
+      map[base[i].id] = true;
+      list.push(base[i]);
+    }
+    if (window.PRESSURE_SURFACES_ARRAY_EXT && PRESSURE_SURFACES_ARRAY_EXT.length) {
+      for (i = 0; i < PRESSURE_SURFACES_ARRAY_EXT.length; i++) {
+        if (!map[PRESSURE_SURFACES_ARRAY_EXT[i].id]) {
+          map[PRESSURE_SURFACES_ARRAY_EXT[i].id] = true;
+          list.push(PRESSURE_SURFACES_ARRAY_EXT[i]);
+        }
+      }
+    }
+    return list;
+  }
+
   function getWindowTypeLabel(typeId) {
-    for (var i = 0; i < PRICING_DATA.windowTypes.length; i++) {
-      if (PRICING_DATA.windowTypes[i].id === typeId) {
-        return PRICING_DATA.windowTypes[i].label || '';
+    var list = getAllWindowTypes();
+    for (var i = 0; i < list.length; i++) {
+      if (list[i].id === typeId) {
+        return list[i].label || list[i].name || '';
       }
     }
     return '';
@@ -600,9 +700,10 @@
   }
 
   function getPressureSurfaceLabel(surfaceId) {
-    for (var i = 0; i < PRICING_DATA.pressureSurfaces.length; i++) {
-      if (PRICING_DATA.pressureSurfaces[i].id === surfaceId) {
-        return PRICING_DATA.pressureSurfaces[i].label || '';
+    var list = getAllPressureSurfaces();
+    for (var i = 0; i < list.length; i++) {
+      if (list[i].id === surfaceId) {
+        return list[i].label || list[i].name || '';
       }
     }
     return '';
@@ -612,7 +713,175 @@
     return accessId || '';
   }
 
-  function renderWindowLineRow(line) {
+  function getModifierLabel(mod) {
+    var id = mod && mod.id ? mod.id : mod;
+    if (!id) return '';
+
+    if (window.CONDITION_MODIFIERS_ARRAY) {
+      for (var i = 0; i < CONDITION_MODIFIERS_ARRAY.length; i++) {
+        if (CONDITION_MODIFIERS_ARRAY[i].id === id) {
+          return CONDITION_MODIFIERS_ARRAY[i].name;
+        }
+      }
+    }
+    if (window.ACCESS_MODIFIERS_ARRAY) {
+      for (var j = 0; j < ACCESS_MODIFIERS_ARRAY.length; j++) {
+        if (ACCESS_MODIFIERS_ARRAY[j].id === id) {
+          return ACCESS_MODIFIERS_ARRAY[j].name;
+        }
+      }
+    }
+    if (window.PRESSURE_CONDITIONS_ARRAY) {
+      for (var k = 0; k < PRESSURE_CONDITIONS_ARRAY.length; k++) {
+        if (PRESSURE_CONDITIONS_ARRAY[k].id === id) {
+          return PRESSURE_CONDITIONS_ARRAY[k].label || PRESSURE_CONDITIONS_ARRAY[k].name;
+        }
+      }
+    }
+    if (window.TECHNIQUE_MODIFIERS_ARRAY) {
+      for (var m = 0; m < TECHNIQUE_MODIFIERS_ARRAY.length; m++) {
+        if (TECHNIQUE_MODIFIERS_ARRAY[m].id === id) {
+          return TECHNIQUE_MODIFIERS_ARRAY[m].label || TECHNIQUE_MODIFIERS_ARRAY[m].name;
+        }
+      }
+    }
+    return id;
+  }
+
+  function getModifierMultiplier(mod) {
+    var id = mod && mod.id ? mod.id : mod;
+    if (!id) return 1.0;
+    if (mod && typeof mod.multiplier === 'number') return mod.multiplier;
+
+    var lookup = function(arr, key) {
+      if (!arr) return null;
+      for (var i = 0; i < arr.length; i++) {
+        if (arr[i].id === key) return arr[i];
+      }
+      return null;
+    };
+
+    var found = lookup(window.CONDITION_MODIFIERS_ARRAY, id) ||
+      lookup(window.ACCESS_MODIFIERS_ARRAY, id) ||
+      lookup(window.PRESSURE_CONDITIONS_ARRAY, id) ||
+      lookup(window.TECHNIQUE_MODIFIERS_ARRAY, id);
+
+    if (found && typeof found.multiplier === 'number') {
+      return found.multiplier;
+    }
+    return 1.0;
+  }
+
+  function computeWindowLineEstimate(line, config) {
+    config = config || buildStateFromUI(true);
+    var preset = getWindowPresetById(line.windowTypeId);
+    if (!preset) return { cost: 0, minutes: 0, hours: 0 };
+
+    var baseInside = preset.baseMinutesInside || 0;
+    var baseOutside = preset.baseMinutesOutside || 0;
+    var insideMultiplier = config.insideMultiplier || 1;
+    var outsideMultiplier = config.outsideMultiplier || 1;
+
+    var minutesPerPane = 0;
+    if (line.inside) minutesPerPane += baseInside * insideMultiplier;
+    if (line.outside) minutesPerPane += baseOutside * outsideMultiplier;
+
+    var conditionId = line.conditionId || line.soilLevel;
+    var accessId = line.accessId || (line.highReach ? 'highReach' : null);
+
+    var conditionFactor = typeof getConditionMultiplier === 'function' && conditionId ? getConditionMultiplier(conditionId) : 1.0;
+    var accessFactor = typeof getAccessMultiplier === 'function' && accessId ? getAccessMultiplier(accessId) : 1.0;
+
+    var tintFactor = 1.0;
+    if (line.tintLevel === 'light') tintFactor = 1.05;
+    else if (line.tintLevel === 'heavy') tintFactor = 1.1;
+
+    var modFactor = 1.0;
+    if (line.modifiers && line.modifiers.length) {
+      for (var mi = 0; mi < line.modifiers.length; mi++) {
+        modFactor = modFactor * getModifierMultiplier(line.modifiers[mi]);
+      }
+    }
+
+    var panes = line.panes || 0;
+    var totalMinutes = minutesPerPane * panes * conditionFactor * accessFactor * tintFactor * modFactor;
+
+    var highReachMinutes = 0;
+    if (line.highReach && line.outside) {
+      highReachMinutes = baseOutside * outsideMultiplier * panes;
+      highReachMinutes = highReachMinutes * conditionFactor * tintFactor * modFactor * 0.4;
+    }
+
+    var hours = (totalMinutes + highReachMinutes) / 60;
+    var labourRate = config.hourlyRate || 0;
+    var cost = (hours * labourRate);
+
+    return {
+      cost: cost,
+      minutes: totalMinutes + highReachMinutes,
+      hours: hours
+    };
+  }
+
+  function computePressureLineEstimate(line, config) {
+    config = config || buildStateFromUI(true);
+    var preset = getPressurePresetById(line.surfaceId);
+    if (!preset) return { cost: 0, minutes: 0, hours: 0 };
+
+    var mps = preset.minutesPerSqm || 0;
+    var area = line.areaSqm || 0;
+
+    var soilFactor = 1.0;
+    if (line.soilLevel === 'medium') soilFactor = 1.25;
+    else if (line.soilLevel === 'heavy') soilFactor = 1.5;
+    else if (line.soilLevel && line.soilLevel !== 'light') soilFactor = 1.0;
+
+    var accessFactor = 1.0;
+    if (line.access === 'ladder') accessFactor = 1.2;
+    else if (line.access === 'highReach') accessFactor = 1.35;
+
+    var modFactor = 1.0;
+    if (line.modifiers && line.modifiers.length) {
+      for (var mi = 0; mi < line.modifiers.length; mi++) {
+        modFactor = modFactor * getModifierMultiplier(line.modifiers[mi]);
+      }
+    }
+
+    var minutes = mps * area * soilFactor * accessFactor * modFactor;
+    var hours = minutes / 60;
+    var rate = config.pressureHourlyRate || config.hourlyRate || 0;
+    var cost = hours * rate;
+
+    return { cost: cost, minutes: minutes, hours: hours };
+  }
+
+  function updateLineEstimates(config) {
+    var cfg = config || buildStateFromUI(true);
+    // Windows
+    if (state.windowLines && state.windowLines.length) {
+      for (var i = 0; i < state.windowLines.length; i++) {
+        var wLine = state.windowLines[i];
+        var el = document.querySelector('tr[data-id="' + wLine.id + '"] .line-estimate');
+        if (el) {
+          var est = computeWindowLineEstimate(wLine, cfg);
+          el.textContent = '$' + est.cost.toFixed(2) + ' · ' + est.hours.toFixed(2) + 'h';
+        }
+      }
+    }
+    // Pressure
+    if (state.pressureLines && state.pressureLines.length) {
+      for (var j = 0; j < state.pressureLines.length; j++) {
+        var pLine = state.pressureLines[j];
+        var pel = document.querySelector('tr[data-id="' + pLine.id + '"] .line-estimate');
+        if (pel) {
+          var pest = computePressureLineEstimate(pLine, cfg);
+          pel.textContent = '$' + pest.cost.toFixed(2) + ' · ' + pest.hours.toFixed(2) + 'h';
+        }
+      }
+    }
+  }
+
+  function renderWindowLineRow(line, config) {
     var row = createEl('tr');
     row.setAttribute('data-id', line.id);
 
@@ -627,12 +896,25 @@
     if (line.highReach) allTags.push('high reach');
     if (line.inside && !line.outside) allTags.push('inside only');
     if (!line.inside && line.outside) allTags.push('outside only');
+    if (line.modifiers && line.modifiers.length) {
+      var modLabels = [];
+      for (var m = 0; m < line.modifiers.length; m++) {
+        modLabels.push(getModifierLabel(line.modifiers[m]));
+      }
+      if (modLabels.length) {
+        allTags.push('mods: ' + modLabels.join(', '));
+      }
+    }
 
     if (allTags.length) {
       var meta = createEl('div', 'line-meta');
       meta.textContent = allTags.join(' • ');
       titleRow.appendChild(meta);
     }
+
+    var typeBadge = createEl('div', 'line-type-badge');
+    typeBadge.textContent = getWindowTypeLabel(line.windowTypeId);
+    titleRow.appendChild(typeBadge);
 
     titleCell.appendChild(titleRow);
     row.appendChild(titleCell);
@@ -642,7 +924,7 @@
     selectType.className = 'window-type-select';
     selectType.value = line.windowTypeId;
 
-    var windowTypes = PRICING_DATA.windowTypes;
+    var windowTypes = getAllWindowTypes();
     var hasCategories = windowTypes.length > 0 && windowTypes[0].category;
     if (hasCategories) {
       var categories = {
@@ -729,7 +1011,26 @@
       scheduleAutosave(true);
       recalculate();
     });
+    var quickRow = createEl('div', 'quick-increments');
+    var increments = [1, 2, 5, 10];
+    for (var qi = 0; qi < increments.length; qi++) {
+      (function(inc) {
+        var btn = createEl('button', 'btn btn-ghost btn-xs');
+        btn.type = 'button';
+        btn.textContent = '+ ' + inc;
+        btn.addEventListener('click', function() {
+          var current = parseInt(panesInput.value, 10) || 0;
+          var next = current + inc;
+          panesInput.value = next;
+          line.panes = next;
+          scheduleAutosave(true);
+          recalculate();
+        });
+        quickRow.appendChild(btn);
+      })(increments[qi]);
+    }
     panesCell.appendChild(panesInput);
+    panesCell.appendChild(quickRow);
     row.appendChild(panesCell);
 
     var flagsCell = createEl('td');
@@ -895,6 +1196,13 @@
     locationCell.appendChild(locInput);
     row.appendChild(locationCell);
 
+    var estimateCell = createEl('td');
+    var est = computeWindowLineEstimate(line, config);
+    var estText = createEl('div', 'line-estimate');
+    estText.textContent = '$' + est.cost.toFixed(2) + ' · ' + est.hours.toFixed(2) + 'h';
+    estimateCell.appendChild(estText);
+    row.appendChild(estimateCell);
+
     var actionsCell = createEl('td');
     var actions = createEl('div', 'line-actions');
     var dupBtn = createEl("button", "btn btn-small btn-ghost");
@@ -919,7 +1227,7 @@
     return row;
   }
 
-  function renderPressureLineRow(line) {
+  function renderPressureLineRow(line, config) {
     var row = createEl('tr');
     row.setAttribute('data-id', line.id);
 
@@ -930,21 +1238,36 @@
     titleRow.appendChild(titleEl);
 
     var meta = createEl('div', 'line-meta');
-    meta.textContent = line.notes || '';
+    var metaBits = [];
+    if (line.notes) metaBits.push(line.notes);
+    if (line.modifiers && line.modifiers.length) {
+      var pm = [];
+      for (var pmx = 0; pmx < line.modifiers.length; pmx++) {
+        pm.push(getModifierLabel(line.modifiers[pmx]));
+      }
+      if (pm.length) {
+        metaBits.push('mods: ' + pm.join(', '));
+      }
+    }
+    meta.textContent = metaBits.join(' • ');
     if (meta.textContent) {
       titleRow.appendChild(meta);
     }
 
     titleCell.appendChild(titleRow);
+    var typeBadge = createEl('div', 'line-type-badge');
+    typeBadge.textContent = getPressureSurfaceLabel(line.surfaceId);
+    titleCell.appendChild(typeBadge);
     row.appendChild(titleCell);
 
     var surfaceCell = createEl('td');
     var surfSelect = createEl("select");
-    for (var j = 0; j < PRICING_DATA.pressureSurfaces.length; j++) {
-      var ps = PRICING_DATA.pressureSurfaces[j];
+    var surfaces = getAllPressureSurfaces();
+    for (var j = 0; j < surfaces.length; j++) {
+      var ps = surfaces[j];
       var opt = createEl("option");
       opt.value = ps.id;
-      opt.textContent = ps.label;
+      opt.textContent = ps.label || ps.name || '';
       if (ps.id === line.surfaceId) opt.selected = true;
       surfSelect.appendChild(opt);
     }
@@ -968,18 +1291,48 @@
       scheduleAutosave(true);
       recalculate();
     });
+    var quickArea = createEl('div', 'quick-increments');
+    var aIncs = [1, 2, 5, 10];
+    for (var qa = 0; qa < aIncs.length; qa++) {
+      (function(inc) {
+        var btn = createEl('button', 'btn btn-ghost btn-xs');
+        btn.type = 'button';
+        btn.textContent = '+ ' + inc;
+        btn.addEventListener('click', function() {
+          var current = parseFloat(areaInput.value) || 0;
+          var next = current + inc;
+          areaInput.value = next;
+          line.areaSqm = next;
+          scheduleAutosave(true);
+          recalculate();
+        });
+        quickArea.appendChild(btn);
+      })(aIncs[qa]);
+    }
     areaCell.appendChild(areaInput);
+    areaCell.appendChild(quickArea);
     row.appendChild(areaCell);
 
     var soilCell = createEl('td');
     var soilSelect = createEl("select");
-    var soilOptions = [
-      { v: "light", t: "Light" },
-      { v: "medium", t: "Medium" },
-      { v: "heavy", t: "Heavy" }
-    ];
-    for (var s = 0; s < soilOptions.length; s++) {
-      var so = soilOptions[s];
+    var soilOptions = null;
+    if (window.PRESSURE_CONDITIONS_ARRAY && PRESSURE_CONDITIONS_ARRAY.length) {
+      soilOptions = [];
+      for (var s = 0; s < PRESSURE_CONDITIONS_ARRAY.length; s++) {
+        soilOptions.push({
+          v: PRESSURE_CONDITIONS_ARRAY[s].id,
+          t: (PRESSURE_CONDITIONS_ARRAY[s].label || PRESSURE_CONDITIONS_ARRAY[s].name) + ' (' + (PRESSURE_CONDITIONS_ARRAY[s].multiplier || 1).toFixed(2) + 'x)'
+        });
+      }
+    } else {
+      soilOptions = [
+        { v: "light", t: "Light" },
+        { v: "medium", t: "Medium" },
+        { v: "heavy", t: "Heavy" }
+      ];
+    }
+    for (var sIdx = 0; sIdx < soilOptions.length; sIdx++) {
+      var so = soilOptions[sIdx];
       var soEl = createEl("option");
       soEl.value = so.v;
       soEl.textContent = so.t;
@@ -996,13 +1349,24 @@
 
     var accessCell = createEl('td');
     var accessSelect = createEl("select");
-    var accessOptions = [
-      { v: "easy", t: "Easy" },
-      { v: "ladder", t: "Ladder" },
-      { v: "highReach", t: "High Reach" }
-    ];
-    for (var a = 0; a < accessOptions.length; a++) {
-      var ao = accessOptions[a];
+    var accessOptions = null;
+    if (window.ACCESS_MODIFIERS_ARRAY && ACCESS_MODIFIERS_ARRAY.length) {
+      accessOptions = [];
+      for (var a = 0; a < ACCESS_MODIFIERS_ARRAY.length; a++) {
+        accessOptions.push({
+          v: ACCESS_MODIFIERS_ARRAY[a].id,
+          t: ACCESS_MODIFIERS_ARRAY[a].name || (ACCESS_MODIFIERS_ARRAY[a].label || ACCESS_MODIFIERS_ARRAY[a].id)
+        });
+      }
+    } else {
+      accessOptions = [
+        { v: "easy", t: "Easy" },
+        { v: "ladder", t: "Ladder" },
+        { v: "highReach", t: "High Reach" }
+      ];
+    }
+    for (var aIdx = 0; aIdx < accessOptions.length; aIdx++) {
+      var ao = accessOptions[aIdx];
       var axEl = createEl("option");
       axEl.value = ao.v;
       axEl.textContent = ao.t;
@@ -1027,6 +1391,13 @@
     });
     notesCell.appendChild(notesInput);
     row.appendChild(notesCell);
+
+    var estimateCell = createEl('td');
+    var est = computePressureLineEstimate(line, config);
+    var estText = createEl('div', 'line-estimate');
+    estText.textContent = '$' + est.cost.toFixed(2) + ' · ' + est.hours.toFixed(2) + 'h';
+    estimateCell.appendChild(estText);
+    row.appendChild(estimateCell);
 
     var actionsCell = createEl('td');
     var actions = createEl('div', 'line-actions');
@@ -1086,14 +1457,18 @@
         result = PrecisionCalc.calculate({
           windowLines: state.windowLines,
           pressureLines: state.pressureLines,
-          baseFee: s.baseFee,
-          hourlyRate: s.hourlyRate,
-          minimumJob: s.minimumJob,
-          highReachModifierPercent: s.highReachModifierPercent,
-          insideMultiplier: s.insideMultiplier,
-          outsideMultiplier: s.outsideMultiplier,
-          pressureHourlyRate: s.pressureHourlyRate,
-          setupBufferMinutes: s.setupBufferMinutes
+        baseFee: s.baseFee,
+        hourlyRate: s.hourlyRate,
+        minimumJob: s.minimumJob,
+        highReachModifierPercent: s.highReachModifierPercent,
+        insideMultiplier: s.insideMultiplier,
+        outsideMultiplier: s.outsideMultiplier,
+        pressureHourlyRate: s.pressureHourlyRate,
+        setupBufferMinutes: s.setupBufferMinutes,
+        travelMinutes: s.travelMinutes,
+        travelKm: s.travelKm,
+        travelRatePerHour: s.travelRatePerHour,
+        travelRatePerKm: s.travelRatePerKm
         });
       } catch (e) {
         console.error("PrecisionCalc error", e);
@@ -1116,8 +1491,10 @@
     $("highReachCostDisplay").textContent = formatMoney(
       money.highReach
     );
+    $("setupCostDisplay").textContent = formatMoney(money.setup || 0);
+    $("travelCostDisplay").textContent = formatMoney(money.travel || 0);
     $("otherAdjustmentsDisplay").textContent = formatMoney(
-      money.setup || 0
+      (money.setup || 0) + (money.travel || 0)
     );
     $("subtotalDisplay").textContent = formatMoney(money.subtotal);
     $("highReachDisplay").textContent = formatMoney(money.highReach);
@@ -1149,8 +1526,55 @@
       time.highReachHours.toFixed(2) + " hrs";
     $("setupTimeDisplay").textContent =
       time.setupHours.toFixed(2) + " hrs";
+    $("travelTimeDisplay").textContent =
+      (time.travelHours || 0).toFixed(2) + " hrs";
     $("timeEstimateDisplay").textContent =
       time.totalHours.toFixed(2) + " hrs total";
+
+    var minimumNote = $("minimumAppliedNote");
+    if (minimumNote) {
+      if (money.total > money.subtotal) {
+        minimumNote.style.display = "block";
+        $("minimumAppliedValue").textContent = formatMoney(
+          money.minimumJob || money.total
+        );
+      } else {
+        minimumNote.style.display = "none";
+      }
+    }
+
+    var hasJobSummary = $("jobSummaryBaseCallout");
+    if (hasJobSummary) {
+      $("jobSummaryBaseCallout").textContent = formatMoney(
+        s.baseFee || 0
+      );
+      $("jobSummaryHourlyRate").textContent = formatMoney(
+        s.hourlyRate || 0
+      );
+      $("jobSummaryPressureRate").textContent = formatMoney(
+        s.pressureHourlyRate || 0
+      );
+      $("jobSummaryMinimumJob").textContent = formatMoney(
+        s.minimumJob || 0
+      );
+      $("jobSummaryHighReach").textContent =
+        (s.highReachModifierPercent || 0) + "%";
+      $("jobSummaryInsideMultiplier").textContent =
+        (s.insideMultiplier || 1).toFixed(1) + "×";
+      $("jobSummaryOutsideMultiplier").textContent =
+        (s.outsideMultiplier || 1).toFixed(1) + "×";
+      $("jobSummarySetupBuffer").textContent =
+        (s.setupBufferMinutes || 0).toFixed(0) + " mins";
+      $("jobSummaryTravelHourRate").textContent = formatMoney(
+        s.travelRatePerHour || 0
+      );
+      $("jobSummaryTravelKmRate").textContent = formatMoney(
+        s.travelRatePerKm || 0
+      );
+    }
+
+    // Update per-line estimates to reflect latest calculations
+    updateLineEstimates(s);
 
     // Update chart
     updateTimeChart(time);
@@ -1169,10 +1593,17 @@
       time.windowsHours,
       time.pressureHours,
       time.highReachHours,
-      time.setupHours
+      time.setupHours,
+      time.travelHours || 0
     ];
 
-    var labels = ["Windows", "Pressure", "High Reach", "Setup"];
+    var labels = [
+      "Windows",
+      "Pressure",
+      "High Reach",
+      "Setup",
+      "Travel"
+    ];
 
     if (!timeChart) {
       timeChart = new Chart(ctx, {
@@ -1196,6 +1627,7 @@
         }
       });
     } else {
+      timeChart.data.labels = labels;
       timeChart.data.datasets[0].data = data;
       timeChart.update();
     }
@@ -1353,6 +1785,15 @@
     if (pdfBtn) {
       pdfBtn.addEventListener("click", openQuotePrintWindow);
     }
+
+    var refreshBtn = $("refreshAppBtn");
+    if (refreshBtn) {
+      refreshBtn.addEventListener("click", function () {
+        refreshBtn.disabled = true;
+        refreshBtn.textContent = "Refreshing...";
+        clearCachesAndReload();
+      });
+    }
   }
 
   // Separate formatting helpers for export document
@@ -1360,6 +1801,32 @@
     if (typeof amount !== "number" || !isFinite(amount)) return "$0.00";
     var fixed = amount.toFixed(2);
     return "$" + fixed.replace(/\B(?=(\d{3})+(?!\d))/g, ",");
+  }
+
+  function clearCachesAndReload() {
+    try {
+      if (navigator.serviceWorker && navigator.serviceWorker.getRegistrations) {
+        navigator.serviceWorker.getRegistrations().then(function (regs) {
+          var i;
+          for (i = 0; i < regs.length; i++) {
+            regs[i].unregister();
+          }
+        });
+      }
+      if (window.caches && caches.keys) {
+        caches.keys().then(function (keys) {
+          var j;
+          for (j = 0; j < keys.length; j++) {
+            caches.delete(keys[j]);
+          }
+        });
+      }
+    } catch (e) {
+      // ignore errors; still reload
+    }
+    setTimeout(function () {
+      window.location.reload(true);
+    }, 300);
   }
 
   function fmtHoursExport(hours) {
@@ -1386,7 +1853,11 @@
         insideMultiplier: s.insideMultiplier,
         outsideMultiplier: s.outsideMultiplier,
         pressureHourlyRate: s.pressureHourlyRate,
-        setupBufferMinutes: s.setupBufferMinutes
+        setupBufferMinutes: s.setupBufferMinutes,
+        travelMinutes: s.travelMinutes,
+        travelKm: s.travelKm,
+        travelRatePerHour: s.travelRatePerHour,
+        travelRatePerKm: s.travelRatePerKm
       });
     } else if (window.Calc && typeof Calc.calculate === "function") {
       result = Calc.calculate(state);
@@ -1527,7 +1998,7 @@
     var pressureTableHtml = buildPressureTable();
 
     // Totals + GST
-    var gst = (money.total || 0) * 0.10;
+    var gst = (money.subtotal || 0) * 0.10;
     var totalIncGst = (money.total || 0) + gst;
 
     var totalsHtml =
@@ -1544,8 +2015,14 @@
         "<div class='quote-doc-totals-row'><div>High reach premium:</div><div>" +
           fmtMoneyExport(money.highReach || 0) +
         "</div></div>" +
-        "<div class='quote-doc-totals-row'><div>Other adjustments:</div><div>" +
+        "<div class='quote-doc-totals-row'><div>Setup buffer:</div><div>" +
           fmtMoneyExport(money.setup || 0) +
+        "</div></div>" +
+        "<div class='quote-doc-totals-row'><div>Travel:</div><div>" +
+          fmtMoneyExport(money.travel || 0) +
+        "</div></div>" +
+        "<div class='quote-doc-totals-row'><div>Other adjustments:</div><div>" +
+          fmtMoneyExport((money.setup || 0) + (money.travel || 0)) +
         "</div></div>" +
         "<div class='quote-doc-totals-row'><div>Subtotal (excl. GST):</div><div>" +
           fmtMoneyExport(money.subtotal || 0) +
@@ -1568,11 +2045,21 @@
       " · Pressure: " +
       fmtHoursExport(time.pressureHours || 0) +
       "<br/>" +
-      "Travel / setup: " +
+      "Setup: " +
       fmtHoursExport(time.setupHours || 0) +
+      " · Travel: " +
+      fmtHoursExport(time.travelHours || 0) +
       " · High reach overhead: " +
       fmtHoursExport(time.highReachHours || 0) +
       "</p>";
+
+    var minNote = "";
+    if (money.total > money.subtotal) {
+      minNote =
+        "<p class='quote-doc-note'>Minimum job applied: " +
+        fmtMoneyExport(money.minimumJob || money.total) +
+        "</p>";
+    }
 
     var notesHtml = "";
     if (clientNotes) {
@@ -1624,6 +2111,7 @@
       "<div class='quote-doc-section-title'>Totals &amp; time</div>" +
       totalsHtml +
       timeHtml +
+      minNote +
       notesHtml +
       "<div class='quote-doc-disclaimer'>" +
       "This quote is based on the information provided and assumes reasonable access. " +
@@ -1674,7 +2162,11 @@
         insideMultiplier: s.insideMultiplier,
         outsideMultiplier: s.outsideMultiplier,
         pressureHourlyRate: s.pressureHourlyRate,
-        setupBufferMinutes: s.setupBufferMinutes
+        setupBufferMinutes: s.setupBufferMinutes,
+        travelMinutes: s.travelMinutes,
+        travelKm: s.travelKm,
+        travelRatePerHour: s.travelRatePerHour,
+        travelRatePerKm: s.travelRatePerKm
       });
     } else if (window.Calc && typeof Calc.calculate === "function") {
       result = Calc.calculate(state);
@@ -1711,8 +2203,32 @@
         time.windowsHours.toFixed(2) +
         ", Pressure " +
         time.pressureHours.toFixed(2) +
+        ", Setup " +
+        time.setupHours.toFixed(2) +
+        ", Travel " +
+        (time.travelHours || 0).toFixed(2) +
         ")"
     );
+    lines.push(
+      "Costs: Base " +
+        formatMoney(money.baseFee || 0) +
+        ", Windows " +
+        formatMoney(money.windows || 0) +
+        ", Pressure " +
+        formatMoney(money.pressure || 0) +
+        ", High reach " +
+        formatMoney(money.highReach || 0) +
+        ", Setup " +
+        formatMoney(money.setup || 0) +
+        ", Travel " +
+        formatMoney(money.travel || 0)
+    );
+    if (money.total > money.subtotal) {
+      lines.push(
+        "Minimum job applied to reach " +
+          formatMoney(money.minimumJob || money.total)
+      );
+    }
     lines.push("");
 
     if (s.clientNotes) {
@@ -1982,11 +2498,24 @@
   // Register core app methods with existing APP object
   window.APP.addWindowLine = addWindowLine;
   window.APP.addPressureLine = addPressureLine;
+  window.APP.buildWindowLine = buildWindowLine;
+  window.APP.buildPressureLine = buildPressureLine;
   window.APP.recalculate = recalculate;
   window.APP.duplicateWindowLine = duplicateWindowLine;
   window.APP.duplicatePressureLine = duplicatePressureLine;
   window.APP.getState = function() {
     return buildStateFromUI(true);
+  };
+  // Test helper: allow Playwright tests to inject full state quickly
+  window.APP.setStateForTests = function(newState) {
+    try {
+      state = newState || state;
+      applyStateToUI();
+      return true;
+    } catch (e) {
+      console.error('[APP] setStateForTests failed', e);
+      return false;
+    }
   };
 
   // Create app module for registration

@@ -27,6 +27,10 @@
     enableEncryption: false
   };
 
+  // Load persisted settings and invoices immediately
+  loadSettings();
+  loadInvoices();
+
   // Initialize encryption based on settings
   // This is called after settings are loaded
   function initializeEncryption() {
@@ -140,6 +144,15 @@
           settings[key] = loadedSettings[key];
         });
       }
+
+      // Fallback: honor sessionStorage flag if present (useful in test mode reloads)
+      try {
+        if (sessionStorage && sessionStorage.getItem(INVOICE_SETTINGS_KEY) === '1') {
+          settings.enableEncryption = true;
+        }
+      } catch (ssErr) {
+        // ignore sessionStorage issues
+      }
       return settings;
     } catch (e) {
       console.error('[INVOICE] Failed to load settings:', e);
@@ -150,11 +163,22 @@
   // Save settings (supports encrypted and unencrypted modes)
   function saveSettings() {
     try {
+      // Always persist unencrypted copy so flag is recoverable even if secure storage fails
+      localStorage.setItem(INVOICE_SETTINGS_KEY, JSON.stringify(settings));
+      try {
+        if (sessionStorage) {
+          sessionStorage.setItem(INVOICE_SETTINGS_KEY, settings.enableEncryption ? '1' : '0');
+        }
+      } catch (ssErr) {
+        // sessionStorage may be unavailable; ignore
+      }
+
       if (settings.enableEncryption && window.Security && window.Security.SecureStorage) {
-        window.Security.SecureStorage.setItem(INVOICE_SETTINGS_KEY, settings);
-      } else {
-        // Save unencrypted (default mode)
-        localStorage.setItem(INVOICE_SETTINGS_KEY, JSON.stringify(settings));
+        try {
+          window.Security.SecureStorage.setItem(INVOICE_SETTINGS_KEY, settings);
+        } catch (secureErr) {
+          console.warn('[INVOICE] SecureStorage save failed, kept unencrypted copy', secureErr);
+        }
       }
       return true;
     } catch (e) {
@@ -191,6 +215,27 @@
     return highest;
   }
 
+  function getModifierLabel(mod) {
+    var id = mod && mod.id ? mod.id : mod;
+    if (!id) return '';
+    var arrays = [
+      window.CONDITION_MODIFIERS_ARRAY,
+      window.ACCESS_MODIFIERS_ARRAY,
+      window.PRESSURE_CONDITIONS_ARRAY,
+      window.TECHNIQUE_MODIFIERS_ARRAY
+    ];
+    for (var i = 0; i < arrays.length; i++) {
+      var arr = arrays[i];
+      if (!arr) continue;
+      for (var j = 0; j < arr.length; j++) {
+        if (arr[j].id === id) {
+          return arr[j].label || arr[j].name || id;
+        }
+      }
+    }
+    return id;
+  }
+
   /**
    * Generate description for window line item
    * @param {object} line - Window line item from quote
@@ -200,11 +245,19 @@
     var parts = [];
 
     // Window type
-    if (line.windowTypeId) {
-      parts.push(line.windowTypeId.charAt(0).toUpperCase() + line.windowTypeId.slice(1) + ' windows');
-    } else {
-      parts.push('Window cleaning');
+    var typeLabel = line.presetLabel || line.windowTypeLabel;
+    if (!typeLabel && window.PRICING_DATA && window.PRICING_DATA.windowTypes) {
+      for (var i = 0; i < PRICING_DATA.windowTypes.length; i++) {
+        if (PRICING_DATA.windowTypes[i].id === line.windowTypeId) {
+          typeLabel = PRICING_DATA.windowTypes[i].label || PRICING_DATA.windowTypes[i].name;
+          break;
+        }
+      }
     }
+    if (!typeLabel && line.windowTypeId) {
+      typeLabel = line.windowTypeId;
+    }
+    parts.push(typeLabel ? typeLabel : 'Window cleaning');
 
     // Panes
     if (line.panes) {
@@ -229,6 +282,17 @@
       parts.push('at ' + line.location);
     }
 
+    // Modifiers
+    if (line.modifiers && line.modifiers.length) {
+      var mods = [];
+      for (var m = 0; m < line.modifiers.length; m++) {
+        mods.push(getModifierLabel(line.modifiers[m]));
+      }
+      if (mods.length) {
+        parts.push('mods: ' + mods.join(', '));
+      }
+    }
+
     // Use custom title if provided
     if (line.title && line.title !== 'Window Line') {
       return line.title + ' - ' + parts.join(' ');
@@ -246,11 +310,19 @@
     var parts = [];
 
     // Surface type
-    if (line.surfaceId) {
-      parts.push(line.surfaceId.charAt(0).toUpperCase() + line.surfaceId.slice(1) + ' pressure cleaning');
-    } else {
-      parts.push('Pressure cleaning');
+    var surfaceLabel = line.presetLabel || line.surfaceLabel;
+    if (!surfaceLabel && window.PRICING_DATA && PRICING_DATA.pressureSurfaces) {
+      for (var i = 0; i < PRICING_DATA.pressureSurfaces.length; i++) {
+        if (PRICING_DATA.pressureSurfaces[i].id === line.surfaceId) {
+          surfaceLabel = PRICING_DATA.pressureSurfaces[i].label || PRICING_DATA.pressureSurfaces[i].name;
+          break;
+        }
+      }
     }
+    if (!surfaceLabel && line.surfaceId) {
+      surfaceLabel = line.surfaceId;
+    }
+    parts.push(surfaceLabel ? surfaceLabel : 'Pressure cleaning');
 
     // Area
     if (line.areaSqm) {
@@ -265,6 +337,17 @@
     // Notes
     if (line.notes && line.notes.trim() !== '') {
       parts.push('- ' + line.notes);
+    }
+
+    // Modifiers
+    if (line.modifiers && line.modifiers.length) {
+      var mods = [];
+      for (var m = 0; m < line.modifiers.length; m++) {
+        mods.push(getModifierLabel(line.modifiers[m]));
+      }
+      if (mods.length) {
+        parts.push('mods: ' + mods.join(', '));
+      }
     }
 
     // Use custom title if provided
@@ -312,15 +395,44 @@
       return null;
     }
 
-    // Get totals from DOM
+    // Calculate totals directly from state to ensure parity with quote
+    var calcResult = null;
+    try {
+      if (window.PrecisionCalc && typeof PrecisionCalc.calculate === 'function') {
+        calcResult = PrecisionCalc.calculate({
+          windowLines: state.windowLines || [],
+          pressureLines: state.pressureLines || [],
+          baseFee: state.baseFee,
+          hourlyRate: state.hourlyRate,
+          minimumJob: state.minimumJob,
+          highReachModifierPercent: state.highReachModifierPercent,
+          insideMultiplier: state.insideMultiplier,
+          outsideMultiplier: state.outsideMultiplier,
+          pressureHourlyRate: state.pressureHourlyRate,
+          setupBufferMinutes: state.setupBufferMinutes,
+          travelMinutes: state.travelMinutes,
+          travelKm: state.travelKm,
+          travelRatePerHour: state.travelRatePerHour,
+          travelRatePerKm: state.travelRatePerKm
+        });
+      } else if (window.Calc && typeof Calc.calculate === 'function') {
+        calcResult = Calc.calculate(state);
+      }
+    } catch (e) {
+      calcResult = null;
+    }
+
+    // Fallback to DOM totals if calculation unavailable
     var totalText = document.getElementById('totalIncGstDisplay');
-    var total = totalText ? parseFloat(totalText.textContent.replace(/[$,]/g, '')) : 0;
-
+    var totalDom = totalText ? parseFloat(totalText.textContent.replace(/[$,]/g, '')) : 0;
     var subtotalText = document.getElementById('subtotalDisplay');
-    var subtotal = subtotalText ? parseFloat(subtotalText.textContent.replace(/[$,]/g, '')) : 0;
-
+    var subtotalDom = subtotalText ? parseFloat(subtotalText.textContent.replace(/[$,]/g, '')) : 0;
     var gstText = document.getElementById('gstDisplay');
-    var gst = gstText ? parseFloat(gstText.textContent.replace(/[$,]/g, '')) : 0;
+    var gstDom = gstText ? parseFloat(gstText.textContent.replace(/[$,]/g, '')) : 0;
+
+    var subtotal = calcResult && calcResult.money ? calcResult.money.subtotal : subtotalDom;
+    var total = calcResult && calcResult.money ? calcResult.money.total + ((calcResult.money.subtotal || 0) * 0.10) : totalDom;
+    var gst = calcResult && calcResult.money ? (calcResult.money.subtotal || 0) * 0.10 : gstDom;
 
     // Generate quote ID for tracking
     var quoteId = 'quote_' + Date.now() + '_' + Math.random().toString(36).substr(2, 9);
@@ -393,10 +505,22 @@
         return invoiceLine;
       }),
 
-      // Totals
+      // Totals + breakdown
       subtotal: subtotal,
       gst: gst,
       total: total,
+      breakdown: calcResult && calcResult.money ? {
+        baseFee: calcResult.money.baseFee || 0,
+        windows: calcResult.money.windows || 0,
+        pressure: calcResult.money.pressure || 0,
+        highReach: calcResult.money.highReach || 0,
+        setup: calcResult.money.setup || 0,
+        travel: calcResult.money.travel || 0,
+        subtotal: calcResult.money.subtotal || subtotal,
+        gst: gst,
+        minimumApplied: (calcResult.money.total > calcResult.money.subtotal) ? (state.minimumJob || calcResult.money.total) : 0,
+        total: calcResult.money.total + gst
+      } : null,
 
       // Payment info
       amountPaid: 0,
@@ -699,7 +823,7 @@
           '<div class="invoice-toolbar">' +
             '<button type="button" class="btn btn-primary" id="createInvoiceBtn">Create Invoice from Quote</button>' +
             '<button type="button" class="btn btn-secondary" id="showAgingReportBtn">📊 Aging Report</button>' +
-            '<button type="button" class="btn btn-secondary" id="invoiceSettingsBtn">⚙ Settings</button>' +
+            '<button type="button" class="btn btn-secondary" id="invoiceSettingsModalBtn">⚙ Settings</button>' +
           '</div>' +
           '<div class="invoice-search-filter">' +
             '<div class="search-box">' +
@@ -751,7 +875,7 @@
       showAgingReport();
     };
 
-    modal.querySelector('#invoiceSettingsBtn').onclick = function() {
+    modal.querySelector('#invoiceSettingsModalBtn').onclick = function() {
       showSettingsModal();
     };
 
@@ -964,7 +1088,7 @@
                 '<input type="checkbox" id="enableEncryption" class="form-checkbox" ' + (settings.enableEncryption ? 'checked' : '') + ' />' +
                 '<label for="enableEncryption">Enable Encrypted Storage</label>' +
               '</div>' +
-              '<p class="form-hint">Encrypts invoice data in browser storage for enhanced security.</p>' +
+              '<p class="form-hint" id="encryptionHint">Encrypts invoice data in browser storage for enhanced security.</p>' +
             '</div>' +
             '<div class="form-actions">' +
               '<button type="button" class="btn btn-secondary" id="cancelSettingsBtn">Cancel</button>' +
@@ -1501,15 +1625,32 @@
 
     // Totals
     html += '<div class="invoice-print-totals">';
-    html += '<div class="invoice-print-totals-row">';
-    html += '<span>Subtotal:</span>';
-    html += '<span>$' + parseFloat(invoice.subtotal).toFixed(2) + '</span>';
-    html += '</div>';
-    if (invoice.gst > 0) {
+    var breakdown = invoice.breakdown || null;
+    function addRow(label, value) {
       html += '<div class="invoice-print-totals-row">';
-      html += '<span>GST (10%):</span>';
-      html += '<span>$' + parseFloat(invoice.gst).toFixed(2) + '</span>';
+      html += '<span>' + label + '</span>';
+      html += '<span>$' + parseFloat(value || 0).toFixed(2) + '</span>';
       html += '</div>';
+    }
+    if (breakdown) {
+      addRow('Base callout', breakdown.baseFee);
+      addRow('Windows labour', breakdown.windows);
+      addRow('Pressure labour', breakdown.pressure);
+      addRow('High reach premium', breakdown.highReach);
+      addRow('Setup buffer', breakdown.setup);
+      addRow('Travel', breakdown.travel);
+      addRow('Subtotal (excl. GST)', breakdown.subtotal);
+      if (breakdown.gst > 0) {
+        addRow('GST (10%)', breakdown.gst);
+      }
+      if (breakdown.minimumApplied) {
+        addRow('Minimum job applied', breakdown.minimumApplied);
+      }
+    } else {
+      addRow('Subtotal', invoice.subtotal);
+      if (invoice.gst > 0) {
+        addRow('GST (10%)', invoice.gst);
+      }
     }
     html += '<div class="invoice-print-totals-row invoice-print-total">';
     html += '<span>Total:</span>';
@@ -2254,7 +2395,8 @@
     settings: settings,
     saveSettings: saveSettings,
     getSettings: getSettings,
-    updateSettings: updateSettings
+    updateSettings: updateSettings,
+    showSettingsModal: showSettingsModal
   };
 
   // Alias for backward compatibility and test compatibility

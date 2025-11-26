@@ -215,9 +215,9 @@ test.describe('Import/Export System - Backup & Restore', () => {
         var invalidBackup2 = { data: {} }; // Missing version
 
         return {
-          valid: validBackup.version && validBackup.data,
-          invalid1: invalidBackup1.version && invalidBackup1.data,
-          invalid2: invalidBackup2.version && invalidBackup2.data
+          valid: !!(validBackup.version && validBackup.data),
+          invalid1: !!(invalidBackup1.version && invalidBackup1.data),
+          invalid2: !!(invalidBackup2.version && invalidBackup2.data)
         };
       });
 

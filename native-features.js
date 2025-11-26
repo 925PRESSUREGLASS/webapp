@@ -6,6 +6,11 @@
 (function() {
   'use strict';
 
+  if (typeof window !== 'undefined' && window.APP_TEST_MODE) {
+    console.log('[NATIVE-FEATURES] Skipped in test mode');
+    return;
+  }
+
   // ============================================
   // PLATFORM DETECTION
   // ============================================

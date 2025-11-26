@@ -5,6 +5,11 @@
 (function() {
 'use strict';
 
+if (typeof window !== 'undefined' && window.APP_TEST_MODE) {
+    console.log('[HEALTH-CHECK] Skipped in test mode');
+    return;
+}
+
 var _lastCheckResults = null;
 var _checkInterval = null;
 

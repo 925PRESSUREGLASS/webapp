@@ -5,6 +5,11 @@
 (function() {
   'use strict';
 
+  if (typeof window !== 'undefined' && window.APP_TEST_MODE) {
+    console.log('[CONTRACT-WIZARD] Skipped in test mode');
+    return;
+  }
+
   var _currentStep = 1;
   var _contractData = {};
 

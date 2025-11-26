@@ -5,6 +5,11 @@
 (function() {
   'use strict';
 
+  if (typeof window !== 'undefined' && window.APP_TEST_MODE) {
+    console.log('[INTEGRATION-TESTS] Skipped in test mode');
+    return;
+  }
+
   /**
    * Integration Tests - Quote to Invoice Flow
    */

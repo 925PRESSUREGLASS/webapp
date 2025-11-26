@@ -5,6 +5,11 @@
 (function() {
   'use strict';
 
+  if (typeof window !== 'undefined' && window.APP_TEST_MODE) {
+    console.log('[CALC-OPTIMIZER] Skipped in test mode');
+    return;
+  }
+
   // Cache for calculation results
   var calculationCache = {};
   

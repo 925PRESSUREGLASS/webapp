@@ -1,0 +1,30 @@
+{
+  "name": "meta-api",
+  "version": "0.1.0",
+  "private": true,
+  "type": "commonjs",
+  "scripts": {
+    "dev": "ts-node-dev --respawn src/server.ts",
+    "start": "node dist/meta-api/src/server.js",
+    "build": "tsc",
+    "prisma:generate": "prisma generate --schema ../../prisma/schema.prisma",
+    "prisma:migrate": "prisma migrate dev --schema ../../prisma/schema.prisma",
+    "prisma:deploy": "prisma migrate deploy --schema ../../prisma/schema.prisma",
+    "prisma:reset": "prisma migrate reset --schema ../../prisma/schema.prisma --force --skip-generate",
+    "prisma:push": "prisma db push --schema ../../prisma/schema.prisma",
+    "prisma:seed": "node dist/meta-api/src/seed.js",
+    "smoke": "node scripts/smoke.js"
+  },
+  "dependencies": {
+    "@prisma/client": "5.14.0",
+    "@prisma/extension-accelerate": "^0.1.0",
+    "fastify": "^4.28.0",
+    "zod": "^4.1.12"
+  },
+  "devDependencies": {
+    "@types/node": "^22.9.3",
+    "prisma": "5.14.0",
+    "ts-node-dev": "^2.0.0",
+    "typescript": "^5.6.3"
+  }
+}

@@ -5,6 +5,12 @@
 (function() {
 'use strict';
 
+// Skip heavy checks during automated Playwright runs
+if (typeof window !== 'undefined' && window.APP_TEST_MODE) {
+    console.log('[DEPLOYMENT-HELPER] Skipped in test mode');
+    return;
+}
+
 /**
  * Configuration (update these before deployment)
  */

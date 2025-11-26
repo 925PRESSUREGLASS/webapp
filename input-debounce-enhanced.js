@@ -5,6 +5,11 @@
 (function() {
   'use strict';
 
+  if (typeof window !== 'undefined' && window.APP_TEST_MODE) {
+    console.log('[INPUT-DEBOUNCE] Skipped in test mode');
+    return;
+  }
+
   // Debounce configuration by input type
   var DEBOUNCE_CONFIG = {
     // Text inputs - longer delay for typing

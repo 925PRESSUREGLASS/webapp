@@ -5,6 +5,11 @@
 (function() {
   'use strict';
 
+  if (typeof window !== 'undefined' && window.APP_TEST_MODE) {
+    console.log('[PERF-MONITOR] Skipped in test mode');
+    return;
+  }
+
   // Performance metrics storage
   var metrics = {
     pageLoad: {

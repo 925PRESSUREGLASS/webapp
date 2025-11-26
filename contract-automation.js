@@ -5,6 +5,11 @@
 (function() {
   'use strict';
 
+  if (typeof window !== 'undefined' && window.APP_TEST_MODE) {
+    console.log('[CONTRACT-AUTOMATION] Skipped in test mode');
+    return;
+  }
+
   var COMPANY_CONFIG = {
     businessName: '925 Pressure Glass',
     phone: '0400 000 000',

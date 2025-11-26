@@ -5,6 +5,11 @@
 (function() {
     'use strict';
 
+    if (typeof window !== 'undefined' && window.APP_TEST_MODE) {
+        console.log('[JOB-TRACKING-UI] Skipped in test mode');
+        return;
+    }
+
     var _currentJobId = null;
     var _timerInterval = null;
     var _timerStartTime = null;

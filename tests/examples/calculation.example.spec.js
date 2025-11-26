@@ -22,7 +22,7 @@ const {
   PEAK_SEASON
 } = require('../fixtures/test-data');
 
-test.describe('Calculation Engine', () => {
+test.describe('Calculation Engine (mapped factories)', () => {
   test('calculates small residential job correctly', async ({ appReady, helpers }) => {
     // Use pre-defined test data
     const result = await helpers.calculateQuote(SMALL_RESIDENTIAL());

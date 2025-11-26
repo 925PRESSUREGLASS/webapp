@@ -247,7 +247,13 @@ var combinedFactor = conditionFactor * accessFactor * tintFactor;
 
 // Total minutes
 var panes = line.panes || 0;
-var totalMinutes = minutesPerPane * panes * combinedFactor;
+var modFactor = 1.0;
+if (line.modifiers && line.modifiers.length && typeof getModifierMultiplier === 'function') {
+  for (var mi = 0; mi < line.modifiers.length; mi++) {
+    modFactor = modFactor * getModifierMultiplier(line.modifiers[mi]);
+  }
+}
+var totalMinutes = minutesPerPane * panes * combinedFactor * modFactor;
 
 // Return minutes
 return totalMinutes;
@@ -313,7 +319,14 @@ var accessFactor = 1.0;
 if (line.access === 'ladder') accessFactor = 1.2;
 else if (line.access === 'highReach') accessFactor = 1.35;
 
-var minutes = mps * area * soilFactor * accessFactor;
+var modFactor = 1.0;
+if (line.modifiers && line.modifiers.length && typeof getModifierMultiplier === 'function') {
+  for (var mi = 0; mi < line.modifiers.length; mi++) {
+    modFactor = modFactor * getModifierMultiplier(line.modifiers[mi]);
+  }
+}
+
+var minutes = mps * area * soilFactor * accessFactor * modFactor;
 return minutes;
 }
 };
@@ -366,20 +379,29 @@ pressureMinutes += pm;
 
 // Travel/setup buffer
 var setupMinutes = config.setupBufferMinutes || 0;
+// Travel minutes
+var travelMinutes = config.travelMinutes || 0;
 
 // Convert minutes to hours
 var windowsHours = Time.minutesToHours(windowsMinutes);
 var pressureHours = Time.minutesToHours(pressureMinutes);
 var highReachHours = Time.minutesToHours(highReachMinutes);
 var setupHours = Time.minutesToHours(setupMinutes);
+var travelHours = Time.minutesToHours(travelMinutes);
 
 // Convert hours to labour cost (cents)
 var labourRateCents = Money.toCents(config.hourlyRate);
 var pressureRateCents = Money.toCents(config.pressureHourlyRate || config.hourlyRate);
+var travelRateHourCents = Money.toCents(config.travelRatePerHour || config.hourlyRate || 0);
+var travelRateKmCents = Money.toCents(config.travelRatePerKm || 0);
 
 var windowsCostCents = Math.round(windowsHours * labourRateCents);
 var pressureCostCents = Math.round(pressureHours * pressureRateCents);
 var setupCostCents = Math.round(setupHours * labourRateCents);
+var travelCostCents = Money.sumCents(
+  Math.round(travelHours * travelRateHourCents),
+  Math.round((config.travelKm || 0) * travelRateKmCents)
+);
 
 // High reach modifier – charge the additional high reach hours at the labour rate
 // The highReachModifierPercent is actually used as a multiplier on the additional time (e.g., 60% means charge 1.6x for high reach work)
@@ -397,6 +419,7 @@ baseFeeCents +
 windowsCostCents +
 pressureCostCents +
 setupCostCents +
+travelCostCents +
 highReachCostCents;
 
 // Apply minimum job
@@ -410,6 +433,7 @@ baseFee: Money.fromCents(baseFeeCents),
 windows: Money.fromCents(windowsCostCents),
 pressure: Money.fromCents(pressureCostCents),
 setup: Money.fromCents(setupCostCents),
+travel: Money.fromCents(travelCostCents),
 highReach: Money.fromCents(highReachCostCents),
 subtotal: Money.fromCents(subtotalCents),
 minimumJob: config.minimumJob,
@@ -420,13 +444,15 @@ windowsMinutes: windowsMinutes,
 pressureMinutes: pressureMinutes,
 highReachMinutes: highReachMinutes,
 setupMinutes: setupMinutes,
+travelMinutes: travelMinutes,
 windowsHours: windowsHours,
 pressureHours: pressureHours,
 highReachHours: highReachHours,
 setupHours: setupHours,
+travelHours: travelHours,
 totalMinutes: Time.sum(windowsMinutes, pressureMinutes, highReachMinutes, setupMinutes),
 totalHours: Time.minutesToHours(
-Time.sum(windowsMinutes, pressureMinutes, highReachMinutes, setupMinutes)
+Time.sum(windowsMinutes, pressureMinutes, highReachMinutes, setupMinutes, travelMinutes)
 )
 }
 };

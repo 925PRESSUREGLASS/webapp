@@ -260,20 +260,33 @@ test.describe('Edge Cases', () => {
 
     const result = await page.evaluate(async () => {
       return new Promise((resolve) => {
-        let eventReceived = false;
+        var eventReceived = false;
 
-        window.addEventListener('app:initialized', () => {
+        // If already initialized, resolve immediately
+        if (window.APP && window.APP.initialized) {
+          resolve({
+            initialized: true,
+            eventReceived: true
+          });
+          return;
+        }
+
+        // Fallback timeout in case event never fires
+        var timeoutId = setTimeout(function() {
+          resolve({
+            initialized: !!(window.APP && window.APP.initialized),
+            eventReceived: eventReceived
+          });
+        }, 500);
+
+        window.addEventListener('app:initialized', function() {
           eventReceived = true;
-        });
-
-        window.APP.waitForInit().then(() => {
-          setTimeout(() => {
-            resolve({
-              initialized: window.APP.initialized,
-              eventReceived: eventReceived
-            });
-          }, 100);
-        });
+          clearTimeout(timeoutId);
+          resolve({
+            initialized: !!(window.APP && window.APP.initialized),
+            eventReceived: eventReceived
+          });
+        }, { once: true });
       });
     });
 

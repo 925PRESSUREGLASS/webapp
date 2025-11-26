@@ -5,6 +5,11 @@
 (function() {
     'use strict';
 
+    if (typeof window !== 'undefined' && window.APP_TEST_MODE) {
+        console.log('[JOB-MANAGER] Skipped in test mode');
+        return;
+    }
+
     var STORAGE_KEY = 'tts_jobs';
     var METRICS_KEY = 'tts_job_metrics';
     var JOB_NUMBER_KEY = 'tts_last_job_number';

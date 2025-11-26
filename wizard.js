@@ -231,7 +231,15 @@
     // Quantity
     html += '<div class="form-group">';
     html += '<label class="form-label form-label-required" for="wizWinPanes">Quantity</label>';
-    html += '<input id="wizWinPanes" type="number" min="1" step="1" value="4" class="form-input" aria-required="true" aria-label="Number of windows" />';
+    html += '<div style="display:flex; gap:8px; align-items:center; flex-wrap:wrap;">';
+    html += '<input id="wizWinPanes" type="number" min="1" step="1" value="4" class="form-input" aria-required="true" aria-label="Number of windows" style="flex:1; min-width:120px;" />';
+    html += '<div class="quick-increments" style="display:flex; gap:6px; flex-wrap:wrap;">';
+    html += '<button type="button" class="btn btn-ghost btn-xs" data-inc="1">+1</button>';
+    html += '<button type="button" class="btn btn-ghost btn-xs" data-inc="2">+2</button>';
+    html += '<button type="button" class="btn btn-ghost btn-xs" data-inc="5">+5</button>';
+    html += '<button type="button" class="btn btn-ghost btn-xs" data-inc="10">+10</button>';
+    html += '</div>';
+    html += '</div>';
     html += '<span class="form-hint">Number of windows/panes</span>';
     html += '</div>';
 
@@ -411,6 +419,22 @@
       }
     }
 
+    var qtyButtons = contentEl.querySelectorAll('.quick-increments button[data-inc]');
+    for (var qb = 0; qb < qtyButtons.length; qb++) {
+      (function(btn) {
+        btn.addEventListener('click', function() {
+          var inc = parseFloat(btn.getAttribute('data-inc')) || 0;
+          var target = btn.closest('.form-group').querySelector('input[type="number"]');
+          if (!target) return;
+          var current = parseFloat(target.value) || 0;
+          var next = current + inc;
+          target.value = next;
+          var evt = new Event('input', { bubbles: true });
+          target.dispatchEvent(evt);
+        });
+      })(qtyButtons[qb]);
+    }
+
     // Wire buttons
     var cancelBtn = $('wizWinCancel');
     var applyBtn = $('wizWinApply');
@@ -525,67 +549,81 @@
       return;
     }
 
-    // Get window type
-    var windowType = null;
-    if (window.WindowTypesExtended && window.WindowTypesExtended.getType) {
-      windowType = window.WindowTypesExtended.getType(selectedId);
-    }
+    // Build normalized line
+    var lineOpts = {
+      windowTypeId: selectedId,
+      panes: quantity,
+      inside: $('wizWinInside') && $('wizWinInside').checked,
+      outside: $('wizWinOutside') && $('wizWinOutside').checked,
+      highReach: $('wizWinHigh') && $('wizWinHigh').checked,
+      conditionId: $('wizWinCondition') ? $('wizWinCondition').value : null,
+      accessId: $('wizWinAccess') ? $('wizWinAccess').value : null,
+      tintLevel: $('wizWinTint') ? $('wizWinTint').value : 'none',
+      modifiers: []
+    };
 
-    if (!windowType || !windowType.basePrice) {
+    if (lineOpts.conditionId) lineOpts.modifiers.push({ id: lineOpts.conditionId });
+    if (lineOpts.accessId) lineOpts.modifiers.push({ id: lineOpts.accessId });
+    if (lineOpts.tintLevel && lineOpts.tintLevel !== 'none') lineOpts.modifiers.push({ id: 'tint_' + lineOpts.tintLevel });
+
+    var line = window.APP && APP.buildWindowLine ? APP.buildWindowLine(lineOpts) : lineOpts;
+
+    // Calculate delta using the same calc pipeline as recalc
+    var state = window.APP && APP.getState ? APP.getState() : null;
+    if (!state) {
       estimateDiv.style.display = 'none';
       return;
     }
 
-    // Calculate estimate
-    var basePrice = windowType.basePrice * quantity;
-
-    // Apply modifiers
-    var condSelect = $('wizWinCondition');
-    var accessSelect = $('wizWinAccess');
-    var highCheck = $('wizWinHigh');
-
-    var multiplier = 1.0;
-
-    if (condSelect && condSelect.value) {
-      // Find condition multiplier
-      if (window.WINDOW_CONDITIONS_ARRAY) {
-        for (var i = 0; i < WINDOW_CONDITIONS_ARRAY.length; i++) {
-          if (WINDOW_CONDITIONS_ARRAY[i].id === condSelect.value) {
-            multiplier *= WINDOW_CONDITIONS_ARRAY[i].multiplier || 1.0;
-            break;
-          }
-        }
-      } else {
-        // Fallback multipliers
-        var condMults = { light: 1.0, medium: 1.2, heavy: 1.4 };
-        multiplier *= condMults[condSelect.value] || 1.0;
+    function runCalc(s) {
+      var result = null;
+      if (window.PrecisionCalc && typeof PrecisionCalc.calculate === 'function') {
+        try {
+          result = PrecisionCalc.calculate({
+            windowLines: s.windowLines || [],
+            pressureLines: s.pressureLines || [],
+            baseFee: s.baseFee,
+            hourlyRate: s.hourlyRate,
+            minimumJob: s.minimumJob,
+          highReachModifierPercent: s.highReachModifierPercent,
+          insideMultiplier: s.insideMultiplier,
+          outsideMultiplier: s.outsideMultiplier,
+          pressureHourlyRate: s.pressureHourlyRate,
+          setupBufferMinutes: s.setupBufferMinutes,
+          travelMinutes: s.travelMinutes,
+          travelKm: s.travelKm,
+          travelRatePerHour: s.travelRatePerHour,
+          travelRatePerKm: s.travelRatePerKm
+        });
+      } catch (eCalc) {
+        result = null;
       }
     }
-
-    if (accessSelect && accessSelect.value) {
-      // Find access multiplier
-      if (window.ACCESS_MODIFIERS_ARRAY) {
-        for (var j = 0; j < ACCESS_MODIFIERS_ARRAY.length; j++) {
-          if (ACCESS_MODIFIERS_ARRAY[j].id === accessSelect.value) {
-            multiplier *= ACCESS_MODIFIERS_ARRAY[j].multiplier || 1.0;
-            break;
-          }
+      if (!result && window.Calc && typeof Calc.calculate === 'function') {
+        try {
+          result = Calc.calculate(s);
+        } catch (eCalc2) {
+          result = null;
         }
-      } else {
-        // Fallback multipliers
-        var accMults = { easy: 1.0, ladder: 1.25, highReach: 1.4 };
-        multiplier *= accMults[accessSelect.value] || 1.0;
       }
+      return result;
     }
 
-    if (highCheck && highCheck.checked) {
-      multiplier *= 1.4;
+    var baseResult = runCalc(state);
+    var tempState = JSON.parse(JSON.stringify(state));
+    tempState.windowLines = tempState.windowLines || [];
+    tempState.windowLines.push(line);
+    var newResult = runCalc(tempState);
+
+    if (baseResult && newResult && newResult.money && typeof newResult.money.subtotal === 'number') {
+      var baseSubtotal = baseResult.money && typeof baseResult.money.subtotal === 'number' ? baseResult.money.subtotal : 0;
+      var delta = newResult.money.subtotal - baseSubtotal;
+      amountDiv.textContent = '$' + delta.toFixed(2);
+      estimateDiv.style.display = 'block';
+      return;
     }
 
-    var estimate = basePrice * multiplier;
-
-    amountDiv.textContent = '$' + estimate.toFixed(2);
-    estimateDiv.style.display = 'block';
+    estimateDiv.style.display = 'none';
   }
 
   function handleWindowWizardApply() {
@@ -651,6 +689,11 @@
 
       var tintLevel = $('wizWinTint') && $('wizWinTint').value ? $('wizWinTint').value : 'none';
 
+      var modifiers = [];
+      if (conditionId) modifiers.push({ id: conditionId, type: 'condition' });
+      if (accessId) modifiers.push({ id: accessId, type: 'access' });
+      if (tintLevel && tintLevel !== 'none') modifiers.push({ id: 'tint_' + tintLevel, type: 'tint' });
+
       var opts = {
         title: title || 'Window Line',
         windowTypeId: windowTypeId,
@@ -662,10 +705,15 @@
         conditionId: conditionId,
         accessId: accessId,
         tintLevel: tintLevel,
-        location: location
+        location: location,
+        modifiers: modifiers
       };
 
-      APP.addWindowLine(opts);
+      if (APP.buildWindowLine) {
+        APP.addWindowLine(APP.buildWindowLine(opts));
+      } else {
+        APP.addWindowLine(opts);
+      }
 
       if (window.UIComponents && window.UIComponents.showToast) {
         window.UIComponents.showToast('Window line added successfully', 'success');
@@ -821,7 +869,15 @@
     // Quantity/Area (dynamic label based on unit)
     html += '<div class="form-group">';
     html += '<label class="form-label form-label-required" for="wizPrArea"><span id="wizPrQuantityLabel">Quantity/Area</span></label>';
-    html += '<input id="wizPrArea" type="number" min="0.1" step="0.1" value="30" class="form-input" aria-required="true" aria-label="Quantity or area" />';
+    html += '<div style="display:flex; gap:8px; align-items:center; flex-wrap:wrap;">';
+    html += '<input id="wizPrArea" type="number" min="0.1" step="0.1" value="30" class="form-input" aria-required="true" aria-label="Quantity or area" style="flex:1; min-width:120px;" />';
+    html += '<div class="quick-increments" style="display:flex; gap:6px; flex-wrap:wrap;">';
+    html += '<button type="button" class="btn btn-ghost btn-xs" data-inc="1">+1</button>';
+    html += '<button type="button" class="btn btn-ghost btn-xs" data-inc="2">+2</button>';
+    html += '<button type="button" class="btn btn-ghost btn-xs" data-inc="5">+5</button>';
+    html += '<button type="button" class="btn btn-ghost btn-xs" data-inc="10">+10</button>';
+    html += '</div>';
+    html += '</div>';
     html += '<span class="form-hint" id="wizPrQuantityHint">Enter area in m²</span>';
     html += '</div>';
 
@@ -1128,47 +1184,74 @@
       return;
     }
 
-    // Get surface
-    var surface = null;
-    if (window.PressureSurfacesExtended && window.PressureSurfacesExtended.getSurface) {
-      surface = window.PressureSurfacesExtended.getSurface(selectedId);
-    } else if (window.PRESSURE_SURFACES_ARRAY_EXT) {
-      for (var i = 0; i < PRESSURE_SURFACES_ARRAY_EXT.length; i++) {
-        if (PRESSURE_SURFACES_ARRAY_EXT[i].id === selectedId) {
-          surface = PRESSURE_SURFACES_ARRAY_EXT[i];
-          break;
-        }
-      }
-    }
+    var lineOpts = {
+      surfaceId: selectedId,
+      areaSqm: quantity,
+      soilLevel: $('wizPrSoil') && $('wizPrSoil').value ? $('wizPrSoil').value : 'medium',
+      access: $('wizPrAccess') && $('wizPrAccess').value ? $('wizPrAccess').value : 'easy',
+      modifiers: []
+    };
 
-    if (!surface || !surface.baseRate) {
+    if (lineOpts.soilLevel) lineOpts.modifiers.push({ id: lineOpts.soilLevel });
+    if (lineOpts.access) lineOpts.modifiers.push({ id: lineOpts.access });
+
+    var line = window.APP && APP.buildPressureLine ? APP.buildPressureLine(lineOpts) : lineOpts;
+
+    var state = window.APP && APP.getState ? APP.getState() : null;
+    if (!state) {
       estimateDiv.style.display = 'none';
       return;
     }
 
-    // Calculate estimate
-    var basePrice = surface.baseRate * quantity;
-
-    // Apply modifiers
-    var soilSelect = $('wizPrSoil');
-    var accessSelect = $('wizPrAccess');
-
-    var multiplier = 1.0;
-
-    if (soilSelect && soilSelect.value) {
-      var soilMults = { light: 1.0, medium: 1.2, heavy: 1.4 };
-      multiplier *= soilMults[soilSelect.value] || 1.0;
+    function runCalc(s) {
+      var result = null;
+      if (window.PrecisionCalc && typeof PrecisionCalc.calculate === 'function') {
+        try {
+          result = PrecisionCalc.calculate({
+            windowLines: s.windowLines || [],
+            pressureLines: s.pressureLines || [],
+            baseFee: s.baseFee,
+            hourlyRate: s.hourlyRate,
+          minimumJob: s.minimumJob,
+          highReachModifierPercent: s.highReachModifierPercent,
+          insideMultiplier: s.insideMultiplier,
+          outsideMultiplier: s.outsideMultiplier,
+          pressureHourlyRate: s.pressureHourlyRate,
+          setupBufferMinutes: s.setupBufferMinutes,
+          travelMinutes: s.travelMinutes,
+          travelKm: s.travelKm,
+          travelRatePerHour: s.travelRatePerHour,
+          travelRatePerKm: s.travelRatePerKm
+        });
+      } catch (eCalc) {
+        result = null;
+      }
+    }
+      if (!result && window.Calc && typeof Calc.calculate === 'function') {
+        try {
+          result = Calc.calculate(s);
+        } catch (eCalc2) {
+          result = null;
+        }
+      }
+      return result;
     }
 
-    if (accessSelect && accessSelect.value) {
-      var accMults = { easy: 1.0, ladder: 1.25, highReach: 1.4 };
-      multiplier *= accMults[accessSelect.value] || 1.0;
+    var baseResult = runCalc(state);
+    var tempState = JSON.parse(JSON.stringify(state));
+    tempState.pressureLines = tempState.pressureLines || [];
+    tempState.pressureLines.push(line);
+    var newResult = runCalc(tempState);
+
+    if (baseResult && newResult && newResult.money && typeof newResult.money.subtotal === 'number') {
+      var baseSubtotal = baseResult.money && typeof baseResult.money.subtotal === 'number' ? baseResult.money.subtotal : 0;
+      var delta = newResult.money.subtotal - baseSubtotal;
+      amountDiv.textContent = '$' + delta.toFixed(2);
+      estimateDiv.style.display = 'block';
+      return;
     }
 
-    var estimate = basePrice * multiplier;
-
-    amountDiv.textContent = '$' + estimate.toFixed(2);
-    estimateDiv.style.display = 'block';
+    estimateDiv.style.display = 'none';
   }
 
   function handlePressureWizardApply() {
@@ -1209,16 +1292,25 @@
       var soilLevel = $('wizPrSoil') && $('wizPrSoil').value ? $('wizPrSoil').value : 'medium';
       var access = $('wizPrAccess') && $('wizPrAccess').value ? $('wizPrAccess').value : 'easy';
 
+      var modifiers = [];
+      if (soilLevel) modifiers.push({ id: soilLevel, type: 'soil' });
+      if (access) modifiers.push({ id: access, type: 'access' });
+
       var opts = {
         title: title || 'Pressure Line',
         surfaceId: surfaceId,
         areaSqm: area,
         soilLevel: soilLevel,
         access: access,
-        notes: notes
+        notes: notes,
+        modifiers: modifiers
       };
 
-      APP.addPressureLine(opts);
+      if (APP.buildPressureLine) {
+        APP.addPressureLine(APP.buildPressureLine(opts));
+      } else {
+        APP.addPressureLine(opts);
+      }
 
       if (window.UIComponents && window.UIComponents.showToast) {
         window.UIComponents.showToast('Pressure line added successfully', 'success');

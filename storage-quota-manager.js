@@ -5,6 +5,11 @@
 (function() {
   'use strict';
 
+  if (typeof window !== 'undefined' && window.APP_TEST_MODE) {
+    console.log('[STORAGE-QUOTA] Skipped in test mode');
+    return;
+  }
+
   var QUOTA_WARNING_THRESHOLD = 75; // Warn at 75% usage
   var QUOTA_CRITICAL_THRESHOLD = 90; // Critical at 90% usage
   var ESTIMATED_QUOTA_MB = 5; // iOS Safari typical quota

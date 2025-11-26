@@ -5,6 +5,11 @@
 (function() {
   'use strict';
 
+  if (typeof window !== 'undefined' && window.APP_TEST_MODE) {
+    console.log('[TEST-RUNNER] Skipped in test mode');
+    return;
+  }
+
   // Capture console output
   var originalConsoleLog = console.log;
   var originalConsoleError = console.error;

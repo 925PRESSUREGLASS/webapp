@@ -5,6 +5,11 @@
 (function() {
   'use strict';
 
+  if (typeof window !== 'undefined' && window.APP_TEST_MODE) {
+    console.log('[CONTRACT-FORECASTING] Skipped in test mode');
+    return;
+  }
+
   /**
    * Calculate Monthly Recurring Revenue (MRR)
    */

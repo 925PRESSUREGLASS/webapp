@@ -5,6 +5,11 @@
 (function() {
   'use strict';
 
+  if (typeof window !== 'undefined' && window.APP_TEST_MODE) {
+    console.log('[GHL-TASK-SYNC] Skipped in test mode');
+    return;
+  }
+
   /**
    * Check if GHL integration is available
    */

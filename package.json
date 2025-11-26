@@ -2,17 +2,6 @@
   "name": "tic-tac-stick-quote-engine",
   "version": "1.13.0",
   "description": "Professional quoting tool for 925 Pressure Glass - Window & Pressure Cleaning",
-  "scripts": {
-    "test": "playwright test",
-    "test:headed": "playwright test --headed",
-    "test:ui": "playwright test --ui",
-    "test:debug": "playwright test --debug",
-    "cap:sync": "npx cap sync",
-    "cap:copy": "npx cap copy",
-    "cap:open:ios": "npx cap open ios",
-    "cap:open:android": "npx cap open android",
-    "cap:update": "npx cap update"
-  },
   "keywords": [
     "quote",
     "pricing",
@@ -24,21 +13,48 @@
   "author": "925 Pressure Glass",
   "license": "MIT",
   "devDependencies": {
-    "@playwright/test": "^1.56.1",
-    "http-server": "^14.1.1"
+    "@playwright/test": "1.56.1",
+    "http-server": "14.1.1",
+    "prisma": "^5.14.0",
+    "turbo": "^2.0.5"
   },
   "dependencies": {
-    "@capacitor/android": "^6.0.0",
-    "@capacitor/camera": "^6.0.0",
-    "@capacitor/cli": "^6.0.0",
-    "@capacitor/core": "^6.0.0",
-    "@capacitor/geolocation": "^6.0.0",
-    "@capacitor/haptics": "^6.0.0",
-    "@capacitor/ios": "^6.0.0",
-    "@capacitor/keyboard": "^6.0.0",
-    "@capacitor/push-notifications": "^6.0.0",
-    "@capacitor/share": "^6.0.0",
-    "@capacitor/status-bar": "^6.0.0",
-    "jsdom": "^27.2.0"
+    "@capacitor/android": "6.0.0",
+    "@capacitor/camera": "6.0.0",
+    "@capacitor/cli": "6.0.0",
+    "@capacitor/core": "6.0.0",
+    "@capacitor/geolocation": "6.0.0",
+    "@capacitor/haptics": "6.0.0",
+    "@capacitor/ios": "6.0.0",
+    "@capacitor/keyboard": "6.0.0",
+    "@capacitor/push-notifications": "6.0.0",
+    "@capacitor/share": "6.0.0",
+    "@capacitor/status-bar": "6.0.0",
+    "@prisma/client": "^5.14.0",
+    "jsdom": "27.2.0"
+  },
+  "engines": {
+    "node": ">=18",
+    "npm": ">=9"
+  },
+  "scripts": {
+    "test": "playwright test",
+    "test:headed": "playwright test --headed",
+    "test:ui": "playwright test --ui",
+    "test:debug": "playwright test --debug",
+    "cap:sync": "npx cap sync",
+    "cap:copy": "npx cap copy",
+    "cap:open:ios": "npx cap open ios",
+    "cap:open:android": "npx cap open android",
+    "cap:update": "npx cap update",
+    "audit:daily": "npm audit --omit=dev",
+    "dev:api": "npm run dev --prefix apps/meta-api",
+    "dev:dashboard": "npm run dev --prefix apps/meta-dashboard",
+    "dev": "npm run dev:api & npm run dev:dashboard",
+    "build:api": "npm run build --prefix apps/meta-api",
+    "build:dashboard": "npm run build --prefix apps/meta-dashboard",
+    "build:all": "turbo run build",
+    "ci": "npm run build:api && npm run build:dashboard",
+    "smoke": "node apps/meta-api/scripts/smoke.js"
   }
 }

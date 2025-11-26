@@ -133,6 +133,88 @@
 	<link rel="stylesheet" href="invoice-print.css" media="print" />
 	<link rel="stylesheet" href="photo-print-layout.css" media="print" />
 	<link rel="stylesheet" href="letterhead.css" media="print" />
+
+	<style>
+	/* Mobile-friendly line layout and sticky actions */
+	@media (max-width: 768px) {
+	  .lines-table { display: block; width: 100%; }
+	  .lines-table thead { display: none; }
+	  .lines-table tbody { display: block; width: 100%; }
+	  .lines-table tbody tr {
+	    display: block;
+	    margin-bottom: 12px;
+	    border: 1px solid #e5e7eb;
+	    border-radius: 10px;
+	    padding: 10px;
+	    background: #fff;
+	  }
+	  .lines-table td {
+	    display: flex;
+	    justify-content: space-between;
+	    align-items: center;
+	    padding: 6px 0;
+	    border: none;
+	    width: 100%;
+	  }
+	  .lines-table input,
+	  .lines-table select,
+	  .lines-table button {
+	    min-height: 44px;
+	    font-size: 1rem;
+	  }
+	  .line-title-row {
+	    flex-direction: column;
+	    align-items: flex-start;
+	    gap: 4px;
+	  }
+	  .line-estimate { font-weight: 700; }
+	  .mobile-action-bar { display: flex; }
+	  body { padding-bottom: 80px; }
+	}
+
+	.line-type-badge {
+	  display: inline-block;
+	  margin-top: 4px;
+	  padding: 4px 8px;
+	  background: #eef2ff;
+	  color: #312e81;
+	  border-radius: 8px;
+	  font-size: 0.85rem;
+	  font-weight: 700;
+	}
+
+	.line-estimate {
+	  font-size: 0.9rem;
+	  color: #111827;
+	}
+
+	.quick-increments .btn {
+	  min-width: 56px;
+	  min-height: 44px;
+	  font-size: 14px;
+	  padding: 6px 10px;
+	}
+
+	.mobile-action-bar {
+	  display: none;
+	  position: fixed;
+	  bottom: 0;
+	  left: 0;
+	  right: 0;
+	  gap: 8px;
+	  padding: 10px;
+	  background: rgba(255, 255, 255, 0.95);
+	  border-top: 1px solid #e5e7eb;
+	  z-index: 1000;
+	  box-shadow: 0 -2px 8px rgba(0, 0, 0, 0.08);
+	}
+
+	.btn-mobile {
+	  flex: 1;
+	  min-height: 44px;
+	  font-size: 1rem;
+	}
+	</style>
 </head>
 
 <body class="accordion-mode">
@@ -172,10 +254,13 @@
 				<button id="helpPageBtn" type="button" class="btn btn-tertiary" title="Help & Documentation" aria-label="Open help system" onclick="navigateTo('help')">
 					❓ Help
 				</button>
-				<button id="settingsPageBtn" type="button" class="btn btn-tertiary" title="Settings & Backup" aria-label="Open settings" onclick="navigateTo('settings')">
-					⚙️ Settings
-				</button>
-				<button id="keyboardShortcutsBtn" type="button" class="btn btn-tertiary" title="Keyboard Shortcuts (Press ?)" aria-label="View keyboard shortcuts" style="display: none;">
+					<button id="settingsPageBtn" type="button" class="btn btn-tertiary" title="Settings & Backup" aria-label="Open settings" onclick="navigateTo('settings')">
+						⚙️ Settings
+					</button>
+					<button id="invoiceSettingsBtn" type="button" class="btn btn-tertiary" title="Invoice Settings" aria-label="Open invoice settings" onclick="if(window.InvoiceSystem && window.InvoiceSystem.showSettingsModal){ window.InvoiceSystem.showSettingsModal(); } else { alert('Invoice settings not available'); }">
+						🧾 Invoice Settings
+					</button>
+					<button id="keyboardShortcutsBtn" type="button" class="btn btn-tertiary" title="Keyboard Shortcuts (Press ?)" aria-label="View keyboard shortcuts" style="display: none;">
 						⌨️ Shortcuts
 					</button>
 					<button id="testRunnerBtn" type="button" class="btn btn-tertiary" title="Test & QA Suite" aria-label="Open test runner" onclick="openTestRunner()">
@@ -296,22 +381,54 @@
 							</label>
 
 							<!-- PRESSURE CLEAN SETTINGS -->
-							<label class="field">
-								<span class="field-label">Pressure Clean Base Rate ($/hr)</span>
-								<input id="pressureHourlyRateInput" type="number" min="0" step="1" value="120" inputmode="decimal" />
-								<small class="field-help">
-									Used for all surface time calculations.
-								</small>
-							</label>
+								<label class="field">
+									<span class="field-label">Pressure Clean Base Rate ($/hr)</span>
+									<input id="pressureHourlyRateInput" type="number" min="0" step="1" value="120" inputmode="decimal" />
+									<small class="field-help">
+										Used for all surface time calculations.
+									</small>
+								</label>
 
-							<label class="field">
-								<span class="field-label">Travel / Setup Buffer (mins)</span>
-								<input id="setupBufferMinutesInput" type="number" min="0" step="5" value="15" inputmode="numeric" />
-								<small class="field-help">
-									Added once per job to cover hose run, machine setup, etc.
-								</small>
-							</label>
-						</div>
+								<label class="field">
+									<span class="field-label">Travel / Setup Buffer (mins)</span>
+									<input id="setupBufferMinutesInput" type="number" min="0" step="5" value="15" inputmode="numeric" />
+									<small class="field-help">
+										Added once per job to cover hose run, machine setup, etc.
+									</small>
+								</label>
+
+								<label class="field">
+									<span class="field-label">Travel Time (mins)</span>
+									<input id="travelMinutesInput" type="number" min="0" step="5" value="0" inputmode="numeric" />
+									<small class="field-help">
+										Total travel time for this job.
+									</small>
+								</label>
+
+								<label class="field">
+									<span class="field-label">Travel Distance (km)</span>
+									<input id="travelKmInput" type="number" min="0" step="0.1" value="0" inputmode="decimal" />
+									<small class="field-help">
+										Total travel distance (km).
+									</small>
+								</label>
+
+								<label class="field">
+									<span class="field-label">Travel Rate ($/hr)</span>
+									<input id="travelRatePerHourInput" type="number" min="0" step="1" value="95" inputmode="decimal" />
+									<small class="field-help">
+										Hourly travel rate used for travel time.
+									</small>
+								</label>
+
+								<label class="field">
+									<span class="field-label">Travel Rate ($/km)</span>
+									<input id="travelRatePerKmInput" type="number" min="0" step="0.1" value="1.5" inputmode="decimal" />
+									<small class="field-help">
+										Per-kilometer travel rate.
+									</small>
+								</label>
+							</div>
 
 						<!-- AUTOSAVE & PRESETS -->
 						<div class="config-footer">
@@ -344,9 +461,9 @@
 					<header class="sec-h">
 						<h2 class="sec-title">🪟 Windows</h2>
 						<div class="card-hdr-actions">
-							<button id="openWindowWizardBtn" type="button" class="btn btn-accent btn-sm" aria-label="Open window wizard for guided entry">
-								🪄 Wizard
-							</button>
+								<button id="openWindowWizardBtn" type="button" class="btn btn-accent btn-sm" aria-label="Open window wizard for guided entry" onclick="if(window.Wizard && window.Wizard.openWindowWizard){ window.Wizard.openWindowWizard(); }">
+									🪄 Wizard
+								</button>
 							<button id="addWindowLineBtn" type="button" class="btn btn-sm btn-primary" aria-label="Add window line item manually">
 								+ Add Line
 							</button>
@@ -366,6 +483,7 @@
                                                                                 <th scope="col"><button type="button" class="sort-toggle" data-type="window" data-key="access">Access <span class="sort-icon" aria-hidden="true"></span></button></th>
                                                                                 <th scope="col">Tint</th>
                                                                                 <th scope="col"><button type="button" class="sort-toggle" data-type="window" data-key="location">Location <span class="sort-icon" aria-hidden="true"></span></button></th>
+                                                                                <th scope="col">Est.</th>
                                                                                 <th scope="col" class="actions-col">Actions</th>
                                                                         </tr>
                                                                 </thead>
@@ -380,9 +498,9 @@
 					<header class="sec-h">
 						<h2 class="sec-title">💦 Pressure Cleaning</h2>
 						<div class="card-hdr-actions">
-							<button id="openPressureWizardBtn" type="button" class="btn btn-accent btn-sm" aria-label="Open pressure wizard for guided entry">
-								🪄 Wizard
-							</button>
+								<button id="openPressureWizardBtn" type="button" class="btn btn-accent btn-sm" aria-label="Open pressure wizard for guided entry" onclick="if(window.Wizard && window.Wizard.openPressureWizard){ window.Wizard.openPressureWizard(); }">
+									🪄 Wizard
+								</button>
 							<button id="addPressureLineBtn" type="button" class="btn btn-sm btn-primary" aria-label="Add pressure cleaning line item manually">
 								+ Add Line
 							</button>
@@ -400,6 +518,7 @@
                                                                                 <th scope="col"><button type="button" class="sort-toggle" data-type="pressure" data-key="soil">Soil <span class="sort-icon" aria-hidden="true"></span></button></th>
                                                                                 <th scope="col"><button type="button" class="sort-toggle" data-type="pressure" data-key="access">Access <span class="sort-icon" aria-hidden="true"></span></button></th>
                                                                                 <th scope="col">Notes</th>
+                                                                                <th scope="col">Est.</th>
                                                                                 <th scope="col" class="actions-col">Actions</th>
                                                                         </tr>
                                                                 </thead>
@@ -419,11 +538,11 @@
 						<button class="card-toggle" type="button" data-target="summaryBody">▾</button>
 					</header>
 					<div class="sec-b" id="summaryBody">
-						<div class="summary-main">
-							<div class="summary-block">
-								<div class="summary-label">Subtotal (excl. GST)</div>
-								<div class="summary-value" id="subtotalDisplay">$0</div>
-							</div>
+					<div class="summary-main">
+						<div class="summary-block">
+							<div class="summary-label">Subtotal (excl. GST)</div>
+							<div class="summary-value" id="subtotalDisplay">$0</div>
+						</div>
 							<div class="summary-block">
 								<div class="summary-label">High Reach Adjustments</div>
 								<div class="summary-value" id="highReachDisplay">$0</div>
@@ -432,44 +551,69 @@
 								<div class="summary-label">GST (10%)</div>
 								<div class="summary-value" id="gstDisplay">$0</div>
 							</div>
-							<div class="summary-block summary-block-total">
-								<div class="summary-label">Final Total (incl. GST, inc. min job)</div>
-								<div class="summary-value" id="totalIncGstDisplay">$0</div>
-							</div>
+						<div class="summary-block summary-block-total">
+							<div class="summary-label">Final Total (incl. GST, inc. min job)</div>
+							<div class="summary-value" id="totalIncGstDisplay">$0</div>
 						</div>
+					</div>
 
-						<!-- QUOTE ACTION BUTTONS -->
+					<div class="summary-note" id="minimumAppliedNote" style="display: none; font-size: 12px; color: var(--text-secondary); margin-top: 4px;">
+						Minimum job applied to reach <span id="minimumAppliedValue">$0</span>.
+					</div>
+
+					<!-- QUOTE ACTION BUTTONS -->
 						<div class="notes-footer" style="margin-top: 1.5rem;">
 							<button id="generatePdfBtn" type="button" class="btn btn-accent">
 								📄 Export PDF
-							</button>
-							<button id="copySummaryBtn" type="button" class="btn btn-secondary">
-								📋 Copy Summary
-							</button>
-						</div>
+								</button>
+								<button id="copySummaryBtn" type="button" class="btn btn-secondary">
+									📋 Copy Summary
+								</button>
+								<button id="refreshAppBtn" type="button" class="btn btn-sm btn-secondary">
+									🔄 Refresh App (clear cache)
+								</button>
+							</div>
 
-						<div class="summary-sub">
-							<div class="summary-sub-col">
-								<h3>Time Estimate</h3>
-								<p id="timeEstimateDisplay">0.00 hrs total</p>
-								<ul class="summary-list">
-									<li><span>Windows Time:</span> <span id="windowsTimeDisplay">0.00 hrs</span></li>
-									<li><span>Pressure Time:</span> <span id="pressureTimeDisplay">0.00 hrs</span></li>
-									<li><span>Setup / Travel:</span> <span id="setupTimeDisplay">0.00 hrs</span></li>
-									<li><span>High Reach Extra:</span> <span id="highReachTimeDisplay">0.00 hrs</span></li>
-								</ul>
-							</div>
-							<div class="summary-sub-col">
-								<h3>Cost Breakdown</h3>
-								<ul class="summary-list">
-									<li><span>Base Callout:</span> <span id="baseFeeDisplay">$0</span></li>
-									<li><span>Windows Labour:</span> <span id="windowsCostDisplay">$0</span></li>
-									<li><span>Pressure Labour:</span> <span id="pressureCostDisplay">$0</span></li>
-									<li><span>High Reach Premium:</span> <span id="highReachCostDisplay">$0</span></li>
-									<li><span>Other Adjustments:</span> <span id="otherAdjustmentsDisplay">$0</span></li>
-								</ul>
-							</div>
+					<div class="summary-sub">
+						<div class="summary-sub-col">
+							<h3>Time Estimate</h3>
+							<p id="timeEstimateDisplay">0.00 hrs total</p>
+							<ul class="summary-list">
+								<li><span>Windows Time:</span> <span id="windowsTimeDisplay">0.00 hrs</span></li>
+								<li><span>Pressure Time:</span> <span id="pressureTimeDisplay">0.00 hrs</span></li>
+								<li><span>Setup:</span> <span id="setupTimeDisplay">0.00 hrs</span></li>
+								<li><span>Travel:</span> <span id="travelTimeDisplay">0.00 hrs</span></li>
+								<li><span>High Reach Extra:</span> <span id="highReachTimeDisplay">0.00 hrs</span></li>
+							</ul>
 						</div>
+						<div class="summary-sub-col">
+							<h3>Cost Breakdown</h3>
+							<ul class="summary-list">
+								<li><span>Base Callout:</span> <span id="baseFeeDisplay">$0</span></li>
+								<li><span>Windows Labour:</span> <span id="windowsCostDisplay">$0</span></li>
+								<li><span>Pressure Labour:</span> <span id="pressureCostDisplay">$0</span></li>
+								<li><span>High Reach Premium:</span> <span id="highReachCostDisplay">$0</span></li>
+								<li><span>Setup Buffer:</span> <span id="setupCostDisplay">$0</span></li>
+								<li><span>Travel:</span> <span id="travelCostDisplay">$0</span></li>
+								<li><span>Other Adjustments:</span> <span id="otherAdjustmentsDisplay">$0</span></li>
+							</ul>
+						</div>
+						<div class="summary-sub-col">
+							<h3>Job Settings Snapshot</h3>
+							<ul class="summary-list">
+								<li><span>Base Callout:</span> <span id="jobSummaryBaseCallout">$120.00</span></li>
+								<li><span>Hourly Rate:</span> <span id="jobSummaryHourlyRate">$95.00</span></li>
+								<li><span>Pressure Rate:</span> <span id="jobSummaryPressureRate">$120.00</span></li>
+								<li><span>Minimum Job:</span> <span id="jobSummaryMinimumJob">$180.00</span></li>
+								<li><span>High Reach %:</span> <span id="jobSummaryHighReach">60%</span></li>
+								<li><span>Inside ×:</span> <span id="jobSummaryInsideMultiplier">1.0×</span></li>
+								<li><span>Outside ×:</span> <span id="jobSummaryOutsideMultiplier">1.0×</span></li>
+								<li><span>Setup Buffer:</span> <span id="jobSummarySetupBuffer">15 mins</span></li>
+								<li><span>Travel Rate (/hr):</span> <span id="jobSummaryTravelHourRate">$95.00</span></li>
+								<li><span>Travel Rate (/km):</span> <span id="jobSummaryTravelKmRate">$1.50</span></li>
+							</ul>
+						</div>
+					</div>
 
 						<div class="summary-chart-wrap">
 							<h3>Time Distribution</h3>
@@ -2286,6 +2430,10 @@
         <!-- Deferred asset loader to hydrate non-critical styles and scripts after DOM is ready -->
         <script>
                 (function() {
+                        var isTestMode = !!window.APP_TEST_MODE;
+                        var skipLateModules = window.APP_TEST_SKIP_MODULES || ['photos', 'backup'];
+                        var skipLateStyles = window.APP_TEST_SKIP_STYLES || ['photo-modal.css', 'photos.css'];
+
                         function showDeferredPlaceholders() {
                                 if (window.APP && APP.showDeferredPlaceholder) {
                                         APP.showDeferredPlaceholder('page-analytics-dashboard', 'Loading analytics toolkit...');
@@ -2294,10 +2442,28 @@
                                 }
                         }
 
+                        function shouldSkipStyle(link) {
+                                if (!isTestMode) {
+                                        return false;
+                                }
+
+                                var href = link.getAttribute('href') || '';
+                                for (var i = 0; i < skipLateStyles.length; i++) {
+                                        if (href.indexOf(skipLateStyles[i]) !== -1) {
+                                                return true;
+                                        }
+                                }
+
+                                return false;
+                        }
+
                         function hydrateDeferredStyles() {
                                 var lateStyles = document.querySelectorAll('link[data-late-style]');
                                 for (var i = 0; i < lateStyles.length; i++) {
                                         var link = lateStyles[i];
+                                        if (shouldSkipStyle(link)) {
+                                                continue;
+                                        }
                                         link.rel = 'stylesheet';
                                         link.removeAttribute('data-late-style');
                                         link.removeAttribute('as');
@@ -2325,6 +2491,10 @@
                                         var moduleName = placeholder.getAttribute('data-module');
                                         var src = placeholder.getAttribute('data-late-src');
                                         if (!src) {
+                                                continue;
+                                        }
+
+                                        if (isTestMode && moduleName && skipLateModules.indexOf(moduleName) !== -1) {
                                                 continue;
                                         }
 
@@ -3487,6 +3657,27 @@
 			});
 		}
 	</script>
+	<!-- Mobile sticky action bar -->
+	<div class="mobile-action-bar">
+		<button type="button" class="btn btn-primary btn-mobile" onclick="if(window.Wizard && window.Wizard.openWindowWizard){ window.Wizard.openWindowWizard(); }">
+			🪄 Wizard
+		</button>
+		<button type="button" class="btn btn-secondary btn-mobile" onclick="var btn=document.getElementById('addWindowLineBtn'); if(btn){ btn.click(); }">
+			+ Window
+		</button>
+		<button type="button" class="btn btn-secondary btn-mobile" onclick="var btn=document.getElementById('addPressureLineBtn'); if(btn){ btn.click(); }">
+			+ Pressure
+		</button>
+		<button type="button" class="btn btn-tertiary btn-mobile" onclick="if(window.APP && APP.saveState){ APP.saveState(); }">
+			💾 Save
+		</button>
+		<button type="button" class="btn btn-secondary btn-mobile" onclick="var btn=document.getElementById('generatePdfBtn'); if(btn){ btn.click(); }">
+			📄 PDF
+		</button>
+		<button type="button" class="btn btn-secondary btn-mobile" onclick="var btn=document.getElementById('copySummaryBtn'); if(btn){ btn.click(); }">
+			📋 Copy
+		</button>
+	</div>
 </body>
 
 </html>

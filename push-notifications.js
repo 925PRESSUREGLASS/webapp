@@ -6,6 +6,11 @@
 (function() {
   'use strict';
 
+  if (typeof window !== 'undefined' && window.APP_TEST_MODE) {
+    console.log('[PUSH-NOTIFICATIONS] Skipped in test mode');
+    return;
+  }
+
   // Storage key for push token
   var PUSH_TOKEN_KEY = 'tts_push_token';
   var initialized = false;

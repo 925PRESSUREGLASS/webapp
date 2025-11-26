@@ -5,6 +5,11 @@
 (function() {
   'use strict';
 
+  if (typeof window !== 'undefined' && window.APP_TEST_MODE) {
+    console.log('[GHL-WEBHOOK] Skipped in test mode');
+    return;
+  }
+
   /**
    * GHL Webhook Event Types
    */

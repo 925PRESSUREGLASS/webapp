@@ -7,6 +7,14 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Tests
+- Re-enabled Playwright analytics suite (`tests/analytics.spec.js`) with light test mode (skips heavy modules), seeded pricing data in fixtures, and Playwright launch settings tuned for stability.
+
+
+### Added
+- Meta API `/ai/ask` proxy that calls the configured embeddings service (`AI_EMBEDDINGS_URL`/`AI_EMBEDDINGS_TIMEOUT_MS`) and returns upstream results or a 503 when disabled.
+- Python pgvector toolkit (`ai/ingest.py`, `ai/query.py`, `ai/api.py`, `ai/requirements.txt`) plus `docs/AI_EMBEDDING_SETUP.md` for indexing docs with BGE-small and serving a FastAPI bridge.
+
 ## [1.13.3] - 2025-11-21
 
 ### Added

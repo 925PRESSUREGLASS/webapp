@@ -1,6 +1,5 @@
 # Dependencies
 node_modules/
-package-lock.json
 
 # Test artifacts
 test-results/
@@ -22,9 +21,15 @@ npm-debug.log*
 # Environment
 .env
 .env.local
+.env.local
+.env.local.example
 
 # Backup files
 *.bak
 *.backup
 *.backup-*
 *~
+
+# Build output
+apps/meta-api/dist/
+apps/meta-dashboard/dist/
