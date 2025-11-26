@@ -57,12 +57,13 @@ Establish a repeatable, observable build spine that keeps browser, native, and P
 ### Documentation
 
 - [ ] API documentation generation
-- [ ] Architecture decision records (ADRs)
+- [x] Architecture decision records (ADRs) - `docs/adr/`
 - [x] Runbook for common operations - `RUNBOOK.md`
 
 ### Security
 
 - [x] Dependabot alerts enabled - `.github/dependabot.yml`
-- [ ] SAST scanning in CI
+- [x] SAST scanning in CI - `.github/workflows/security.yml`
 - [x] Security policy - `SECURITY.md` (already existed)
+
 
