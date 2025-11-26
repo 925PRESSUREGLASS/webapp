@@ -395,15 +395,44 @@
       return null;
     }
 
-    // Get totals from DOM
+    // Calculate totals directly from state to ensure parity with quote
+    var calcResult = null;
+    try {
+      if (window.PrecisionCalc && typeof PrecisionCalc.calculate === 'function') {
+        calcResult = PrecisionCalc.calculate({
+          windowLines: state.windowLines || [],
+          pressureLines: state.pressureLines || [],
+          baseFee: state.baseFee,
+          hourlyRate: state.hourlyRate,
+          minimumJob: state.minimumJob,
+          highReachModifierPercent: state.highReachModifierPercent,
+          insideMultiplier: state.insideMultiplier,
+          outsideMultiplier: state.outsideMultiplier,
+          pressureHourlyRate: state.pressureHourlyRate,
+          setupBufferMinutes: state.setupBufferMinutes,
+          travelMinutes: state.travelMinutes,
+          travelKm: state.travelKm,
+          travelRatePerHour: state.travelRatePerHour,
+          travelRatePerKm: state.travelRatePerKm
+        });
+      } else if (window.Calc && typeof Calc.calculate === 'function') {
+        calcResult = Calc.calculate(state);
+      }
+    } catch (e) {
+      calcResult = null;
+    }
+
+    // Fallback to DOM totals if calculation unavailable
     var totalText = document.getElementById('totalIncGstDisplay');
-    var total = totalText ? parseFloat(totalText.textContent.replace(/[$,]/g, '')) : 0;
-
+    var totalDom = totalText ? parseFloat(totalText.textContent.replace(/[$,]/g, '')) : 0;
     var subtotalText = document.getElementById('subtotalDisplay');
-    var subtotal = subtotalText ? parseFloat(subtotalText.textContent.replace(/[$,]/g, '')) : 0;
-
+    var subtotalDom = subtotalText ? parseFloat(subtotalText.textContent.replace(/[$,]/g, '')) : 0;
     var gstText = document.getElementById('gstDisplay');
-    var gst = gstText ? parseFloat(gstText.textContent.replace(/[$,]/g, '')) : 0;
+    var gstDom = gstText ? parseFloat(gstText.textContent.replace(/[$,]/g, '')) : 0;
+
+    var subtotal = calcResult && calcResult.money ? calcResult.money.subtotal : subtotalDom;
+    var total = calcResult && calcResult.money ? calcResult.money.total + ((calcResult.money.subtotal || 0) * 0.10) : totalDom;
+    var gst = calcResult && calcResult.money ? (calcResult.money.subtotal || 0) * 0.10 : gstDom;
 
     // Generate quote ID for tracking
     var quoteId = 'quote_' + Date.now() + '_' + Math.random().toString(36).substr(2, 9);
@@ -476,10 +505,22 @@
         return invoiceLine;
       }),
 
-      // Totals
+      // Totals + breakdown
       subtotal: subtotal,
       gst: gst,
       total: total,
+      breakdown: calcResult && calcResult.money ? {
+        baseFee: calcResult.money.baseFee || 0,
+        windows: calcResult.money.windows || 0,
+        pressure: calcResult.money.pressure || 0,
+        highReach: calcResult.money.highReach || 0,
+        setup: calcResult.money.setup || 0,
+        travel: calcResult.money.travel || 0,
+        subtotal: calcResult.money.subtotal || subtotal,
+        gst: gst,
+        minimumApplied: (calcResult.money.total > calcResult.money.subtotal) ? (state.minimumJob || calcResult.money.total) : 0,
+        total: calcResult.money.total + gst
+      } : null,
 
       // Payment info
       amountPaid: 0,
@@ -1584,15 +1625,32 @@
 
     // Totals
     html += '<div class="invoice-print-totals">';
-    html += '<div class="invoice-print-totals-row">';
-    html += '<span>Subtotal:</span>';
-    html += '<span>$' + parseFloat(invoice.subtotal).toFixed(2) + '</span>';
-    html += '</div>';
-    if (invoice.gst > 0) {
+    var breakdown = invoice.breakdown || null;
+    function addRow(label, value) {
       html += '<div class="invoice-print-totals-row">';
-      html += '<span>GST (10%):</span>';
-      html += '<span>$' + parseFloat(invoice.gst).toFixed(2) + '</span>';
+      html += '<span>' + label + '</span>';
+      html += '<span>$' + parseFloat(value || 0).toFixed(2) + '</span>';
       html += '</div>';
+    }
+    if (breakdown) {
+      addRow('Base callout', breakdown.baseFee);
+      addRow('Windows labour', breakdown.windows);
+      addRow('Pressure labour', breakdown.pressure);
+      addRow('High reach premium', breakdown.highReach);
+      addRow('Setup buffer', breakdown.setup);
+      addRow('Travel', breakdown.travel);
+      addRow('Subtotal (excl. GST)', breakdown.subtotal);
+      if (breakdown.gst > 0) {
+        addRow('GST (10%)', breakdown.gst);
+      }
+      if (breakdown.minimumApplied) {
+        addRow('Minimum job applied', breakdown.minimumApplied);
+      }
+    } else {
+      addRow('Subtotal', invoice.subtotal);
+      if (invoice.gst > 0) {
+        addRow('GST (10%)', invoice.gst);
+      }
     }
     html += '<div class="invoice-print-totals-row invoice-print-total">';
     html += '<span>Total:</span>';

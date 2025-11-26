@@ -175,12 +175,12 @@
 	.line-type-badge {
 	  display: inline-block;
 	  margin-top: 4px;
-	  padding: 2px 6px;
+	  padding: 4px 8px;
 	  background: #eef2ff;
 	  color: #312e81;
-	  border-radius: 6px;
-	  font-size: 0.75rem;
-	  font-weight: 600;
+	  border-radius: 8px;
+	  font-size: 0.85rem;
+	  font-weight: 700;
 	}
 
 	.line-estimate {
@@ -189,7 +189,10 @@
 	}
 
 	.quick-increments .btn {
-	  min-width: 36px;
+	  min-width: 56px;
+	  min-height: 44px;
+	  font-size: 14px;
+	  padding: 6px 10px;
 	}
 
 	.mobile-action-bar {
@@ -3667,6 +3670,12 @@
 		</button>
 		<button type="button" class="btn btn-tertiary btn-mobile" onclick="if(window.APP && APP.saveState){ APP.saveState(); }">
 			💾 Save
+		</button>
+		<button type="button" class="btn btn-secondary btn-mobile" onclick="var btn=document.getElementById('generatePdfBtn'); if(btn){ btn.click(); }">
+			📄 PDF
+		</button>
+		<button type="button" class="btn btn-secondary btn-mobile" onclick="var btn=document.getElementById('copySummaryBtn'); if(btn){ btn.click(); }">
+			📋 Copy
 		</button>
 	</div>
 </body>
