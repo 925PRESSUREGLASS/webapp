@@ -133,6 +133,85 @@
 	<link rel="stylesheet" href="invoice-print.css" media="print" />
 	<link rel="stylesheet" href="photo-print-layout.css" media="print" />
 	<link rel="stylesheet" href="letterhead.css" media="print" />
+
+	<style>
+	/* Mobile-friendly line layout and sticky actions */
+	@media (max-width: 768px) {
+	  .lines-table { display: block; width: 100%; }
+	  .lines-table thead { display: none; }
+	  .lines-table tbody { display: block; width: 100%; }
+	  .lines-table tbody tr {
+	    display: block;
+	    margin-bottom: 12px;
+	    border: 1px solid #e5e7eb;
+	    border-radius: 10px;
+	    padding: 10px;
+	    background: #fff;
+	  }
+	  .lines-table td {
+	    display: flex;
+	    justify-content: space-between;
+	    align-items: center;
+	    padding: 6px 0;
+	    border: none;
+	    width: 100%;
+	  }
+	  .lines-table input,
+	  .lines-table select,
+	  .lines-table button {
+	    min-height: 44px;
+	    font-size: 1rem;
+	  }
+	  .line-title-row {
+	    flex-direction: column;
+	    align-items: flex-start;
+	    gap: 4px;
+	  }
+	  .line-estimate { font-weight: 700; }
+	  .mobile-action-bar { display: flex; }
+	  body { padding-bottom: 80px; }
+	}
+
+	.line-type-badge {
+	  display: inline-block;
+	  margin-top: 4px;
+	  padding: 2px 6px;
+	  background: #eef2ff;
+	  color: #312e81;
+	  border-radius: 6px;
+	  font-size: 0.75rem;
+	  font-weight: 600;
+	}
+
+	.line-estimate {
+	  font-size: 0.9rem;
+	  color: #111827;
+	}
+
+	.quick-increments .btn {
+	  min-width: 36px;
+	}
+
+	.mobile-action-bar {
+	  display: none;
+	  position: fixed;
+	  bottom: 0;
+	  left: 0;
+	  right: 0;
+	  gap: 8px;
+	  padding: 10px;
+	  background: rgba(255, 255, 255, 0.95);
+	  border-top: 1px solid #e5e7eb;
+	  z-index: 1000;
+	  box-shadow: 0 -2px 8px rgba(0, 0, 0, 0.08);
+	}
+
+	.btn-mobile {
+	  flex: 1;
+	  min-height: 44px;
+	  font-size: 1rem;
+	}
+	</style>
 </head>
 
 <body class="accordion-mode">
@@ -3518,6 +3597,21 @@
 			});
 		}
 	</script>
+	<!-- Mobile sticky action bar -->
+	<div class="mobile-action-bar">
+		<button type="button" class="btn btn-primary btn-mobile" onclick="if(window.Wizard && window.Wizard.openWindowWizard){ window.Wizard.openWindowWizard(); }">
+			🪄 Wizard
+		</button>
+		<button type="button" class="btn btn-secondary btn-mobile" onclick="var btn=document.getElementById('addWindowLineBtn'); if(btn){ btn.click(); }">
+			+ Window
+		</button>
+		<button type="button" class="btn btn-secondary btn-mobile" onclick="var btn=document.getElementById('addPressureLineBtn'); if(btn){ btn.click(); }">
+			+ Pressure
+		</button>
+		<button type="button" class="btn btn-tertiary btn-mobile" onclick="if(window.APP && APP.saveState){ APP.saveState(); }">
+			💾 Save
+		</button>
+	</div>
 </body>
 
 </html>
