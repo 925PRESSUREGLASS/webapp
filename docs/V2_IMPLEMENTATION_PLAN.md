@@ -57,13 +57,14 @@ This document outlines the 12-week implementation timeline for migrating from Ti
 
 ## Phase 3: Quote Builder UI (Weeks 5-6)
 
-### Week 5: Line Item Components
-- [ ] Create `WindowLineEditor` component
-- [ ] Create `PressureLineEditor` component
-- [ ] Implement window type selector with icons
-- [ ] Implement surface type selector
-- [ ] Create condition/access modifier selectors
-- [ ] Add real-time price preview
+### Week 5: Line Item Components ✅
+- [x] Create `WindowLineEditor` component
+- [x] Create `PressureLineEditor` component
+- [x] Implement window type selector with icons
+- [x] Implement surface type selector
+- [x] Create condition/access modifier selectors
+- [x] Add real-time price preview
+- [x] Create `QuoteSummary` component with breakdown
 
 ### Week 6: Quote Management
 - [ ] Create complete quote wizard flow
