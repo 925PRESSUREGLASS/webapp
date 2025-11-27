@@ -1,0 +1,93 @@
+/**
+ * TicTacStick Quote Engine v2.0 - Global Styles
+ * 
+ * Using CSS custom properties for Quasar consistency
+ */
+
+/* Custom variables */
+:root {
+  --primary-gradient: linear-gradient(135deg, #7c3aed 0%, #8b5cf6 100%);
+  --secondary-gradient: linear-gradient(135deg, #38bdf8 0%, #22d3ee 100%);
+}
+
+/* Base styles */
+body {
+  font-family: 'Roboto', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+}
+
+/* Page transitions */
+.fade-enter-active,
+.fade-leave-active {
+  transition: opacity 0.2s ease;
+}
+
+.fade-enter-from,
+.fade-leave-to {
+  opacity: 0;
+}
+
+/* Custom component styles */
+.quote-summary {
+  background: var(--primary-gradient);
+  color: white;
+  padding: 1rem;
+  border-radius: 8px;
+}
+
+/* Price display enhancements */
+.price-positive {
+  color: #22c55e;
+}
+
+.price-negative {
+  color: #ef4444;
+}
+
+/* Card hover effects */
+.q-card {
+  transition: box-shadow 0.2s ease, transform 0.2s ease;
+}
+
+.q-card:hover {
+  box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
+}
+
+/* Mobile optimizations */
+@media (max-width: 599px) {
+  .q-page {
+    padding: 8px !important;
+  }
+  
+  .q-card-section {
+    padding: 12px;
+  }
+}
+
+/* Print styles */
+@media print {
+  .q-header,
+  .q-footer,
+  .q-drawer {
+    display: none !important;
+  }
+  
+  .q-page-container {
+    padding: 0 !important;
+  }
+}
+
+/* Accessibility improvements */
+:focus-visible {
+  outline: 2px solid #7c3aed;
+  outline-offset: 2px;
+}
+
+/* Dark mode adjustments */
+.body--dark .quote-summary {
+  background: linear-gradient(135deg, #5b21b6 0%, #7c3aed 100%);
+}
+
+.body--dark .q-card {
+  background: #1e1e1e;
+  border-color: rgba(255, 255, 255, 0.08);
+}

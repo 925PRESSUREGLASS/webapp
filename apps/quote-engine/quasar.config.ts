@@ -11,7 +11,7 @@ export default configure((/* ctx */) => {
     boot: ['pinia'],
 
     // https://v2.quasar.dev/quasar-cli-vite/quasar-config-js#css
-    css: ['app.scss'],
+    css: ['app.css'],
 
     // https://v2.quasar.dev/quasar-cli-vite/quasar-config-js#extras
     extras: [
@@ -26,15 +26,7 @@ export default configure((/* ctx */) => {
         node: 'node20'
       },
 
-      vueRouterMode: 'history',
-
-      vitePlugins: [
-        ['@vitejs/plugin-vue', {
-          template: {
-            compilerOptions: {}
-          }
-        }]
-      ]
+      vueRouterMode: 'history'
     },
 
     // Full list of options: https://v2.quasar.dev/quasar-cli-vite/quasar-config-js#devServer
