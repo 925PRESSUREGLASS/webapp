@@ -2,7 +2,7 @@
 const { defineConfig, devices } = require('@playwright/test');
 
 module.exports = defineConfig({
-  testDir: './tests',
+  testDir: '../tests',  // Tests are in root tests folder
   fullyParallel: false,  // Changed: Run sequentially to avoid Service Worker conflicts
   forbidOnly: !!process.env.CI,
   retries: process.env.CI ? 2 : 0,  // Optimized: No retries in dev to speed up tests
@@ -29,7 +29,8 @@ module.exports = defineConfig({
 
   // Web server to serve static files (required for service worker to work)
   webServer: {
-    command: 'npx http-server -p 3000 -c-1',
+    command: 'npx http-server . -p 3000 -c-1',  // Serve v1 directory
+    cwd: '.',  // Run from v1 directory
     port: 3000,
     reuseExistingServer: !process.env.CI,
     timeout: 120000,

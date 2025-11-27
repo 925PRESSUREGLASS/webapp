@@ -1,0 +1,28 @@
+{
+  "appId": "com.pressureandglass.tictacstick",
+  "appName": "TicTacStick",
+  "webDir": "dist/spa",
+  "server": {
+    "androidScheme": "https"
+  },
+  "plugins": {
+    "Camera": {
+      "presentationStyle": "fullScreen"
+    },
+    "Keyboard": {
+      "resize": "body",
+      "style": "dark",
+      "resizeOnFullScreen": true
+    },
+    "StatusBar": {
+      "style": "dark",
+      "backgroundColor": "#7c3aed"
+    },
+    "SplashScreen": {
+      "launchShowDuration": 2000,
+      "backgroundColor": "#0f172a",
+      "showSpinner": true,
+      "spinnerColor": "#7c3aed"
+    }
+  }
+}

@@ -10,7 +10,9 @@
       ],
       "outputs": [
         "dist/**",
-        ".next/**"
+        ".next/**",
+        "dist/spa/**",
+        "dist/pwa/**"
       ],
       "cache": true
     },
@@ -26,6 +28,10 @@
     "dev": {
       "cache": false,
       "persistent": true
+    },
+    "type-check": {
+      "outputs": [],
+      "cache": true
     }
   }
 }

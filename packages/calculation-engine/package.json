@@ -1,0 +1,37 @@
+{
+  "name": "@tictacstick/calculation-engine",
+  "version": "0.1.0",
+  "description": "Shared calculation engine for TicTacStick Quote Engine",
+  "main": "dist/index.js",
+  "module": "dist/index.mjs",
+  "types": "dist/index.d.ts",
+  "exports": {
+    ".": {
+      "import": "./dist/index.mjs",
+      "require": "./dist/index.js",
+      "types": "./dist/index.d.ts"
+    }
+  },
+  "files": [
+    "dist",
+    "src"
+  ],
+  "scripts": {
+    "build": "tsc",
+    "dev": "tsc --watch",
+    "test": "vitest",
+    "lint": "eslint src/"
+  },
+  "keywords": [
+    "calculation",
+    "quote",
+    "window-cleaning",
+    "pressure-cleaning"
+  ],
+  "author": "925 Pressure Glass",
+  "license": "MIT",
+  "devDependencies": {
+    "typescript": "^5.6.3",
+    "vitest": "^2.0.5"
+  }
+}

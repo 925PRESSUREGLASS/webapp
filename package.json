@@ -1,22 +1,31 @@
 {
-  "name": "tic-tac-stick-quote-engine",
-  "version": "1.13.0",
-  "description": "Professional quoting tool for 925 Pressure Glass - Window & Pressure Cleaning",
+  "name": "tictacstick-monorepo",
+  "version": "2.0.0",
+  "private": true,
+  "description": "TicTacStick Monorepo - Professional quoting tool for 925 Pressure Glass",
   "keywords": [
     "quote",
     "pricing",
     "window-cleaning",
     "pressure-cleaning",
     "mobile-app",
-    "capacitor"
+    "capacitor",
+    "quasar",
+    "vue3"
   ],
   "author": "925 Pressure Glass",
   "license": "MIT",
+  "workspaces": [
+    "apps/*",
+    "packages/*",
+    "v1"
+  ],
   "devDependencies": {
     "@playwright/test": "1.56.1",
     "http-server": "14.1.1",
     "prisma": "5.14.0",
-    "turbo": "2.0.5"
+    "turbo": "2.0.5",
+    "typescript": "^5.9.3"
   },
   "dependencies": {
     "@capacitor/android": "6.0.0",
@@ -38,10 +47,21 @@
     "npm": ">=9"
   },
   "scripts": {
-    "test": "playwright test",
-    "test:headed": "playwright test --headed",
-    "test:ui": "playwright test --ui",
-    "test:debug": "playwright test --debug",
+    "test": "playwright test --config=v1/playwright.config.js",
+    "test:headed": "playwright test --headed --config=v1/playwright.config.js",
+    "test:ui": "playwright test --ui --config=v1/playwright.config.js",
+    "test:debug": "playwright test --debug --config=v1/playwright.config.js",
+    "dev:v1": "npx http-server v1 -p 8080 -c-1",
+    "dev:quote-engine": "npm run dev --prefix apps/quote-engine",
+    "dev:api": "npm run dev --prefix apps/meta-api",
+    "dev:dashboard": "npm run dev --prefix apps/meta-dashboard",
+    "dev": "npm run dev:api & npm run dev:dashboard",
+    "build:packages": "npm run build --prefix packages/calculation-engine",
+    "build:quote-engine": "npm run build --prefix apps/quote-engine",
+    "build:api": "npm run build --prefix apps/meta-api",
+    "build:dashboard": "npm run build --prefix apps/meta-dashboard",
+    "build:all": "turbo run build",
+    "start:api": "npm run start --prefix apps/meta-api",
     "cap:sync": "npx cap sync",
     "cap:copy": "npx cap copy",
     "cap:verify": "node scripts/cap-verify.js",
@@ -50,14 +70,7 @@
     "cap:update": "npx cap update",
     "audit:daily": "npm audit --omit=dev",
     "validate:config": "node scripts/validate-config.js",
-    "dev:api": "npm run dev --prefix apps/meta-api",
-    "dev:dashboard": "npm run dev --prefix apps/meta-dashboard",
-    "dev": "npm run dev:api & npm run dev:dashboard",
-    "build:api": "npm run build --prefix apps/meta-api",
-    "start:api": "npm run start --prefix apps/meta-api",
     "prisma:deploy": "npx prisma migrate deploy --schema prisma/schema.prisma",
-    "build:dashboard": "npm run build --prefix apps/meta-dashboard",
-    "build:all": "turbo run build",
     "ci": "npm run build:api && npm run build:dashboard",
     "smoke": "node apps/meta-api/scripts/smoke.js",
     "model": "node scripts/copilot-model-selector.js"
