@@ -26,6 +26,9 @@
               <q-item clickable v-close-popup to="/quotes">
                 <q-item-section>Saved Quotes</q-item-section>
               </q-item>
+              <q-item clickable v-close-popup to="/clients">
+                <q-item-section>Clients</q-item-section>
+              </q-item>
               <q-item clickable v-close-popup to="/invoices">
                 <q-item-section>Invoices</q-item-section>
               </q-item>
@@ -78,7 +81,7 @@
           Tools
         </q-item-label>
 
-        <q-item clickable v-ripple>
+        <q-item clickable v-ripple to="/clients">
           <q-item-section avatar>
             <q-icon name="people" />
           </q-item-section>

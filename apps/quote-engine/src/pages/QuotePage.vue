@@ -44,11 +44,10 @@
                 />
               </div>
               <div class="col-12 col-sm-6">
-                <q-input
+                <ClientAutocomplete
                   v-model="quoteStore.clientName"
-                  label="Client Name"
-                  outlined
-                  dense
+                  @client-selected="handleClientSelected"
+                  @manage-clients="router.push('/clients')"
                 />
               </div>
               <div class="col-12 col-sm-6">
@@ -126,6 +125,8 @@ import { useQuasar } from 'quasar';
 import { useQuoteStore } from '../stores/quote';
 import QuoteBuilder from '../components/QuoteBuilder/QuoteBuilder.vue';
 import PriceDisplay from '../components/QuoteBuilder/PriceDisplay.vue';
+import ClientAutocomplete from '../components/QuoteBuilder/ClientAutocomplete.vue';
+import type { Client } from '../stores/clients';
 
 const $q = useQuasar();
 const route = useRoute();
@@ -138,6 +139,13 @@ const jobTypeOptions = [
   { label: 'Residential', value: 'residential' },
   { label: 'Commercial', value: 'commercial' },
 ];
+
+// Handle client selection from autocomplete
+function handleClientSelected(client: Client) {
+  quoteStore.clientLocation = client.location;
+  quoteStore.clientEmail = client.email;
+  quoteStore.clientPhone = client.phone;
+}
 
 // Load quote from URL parameter if present
 onMounted(async () => {

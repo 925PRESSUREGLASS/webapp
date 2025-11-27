@@ -84,13 +84,13 @@ This document outlines the 12-week implementation timeline for migrating from Ti
 - [ ] Implement data migration from v1.x format
 - [ ] Add encryption support for sensitive data
 
-### Week 8: Client Management
-- [ ] Port `client-database.js` functionality
-- [ ] Create client directory component
-- [ ] Implement client search and filtering
-- [ ] Add client-quote associations
-- [ ] Create client import/export
-- [ ] Port CSV import functionality
+### Week 8: Client Management ✅
+- [x] Port `client-database.js` functionality (`clients.ts` store)
+- [x] Create ClientsPage with grid layout
+- [x] Implement client search and filtering
+- [x] Add ClientAutocomplete component for quote page
+- [x] Create client import/export (JSON + CSV)
+- [x] Port CSV import functionality with column mapping
 
 ## Phase 5: Invoice System (Weeks 9-10)
 
