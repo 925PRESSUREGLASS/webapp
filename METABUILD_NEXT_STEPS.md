@@ -48,18 +48,18 @@ See [ADR-002: Infrastructure Stack](docs/adr/002-infrastructure-stack.md) for fu
 
 | Item | Provider | Status |
 |------|----------|--------|
-| Create Supabase project | Supabase | ⬜ Pending |
+| Create Render Postgres | Render | ⬜ Pending |
 | Deploy Meta-API | Render | ⬜ Pending |
 | Deploy Dashboard | Vercel | ⬜ Pending |
 | Configure CORS & environment | All | ⬜ Pending |
 
-**Recommended Stack:**
-- **Database**: Supabase Postgres (managed, optional auth/storage)
+**Decided Stack (ADR-002):**
+- **Database**: Render Postgres (same network = ~1-5ms latency)
 - **API**: Render (long-running Node, no serverless issues)
 - **Dashboard**: Vercel (great React DX)
 - **Webapp**: Cloudflare Pages (keep existing)
 
-**Estimated Cost**: $7-60/month
+**Estimated Cost**: $14/month (after 90-day free trial)
 
 ### 2B: Cloud Sync & CRM
 
@@ -127,18 +127,18 @@ See [ADR-002: Infrastructure Stack](docs/adr/002-infrastructure-stack.md) for fu
 ## 📋 Next Actions
 
 ### This Week
-1. Review [ADR-002](docs/adr/002-infrastructure-stack.md) — Confirm infrastructure decisions
-2. Create Supabase project — US East region
-3. Clean up resolved TODOs
+1. Create Render Postgres instance — Oregon region
+2. Copy internal DATABASE_URL — For lowest latency
+3. Deploy Meta-API to Render — Connect to Postgres
 
 ### Next 2 Weeks
-4. Deploy Meta-API to Render
-5. Deploy Dashboard to Vercel
-6. Configure environment sync
+4. Deploy Dashboard to Vercel
+5. Configure CORS for all frontends
+6. Run Prisma migrations on production
 
 ### This Month
 7. PWA ↔ meta-api connection
-8. User authentication
+8. User authentication (JWT)
 9. GHL integration activation
 
 ---

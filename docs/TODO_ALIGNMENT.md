@@ -51,18 +51,19 @@ MetaBuild MVP backbone work:
 
 See [ADR-002: Infrastructure Stack](./adr/002-infrastructure-stack.md) for decision details.
 
+**Stack Decision**: Render Postgres + Render API + Vercel Dashboard
+
 | Priority | Item | Provider | Status |
 |----------|------|----------|--------|
-| **HIGH** | Create Supabase project | Supabase | ⬜ Pending |
-| **HIGH** | Configure connection pooling | Supabase | ⬜ Pending |
+| **HIGH** | Create Render Postgres instance | Render | ⬜ Pending |
+| **HIGH** | Copy DATABASE_URL (internal) | Render | ⬜ Pending |
 | **HIGH** | Update Prisma datasource | prisma/schema.prisma | ⬜ Pending |
-| **HIGH** | Run production migration | Supabase | ⬜ Pending |
+| **HIGH** | Run production migration | Render | ⬜ Pending |
 | **HIGH** | Deploy Meta-API to Render | Render | ⬜ Pending |
 | **HIGH** | Configure API environment vars | Render | ⬜ Pending |
 | **HIGH** | Deploy Dashboard to Vercel | Vercel | ⬜ Pending |
 | MEDIUM | Configure CORS for all frontends | meta-api | ⬜ Pending |
-| MEDIUM | Set up monitoring/alerting | All | ⬜ Pending |
-| MEDIUM | Add custom domains | All | ⬜ Pending |
+| MEDIUM | Set up monitoring | Render | ⬜ Pending |
 
 ### 2B: Cloud Sync & Multi-Device
 
@@ -124,18 +125,19 @@ Nice-to-have improvements for future iterations:
 
 | Layer | Provider | Rationale |
 |-------|----------|-----------|
-| Database | **Supabase Postgres** | Managed, optional auth/storage |
+| Database | **Render Postgres** | Same network as API, lowest latency (~1-5ms) |
 | API | **Render** | Long-running Node, no serverless issues |
 | Dashboard | **Vercel** | Great React DX, preview deploys |
 | Webapp | **Cloudflare Pages** | Keep existing, independent |
 | ORM | **Prisma** | Already integrated, type-safe |
 
-**Estimated Cost**: $7-60/month
+**Estimated Cost**: $14/month (after 90-day free trial)
 
-**Alternatives Rejected**:
-- All-in Supabase (too opinionated)
-- Full Next.js on Vercel (serverless + Prisma issues)
-- Neon Postgres (another vendor, no extras)
+**Why Render Postgres over Supabase/Neon**:
+- Same network = lowest latency (~1-5ms vs ~20-50ms)
+- Single vendor = simpler ops
+- No cold starts
+- Perfect Prisma fit (no unused features)
 
 ---
 
@@ -143,9 +145,9 @@ Nice-to-have improvements for future iterations:
 
 ### Immediate (This Week)
 
-1. **Review ADR-002** — Confirm infrastructure stack decisions
-2. **Create Supabase project** — Set up production database (US East)
-3. **Clean up resolved TODOs** — Remove completed TODO comments from code
+1. **Create Render Postgres instance** — Oregon region
+2. **Copy internal DATABASE_URL** — For lowest latency
+3. **Update Prisma datasource** — Point to Render Postgres
 
 ### Short-term (Next 2 Weeks)
 

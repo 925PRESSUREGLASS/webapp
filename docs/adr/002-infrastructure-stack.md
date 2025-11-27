@@ -1,6 +1,6 @@
 # ADR-002: Infrastructure Stack Selection
 
-**Status**: Proposed  
+**Status**: Accepted  
 **Date**: November 27, 2025  
 **Decision Makers**: Gerard Varone  
 **Context**: MetaBuild platform infrastructure selection
@@ -29,11 +29,21 @@ We evaluated multiple options considering:
 
 | Layer | Provider | Rationale |
 |-------|----------|-----------|
-| **Database** | Supabase Postgres | Managed Postgres with optional auth/storage for future |
+| **Database** | Render Postgres | Same network as API = lowest latency (~1-5ms), single vendor |
 | **API** | Render | Long-running Node process, avoids serverless Prisma issues |
-| **Dashboard** | Vercel or Render Static | React SPA calling Render API |
+| **Dashboard** | Vercel | React SPA calling Render API, great DX |
 | **Webapp (PWA)** | Cloudflare Pages | Keep existing static hosting, independent |
 | **ORM** | Prisma | Already integrated, type-safe, great migrations |
+
+### Why Render Postgres over Supabase/Neon?
+
+| Factor | Render Postgres | Supabase | Neon |
+|--------|-----------------|----------|------|
+| **Latency** | ~1-5ms (same network) | ~20-50ms | ~20-30ms |
+| **Cold Starts** | None | None | ~500ms |
+| **Vendor Count** | 1 (Render) | 2 | 2 |
+| **Prisma Fit** | Perfect | Overkill (has own APIs) | Perfect |
+| **Complexity** | Simplest | Medium | Medium |
 
 ### Architecture Diagram
 
@@ -61,13 +71,13 @@ We evaluated multiple options considering:
                  │     Render       │
                  └────────┬─────────┘
                           │
-                          │ Prisma
-                          │
+                          │ Prisma (~1-5ms)
+                          │ (same network)
                           ▼
                  ┌──────────────────┐
                  │    PostgreSQL    │
                  │                  │
-                 │    Supabase      │
+                 │  Render Postgres │
                  └──────────────────┘
 ```
 
@@ -75,22 +85,23 @@ We evaluated multiple options considering:
 
 ## Alternatives Considered
 
-### Option A: All-in Supabase
-- **Pros**: Auth, storage, edge functions included
-- **Cons**: Fighting "Supabase way" for custom logic, less control
-- **Verdict**: Too opinionated for MetaBuild's orchestration needs
+### Option A: Supabase Postgres
+- **Pros**: Auth, storage, edge functions included, great dashboard
+- **Cons**: 
+  - Extra network hop (~20-50ms latency)
+  - Paying for features we don't use (using Prisma, not Supabase APIs)
+  - Two vendors to manage
+- **Verdict**: Overkill since we're using Prisma as the ORM
 
-### Option B: Render API + Render Postgres
-- **Pros**: Single vendor, low latency, simpler
-- **Cons**: No Supabase goodies (auth UI, storage, RLS dashboard)
-- **Verdict**: Good fallback if Supabase costs become an issue
+### Option B: Neon Postgres
+- **Pros**: DB branching for PRs, serverless-friendly, generous free tier
+- **Cons**:
+  - ~500ms cold starts on idle
+  - Extra network hop (~20-30ms)
+  - Another vendor to manage
+- **Verdict**: Consider if we need DB branching later
 
-### Option C: Neon Postgres
-- **Pros**: Branching for dev/preview, serverless-friendly
-- **Cons**: Another vendor to manage, no auth/storage
-- **Verdict**: Consider for future if DB branching becomes valuable
-
-### Option D: Full Next.js on Vercel
+### Option C: Full Next.js on Vercel
 - **Pros**: Excellent DX, single deployment
 - **Cons**: Serverless + Prisma connection issues, less separation
 - **Verdict**: Doesn't fit "central API for multiple tools" model
@@ -100,50 +111,49 @@ We evaluated multiple options considering:
 ## Consequences
 
 ### Positive
-- Long-running API avoids serverless cold starts and connection pooling issues
-- Clear separation: API is the single source of truth
-- Webapp remains independent and unchanged
-- Prisma works optimally with persistent connections
-- Can leverage Supabase auth/storage later if needed
+- **Lowest latency**: API and DB on same network (~1-5ms)
+- **No cold starts**: Render Postgres is always running
+- **Single vendor**: One dashboard, one billing, simpler ops
+- **Prisma works perfectly**: Long-running connections, no pooling tricks
+- **Simple setup**: Just DATABASE_URL, done
 
 ### Negative
-- Multiple dashboards to manage (Supabase, Render, Vercel)
-- Environment config must stay in sync across services
-- Network latency between Render (API) and Supabase (DB) if different regions
+- No built-in auth (will implement with JWT + Prisma)
+- No built-in file storage (can add Cloudflare R2 later if needed)
+- 90-day free trial, then $7/mo
 
 ### Mitigations
-- Use same region for all services (e.g., US East)
-- Centralize env config in `.env` files with CI/CD sync
-- Document all service URLs in `RUNBOOK.md`
+- Auth: Implement JWT-based auth in meta-api (standard pattern)
+- Storage: Use Cloudflare R2 if file uploads needed ($0.015/GB)
+- Cost: $7/mo is minimal for production Postgres
 
 ---
 
 ## Implementation Checklist
 
 ### Phase 1: Database Setup
-- [ ] Create Supabase project in US East region
-- [ ] Configure connection pooling (PgBouncer)
+- [ ] Create Render Postgres instance (Oregon region)
+- [ ] Copy DATABASE_URL (internal URL for lowest latency)
 - [ ] Update `prisma/schema.prisma` with production datasource
 - [ ] Run initial migration: `npx prisma migrate deploy`
-- [ ] Set up database backups (Supabase handles automatically)
+- [ ] Verify connection from local: `npx prisma db pull`
 
 ### Phase 2: API Deployment
 - [ ] Create Render Web Service for `apps/meta-api`
-- [ ] Configure environment variables (DATABASE_URL, SMTP, etc.)
+- [ ] Add DATABASE_URL environment variable (use internal URL)
+- [ ] Add SMTP and other env vars
 - [ ] Set up health check endpoint (`/health`)
 - [ ] Configure auto-deploy from `main` branch
-- [ ] Add custom domain (api.metabuild.io or similar)
 
 ### Phase 3: Dashboard Deployment
 - [ ] Deploy `apps/meta-dashboard` to Vercel
 - [ ] Configure `VITE_API_URL` to point to Render API
 - [ ] Set up preview deployments for PRs
-- [ ] Add custom domain (dashboard.metabuild.io)
 
 ### Phase 4: Integration
 - [ ] Update webapp to optionally call Meta-API
 - [ ] Configure CORS on Meta-API for all frontends
-- [ ] Set up monitoring/alerting (Render metrics, Supabase dashboard)
+- [ ] Set up monitoring (Render metrics dashboard)
 - [ ] Document all URLs in `RUNBOOK.md`
 
 ---
@@ -152,8 +162,8 @@ We evaluated multiple options considering:
 
 ### Meta-API (Render)
 ```bash
-# Database
-DATABASE_URL="postgresql://user:pass@db.supabase.co:5432/postgres"
+# Database (use Render internal URL for lowest latency)
+DATABASE_URL="postgres://user:pass@dpg-xxx.oregon-postgres.render.com/metabuild"
 
 # Email (from email integration)
 SMTP_HOST="smtp.gmail.com"
@@ -166,16 +176,14 @@ SMTP_FROM="MetaBuild <noreply@metabuild.io>"
 JWT_SECRET="your-jwt-secret"
 API_KEY="your-api-key"
 
-# Optional: Supabase (if using their auth)
-SUPABASE_URL="https://xxx.supabase.co"
-SUPABASE_ANON_KEY="your-anon-key"
+# App
+NODE_ENV="production"
+PORT="10000"
 ```
 
 ### Meta-Dashboard (Vercel)
 ```bash
-VITE_API_URL="https://api.metabuild.io"
-VITE_SUPABASE_URL="https://xxx.supabase.co"  # Optional
-VITE_SUPABASE_ANON_KEY="your-anon-key"       # Optional
+VITE_API_URL="https://meta-api.onrender.com"
 ```
 
 ---
@@ -184,17 +192,41 @@ VITE_SUPABASE_ANON_KEY="your-anon-key"       # Optional
 
 | Service | Tier | Estimated Cost |
 |---------|------|----------------|
-| Supabase | Free/Pro | $0-25 |
-| Render | Starter | $7-15 |
-| Vercel | Hobby/Pro | $0-20 |
-| Cloudflare | Free | $0 |
-| **Total** | | **$7-60/month** |
+| Render Postgres | Starter | $7 |
+| Render Web Service | Starter | $7 |
+| Vercel | Hobby | $0 |
+| Cloudflare Pages | Free | $0 |
+| **Total** | | **$14/month** |
+
+After 90-day free trial on Render.
+
+---
+
+## Render Setup Commands
+
+```bash
+# After creating Render Postgres, get the internal URL
+# It looks like: postgres://user:pass@dpg-xxx.oregon-postgres.render.com/dbname
+
+# Update .env with the DATABASE_URL
+echo 'DATABASE_URL="your-render-postgres-url"' >> apps/meta-api/.env
+
+# Test connection
+cd apps/meta-api
+npx prisma db pull
+
+# Run migrations
+npx prisma migrate deploy
+
+# Generate client
+npx prisma generate
+```
 
 ---
 
 ## References
 
-- [Prisma Serverless Guide](https://www.prisma.io/docs/guides/deployment/serverless)
-- [Supabase Connection Pooling](https://supabase.com/docs/guides/database/connecting-to-postgres#connection-pooler)
-- [Render Deploy Guide](https://render.com/docs/deploy-node-express-app)
+- [Render Postgres Docs](https://render.com/docs/databases)
+- [Prisma with Render](https://render.com/docs/deploy-prisma)
+- [Render Environment Groups](https://render.com/docs/environment-groups)
 - [ADR-001: ES5 Compatibility](./001-es5-compatibility.md)
