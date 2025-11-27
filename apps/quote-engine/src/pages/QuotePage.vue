@@ -4,7 +4,12 @@
       <div class="col-12 col-md-10 col-lg-8">
         <div class="row items-center q-mb-md">
           <div class="col">
-            <h4 class="q-my-none">Create Quote</h4>
+            <h4 class="q-my-none">
+              {{ quoteStore.currentQuoteId ? 'Edit Quote' : 'Create Quote' }}
+            </h4>
+            <div v-if="quoteStore.quoteTitle" class="text-grey">
+              {{ quoteStore.quoteTitle }}
+            </div>
           </div>
           <div class="col-auto">
             <PriceDisplay :amount="quoteStore.total" size="large" />
@@ -20,6 +25,26 @@
             <div class="row q-col-gutter-md">
               <div class="col-12 col-sm-6">
                 <q-input
+                  v-model="quoteStore.quoteTitle"
+                  label="Quote Title"
+                  outlined
+                  dense
+                  placeholder="e.g., Window Cleaning - March 2025"
+                />
+              </div>
+              <div class="col-12 col-sm-6">
+                <q-select
+                  v-model="quoteStore.jobType"
+                  :options="jobTypeOptions"
+                  label="Job Type"
+                  outlined
+                  dense
+                  emit-value
+                  map-options
+                />
+              </div>
+              <div class="col-12 col-sm-6">
+                <q-input
                   v-model="quoteStore.clientName"
                   label="Client Name"
                   outlined
@@ -30,6 +55,24 @@
                 <q-input
                   v-model="quoteStore.clientLocation"
                   label="Location"
+                  outlined
+                  dense
+                />
+              </div>
+              <div class="col-12 col-sm-6">
+                <q-input
+                  v-model="quoteStore.clientEmail"
+                  label="Email"
+                  type="email"
+                  outlined
+                  dense
+                />
+              </div>
+              <div class="col-12 col-sm-6">
+                <q-input
+                  v-model="quoteStore.clientPhone"
+                  label="Phone"
+                  type="tel"
                   outlined
                   dense
                 />
@@ -62,37 +105,107 @@
             </div>
           </q-card-section>
           <q-card-actions align="right">
-            <q-btn flat color="primary" label="Save Quote" @click="saveQuote" />
+            <q-btn flat color="primary" label="Save Quote" @click="handleSave" />
             <q-btn color="primary" label="Create Invoice" @click="createInvoice" />
           </q-card-actions>
         </q-card>
       </div>
     </div>
+
+    <!-- Loading overlay -->
+    <q-inner-loading :showing="isLoading">
+      <q-spinner size="50px" color="primary" />
+    </q-inner-loading>
   </q-page>
 </template>
 
 <script setup lang="ts">
+import { ref, onMounted, watch } from 'vue';
+import { useRoute, useRouter } from 'vue-router';
 import { useQuasar } from 'quasar';
 import { useQuoteStore } from '../stores/quote';
 import QuoteBuilder from '../components/QuoteBuilder/QuoteBuilder.vue';
 import PriceDisplay from '../components/QuoteBuilder/PriceDisplay.vue';
 
 const $q = useQuasar();
+const route = useRoute();
+const router = useRouter();
 const quoteStore = useQuoteStore();
 
-function saveQuote() {
-  // TODO: Implement save quote logic
-  $q.notify({
-    type: 'positive',
-    message: 'Quote saved successfully!',
-  });
+const isLoading = ref(false);
+
+const jobTypeOptions = [
+  { label: 'Residential', value: 'residential' },
+  { label: 'Commercial', value: 'commercial' },
+];
+
+// Load quote from URL parameter if present
+onMounted(async () => {
+  const quoteId = route.query.id as string;
+  if (quoteId && quoteId !== quoteStore.currentQuoteId) {
+    isLoading.value = true;
+    try {
+      const success = await quoteStore.loadQuote(quoteId);
+      if (!success) {
+        $q.notify({
+          type: 'warning',
+          message: 'Quote not found',
+          position: 'top',
+        });
+        router.replace({ path: '/quote' });
+      }
+    } finally {
+      isLoading.value = false;
+    }
+  }
+});
+
+// Watch for route changes
+watch(() => route.query.id, async (newId) => {
+  if (newId && newId !== quoteStore.currentQuoteId) {
+    isLoading.value = true;
+    try {
+      await quoteStore.loadQuote(newId as string);
+    } finally {
+      isLoading.value = false;
+    }
+  } else if (!newId && quoteStore.currentQuoteId) {
+    // URL cleared, start fresh
+    quoteStore.clearQuote();
+  }
+});
+
+async function handleSave() {
+  const { success } = await quoteStore.saveQuote();
+  if (success) {
+    $q.notify({
+      type: 'positive',
+      message: 'Quote saved successfully!',
+      position: 'top',
+    });
+  } else {
+    $q.notify({
+      type: 'negative',
+      message: 'Failed to save quote',
+      position: 'top',
+    });
+  }
 }
 
 function createInvoice() {
-  // TODO: Implement create invoice logic
+  if (!quoteStore.validation.isValid) {
+    $q.notify({
+      type: 'warning',
+      message: quoteStore.validation.errors.join(', '),
+      position: 'top',
+    });
+    return;
+  }
+  
   $q.notify({
     type: 'info',
     message: 'Invoice creation coming soon!',
+    position: 'top',
   });
 }
 </script>

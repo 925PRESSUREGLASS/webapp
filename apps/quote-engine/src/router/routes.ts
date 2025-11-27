@@ -19,6 +19,11 @@ const routes: RouteRecordRaw[] = [
         component: () => import('../pages/QuotePage.vue'),
       },
       {
+        path: 'quotes',
+        name: 'savedQuotes',
+        component: () => import('../pages/SavedQuotesPage.vue'),
+      },
+      {
         path: 'invoices',
         name: 'invoices',
         component: () => import('../pages/InvoicePage.vue'),

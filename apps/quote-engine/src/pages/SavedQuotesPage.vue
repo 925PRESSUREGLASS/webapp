@@ -1,0 +1,397 @@
+<template>
+  <q-page class="q-pa-md">
+    <div class="row justify-center">
+      <div class="col-12 col-lg-10">
+        <!-- Header -->
+        <div class="row items-center q-mb-lg">
+          <div class="col">
+            <h4 class="q-my-none">Saved Quotes</h4>
+            <div class="text-grey">
+              {{ savedQuotesStore.stats.total }} quotes • 
+              {{ formatCurrency(savedQuotesStore.stats.totalValue) }} total value
+            </div>
+          </div>
+          <div class="col-auto">
+            <q-btn
+              color="primary"
+              icon="add"
+              label="New Quote"
+              to="/quote"
+            />
+          </div>
+        </div>
+
+        <!-- Stats Cards -->
+        <div class="row q-col-gutter-md q-mb-lg">
+          <div class="col-6 col-sm-3">
+            <q-card class="bg-blue-1">
+              <q-card-section class="text-center">
+                <div class="text-h4 text-blue">{{ savedQuotesStore.stats.draft }}</div>
+                <div class="text-grey">Drafts</div>
+              </q-card-section>
+            </q-card>
+          </div>
+          <div class="col-6 col-sm-3">
+            <q-card class="bg-orange-1">
+              <q-card-section class="text-center">
+                <div class="text-h4 text-orange">{{ savedQuotesStore.stats.sent }}</div>
+                <div class="text-grey">Sent</div>
+              </q-card-section>
+            </q-card>
+          </div>
+          <div class="col-6 col-sm-3">
+            <q-card class="bg-green-1">
+              <q-card-section class="text-center">
+                <div class="text-h4 text-green">{{ savedQuotesStore.stats.accepted }}</div>
+                <div class="text-grey">Accepted</div>
+              </q-card-section>
+            </q-card>
+          </div>
+          <div class="col-6 col-sm-3">
+            <q-card class="bg-red-1">
+              <q-card-section class="text-center">
+                <div class="text-h4 text-red">{{ savedQuotesStore.stats.declined }}</div>
+                <div class="text-grey">Declined</div>
+              </q-card-section>
+            </q-card>
+          </div>
+        </div>
+
+        <!-- Filters -->
+        <q-card class="q-mb-md">
+          <q-card-section>
+            <div class="row q-col-gutter-md items-center">
+              <div class="col-12 col-sm-6 col-md-4">
+                <q-input
+                  v-model="searchQuery"
+                  outlined
+                  dense
+                  placeholder="Search quotes..."
+                  clearable
+                >
+                  <template #prepend>
+                    <q-icon name="search" />
+                  </template>
+                </q-input>
+              </div>
+              <div class="col-12 col-sm-6 col-md-3">
+                <q-select
+                  v-model="statusFilter"
+                  :options="statusOptions"
+                  outlined
+                  dense
+                  emit-value
+                  map-options
+                  label="Status"
+                />
+              </div>
+              <div class="col-auto">
+                <q-btn-toggle
+                  v-model="sortBy"
+                  toggle-color="primary"
+                  :options="sortOptions"
+                  size="sm"
+                  rounded
+                  unelevated
+                />
+              </div>
+              <div class="col-auto">
+                <q-btn
+                  flat
+                  round
+                  dense
+                  :icon="sortDirection === 'desc' ? 'arrow_downward' : 'arrow_upward'"
+                  @click="toggleSortDirection"
+                />
+              </div>
+            </div>
+          </q-card-section>
+        </q-card>
+
+        <!-- Loading State -->
+        <div v-if="savedQuotesStore.isLoading" class="text-center q-pa-xl">
+          <q-spinner size="lg" color="primary" />
+          <div class="q-mt-md text-grey">Loading quotes...</div>
+        </div>
+
+        <!-- Empty State -->
+        <q-card v-else-if="savedQuotesStore.filteredQuotes.length === 0" class="q-pa-xl text-center">
+          <q-icon name="description" size="64px" color="grey" />
+          <div class="text-h6 q-mt-md">No quotes found</div>
+          <div class="text-grey q-mb-md">
+            {{ searchQuery || statusFilter !== 'all' 
+              ? 'Try adjusting your filters' 
+              : 'Create your first quote to get started' }}
+          </div>
+          <q-btn
+            v-if="!searchQuery && statusFilter === 'all'"
+            color="primary"
+            icon="add"
+            label="Create Quote"
+            to="/quote"
+          />
+        </q-card>
+
+        <!-- Quotes List -->
+        <div v-else class="q-gutter-md">
+          <q-card
+            v-for="quote in savedQuotesStore.filteredQuotes"
+            :key="quote.id"
+            class="quote-card cursor-pointer"
+            @click="openQuote(quote.id)"
+          >
+            <q-card-section>
+              <div class="row items-center q-col-gutter-md">
+                <!-- Status Indicator -->
+                <div class="col-auto">
+                  <q-badge
+                    :color="getStatusColor(quote.status)"
+                    :label="quote.status"
+                    class="text-capitalize"
+                  />
+                </div>
+
+                <!-- Quote Info -->
+                <div class="col">
+                  <div class="text-subtitle1 text-weight-medium">
+                    {{ quote.title || 'Untitled Quote' }}
+                  </div>
+                  <div class="text-grey">
+                    <q-icon name="person" size="xs" class="q-mr-xs" />
+                    {{ quote.clientName || 'No client' }}
+                    <span v-if="quote.clientLocation" class="q-ml-sm">
+                      <q-icon name="location_on" size="xs" class="q-mr-xs" />
+                      {{ quote.clientLocation }}
+                    </span>
+                  </div>
+                </div>
+
+                <!-- Line Items Summary -->
+                <div class="col-auto text-right text-grey">
+                  <div v-if="quote.windowLines.length">
+                    <q-icon name="window" size="xs" />
+                    {{ quote.windowLines.length }} window{{ quote.windowLines.length !== 1 ? 's' : '' }}
+                  </div>
+                  <div v-if="quote.pressureLines.length">
+                    <q-icon name="waves" size="xs" />
+                    {{ quote.pressureLines.length }} surface{{ quote.pressureLines.length !== 1 ? 's' : '' }}
+                  </div>
+                </div>
+
+                <!-- Total -->
+                <div class="col-auto text-right">
+                  <div class="text-h6 text-primary">
+                    {{ formatCurrency(quote.total) }}
+                  </div>
+                  <div class="text-caption text-grey">
+                    {{ formatDate(quote.updatedAt) }}
+                  </div>
+                </div>
+
+                <!-- Actions -->
+                <div class="col-auto">
+                  <q-btn
+                    flat
+                    round
+                    dense
+                    icon="more_vert"
+                    @click.stop
+                  >
+                    <q-menu>
+                      <q-list style="min-width: 150px">
+                        <q-item clickable v-close-popup @click="openQuote(quote.id)">
+                          <q-item-section avatar>
+                            <q-icon name="edit" />
+                          </q-item-section>
+                          <q-item-section>Edit</q-item-section>
+                        </q-item>
+                        <q-item clickable v-close-popup @click="duplicateQuote(quote.id)">
+                          <q-item-section avatar>
+                            <q-icon name="content_copy" />
+                          </q-item-section>
+                          <q-item-section>Duplicate</q-item-section>
+                        </q-item>
+                        <q-separator />
+                        <q-item clickable v-close-popup>
+                          <q-item-section avatar>
+                            <q-icon name="send" />
+                          </q-item-section>
+                          <q-item-section>Send</q-item-section>
+                        </q-item>
+                        <q-item clickable v-close-popup @click="convertToInvoice(quote.id)">
+                          <q-item-section avatar>
+                            <q-icon name="receipt" />
+                          </q-item-section>
+                          <q-item-section>Create Invoice</q-item-section>
+                        </q-item>
+                        <q-separator />
+                        <q-item clickable v-close-popup @click="confirmDelete(quote)">
+                          <q-item-section avatar>
+                            <q-icon name="delete" color="negative" />
+                          </q-item-section>
+                          <q-item-section class="text-negative">Delete</q-item-section>
+                        </q-item>
+                      </q-list>
+                    </q-menu>
+                  </q-btn>
+                </div>
+              </div>
+            </q-card-section>
+          </q-card>
+        </div>
+      </div>
+    </div>
+  </q-page>
+</template>
+
+<script setup lang="ts">
+import { ref, computed, onMounted, watch } from 'vue';
+import { useRouter } from 'vue-router';
+import { useQuasar } from 'quasar';
+import { useSavedQuotesStore } from '../stores/savedQuotes';
+import { useQuoteStore } from '../stores/quote';
+import type { SavedQuote } from '../composables/useStorage';
+
+const $q = useQuasar();
+const router = useRouter();
+const savedQuotesStore = useSavedQuotesStore();
+const quoteStore = useQuoteStore();
+
+// Local state synced with store
+const searchQuery = ref('');
+const statusFilter = ref<SavedQuote['status'] | 'all'>('all');
+const sortBy = ref<'date' | 'client' | 'total'>('date');
+const sortDirection = ref<'asc' | 'desc'>('desc');
+
+// Watch and sync with store
+watch(searchQuery, (val) => savedQuotesStore.setSearchQuery(val));
+watch(statusFilter, (val) => savedQuotesStore.setStatusFilter(val));
+watch(sortBy, (val) => savedQuotesStore.setSort(val, sortDirection.value));
+
+const statusOptions = [
+  { label: 'All Statuses', value: 'all' },
+  { label: 'Draft', value: 'draft' },
+  { label: 'Sent', value: 'sent' },
+  { label: 'Accepted', value: 'accepted' },
+  { label: 'Declined', value: 'declined' },
+];
+
+const sortOptions = [
+  { label: 'Date', value: 'date' },
+  { label: 'Client', value: 'client' },
+  { label: 'Total', value: 'total' },
+];
+
+onMounted(() => {
+  savedQuotesStore.loadQuotes();
+});
+
+function formatCurrency(value: number): string {
+  return new Intl.NumberFormat('en-AU', {
+    style: 'currency',
+    currency: 'AUD',
+  }).format(value / 100);
+}
+
+function formatDate(dateString: string): string {
+  const date = new Date(dateString);
+  const now = new Date();
+  const diffDays = Math.floor((now.getTime() - date.getTime()) / (1000 * 60 * 60 * 24));
+
+  if (diffDays === 0) return 'Today';
+  if (diffDays === 1) return 'Yesterday';
+  if (diffDays < 7) return `${diffDays} days ago`;
+
+  return date.toLocaleDateString('en-AU', {
+    day: 'numeric',
+    month: 'short',
+    year: date.getFullYear() !== now.getFullYear() ? 'numeric' : undefined,
+  });
+}
+
+function getStatusColor(status: SavedQuote['status']): string {
+  switch (status) {
+    case 'draft': return 'blue';
+    case 'sent': return 'orange';
+    case 'accepted': return 'green';
+    case 'declined': return 'red';
+    default: return 'grey';
+  }
+}
+
+function toggleSortDirection() {
+  sortDirection.value = sortDirection.value === 'asc' ? 'desc' : 'asc';
+  savedQuotesStore.setSort(sortBy.value, sortDirection.value);
+}
+
+function openQuote(id: string) {
+  // Load quote into store and navigate
+  const quote = savedQuotesStore.quotes.find(q => q.id === id);
+  if (quote) {
+    quoteStore.clientName = quote.clientName;
+    quoteStore.clientLocation = quote.clientLocation;
+    quoteStore.clientEmail = quote.clientEmail;
+    quoteStore.clientPhone = quote.clientPhone;
+    quoteStore.quoteTitle = quote.title;
+    quoteStore.jobType = quote.jobType;
+    quoteStore.windowLines = [...quote.windowLines];
+    quoteStore.pressureLines = [...quote.pressureLines];
+    // Store the ID for updating
+    router.push({ path: '/quote', query: { id } });
+  }
+}
+
+async function duplicateQuote(id: string) {
+  const duplicate = await savedQuotesStore.duplicateQuote(id);
+  if (duplicate) {
+    $q.notify({
+      type: 'positive',
+      message: 'Quote duplicated',
+      position: 'top',
+    });
+  }
+}
+
+function convertToInvoice(id: string) {
+  $q.notify({
+    type: 'info',
+    message: 'Invoice creation coming soon',
+    position: 'top',
+  });
+}
+
+function confirmDelete(quote: SavedQuote) {
+  $q.dialog({
+    title: 'Delete Quote',
+    message: `Are you sure you want to delete "${quote.title || 'Untitled Quote'}"? This cannot be undone.`,
+    cancel: true,
+    persistent: true,
+  }).onOk(async () => {
+    const success = await savedQuotesStore.deleteQuote(quote.id);
+    if (success) {
+      $q.notify({
+        type: 'positive',
+        message: 'Quote deleted',
+        position: 'top',
+      });
+    } else {
+      $q.notify({
+        type: 'negative',
+        message: 'Failed to delete quote',
+        position: 'top',
+      });
+    }
+  });
+}
+</script>
+
+<style scoped>
+.quote-card {
+  transition: transform 0.2s, box-shadow 0.2s;
+}
+
+.quote-card:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+}
+</style>

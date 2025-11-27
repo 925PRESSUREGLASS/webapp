@@ -1,5 +1,32 @@
 <template>
   <div class="quote-builder">
+    <!-- Undo/Redo Toolbar -->
+    <div class="row items-center q-mb-md q-gutter-sm">
+      <q-btn
+        flat
+        round
+        dense
+        icon="undo"
+        :disable="!quoteStore.canUndo"
+        @click="quoteStore.undo"
+      >
+        <q-tooltip>Undo (Ctrl+Z)</q-tooltip>
+      </q-btn>
+      <q-btn
+        flat
+        round
+        dense
+        icon="redo"
+        :disable="!quoteStore.canRedo"
+        @click="quoteStore.redo"
+      >
+        <q-tooltip>Redo (Ctrl+Shift+Z)</q-tooltip>
+      </q-btn>
+      <q-space />
+      <q-badge v-if="quoteStore.isDirty" color="orange" label="Unsaved changes" />
+      <q-badge v-else-if="quoteStore.currentQuoteId" color="green" label="Saved" />
+    </div>
+
     <div class="row q-col-gutter-md">
       <!-- Main Content -->
       <div class="col-12 col-md-8">
@@ -90,6 +117,21 @@
           :total="quoteStore.total"
           :minimum-job="quoteStore.pricingConfig.minimumJob"
         />
+
+        <!-- Validation Warnings -->
+        <q-card v-if="quoteStore.validation.warnings.length > 0" class="q-mt-md bg-orange-1">
+          <q-card-section>
+            <div class="text-subtitle2 text-orange-9 q-mb-sm">
+              <q-icon name="warning" class="q-mr-xs" />
+              Suggestions
+            </div>
+            <ul class="q-ma-none q-pl-md text-body2">
+              <li v-for="warning in quoteStore.validation.warnings" :key="warning">
+                {{ warning }}
+              </li>
+            </ul>
+          </q-card-section>
+        </q-card>
         
         <!-- Action Buttons -->
         <q-card class="q-mt-md">
@@ -99,7 +141,8 @@
               color="primary"
               class="full-width q-mb-sm"
               icon="save"
-              label="Save Quote"
+              :label="quoteStore.currentQuoteId ? 'Update Quote' : 'Save Quote'"
+              :loading="isSaving"
               @click="saveQuote"
             />
             <q-btn
@@ -108,6 +151,7 @@
               class="full-width q-mb-sm"
               icon="send"
               label="Send to Client"
+              :disable="!quoteStore.validation.isValid"
               @click="sendQuote"
             />
             <q-btn
@@ -126,7 +170,9 @@
 </template>
 
 <script setup lang="ts">
+import { ref, onMounted, onUnmounted } from 'vue';
 import { useQuasar } from 'quasar';
+import { useRouter } from 'vue-router';
 import { useQuoteStore } from '../../stores/quote';
 import WindowLineEditor from './WindowLineEditor.vue';
 import PressureLineEditor from './PressureLineEditor.vue';
@@ -134,7 +180,36 @@ import QuoteSummary from './QuoteSummary.vue';
 import type { WindowLine, PressureLine } from '@tictacstick/calculation-engine';
 
 const $q = useQuasar();
+const router = useRouter();
 const quoteStore = useQuoteStore();
+
+const isSaving = ref(false);
+
+// Keyboard shortcuts
+function handleKeydown(event: KeyboardEvent) {
+  if ((event.ctrlKey || event.metaKey) && event.key === 'z') {
+    if (event.shiftKey) {
+      event.preventDefault();
+      quoteStore.redo();
+    } else {
+      event.preventDefault();
+      quoteStore.undo();
+    }
+  }
+  
+  if ((event.ctrlKey || event.metaKey) && event.key === 's') {
+    event.preventDefault();
+    saveQuote();
+  }
+}
+
+onMounted(() => {
+  document.addEventListener('keydown', handleKeydown);
+});
+
+onUnmounted(() => {
+  document.removeEventListener('keydown', handleKeydown);
+});
 
 function addWindowLine() {
   quoteStore.addWindowLine({
@@ -165,17 +240,43 @@ function updatePressureLine(line: PressureLine) {
   quoteStore.updatePressureLine(line.id, line);
 }
 
-function saveQuote() {
-  // TODO: Implement save functionality
-  $q.notify({
-    type: 'positive',
-    message: 'Quote saved successfully',
-    position: 'top',
-  });
+async function saveQuote() {
+  isSaving.value = true;
+  try {
+    const { success, id } = await quoteStore.saveQuote();
+    if (success) {
+      $q.notify({
+        type: 'positive',
+        message: quoteStore.currentQuoteId ? 'Quote updated' : 'Quote saved',
+        position: 'top',
+      });
+      
+      // Update URL with quote ID
+      if (id) {
+        router.replace({ path: '/quote', query: { id } });
+      }
+    } else {
+      $q.notify({
+        type: 'negative',
+        message: 'Failed to save quote',
+        position: 'top',
+      });
+    }
+  } finally {
+    isSaving.value = false;
+  }
 }
 
 function sendQuote() {
-  // TODO: Implement send functionality
+  if (!quoteStore.validation.isValid) {
+    $q.notify({
+      type: 'warning',
+      message: quoteStore.validation.errors.join(', '),
+      position: 'top',
+    });
+    return;
+  }
+  
   $q.notify({
     type: 'info',
     message: 'Send to client coming soon',
@@ -191,6 +292,7 @@ function confirmClear() {
     persistent: true,
   }).onOk(() => {
     quoteStore.clearQuote();
+    router.replace({ path: '/quote' });
     $q.notify({
       type: 'info',
       message: 'Quote cleared',

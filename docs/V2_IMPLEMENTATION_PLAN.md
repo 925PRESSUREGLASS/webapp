@@ -66,21 +66,21 @@ This document outlines the 12-week implementation timeline for migrating from Ti
 - [x] Add real-time price preview
 - [x] Create `QuoteSummary` component with breakdown
 
-### Week 6: Quote Management
-- [ ] Create complete quote wizard flow
-- [ ] Implement quote saving/loading
-- [ ] Port quick-add presets functionality
-- [ ] Create quote summary component
-- [ ] Implement quote validation
-- [ ] Add undo/redo support
+### Week 6: Quote Management ✅
+- [x] Create complete quote wizard flow
+- [x] Implement quote saving/loading (IndexedDB)
+- [x] Port quick-add presets functionality (presets store)
+- [x] Create SavedQuotesPage with filtering/sorting
+- [x] Implement quote validation (errors + warnings)
+- [x] Add undo/redo support (with keyboard shortcuts)
 
 ## Phase 4: Client & Storage (Weeks 7-8)
 
-### Week 7: Storage Layer
-- [ ] Port `storage.js` to TypeScript composable
-- [ ] Implement IndexedDB adapter for large data
-- [ ] Create sync composable for cloud backup
-- [ ] Port storage quota manager
+### Week 7: Storage Layer ✅ (Completed early with Week 6)
+- [x] Port `storage.js` to TypeScript composable (`useStorage.ts`)
+- [x] Implement IndexedDB adapter for large data
+- [x] Create sync composable for cloud backup (export/import)
+- [x] Port storage quota manager (basic)
 - [ ] Implement data migration from v1.x format
 - [ ] Add encryption support for sensitive data
 
