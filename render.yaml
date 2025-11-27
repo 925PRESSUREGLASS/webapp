@@ -5,15 +5,15 @@ databases:
   - name: tictacstick-db
     databaseName: tictacstick
     region: oregon
-    plan: starter  # Free tier (90-day trial, then $7/mo)
-    ipAllowList: []  # Allow all IPs (default for starter)
+    plan: basic  # $7/mo (256MB RAM, 1GB storage)
+    ipAllowList: []  # Allow all IPs
 
 services:
   - type: web
     name: meta-api
     runtime: node
     region: oregon  # Same region as database for low latency
-    plan: starter  # Free tier (750 hours/mo)
+    plan: free  # Free tier (spins down after inactivity)
     rootDir: .
     buildCommand: npm ci && npx prisma generate --schema prisma/schema.prisma && npm run build:api
     startCommand: npx prisma migrate deploy --schema prisma/schema.prisma && npm run start:api
