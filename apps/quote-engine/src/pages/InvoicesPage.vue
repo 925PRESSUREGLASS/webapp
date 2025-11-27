@@ -711,6 +711,23 @@
         </q-card-section>
       </q-card>
     </q-dialog>
+
+    <!-- Edit Invoice Dialog -->
+    <q-dialog v-model="showEditDialog" maximized>
+      <q-card v-if="editInvoiceData">
+        <q-toolbar class="bg-primary text-white">
+          <q-btn flat round icon="close" @click="showEditDialog = false" />
+          <q-toolbar-title>Edit Invoice {{ editInvoiceData.invoiceNumber }}</q-toolbar-title>
+        </q-toolbar>
+        <q-card-section class="edit-container">
+          <InvoiceEditor
+            :invoice="editInvoiceData"
+            @save="handleEditSave"
+            @cancel="showEditDialog = false"
+          />
+        </q-card-section>
+      </q-card>
+    </q-dialog>
   </q-page>
 </template>
 
@@ -725,6 +742,7 @@ import {
   type Payment,
 } from '../stores/invoices';
 import InvoicePrint from '../components/Invoice/InvoicePrint.vue';
+import InvoiceEditor from '../components/Invoice/InvoiceEditor.vue';
 import type { InvoiceStatus, PaymentMethod } from '@tictacstick/calculation-engine';
 
 const $q = useQuasar();
@@ -752,7 +770,9 @@ const showSettingsDialog = ref(false);
 const showAgingReport = ref(false);
 const showImportDialog = ref(false);
 const showPrintDialog = ref(false);
+const showEditDialog = ref(false);
 const printInvoiceData = ref<Invoice | null>(null);
+const editInvoiceData = ref<Invoice | null>(null);
 
 // Selected items
 const selectedInvoice = ref<Invoice | null>(null);
@@ -889,8 +909,25 @@ function viewInvoice(invoice: Invoice) {
 }
 
 function editInvoice(invoice: Invoice) {
-  // TODO: Open invoice editor
-  $q.notify({ message: 'Edit coming soon', type: 'info' });
+  editInvoiceData.value = invoice;
+  showDetailDialog.value = false; // Close detail dialog if open
+  showEditDialog.value = true;
+}
+
+function handleEditSave(data: Partial<Invoice>) {
+  if (!editInvoiceData.value) return;
+  
+  invoiceStore.updateInvoice(editInvoiceData.value.id, data);
+  
+  $q.notify({ message: 'Invoice updated', type: 'positive' });
+  showEditDialog.value = false;
+  
+  // Refresh selected invoice if it was the one edited
+  if (selectedInvoice.value?.id === editInvoiceData.value.id) {
+    selectedInvoice.value = invoiceStore.getInvoice(editInvoiceData.value.id);
+  }
+  
+  editInvoiceData.value = null;
 }
 
 function showPaymentDialog(invoice: Invoice) {
@@ -1089,6 +1126,12 @@ watch(showSettingsDialog, (val) => {
 
 .print-container {
   max-width: 800px;
+  margin: 0 auto;
+  padding: 20px;
+}
+
+.edit-container {
+  max-width: 900px;
   margin: 0 auto;
   padding: 20px;
 }
