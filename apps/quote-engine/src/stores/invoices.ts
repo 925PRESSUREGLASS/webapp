@@ -761,5 +761,22 @@ export const useInvoiceStore = defineStore('invoices', () => {
     // Settings
     updateSettings,
     getSettings,
+
+    // Clear all
+    clearAll: () => {
+      invoices.value = [];
+      saveInvoices();
+    },
+
+    // Save invoice (for import)
+    saveInvoice: (invoice: Invoice) => {
+      const index = invoices.value.findIndex((i) => i.id === invoice.id);
+      if (index >= 0) {
+        invoices.value[index] = invoice;
+      } else {
+        invoices.value.push(invoice);
+      }
+      saveInvoices();
+    },
   };
 });

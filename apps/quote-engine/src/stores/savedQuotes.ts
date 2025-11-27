@@ -163,6 +163,13 @@ export const useSavedQuotesStore = defineStore('savedQuotes', () => {
     }
   }
 
+  async function clearAll(): Promise<void> {
+    for (const quote of quotes.value) {
+      await storage.deleteQuote(quote.id);
+    }
+    quotes.value = [];
+  }
+
   return {
     // State
     quotes,
@@ -185,5 +192,6 @@ export const useSavedQuotesStore = defineStore('savedQuotes', () => {
     setSearchQuery,
     setStatusFilter,
     setSort,
+    clearAll,
   };
 });

@@ -35,6 +35,9 @@
               <q-item clickable v-close-popup to="/analytics">
                 <q-item-section>Analytics</q-item-section>
               </q-item>
+              <q-item clickable v-close-popup to="/settings">
+                <q-item-section>Settings</q-item-section>
+              </q-item>
               <q-separator />
               <q-item clickable v-close-popup @click="toggleDarkMode">
                 <q-item-section>
@@ -98,7 +101,9 @@
           <q-item-section>Analytics</q-item-section>
         </q-item>
 
-        <q-item clickable v-ripple>
+        <q-separator />
+
+        <q-item clickable v-ripple to="/settings">
           <q-item-section avatar>
             <q-icon name="settings" />
           </q-item-section>

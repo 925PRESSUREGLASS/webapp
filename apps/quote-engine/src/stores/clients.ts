@@ -356,5 +356,20 @@ export const useClientsStore = defineStore('clients', () => {
     exportClients,
     importClients,
     importFromCSV,
+
+    // Clear all
+    clearAll: () => {
+      clients.value = [];
+      saveClients();
+    },
+
+    // Add single client
+    addClient: (client: Client) => {
+      const exists = clients.value.some((c) => c.id === client.id);
+      if (!exists) {
+        clients.value.push(client);
+        saveClients();
+      }
+    },
   };
 });
