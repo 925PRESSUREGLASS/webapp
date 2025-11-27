@@ -1,10 +1,20 @@
 # Metabuild: Next Steps
 
-**Last Updated:** 2025-11-26
+**Last Updated:** 2025-11-27
 
 ## Objective
 
 Establish a repeatable, observable build spine that keeps browser, native, and PDF surfaces aligned while lowering friction for releases and contributors.
+
+---
+
+## Current Status
+
+| Phase | Status | Completion |
+|-------|--------|------------|
+| Phase 0-1 (Foundation) | ✅ Complete | 100% |
+| Phase 2 (Infrastructure) | 🔄 In Progress | 5% |
+| Phase 3 (Scale) | ⬜ Not Started | 0% |
 
 ---
 
@@ -30,18 +40,56 @@ Establish a repeatable, observable build spine that keeps browser, native, and P
 
 ---
 
+## 🔄 Phase 2: Infrastructure & Expansion (IN PROGRESS)
+
+See [ADR-002: Infrastructure Stack](docs/adr/002-infrastructure-stack.md) for full details.
+
+### 2A: Production Infrastructure (HIGH PRIORITY)
+
+| Item | Provider | Status |
+|------|----------|--------|
+| Create Supabase project | Supabase | ⬜ Pending |
+| Deploy Meta-API | Render | ⬜ Pending |
+| Deploy Dashboard | Vercel | ⬜ Pending |
+| Configure CORS & environment | All | ⬜ Pending |
+
+**Recommended Stack:**
+- **Database**: Supabase Postgres (managed, optional auth/storage)
+- **API**: Render (long-running Node, no serverless issues)
+- **Dashboard**: Vercel (great React DX)
+- **Webapp**: Cloudflare Pages (keep existing)
+
+**Estimated Cost**: $7-60/month
+
+### 2B: Cloud Sync & CRM
+
+- [ ] PWA ↔ meta-api connection
+- [ ] User authentication system
+- [ ] GHL opportunity sync activation
+- [ ] GHL task sync activation
+- [ ] Multi-device data sync
+
+### 2C: Push Notifications
+
+- [ ] Token backend in meta-api
+- [ ] Notification service
+- [ ] Subscription management
+
+---
+
 ## 🎯 Success Metrics
 
 | Metric | Target | Status |
 |--------|--------|--------|
-| CI wall-clock time | Reduced 25% with caching | ⏳ Measuring |
+| CI wall-clock time | Reduced 25% with caching | ✅ Achieved |
 | Unpinned deps on release | Zero | ✅ Complete |
-| Cross-browser daily green | 7 consecutive days | ⏳ Monitoring |
+| Cross-browser daily green | 7 consecutive days | ✅ Stable |
 | PR artifacts & checklists | 100% compliance | ✅ Template ready |
+| Production infrastructure | Deployed | ⬜ Phase 2 |
 
 ---
 
-## 📋 Week 5+ Roadmap
+## ✅ Completed Work (Week 5+)
 
 ### Performance Optimization
 
@@ -54,17 +102,54 @@ Establish a repeatable, observable build spine that keeps browser, native, and P
 - [x] Add bundle size tracking - CI job added
 - [x] Add visual regression testing - `tests/visual-regression.spec.js`
 
-
 ### Documentation
 
 - [x] API documentation generation - `apps/meta-api/API.md`
 - [x] Architecture decision records (ADRs) - `docs/adr/`
 - [x] Runbook for common operations - `RUNBOOK.md`
+- [x] TODO alignment report - `docs/TODO_ALIGNMENT.md`
 
 ### Security
 
 - [x] Dependabot alerts enabled - `.github/dependabot.yml`
 - [x] SAST scanning in CI - `.github/workflows/security.yml`
 - [x] Security policy - `SECURITY.md` (already existed)
+
+### Features
+
+- [x] Email integration (backend + frontend) - `apps/meta-api/src/services/email.service.ts`
+- [x] Email integration tests - `tests/email-integration.spec.js`
+- [x] Business settings UI - `business-settings.js`
+- [x] Contract wizard edit mode - `contract-wizard.js`
+
+---
+
+## 📋 Next Actions
+
+### This Week
+1. Review [ADR-002](docs/adr/002-infrastructure-stack.md) — Confirm infrastructure decisions
+2. Create Supabase project — US East region
+3. Clean up resolved TODOs
+
+### Next 2 Weeks
+4. Deploy Meta-API to Render
+5. Deploy Dashboard to Vercel
+6. Configure environment sync
+
+### This Month
+7. PWA ↔ meta-api connection
+8. User authentication
+9. GHL integration activation
+
+---
+
+## Related Documents
+
+| Document | Purpose |
+|----------|---------|
+| [docs/adr/002-infrastructure-stack.md](docs/adr/002-infrastructure-stack.md) | Infrastructure decisions |
+| [docs/TODO_ALIGNMENT.md](docs/TODO_ALIGNMENT.md) | Task tracking |
+| [RUNBOOK.md](RUNBOOK.md) | Operations guide |
+| [CLAUDE.md](CLAUDE.md) | AI agent context |
 
 

@@ -15,6 +15,7 @@ Use `template.md` as a starting point for new ADRs.
 | ADR | Title | Status | Date |
 |-----|-------|--------|------|
 | [001](001-es5-compatibility.md) | ES5 Compatibility for iOS Safari | Accepted | 2025-11-26 |
+| [002](002-infrastructure-stack.md) | Infrastructure Stack Selection | Proposed | 2025-11-27 |
 
 ## Creating a New ADR
 
