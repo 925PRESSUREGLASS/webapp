@@ -1,0 +1,39 @@
+# Render Blueprint - Infrastructure as Code
+# Deploy with: Connect repo to Render and it auto-detects this file
+
+databases:
+  - name: tictacstick-db
+    databaseName: tictacstick
+    region: oregon
+    plan: starter  # Free tier (90-day trial, then $7/mo)
+    ipAllowList: []  # Allow all IPs (default for starter)
+
+services:
+  - type: web
+    name: meta-api
+    runtime: node
+    region: oregon  # Same region as database for low latency
+    plan: starter  # Free tier (750 hours/mo)
+    rootDir: .
+    buildCommand: npm ci && npx prisma generate --schema prisma/schema.prisma && npm run build:api
+    startCommand: npx prisma migrate deploy --schema prisma/schema.prisma && npm run start:api
+    healthCheckPath: /health
+    envVars:
+      - key: NODE_ENV
+        value: production
+      - key: DATABASE_URL
+        fromDatabase:
+          name: tictacstick-db
+          property: connectionString
+      - key: API_KEY
+        generateValue: true  # Auto-generate secure API key
+      - key: ALLOWED_ORIGIN
+        value: https://tictacstick.pages.dev,https://meta-dashboard.vercel.app
+      - key: RATE_LIMIT_PER_MIN
+        value: "60"
+      # SMTP - set these in Render dashboard for security
+      # - key: SMTP_HOST
+      # - key: SMTP_PORT
+      # - key: SMTP_USER
+      # - key: SMTP_PASS
+      # - key: SMTP_FROM

@@ -54,6 +54,8 @@
     "dev:dashboard": "npm run dev --prefix apps/meta-dashboard",
     "dev": "npm run dev:api & npm run dev:dashboard",
     "build:api": "npm run build --prefix apps/meta-api",
+    "start:api": "npm run start --prefix apps/meta-api",
+    "prisma:deploy": "npx prisma migrate deploy --schema prisma/schema.prisma",
     "build:dashboard": "npm run build --prefix apps/meta-dashboard",
     "build:all": "turbo run build",
     "ci": "npm run build:api && npm run build:dashboard",

@@ -2065,7 +2065,8 @@ function buildServer(): FastifyInstance {
 
 function start() {
   var app = buildServer();
-  app.listen({ port: 4000 }, function (err, address) {
+  var port = env.PORT ? parseInt(env.PORT, 10) : 4000;
+  app.listen({ port: port, host: '0.0.0.0' }, function (err, address) {
     if (err) {
       app.log.error(err);
       process.exit(1);

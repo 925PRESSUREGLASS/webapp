@@ -1,11 +1,17 @@
 import { z } from 'zod';
 
 var envSchema = z.object({
+  // Server configuration
+  PORT: z.string().optional(),
+  NODE_ENV: z.string().optional(),
+  // Database configuration
   DATABASE_URL: z.string().url().nonempty().optional(),
   PRISMA_ACCELERATE_URL: z.string().url().nonempty().optional(),
+  // API configuration
   API_KEY: z.string().optional(),
   ALLOWED_ORIGIN: z.string().optional(),
   RATE_LIMIT_PER_MIN: z.string().optional(),
+  // AI embeddings configuration
   AI_EMBEDDINGS_URL: z.string().url().optional(),
   AI_EMBEDDINGS_TIMEOUT_MS: z.string().optional(),
   // Email/SMTP configuration
