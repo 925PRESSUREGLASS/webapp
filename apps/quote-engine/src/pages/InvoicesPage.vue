@@ -990,10 +990,56 @@ function doPrint() {
 }
 
 function emailInvoice(invoice: Invoice) {
-  if (invoice.clientEmail) {
-    window.open(`mailto:${invoice.clientEmail}?subject=Invoice ${invoice.invoiceNumber}`);
-  } else {
+  if (!invoice.clientEmail) {
     $q.notify({ message: 'No email address on file', type: 'warning' });
+    return;
+  }
+
+  const settings = invoiceStore.getSettings();
+  const businessName = settings.businessName || 'Our Company';
+  
+  // Build email body
+  const lineItemsText = invoice.lineItems
+    .map(item => `• ${item.description}: $${item.amount.toFixed(2)}`)
+    .join('%0D%0A');
+  
+  const subject = encodeURIComponent(`Invoice ${invoice.invoiceNumber} from ${businessName}`);
+  const body = encodeURIComponent(
+`Dear ${invoice.clientName},
+
+Please find details of invoice ${invoice.invoiceNumber} below:
+
+Invoice Date: ${new Date(invoice.invoiceDate).toLocaleDateString('en-AU')}
+Due Date: ${new Date(invoice.dueDate).toLocaleDateString('en-AU')}
+
+Items:
+${invoice.lineItems.map(item => `• ${item.description}: $${item.amount.toFixed(2)}`).join('\n')}
+
+Subtotal: $${invoice.subtotal.toFixed(2)}
+GST (10%): $${invoice.gst.toFixed(2)}
+Total: $${invoice.total.toFixed(2)}
+${invoice.amountPaid > 0 ? `Amount Paid: $${invoice.amountPaid.toFixed(2)}\nBalance Due: $${invoice.balance.toFixed(2)}` : ''}
+
+${settings.bankName ? `Payment Details:
+Bank: ${settings.bankName}
+Account Name: ${settings.accountName}
+BSB: ${settings.bsb}
+Account: ${settings.accountNumber}` : ''}
+
+Thank you for your business.
+
+Best regards,
+${businessName}
+${settings.businessPhone ? `Phone: ${settings.businessPhone}` : ''}
+${settings.businessEmail ? `Email: ${settings.businessEmail}` : ''}
+`);
+
+  window.open(`mailto:${invoice.clientEmail}?subject=${subject}&body=${body}`);
+  
+  // Mark as sent if currently draft
+  if (invoice.status === 'draft') {
+    invoiceStore.updateStatus(invoice.id, 'sent');
+    $q.notify({ message: 'Invoice marked as sent', type: 'positive' });
   }
 }
 

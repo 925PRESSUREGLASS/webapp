@@ -103,14 +103,14 @@ This document outlines the 12-week implementation timeline for migrating from Ti
 - [x] Add status management with history tracking
 - [x] Create print/PDF invoice view component
 
-### Week 10: Invoice Features
-- [ ] Create invoice editor component (inline editing)
-- [ ] Implement aging report (DONE - included in Week 9)
-- [ ] Port invoice validation
-- [ ] Add invoice settings management (DONE - included in Week 9)
-- [ ] Implement invoice statistics (DONE - included in Week 9)
-- [ ] Add email integration
-- [ ] Recurring invoice support
+### Week 10: Invoice Features ✅
+- [x] Create invoice editor component (inline editing)
+- [x] Implement aging report (included in Week 9)
+- [x] Port invoice validation (InvoiceEditor with errors/warnings)
+- [x] Add invoice settings management (included in Week 9)
+- [x] Implement invoice statistics (included in Week 9)
+- [x] Add email integration (full body with payment details, auto-mark sent)
+- [ ] Recurring invoice support (deferred - optional feature)
 
 ## Phase 6: Advanced Features (Weeks 11-12)
 
