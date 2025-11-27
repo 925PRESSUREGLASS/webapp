@@ -29,31 +29,31 @@ This document outlines the 12-week implementation timeline for migrating from Ti
 - [x] Set up Pinia stores (quote, settings)
 - [x] Create basic layout and navigation
 
-### Week 2: Core Data Structures
-- [ ] Define TypeScript interfaces for all data types
-- [ ] Port pricing data structures from `data.js`
-- [ ] Port window types from `window-types-extended.js`
-- [ ] Port pressure surfaces from `pressure-surfaces-extended.js`
-- [ ] Port conditions and modifiers from `conditions-modifiers.js`
-- [ ] Create comprehensive test suite for data structures
+### Week 2: Core Data Structures ✅
+- [x] Define TypeScript interfaces for all data types
+- [x] Port pricing data structures from `data.js`
+- [x] Port window types from `window-types-extended.js`
+- [x] Port pressure surfaces from `pressure-surfaces-extended.js`
+- [x] Port conditions and modifiers from `conditions-modifiers.js`
+- [x] Create comprehensive test suite for data structures
 
 ## Phase 2: Calculation Engine (Weeks 3-4)
 
-### Week 3: Core Calculations
-- [ ] Port precision calculation helpers from `calc.js`
-- [ ] Implement window cost calculations with all modifiers
-- [ ] Implement pressure cost calculations with all modifiers
-- [ ] Port GST calculations with integer arithmetic
-- [ ] Port minimum job logic
-- [ ] Add unit tests with 100% coverage
+### Week 3: Core Calculations ✅
+- [x] Port precision calculation helpers from `calc.js`
+- [x] Implement window cost calculations with all modifiers
+- [x] Implement pressure cost calculations with all modifiers
+- [x] Port GST calculations with integer arithmetic
+- [x] Port minimum job logic
+- [x] Add unit tests with 100% coverage (109 tests passing)
 
-### Week 4: Advanced Calculations
-- [ ] Port travel calculation logic from `travel-calculator.js`
-- [ ] Port high reach calculations
-- [ ] Port setup buffer calculations
-- [ ] Implement time estimation
-- [ ] Port profitability analyzer logic
-- [ ] Comprehensive calculation testing with edge cases
+### Week 4: Advanced Calculations ✅
+- [x] Port travel calculation logic from `travel-calculator.js`
+- [x] Port high reach calculations
+- [x] Port setup buffer calculations
+- [x] Implement time estimation
+- [x] Port profitability analyzer logic (basic)
+- [x] Comprehensive calculation testing with edge cases
 
 ## Phase 3: Quote Builder UI (Weeks 5-6)
 
