@@ -43,8 +43,11 @@ const accessMultipliers: Record<string, number> = {
   highReach: 1.4,
 };
 
-const getConditionMultiplier = (id: string): number => conditionMultipliers[id] || 1.0;
-const getAccessMultiplier = (id: string): number => accessMultipliers[id] || 1.0;
+// These can be used for tests requiring custom multipliers
+const _getConditionMultiplier = (id: string): number => conditionMultipliers[id] || 1.0;
+const _getAccessMultiplier = (id: string): number => accessMultipliers[id] || 1.0;
+void _getConditionMultiplier;
+void _getAccessMultiplier;
 
 describe('Window Cost Calculation', () => {
   const baseConfig = {

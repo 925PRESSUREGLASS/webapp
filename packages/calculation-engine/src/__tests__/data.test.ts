@@ -263,7 +263,8 @@ describe('Data Integrity', () => {
   it('should not have overlapping IDs across data types', () => {
     const windowIds = new Set(ALL_WINDOW_TYPES.map(t => t.id));
     const surfaceIds = new Set(ALL_PRESSURE_SURFACES.map(s => s.id));
-    const modifierIds = new Set(ALL_MODIFIERS.map(m => m.id));
+    const _modifierIds = new Set(ALL_MODIFIERS.map(m => m.id));
+    void _modifierIds; // Available for future tests
     
     // Check no overlaps (IDs should be unique across types)
     // This is optional but helps prevent bugs

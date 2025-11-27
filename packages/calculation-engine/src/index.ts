@@ -359,6 +359,119 @@ export function formatCurrency(amount: number, locale: string = 'en-AU', currenc
 }
 
 // ============================================
+// Window Time Calculation
+// ============================================
+
+/**
+ * Calculate time (minutes) for a single window line
+ */
+export function calculateWindowTime(
+  line: WindowLine,
+  windowTypeMap: Map<string, WindowTypeConfig>,
+  insideMultiplier: number = 1,
+  outsideMultiplier: number = 1,
+  getConditionMultiplier?: (id: string) => number,
+  getAccessMultiplier?: (id: string) => number,
+  getModifierMultiplier?: (id: string) => number
+): number {
+  if (!line) return 0;
+
+  const typeData = windowTypeMap.get(line.windowTypeId);
+  if (!typeData) return 0;
+
+  const baseInside = typeData.baseMinutesInside || 0;
+  const baseOutside = typeData.baseMinutesOutside || 0;
+
+  // Determine base time per pane
+  let minutesPerPane = 0;
+  if (line.inside) {
+    minutesPerPane += baseInside * insideMultiplier;
+  }
+  if (line.outside) {
+    minutesPerPane += baseOutside * outsideMultiplier;
+  }
+
+  // Condition, access, and tint modifiers
+  const conditionId = line.conditionId || line.soilLevel;
+  const accessId = line.accessId || (line.highReach ? 'highReach' : undefined);
+
+  // Get multipliers
+  let conditionFactor = 1.0;
+  if (getConditionMultiplier && conditionId) {
+    conditionFactor = getConditionMultiplier(conditionId);
+  } else {
+    if (line.soilLevel === 'medium') conditionFactor = 1.2;
+    else if (line.soilLevel === 'heavy') conditionFactor = 1.4;
+  }
+
+  let accessFactor = 1.0;
+  if (getAccessMultiplier && accessId) {
+    accessFactor = getAccessMultiplier(accessId);
+  } else {
+    if (line.highReach) accessFactor = 1.4;
+  }
+
+  let tintFactor = 1.0;
+  if (line.tintLevel === 'light') tintFactor = 1.05;
+  else if (line.tintLevel === 'heavy') tintFactor = 1.1;
+
+  const combinedFactor = conditionFactor * accessFactor * tintFactor;
+
+  // Calculate modifier factor
+  let modFactor = 1.0;
+  if (line.modifiers?.length && getModifierMultiplier) {
+    for (const mod of line.modifiers) {
+      modFactor *= getModifierMultiplier(mod);
+    }
+  }
+
+  // Total minutes
+  const panes = line.panes || 0;
+  return minutesPerPane * panes * combinedFactor * modFactor;
+}
+
+// ============================================
+// Pressure Time Calculation
+// ============================================
+
+/**
+ * Calculate time (minutes) for a single pressure line
+ */
+export function calculatePressureTime(
+  line: PressureLine,
+  pressureSurfaceMap: Map<string, PressureSurfaceConfig>,
+  getModifierMultiplier?: (id: string) => number
+): number {
+  if (!line) return 0;
+
+  const surface = pressureSurfaceMap.get(line.surfaceId);
+  if (!surface) return 0;
+
+  const mps = surface.minutesPerSqm || 0;
+  const area = line.areaSqm || 0;
+
+  // Soil factor
+  let soilFactor = 1.0;
+  if (line.soilLevel === 'medium') soilFactor = 1.25;
+  else if (line.soilLevel === 'heavy') soilFactor = 1.5;
+
+  // Access factor
+  let accessFactor = 1.0;
+  if (line.access === 'ladder') accessFactor = 1.2;
+  else if (line.access === 'highReach') accessFactor = 1.35;
+
+  // Modifier factor
+  let modFactor = 1.0;
+  if (line.modifiers?.length && getModifierMultiplier) {
+    for (const mod of line.modifiers) {
+      modFactor *= getModifierMultiplier(mod);
+    }
+  }
+
+  return mps * area * soilFactor * accessFactor * modFactor;
+}
+
+// ============================================
 // Window Cost Calculation
 // ============================================
 

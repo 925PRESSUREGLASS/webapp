@@ -1,11 +1,24 @@
 import { defineStore } from 'pinia';
 import { ref, computed } from 'vue';
-import type { WindowLine, PressureLine, PricingConfig } from '@tictacstick/calculation-engine';
-import { calculateGST, roundMoney } from '@tictacstick/calculation-engine';
+import type { WindowLine, PressureLine, PricingConfig, WindowTypeConfig, PressureSurfaceConfig } from '@tictacstick/calculation-engine';
+import {
+  calculateGST,
+  roundMoney,
+  calculateWindowCost,
+  calculateWindowTime,
+  calculatePressureCost,
+  calculatePressureTime,
+  createWindowTypeMap,
+  createPressureSurfaceMap,
+} from '@tictacstick/calculation-engine';
+
+// Create lookup maps for window types and pressure surfaces
+const windowTypeMap: Map<string, WindowTypeConfig> = createWindowTypeMap();
+const pressureSurfaceMap: Map<string, PressureSurfaceConfig> = createPressureSurfaceMap();
 
 /**
  * Quote store
- * Manages the current quote state
+ * Manages the current quote state with real calculation engine
  */
 export const useQuoteStore = defineStore('quote', () => {
   // Client information
@@ -35,21 +48,77 @@ export const useQuoteStore = defineStore('quote', () => {
     setupBufferMinutes: 15,
   });
 
-  // Computed totals
-  const subtotal = computed(() => {
-    // TODO: Implement actual calculation using calculation-engine
-    let total = pricingConfig.value.baseFee;
-    
-    // Placeholder calculation
+  // Cost breakdown computed
+  const breakdown = computed(() => {
+    let windows = 0;
+    let pressure = 0;
+    let highReach = 0;
+
+    // Calculate window costs
     windowLines.value.forEach(line => {
-      total += (line.panes || 0) * 5;
+      const cost = calculateWindowCost(line, pricingConfig.value, windowTypeMap);
+      // Separate high reach costs
+      if (line.highReach) {
+        const baseCost = calculateWindowCost(
+          { ...line, highReach: false },
+          pricingConfig.value,
+          windowTypeMap
+        );
+        windows += baseCost;
+        highReach += cost - baseCost;
+      } else {
+        windows += cost;
+      }
     });
-    
+
+    // Calculate pressure costs
     pressureLines.value.forEach(line => {
-      total += (line.areaSqm || 0) * 3;
+      pressure += calculatePressureCost(line, pricingConfig.value, pressureSurfaceMap);
     });
+
+    return {
+      windows: roundMoney(windows),
+      pressure: roundMoney(pressure),
+      highReach: roundMoney(highReach),
+      setup: 0, // Could add setup fee logic
+      travel: 0, // Could add travel fee logic
+      baseFee: pricingConfig.value.baseFee,
+    };
+  });
+
+  // Time estimate computed
+  const estimatedMinutes = computed(() => {
+    let totalMinutes = pricingConfig.value.setupBufferMinutes;
+
+    // Window time
+    windowLines.value.forEach(line => {
+      totalMinutes += calculateWindowTime(
+        line,
+        windowTypeMap,
+        pricingConfig.value.insideMultiplier,
+        pricingConfig.value.outsideMultiplier
+      );
+    });
+
+    // Pressure time
+    pressureLines.value.forEach(line => {
+      totalMinutes += calculatePressureTime(line, pressureSurfaceMap);
+    });
+
+    return Math.round(totalMinutes);
+  });
+
+  // Computed totals using real calculation
+  const subtotal = computed(() => {
+    const lineTotal =
+      breakdown.value.windows +
+      breakdown.value.pressure +
+      breakdown.value.highReach +
+      breakdown.value.setup +
+      breakdown.value.travel +
+      breakdown.value.baseFee;
     
-    return roundMoney(Math.max(total, pricingConfig.value.minimumJob));
+    return roundMoney(Math.max(lineTotal, pricingConfig.value.minimumJob));
   });
 
   const gst = computed(() => {
@@ -114,6 +183,15 @@ export const useQuoteStore = defineStore('quote', () => {
     return `line_${Date.now()}_${Math.random().toString(36).substring(2, 9)}`;
   }
 
+  // Expose the maps for components
+  function getWindowTypeMap() {
+    return windowTypeMap;
+  }
+
+  function getPressureSurfaceMap() {
+    return pressureSurfaceMap;
+  }
+
   return {
     // State
     clientName,
@@ -128,6 +206,8 @@ export const useQuoteStore = defineStore('quote', () => {
     pricingConfig,
     
     // Computed
+    breakdown,
+    estimatedMinutes,
     subtotal,
     gst,
     total,
@@ -141,5 +221,7 @@ export const useQuoteStore = defineStore('quote', () => {
     updatePressureLine,
     clearQuote,
     generateLineId,
+    getWindowTypeMap,
+    getPressureSurfaceMap,
   };
 });
