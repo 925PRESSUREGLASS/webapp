@@ -3,8 +3,6 @@
 </template>
 
 <script setup lang="ts">
-/**
- * Root App component
- * Provides the main entry point for the Vue application
- */
+// Root App component - Vue 3 entry point
+// Routing and layout handling delegated to router-view
 </script>
