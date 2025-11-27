@@ -1,0 +1,42 @@
+{
+  "name": "@tictacstick/ui",
+  "version": "0.1.0",
+  "description": "Shared UI components for TicTacStick applications",
+  "main": "dist/index.js",
+  "module": "dist/index.mjs",
+  "types": "dist/index.d.ts",
+  "exports": {
+    ".": {
+      "import": "./dist/index.mjs",
+      "require": "./dist/index.js",
+      "types": "./dist/index.d.ts"
+    }
+  },
+  "files": [
+    "dist",
+    "src"
+  ],
+  "scripts": {
+    "build": "tsc",
+    "dev": "tsc --watch",
+    "test": "vitest",
+    "lint": "eslint src/"
+  },
+  "keywords": [
+    "ui",
+    "components",
+    "vue",
+    "quasar"
+  ],
+  "author": "925 Pressure Glass",
+  "license": "MIT",
+  "peerDependencies": {
+    "vue": "^3.4.0",
+    "quasar": "^2.14.0"
+  },
+  "devDependencies": {
+    "typescript": "^5.6.3",
+    "vitest": "^2.0.5",
+    "vue": "^3.5.13"
+  }
+}

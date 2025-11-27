@@ -21,7 +21,6 @@ npm-debug.log*
 # Environment
 .env
 .env.local
-.env.local
 .env.local.example
 
 # Backup files
@@ -33,3 +32,12 @@ npm-debug.log*
 # Build output
 apps/meta-api/dist/
 apps/meta-dashboard/dist/
+apps/quote-engine/dist/
+packages/calculation-engine/dist/
+packages/ui/dist/
+
+# Turbo
+.turbo/
+
+# Quasar
+.quasar/
