@@ -123,6 +123,7 @@ import { ref, onMounted, watch } from 'vue';
 import { useRoute, useRouter } from 'vue-router';
 import { useQuasar } from 'quasar';
 import { useQuoteStore } from '../stores/quote';
+import { useInvoiceStore } from '../stores/invoices';
 import QuoteBuilder from '../components/QuoteBuilder/QuoteBuilder.vue';
 import PriceDisplay from '../components/QuoteBuilder/PriceDisplay.vue';
 import ClientAutocomplete from '../components/QuoteBuilder/ClientAutocomplete.vue';
@@ -132,6 +133,7 @@ const $q = useQuasar();
 const route = useRoute();
 const router = useRouter();
 const quoteStore = useQuoteStore();
+const invoiceStore = useInvoiceStore();
 
 const isLoading = ref(false);
 
@@ -209,11 +211,34 @@ function createInvoice() {
     });
     return;
   }
-  
+
+  // Initialize invoice store if not already
+  invoiceStore.initialize();
+
+  // Convert quote to invoice
+  const invoice = invoiceStore.convertQuoteToInvoice({
+    id: quoteStore.currentQuoteId || `quote_${Date.now()}`,
+    quoteTitle: quoteStore.quoteTitle,
+    clientName: quoteStore.clientName,
+    clientLocation: quoteStore.clientLocation,
+    clientEmail: quoteStore.clientEmail,
+    clientPhone: quoteStore.clientPhone,
+    jobType: quoteStore.jobType,
+    windowLines: quoteStore.windowLines,
+    pressureLines: quoteStore.pressureLines,
+    subtotal: quoteStore.subtotal,
+    gst: quoteStore.gst,
+    total: quoteStore.total,
+    breakdown: quoteStore.breakdown,
+  });
+
   $q.notify({
-    type: 'info',
-    message: 'Invoice creation coming soon!',
+    type: 'positive',
+    message: `Invoice ${invoice.invoiceNumber} created!`,
     position: 'top',
+    actions: [
+      { label: 'View', color: 'white', handler: () => router.push('/invoices') }
+    ]
   });
 }
 </script>

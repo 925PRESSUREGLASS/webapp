@@ -94,21 +94,23 @@ This document outlines the 12-week implementation timeline for migrating from Ti
 
 ## Phase 5: Invoice System (Weeks 9-10)
 
-### Week 9: Invoice Core
-- [ ] Port `invoice.js` to TypeScript
-- [ ] Create invoice store
-- [ ] Implement quote-to-invoice conversion
-- [ ] Create invoice editor component
-- [ ] Implement payment recording
-- [ ] Add status management
+### Week 9: Invoice Core ✅
+- [x] Port `invoice.js` to TypeScript (`stores/invoices.ts`)
+- [x] Create invoice store with full CRUD operations
+- [x] Implement quote-to-invoice conversion
+- [x] Create InvoicesPage with list/grid views
+- [x] Implement payment recording with multiple methods
+- [x] Add status management with history tracking
+- [x] Create print/PDF invoice view component
 
 ### Week 10: Invoice Features
-- [ ] Create invoice list with filtering
-- [ ] Implement aging report
-- [ ] Create print/PDF invoice view
+- [ ] Create invoice editor component (inline editing)
+- [ ] Implement aging report (DONE - included in Week 9)
 - [ ] Port invoice validation
-- [ ] Add invoice settings management
-- [ ] Implement invoice statistics
+- [ ] Add invoice settings management (DONE - included in Week 9)
+- [ ] Implement invoice statistics (DONE - included in Week 9)
+- [ ] Add email integration
+- [ ] Recurring invoice support
 
 ## Phase 6: Advanced Features (Weeks 11-12)
 
@@ -205,10 +207,10 @@ This document outlines the 12-week implementation timeline for migrating from Ti
 
 ```
 Week 1-2:   Foundation & Project Setup ✅
-Week 3-4:   Calculation Engine
-Week 5-6:   Quote Builder UI
-Week 7-8:   Client & Storage
-Week 9-10:  Invoice System
+Week 3-4:   Calculation Engine ✅
+Week 5-6:   Quote Builder UI ✅
+Week 7-8:   Client & Storage ✅
+Week 9-10:  Invoice System (Week 9 ✅)
 Week 11-12: Advanced Features & Polish
 Week 13+:   Gradual rollout & monitoring
 ```
@@ -225,6 +227,7 @@ Week 13+:   Gradual rollout & monitoring
 
 | Date | Version | Changes |
 |------|---------|---------|
+| 2025-11-27 | 0.5.0 | Week 9 complete - Invoice Core system implemented |
 | 2025-11-27 | 0.1.0 | Initial plan created |
 
 ---
