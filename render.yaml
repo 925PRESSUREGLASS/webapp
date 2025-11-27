@@ -15,8 +15,8 @@ services:
     region: oregon  # Same region as database for low latency
     plan: free  # Free tier (spins down after inactivity)
     rootDir: .
-    buildCommand: npm ci && npx prisma generate --schema prisma/schema.prisma && npm run build:api
-    startCommand: npx prisma migrate deploy --schema prisma/schema.prisma && npm run start:api
+    buildCommand: npm ci && cd apps/meta-api && npm ci && npx prisma generate --schema ../../prisma/schema.prisma && npm run build
+    startCommand: cd apps/meta-api && npx prisma migrate deploy --schema ../../prisma/schema.prisma && npm run start
     healthCheckPath: /health
     envVars:
       - key: NODE_ENV
