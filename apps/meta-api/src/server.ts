@@ -261,6 +261,11 @@ function buildServer(): FastifyInstance {
         .send();
       return;
     }
+    // Skip auth for health check endpoint
+    if (request.url === '/health' || request.url === '/') {
+      done();
+      return;
+    }
     if (apiKey) {
       var headerKey = request.headers['x-api-key'] as string | undefined;
       if (!headerKey || headerKey !== apiKey) {
