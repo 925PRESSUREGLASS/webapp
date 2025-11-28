@@ -254,6 +254,12 @@
                           </q-item-section>
                           <q-item-section>Create Invoice</q-item-section>
                         </q-item>
+                        <q-item clickable v-close-popup @click="scheduleJob(quote)">
+                          <q-item-section avatar>
+                            <q-icon name="construction" color="primary" />
+                          </q-item-section>
+                          <q-item-section>Schedule Job</q-item-section>
+                        </q-item>
                         <q-separator />
                         <q-item clickable v-close-popup @click="confirmDelete(quote)">
                           <q-item-section avatar>
@@ -280,12 +286,14 @@ import { useRouter } from 'vue-router';
 import { useQuasar } from 'quasar';
 import { useSavedQuotesStore } from '../stores/savedQuotes';
 import { useQuoteStore } from '../stores/quote';
+import { useJobStore } from '../stores/jobs';
 import type { SavedQuote } from '../composables/useStorage';
 
 const $q = useQuasar();
 const router = useRouter();
 const savedQuotesStore = useSavedQuotesStore();
 const quoteStore = useQuoteStore();
+const jobStore = useJobStore();
 
 // Local state synced with store
 const searchQuery = ref('');
@@ -421,6 +429,59 @@ function convertToInvoice(id: string) {
     type: 'info',
     message: 'Invoice creation coming soon',
     position: 'top',
+  });
+}
+
+function scheduleJob(quote: SavedQuote) {
+  // Show scheduling dialog
+  $q.dialog({
+    title: 'Schedule Job',
+    message: 'When should this job be scheduled?',
+    prompt: {
+      model: new Date().toISOString().split('T')[0], // Today's date
+      type: 'date',
+    },
+    cancel: true,
+    ok: {
+      label: 'Schedule',
+      color: 'primary',
+    },
+  }).onOk((scheduledDate: string) => {
+    // Initialize job store and convert quote
+    jobStore.initialize();
+    
+    const job = jobStore.convertQuoteToJob({
+      quoteId: quote.id,
+      clientName: quote.clientName || 'Unknown Client',
+      clientAddress: quote.clientLocation || '',
+      clientPhone: quote.clientPhone,
+      clientEmail: quote.clientEmail,
+      windowLines: quote.windowLines,
+      pressureLines: quote.pressureLines,
+      scheduledDate,
+      notes: quote.title ? `From quote: ${quote.title}` : undefined,
+    });
+
+    if (job) {
+      $q.notify({
+        type: 'positive',
+        message: `Job ${job.jobNumber} scheduled for ${new Date(scheduledDate).toLocaleDateString('en-AU')}`,
+        position: 'top',
+        actions: [
+          {
+            label: 'View Job',
+            color: 'white',
+            handler: () => router.push(`/jobs/${job.id}`),
+          },
+        ],
+      });
+    } else {
+      $q.notify({
+        type: 'negative',
+        message: 'Failed to create job',
+        position: 'top',
+      });
+    }
   });
 }
 
