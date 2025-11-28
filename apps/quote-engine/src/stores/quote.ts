@@ -10,12 +10,25 @@ import {
   calculatePressureTime,
   createWindowTypeMap,
   createPressureSurfaceMap,
+  WINDOW_CONDITIONS,
+  ACCESS_MODIFIERS,
 } from '@tictacstick/calculation-engine';
 import { useQuoteStorage, type SavedQuote } from '../composables/useStorage';
 
 // Create lookup maps for window types and pressure surfaces
 const windowTypeMap: Map<string, WindowTypeConfig> = createWindowTypeMap();
 const pressureSurfaceMap: Map<string, PressureSurfaceConfig> = createPressureSurfaceMap();
+
+// Create condition and access multiplier lookup functions
+function getConditionMultiplier(id: string): number {
+  const condition = WINDOW_CONDITIONS.find(c => c.id === id);
+  return condition?.priceMultiplier ?? 1.0;
+}
+
+function getAccessMultiplier(id: string): number {
+  const access = ACCESS_MODIFIERS.find(a => a.id === id);
+  return access?.priceMultiplier ?? 1.0;
+}
 
 // History state for undo/redo
 interface QuoteSnapshot {
@@ -82,13 +95,15 @@ export const useQuoteStore = defineStore('quote', () => {
 
     // Calculate window costs
     windowLines.value.forEach(line => {
-      const cost = calculateWindowCost(line, pricingConfig.value, windowTypeMap);
+      const cost = calculateWindowCost(line, pricingConfig.value, windowTypeMap, getConditionMultiplier, getAccessMultiplier);
       // Separate high reach costs
       if (line.highReach) {
         const baseCost = calculateWindowCost(
           { ...line, highReach: false },
           pricingConfig.value,
-          windowTypeMap
+          windowTypeMap,
+          getConditionMultiplier,
+          getAccessMultiplier
         );
         windows += baseCost;
         highReach += cost - baseCost;

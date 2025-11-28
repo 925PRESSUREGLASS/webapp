@@ -214,7 +214,7 @@ onUnmounted(() => {
 function addWindowLine() {
   quoteStore.addWindowLine({
     id: quoteStore.generateLineId(),
-    windowTypeId: 'standard',
+    windowTypeId: 'std1', // Standard 1x1 (small) - default window type
     panes: 1,
     inside: true,
     outside: true,
@@ -230,8 +230,10 @@ function updateWindowLine(line: WindowLine) {
 function addPressureLine() {
   quoteStore.addPressureLine({
     id: quoteStore.generateLineId(),
-    surfaceId: 'concrete',
+    surfaceId: 'driveway', // Concrete Driveway - default pressure surface
     areaSqm: 10,
+    soilLevel: 'medium', // Default soil level
+    access: 'easy', // Default access level
     modifiers: [],
   });
 }

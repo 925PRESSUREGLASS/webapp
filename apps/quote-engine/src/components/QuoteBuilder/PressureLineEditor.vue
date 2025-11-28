@@ -13,7 +13,7 @@
           color="negative"
           icon="close"
           size="sm"
-          @click="$emit('remove')"
+          @click="$emit('remove', localLine.id)"
         />
       </div>
 
@@ -155,7 +155,7 @@ const props = defineProps<{
 
 const emit = defineEmits<{
   update: [line: PressureLine];
-  remove: [];
+  remove: [id: string];
 }>();
 
 // Local copy for editing
@@ -257,22 +257,35 @@ const estimatedMinutes = computed(() => {
   return baseMinutes * multiplier;
 });
 
-// Estimated price calculation
+// Estimated price calculation - matches the store's calculation logic
 const estimatedPrice = computed(() => {
   const allSurfaces = [...CORE_PRESSURE_SURFACES, ...EXTENDED_PRESSURE_SURFACES];
   const surface = allSurfaces.find(s => s.id === localLine.value.surfaceId);
   if (!surface) return 0;
   
-  const baseRate = surface.baseRate || 8;
-  let total = baseRate * (localLine.value.areaSqm || 0);
+  // Use the same calculation as the store: time-based pricing
+  const mps = surface.minutesPerSqm || 0;
+  const area = localLine.value.areaSqm || 0;
+  const pressureHourlyRate = 80; // Default rate from quote store
   
-  if (localLine.value.soilLevel === 'medium') total *= 1.15;
-  if (localLine.value.soilLevel === 'heavy') total *= 1.35;
-  if (localLine.value.access === 'ladder') total *= 1.2;
-  if (localLine.value.access === 'highReach') total *= 1.35;
-  if (localLine.value.includeSealing) total *= 1.8;
+  // Soil factor (same as calculatePressureCost)
+  let soilFactor = 1.0;
+  if (localLine.value.soilLevel === 'medium') soilFactor = 1.25;
+  else if (localLine.value.soilLevel === 'heavy') soilFactor = 1.5;
   
-  return total;
+  // Access factor (same as calculatePressureCost)
+  let accessFactor = 1.0;
+  if (localLine.value.access === 'ladder') accessFactor = 1.2;
+  else if (localLine.value.access === 'highReach') accessFactor = 1.35;
+  
+  const minutes = mps * area * soilFactor * accessFactor;
+  const hours = minutes / 60;
+  let cost = hours * pressureHourlyRate;
+  
+  // Sealing is an add-on multiplier (kept from original)
+  if (localLine.value.includeSealing) cost *= 1.8;
+  
+  return Math.round(cost * 100) / 100; // Round to 2 decimal places
 });
 
 // Format time helper
@@ -289,12 +302,18 @@ function emitUpdate() {
 }
 
 onMounted(() => {
-  // Set defaults if not set
+  // Set defaults if not set and emit to update the store
+  let needsEmit = false;
   if (!localLine.value.soilLevel) {
     localLine.value.soilLevel = 'medium';
+    needsEmit = true;
   }
   if (!localLine.value.access) {
     localLine.value.access = 'easy';
+    needsEmit = true;
+  }
+  if (needsEmit) {
+    emitUpdate();
   }
 });
 </script>

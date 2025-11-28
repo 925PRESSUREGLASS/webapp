@@ -128,6 +128,16 @@ import QuoteBuilder from '../components/QuoteBuilder/QuoteBuilder.vue';
 import PriceDisplay from '../components/QuoteBuilder/PriceDisplay.vue';
 import ClientAutocomplete from '../components/QuoteBuilder/ClientAutocomplete.vue';
 import type { Client } from '../stores/clients';
+import {
+  calculateWindowCost,
+  calculatePressureCost,
+  createWindowTypeMap,
+  createPressureSurfaceMap,
+  WINDOW_CONDITIONS,
+  ACCESS_MODIFIERS,
+  type WindowLine,
+  type PressureLine,
+} from '@tictacstick/calculation-engine';
 
 const $q = useQuasar();
 const route = useRoute();
@@ -136,6 +146,21 @@ const quoteStore = useQuoteStore();
 const invoiceStore = useInvoiceStore();
 
 const isLoading = ref(false);
+
+// Create type maps for cost calculation
+const windowTypeMap = createWindowTypeMap();
+const pressureSurfaceMap = createPressureSurfaceMap();
+
+// Multiplier functions for condition and access
+function getConditionMultiplier(id: string): number {
+  const condition = WINDOW_CONDITIONS.find(c => c.id === id);
+  return condition?.priceMultiplier ?? 1.0;
+}
+
+function getAccessMultiplier(id: string): number {
+  const access = ACCESS_MODIFIERS.find(a => a.id === id);
+  return access?.priceMultiplier ?? 1.0;
+}
 
 const jobTypeOptions = [
   { label: 'Residential', value: 'residential' },
@@ -215,7 +240,35 @@ function createInvoice() {
   // Initialize invoice store if not already
   invoiceStore.initialize();
 
-  // Convert quote to invoice
+  // Calculate costs for each window line before passing to invoice
+  const windowLinesWithCost = quoteStore.windowLines.map(line => {
+    const cost = calculateWindowCost(
+      line as WindowLine,
+      quoteStore.pricingConfig,
+      windowTypeMap,
+      getConditionMultiplier,
+      getAccessMultiplier
+    );
+    return {
+      ...line,
+      calculatedCost: cost,
+    };
+  });
+
+  // Calculate costs for each pressure line before passing to invoice
+  const pressureLinesWithCost = quoteStore.pressureLines.map(line => {
+    const cost = calculatePressureCost(
+      line as PressureLine,
+      quoteStore.pricingConfig,
+      pressureSurfaceMap
+    );
+    return {
+      ...line,
+      calculatedCost: cost,
+    };
+  });
+
+  // Convert quote to invoice with calculated costs
   const invoice = invoiceStore.convertQuoteToInvoice({
     id: quoteStore.currentQuoteId || `quote_${Date.now()}`,
     quoteTitle: quoteStore.quoteTitle,
@@ -224,8 +277,8 @@ function createInvoice() {
     clientEmail: quoteStore.clientEmail,
     clientPhone: quoteStore.clientPhone,
     jobType: quoteStore.jobType,
-    windowLines: quoteStore.windowLines,
-    pressureLines: quoteStore.pressureLines,
+    windowLines: windowLinesWithCost,
+    pressureLines: pressureLinesWithCost,
     subtotal: quoteStore.subtotal,
     gst: quoteStore.gst,
     total: quoteStore.total,

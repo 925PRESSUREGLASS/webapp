@@ -109,7 +109,6 @@
             clearable
             dense
             outlined
-            @update:model-value="updateCondition"
           >
             <template #option="{ itemProps, opt }">
               <q-item v-bind="itemProps">
@@ -134,7 +133,6 @@
             clearable
             dense
             outlined
-            @update:model-value="updateAccess"
           >
             <template #option="{ itemProps, opt }">
               <q-item v-bind="itemProps">
@@ -244,18 +242,31 @@ const accessOptions = computed(() =>
   }))
 );
 
-// Current selections
-const selectedCondition = ref<string | null>(
-  localLine.value.modifiers?.find(m => WINDOW_CONDITIONS.some(c => c.id === m)) || null
-);
+// Current selections - computed from line properties for reactivity
+const selectedCondition = computed({
+  get: () => localLine.value.conditionId || null,
+  set: (value: string | null) => updateCondition(value),
+});
 
-const selectedAccess = ref<string | null>(
-  localLine.value.modifiers?.find(m => ACCESS_MODIFIERS.some(a => a.id === m)) || null
-);
+const selectedAccess = computed({
+  get: () => localLine.value.accessId || null,
+  set: (value: string | null) => updateAccess(value),
+});
+
+// Multiplier lookup functions for condition and access
+function getConditionMultiplier(id: string): number {
+  const condition = WINDOW_CONDITIONS.find(c => c.id === id);
+  return condition?.priceMultiplier ?? 1.0;
+}
+
+function getAccessMultiplier(id: string): number {
+  const access = ACCESS_MODIFIERS.find(a => a.id === id);
+  return access?.priceMultiplier ?? 1.0;
+}
 
 // Calculate line cost
 const lineCost = computed(() => {
-  return calculateWindowCost(localLine.value, quoteStore.pricingConfig, windowTypeMap);
+  return calculateWindowCost(localLine.value, quoteStore.pricingConfig, windowTypeMap, getConditionMultiplier, getAccessMultiplier);
 });
 
 function emitUpdate() {
@@ -263,30 +274,12 @@ function emitUpdate() {
 }
 
 function updateCondition(conditionId: string | null) {
-  // Remove any existing condition modifiers
-  const newModifiers = (localLine.value.modifiers || []).filter(
-    m => !WINDOW_CONDITIONS.some(c => c.id === m)
-  );
-  
-  if (conditionId) {
-    newModifiers.push(conditionId);
-  }
-  
-  localLine.value.modifiers = newModifiers;
+  localLine.value.conditionId = conditionId || undefined;
   emitUpdate();
 }
 
 function updateAccess(accessId: string | null) {
-  // Remove any existing access modifiers
-  const newModifiers = (localLine.value.modifiers || []).filter(
-    m => !ACCESS_MODIFIERS.some(a => a.id === m)
-  );
-  
-  if (accessId) {
-    newModifiers.push(accessId);
-  }
-  
-  localLine.value.modifiers = newModifiers;
+  localLine.value.accessId = accessId || undefined;
   emitUpdate();
 }
 
