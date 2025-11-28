@@ -514,4 +514,315 @@ describe('useCalculations Composable', () => {
       expect(allCost).toBeGreaterThan(partialCost);
     });
   });
+
+  describe('Window Add-ons', () => {
+    it('should include addon costs in window line total', () => {
+      const lineWithoutAddons: WindowLine = {
+        id: 'test-addon-1',
+        windowTypeId: 'std1',
+        panes: 4,
+        inside: true,
+        outside: true,
+      };
+
+      const lineWithAddons: WindowLine = {
+        ...lineWithoutAddons,
+        id: 'test-addon-2',
+        addons: [
+          { 
+            id: '1', 
+            label: 'Fly Screen Clean',
+            description: 'Clean fly screens',
+            basePrice: 5.00,
+            severity: 'light', 
+            insideCount: 4, 
+            outsideCount: 0 
+          },
+        ],
+      };
+
+      const costWithout = calculateWindowLineCost(lineWithoutAddons, testPricingConfig);
+      const costWith = calculateWindowLineCost(lineWithAddons, testPricingConfig);
+
+      // With addons should cost more (4 panes * $5 = $20 extra)
+      expect(costWith).toBeGreaterThan(costWithout);
+    });
+
+    it('should apply severity multiplier to addon costs', () => {
+      const lightAddonLine: WindowLine = {
+        id: 'test-addon-3',
+        windowTypeId: 'std1',
+        panes: 4,
+        inside: true,
+        outside: true,
+        addons: [
+          { 
+            id: '1', 
+            label: 'Fly Screen Clean',
+            description: 'Clean fly screens',
+            basePrice: 5.00,
+            severity: 'light', 
+            insideCount: 4, 
+            outsideCount: 0 
+          },
+        ],
+      };
+
+      const heavyAddonLine: WindowLine = {
+        ...lightAddonLine,
+        id: 'test-addon-4',
+        addons: [
+          { 
+            id: '2', 
+            label: 'Fly Screen Clean',
+            description: 'Clean fly screens',
+            basePrice: 5.00,
+            severity: 'heavy', 
+            insideCount: 4, 
+            outsideCount: 0 
+          },
+        ],
+      };
+
+      const lightCost = calculateWindowLineCost(lightAddonLine, testPricingConfig);
+      const heavyCost = calculateWindowLineCost(heavyAddonLine, testPricingConfig);
+
+      // Heavy severity (2.0x) should cost more than light (1.0x)
+      expect(heavyCost).toBeGreaterThan(lightCost);
+    });
+
+    it('should sum costs from multiple addons', () => {
+      const singleAddonLine: WindowLine = {
+        id: 'test-addon-5',
+        windowTypeId: 'std1',
+        panes: 4,
+        inside: true,
+        outside: true,
+        addons: [
+          { 
+            id: '1', 
+            label: 'Fly Screen Clean',
+            description: 'Clean fly screens',
+            basePrice: 5.00,
+            severity: 'light', 
+            insideCount: 2, 
+            outsideCount: 0 
+          },
+        ],
+      };
+
+      const multipleAddonsLine: WindowLine = {
+        ...singleAddonLine,
+        id: 'test-addon-6',
+        addons: [
+          { 
+            id: '1', 
+            label: 'Fly Screen Clean',
+            description: 'Clean fly screens',
+            basePrice: 5.00,
+            severity: 'light', 
+            insideCount: 2, 
+            outsideCount: 0 
+          },
+          { 
+            id: '2', 
+            label: 'Sill Wipe',
+            description: 'Wipe window sills',
+            basePrice: 3.00,
+            severity: 'light', 
+            insideCount: 2, 
+            outsideCount: 0 
+          },
+          { 
+            id: '3', 
+            label: 'Track Clean',
+            description: 'Clean tracks',
+            basePrice: 4.00,
+            severity: 'light', 
+            insideCount: 2, 
+            outsideCount: 0 
+          },
+        ],
+      };
+
+      const singleCost = calculateWindowLineCost(singleAddonLine, testPricingConfig);
+      const multipleCost = calculateWindowLineCost(multipleAddonsLine, testPricingConfig);
+
+      // Multiple addons should cost more than single addon
+      expect(multipleCost).toBeGreaterThan(singleCost);
+    });
+  });
+
+  describe('Pressure Add-ons', () => {
+    it('should include addon costs in pressure line total', () => {
+      const lineWithoutAddons: PressureLine = {
+        id: 'test-p-addon-1',
+        surfaceId: 'driveway',
+        areaSqm: 40,
+      };
+
+      const lineWithAddons: PressureLine = {
+        ...lineWithoutAddons,
+        id: 'test-p-addon-2',
+        addons: [
+          { 
+            id: '1', 
+            label: 'Moss Removal',
+            description: 'Remove moss and lichen',
+            basePrice: 2.50,
+            isPerSqm: true,
+            areaSqm: 10,
+            severity: 'light' 
+          },
+        ],
+      };
+
+      const costWithout = calculatePressureLineCost(lineWithoutAddons, testPricingConfig);
+      const costWith = calculatePressureLineCost(lineWithAddons, testPricingConfig);
+
+      // With addons should cost more (10 sqm * $2.50 = $25 extra)
+      expect(costWith).toBeGreaterThan(costWithout);
+    });
+
+    it('should apply severity multiplier to pressure addon costs', () => {
+      const lightAddonLine: PressureLine = {
+        id: 'test-p-addon-3',
+        surfaceId: 'driveway',
+        areaSqm: 40,
+        addons: [
+          { 
+            id: '1', 
+            label: 'Moss Removal',
+            description: 'Remove moss and lichen',
+            basePrice: 2.50,
+            isPerSqm: true,
+            areaSqm: 20,
+            severity: 'light' 
+          },
+        ],
+      };
+
+      const heavyAddonLine: PressureLine = {
+        ...lightAddonLine,
+        id: 'test-p-addon-4',
+        addons: [
+          { 
+            id: '2', 
+            label: 'Moss Removal',
+            description: 'Remove moss and lichen',
+            basePrice: 2.50,
+            isPerSqm: true,
+            areaSqm: 20,
+            severity: 'heavy' 
+          },
+        ],
+      };
+
+      const lightCost = calculatePressureLineCost(lightAddonLine, testPricingConfig);
+      const heavyCost = calculatePressureLineCost(heavyAddonLine, testPricingConfig);
+
+      // Heavy severity (2.0x) should cost more than light (1.0x)
+      expect(heavyCost).toBeGreaterThan(lightCost);
+    });
+
+    it('should scale pressure addon cost with area', () => {
+      const smallAreaAddon: PressureLine = {
+        id: 'test-p-addon-5',
+        surfaceId: 'driveway',
+        areaSqm: 40,
+        addons: [
+          { 
+            id: '1', 
+            label: 'Oil Stain Treatment',
+            description: 'Treat oil stains',
+            basePrice: 3.00,
+            isPerSqm: true,
+            areaSqm: 5,
+            severity: 'medium' 
+          },
+        ],
+      };
+
+      const largeAreaAddon: PressureLine = {
+        ...smallAreaAddon,
+        id: 'test-p-addon-6',
+        addons: [
+          { 
+            id: '2', 
+            label: 'Oil Stain Treatment',
+            description: 'Treat oil stains',
+            basePrice: 3.00,
+            isPerSqm: true,
+            areaSqm: 20,
+            severity: 'medium' 
+          },
+        ],
+      };
+
+      const smallCost = calculatePressureLineCost(smallAreaAddon, testPricingConfig);
+      const largeCost = calculatePressureLineCost(largeAreaAddon, testPricingConfig);
+
+      // Larger area (20 sqm) should cost more than small (5 sqm)
+      expect(largeCost).toBeGreaterThan(smallCost);
+    });
+
+    it('should sum costs from multiple pressure addons', () => {
+      const singleAddonLine: PressureLine = {
+        id: 'test-p-addon-7',
+        surfaceId: 'driveway',
+        areaSqm: 40,
+        addons: [
+          { 
+            id: '1', 
+            label: 'Moss Removal',
+            description: 'Remove moss',
+            basePrice: 2.50,
+            isPerSqm: true,
+            areaSqm: 10,
+            severity: 'light' 
+          },
+        ],
+      };
+
+      const multipleAddonsLine: PressureLine = {
+        ...singleAddonLine,
+        id: 'test-p-addon-8',
+        addons: [
+          { 
+            id: '1', 
+            label: 'Moss Removal',
+            description: 'Remove moss',
+            basePrice: 2.50,
+            isPerSqm: true,
+            areaSqm: 10,
+            severity: 'light' 
+          },
+          { 
+            id: '2', 
+            label: 'Oil Stain Treatment',
+            description: 'Treat oil stains',
+            basePrice: 3.00,
+            isPerSqm: true,
+            areaSqm: 5,
+            severity: 'light' 
+          },
+          { 
+            id: '3', 
+            label: 'Gutter Clean',
+            description: 'Clean gutters',
+            basePrice: 50.00,
+            isPerSqm: false,
+            areaSqm: 0,
+            severity: 'light' 
+          },
+        ],
+      };
+
+      const singleCost = calculatePressureLineCost(singleAddonLine, testPricingConfig);
+      const multipleCost = calculatePressureLineCost(multipleAddonsLine, testPricingConfig);
+
+      // Multiple addons should cost more than single addon
+      expect(multipleCost).toBeGreaterThan(singleCost);
+    });
+  });
 });
