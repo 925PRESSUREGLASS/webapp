@@ -9,6 +9,38 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Added
 
+#### Window & Pressure Add-ons System (Quote Engine)
+- **packages/calculation-engine/src/index.ts** - Core add-on types and calculations
+  - `WindowAddon` interface: type, severity (light/medium/heavy), insideCount, outsideCount
+  - `PressureAddon` interface: type, severity, areaSqm
+  - 8 window addon types: flyScreen, sillWipe, frameWipe, blinds, trackClean, screenRepair, sealClean, cobwebRemoval
+  - 8 pressure addon types: mossRemoval, oilStains, gutterClean, drainFlush, surfaceSealing, greenWaste, chemicalTreatment, graffiti
+  - Severity multipliers: light (1.0x), medium (1.5x), heavy (2.0x)
+  - `createWindowAddon()` / `createPressureAddon()` factory functions
+  - `calculateAddonCost()` / `calculatePressureAddonCost()` cost calculation
+  - Add-on costs now included in `calculatePressureCost()` totals
+
+- **apps/quote-engine/src/components/QuoteBuilder/WindowLineEditor.vue** - Window add-ons UI
+  - Expandable "Add-ons" section with severity toggle and pane counts
+  - Live cost preview per addon type
+  - Proportional high reach pane inputs (insideHighReachCount/outsideHighReachCount)
+
+- **apps/quote-engine/src/components/QuoteBuilder/PressureLineEditor.vue** - Pressure add-ons UI
+  - Expandable "Surface Add-ons" section with severity toggle and area input
+  - Live cost preview per addon type
+  - Consistent UI pattern with window line editor
+
+- **apps/quote-engine/src/stores/invoices.ts** - Enhanced line descriptions
+  - `generateLineDescription()` includes addon details and high reach counts
+  - Full addon breakdown visible on invoices
+
+- **apps/quote-engine/src/pages/SavedQuotesPage.vue** - Addon indicators
+  - Icon badges show which quotes have add-ons
+  - Tooltips display addon counts on hover
+
+### Fixed
+- Pressure add-on costs now correctly flow through to quote totals via `calculatePressureCost()`
+
 #### Email Integration System
 - **apps/meta-api/src/services/email.service.ts** - Email service with Nodemailer (~150 lines)
   - SMTP configuration via environment variables
