@@ -290,7 +290,7 @@ function formatCurrency(value: number): string {
   return new Intl.NumberFormat('en-AU', {
     style: 'currency',
     currency: 'AUD',
-  }).format(value / 100);
+  }).format(value);
 }
 
 function formatDate(dateString: string): string {

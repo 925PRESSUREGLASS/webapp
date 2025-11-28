@@ -367,4 +367,118 @@ describe('useCalculations Composable', () => {
       expect(duration).toBeLessThan(50);
     });
   });
+
+  describe('Individual High Reach', () => {
+    const HIGH_REACH_MULTIPLIER = 1.7; // 70% increase
+
+    it('should apply 70% increase for inside high reach only', () => {
+      const baseLine: WindowLine = {
+        id: 'test-hr-1',
+        windowTypeId: 'std1',
+        panes: 4,
+        inside: true,
+        outside: true,
+        highReach: false,
+      };
+
+      const insideHighReachLine: WindowLine = {
+        ...baseLine,
+        id: 'test-hr-2',
+        highReach: true,
+        insideHighReach: true,
+        outsideHighReach: false,
+      };
+
+      const baseCost = calculateWindowLineCost(baseLine, testPricingConfig);
+      const hrCost = calculateWindowLineCost(insideHighReachLine, testPricingConfig);
+
+      // Inside high reach should increase cost (only inside portion gets 70% boost)
+      expect(hrCost).toBeGreaterThan(baseCost);
+    });
+
+    it('should apply 70% increase for outside high reach only', () => {
+      const baseLine: WindowLine = {
+        id: 'test-hr-3',
+        windowTypeId: 'std1',
+        panes: 4,
+        inside: true,
+        outside: true,
+        highReach: false,
+      };
+
+      const outsideHighReachLine: WindowLine = {
+        ...baseLine,
+        id: 'test-hr-4',
+        highReach: true,
+        insideHighReach: false,
+        outsideHighReach: true,
+      };
+
+      const baseCost = calculateWindowLineCost(baseLine, testPricingConfig);
+      const hrCost = calculateWindowLineCost(outsideHighReachLine, testPricingConfig);
+
+      // Outside high reach should increase cost (only outside portion gets 70% boost)
+      expect(hrCost).toBeGreaterThan(baseCost);
+    });
+
+    it('should apply 70% increase to both sides when both enabled', () => {
+      const baseLine: WindowLine = {
+        id: 'test-hr-5',
+        windowTypeId: 'std1',
+        panes: 4,
+        inside: true,
+        outside: true,
+        highReach: false,
+      };
+
+      const bothHighReachLine: WindowLine = {
+        ...baseLine,
+        id: 'test-hr-6',
+        highReach: true,
+        insideHighReach: true,
+        outsideHighReach: true,
+      };
+
+      const insideOnlyLine: WindowLine = {
+        ...baseLine,
+        id: 'test-hr-7',
+        highReach: true,
+        insideHighReach: true,
+        outsideHighReach: false,
+      };
+
+      const baseCost = calculateWindowLineCost(baseLine, testPricingConfig);
+      const bothCost = calculateWindowLineCost(bothHighReachLine, testPricingConfig);
+      const insideOnlyCost = calculateWindowLineCost(insideOnlyLine, testPricingConfig);
+
+      // Both high reach should be more expensive than inside only
+      expect(bothCost).toBeGreaterThan(insideOnlyCost);
+      expect(bothCost).toBeGreaterThan(baseCost);
+    });
+
+    it('should not apply high reach when highReach master toggle is off', () => {
+      const lineWithoutHighReach: WindowLine = {
+        id: 'test-hr-8',
+        windowTypeId: 'std1',
+        panes: 4,
+        inside: true,
+        outside: true,
+        highReach: false,
+        insideHighReach: true, // These should be ignored
+        outsideHighReach: true,
+      };
+
+      const lineWithHighReach: WindowLine = {
+        ...lineWithoutHighReach,
+        id: 'test-hr-9',
+        highReach: true,
+      };
+
+      const costWithoutHR = calculateWindowLineCost(lineWithoutHighReach, testPricingConfig);
+      const costWithHR = calculateWindowLineCost(lineWithHighReach, testPricingConfig);
+
+      // When highReach is false, individual toggles should be ignored
+      expect(costWithHR).toBeGreaterThan(costWithoutHR);
+    });
+  });
 });

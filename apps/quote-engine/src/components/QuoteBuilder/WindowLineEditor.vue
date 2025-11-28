@@ -73,15 +73,44 @@
           </div>
         </div>
 
-        <!-- High Reach Toggle -->
-        <div class="col-12 col-sm-6 col-md-2">
-          <div class="text-caption text-grey q-mb-xs">Access</div>
-          <q-toggle
-            v-model="localLine.highReach"
-            label="High Reach"
-            color="warning"
-            @update:model-value="emitUpdate"
-          />
+        <!-- High Reach Toggle -->\
+        <div class="col-12 col-sm-6 col-md-3">
+          <div class="text-caption text-grey q-mb-xs">High Reach Access</div>
+          <div class="row q-gutter-sm items-center">
+            <q-toggle
+              v-model="localLine.highReach"
+              label="High Reach"
+              color="warning"
+              @update:model-value="onHighReachToggle"
+            />
+            <!-- Individual high reach options - only show when highReach is enabled -->
+            <template v-if="localLine.highReach">
+              <q-chip
+                v-if="localLine.inside"
+                v-model:selected="localLine.insideHighReach"
+                clickable
+                color="orange"
+                text-color="white"
+                icon="elevator"
+                size="sm"
+                @update:selected="emitUpdate"
+              >
+                Inside +70%
+              </q-chip>
+              <q-chip
+                v-if="localLine.outside"
+                v-model:selected="localLine.outsideHighReach"
+                clickable
+                color="orange"
+                text-color="white"
+                icon="elevator"
+                size="sm"
+                @update:selected="emitUpdate"
+              >
+                Outside +70%
+              </q-chip>
+            </template>
+          </div>
         </div>
 
         <!-- Remove Button -->
@@ -258,6 +287,15 @@ const lineCost = computed(() => {
 
 function emitUpdate() {
   emit('update', { ...localLine.value });
+}
+
+function onHighReachToggle(enabled: boolean) {
+  if (!enabled) {
+    // Reset individual high reach options when main toggle is turned off
+    localLine.value.insideHighReach = false;
+    localLine.value.outsideHighReach = false;
+  }
+  emitUpdate();
 }
 
 function updateCondition(conditionId: string | null) {

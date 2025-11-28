@@ -263,6 +263,8 @@ function addWindowLine() {
     inside: true,
     outside: true,
     highReach: false,
+    insideHighReach: false,
+    outsideHighReach: false,
     modifiers: [],
   });
 }

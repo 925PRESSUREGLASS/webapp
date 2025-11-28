@@ -23,6 +23,8 @@ export interface WindowLine {
   inside: boolean;
   outside: boolean;
   highReach: boolean;
+  insideHighReach?: boolean;
+  outsideHighReach?: boolean;
   highReachLevel?: number;
   conditionId?: string;
   soilLevel?: 'light' | 'medium' | 'heavy';
@@ -383,13 +385,26 @@ export function calculateWindowTime(
   const baseInside = typeData.baseMinutesInside || 0;
   const baseOutside = typeData.baseMinutesOutside || 0;
 
-  // Determine base time per pane
+  // High reach multiplier (1.7 = 70% increase)
+  const HIGH_REACH_MULTIPLIER = 1.7;
+
+  // Determine base time per pane with individual high reach
   let minutesPerPane = 0;
   if (line.inside) {
-    minutesPerPane += baseInside * insideMultiplier;
+    let insideTime = baseInside * insideMultiplier;
+    // Apply individual high reach if enabled
+    if (line.highReach && line.insideHighReach) {
+      insideTime *= HIGH_REACH_MULTIPLIER;
+    }
+    minutesPerPane += insideTime;
   }
   if (line.outside) {
-    minutesPerPane += baseOutside * outsideMultiplier;
+    let outsideTime = baseOutside * outsideMultiplier;
+    // Apply individual high reach if enabled
+    if (line.highReach && line.outsideHighReach) {
+      outsideTime *= HIGH_REACH_MULTIPLIER;
+    }
+    minutesPerPane += outsideTime;
   }
 
   // Condition, access, and tint modifiers
@@ -498,13 +513,26 @@ export function calculateWindowCost(
   const insideMultiplier = config.insideMultiplier || 1;
   const outsideMultiplier = config.outsideMultiplier || 1;
 
-  // Determine base time per pane
+  // High reach multiplier (1.7 = 70% increase)
+  const HIGH_REACH_MULTIPLIER = 1.7;
+
+  // Determine base time per pane with individual high reach
   let minutesPerPane = 0;
   if (line.inside) {
-    minutesPerPane += baseInside * insideMultiplier;
+    let insideTime = baseInside * insideMultiplier;
+    // Apply individual high reach if enabled
+    if (line.highReach && line.insideHighReach) {
+      insideTime *= HIGH_REACH_MULTIPLIER;
+    }
+    minutesPerPane += insideTime;
   }
   if (line.outside) {
-    minutesPerPane += baseOutside * outsideMultiplier;
+    let outsideTime = baseOutside * outsideMultiplier;
+    // Apply individual high reach if enabled
+    if (line.highReach && line.outsideHighReach) {
+      outsideTime *= HIGH_REACH_MULTIPLIER;
+    }
+    minutesPerPane += outsideTime;
   }
 
   // Condition, access, and tint modifiers
