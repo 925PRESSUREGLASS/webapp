@@ -943,7 +943,17 @@ export function calculatePressureCost(
   // Convert to cost
   const pressureHourlyRate = config.pressureHourlyRate || config.hourlyRate || 0;
   const hours = minutesToHours(minutes);
-  return roundMoney(hours * pressureHourlyRate);
+  const baseCost = hours * pressureHourlyRate;
+  
+  // Calculate addon costs
+  let addonCost = 0;
+  if (line.addons?.length) {
+    for (const addon of line.addons) {
+      addonCost += calculatePressureAddonCost(addon);
+    }
+  }
+  
+  return roundMoney(baseCost + addonCost);
 }
 
 // ============================================
