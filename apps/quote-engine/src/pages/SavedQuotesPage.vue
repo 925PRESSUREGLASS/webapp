@@ -171,10 +171,40 @@
                   <div v-if="quote.windowLines.length">
                     <q-icon name="window" size="xs" />
                     {{ quote.windowLines.length }} window{{ quote.windowLines.length !== 1 ? 's' : '' }}
+                    <!-- High reach indicator -->
+                    <q-icon
+                      v-if="hasHighReach(quote)"
+                      name="elevator"
+                      size="xs"
+                      color="orange"
+                      class="q-ml-xs"
+                    >
+                      <q-tooltip>Includes high reach</q-tooltip>
+                    </q-icon>
+                    <!-- Add-ons indicator -->
+                    <q-icon
+                      v-if="hasAddons(quote)"
+                      name="add_circle"
+                      size="xs"
+                      color="green"
+                      class="q-ml-xs"
+                    >
+                      <q-tooltip>{{ getAddonCount(quote) }} add-on{{ getAddonCount(quote) !== 1 ? 's' : '' }}</q-tooltip>
+                    </q-icon>
                   </div>
                   <div v-if="quote.pressureLines.length">
                     <q-icon name="waves" size="xs" />
                     {{ quote.pressureLines.length }} surface{{ quote.pressureLines.length !== 1 ? 's' : '' }}
+                    <!-- Pressure Add-ons indicator -->
+                    <q-icon
+                      v-if="hasPressureAddons(quote)"
+                      name="add_circle"
+                      size="xs"
+                      color="teal"
+                      class="q-ml-xs"
+                    >
+                      <q-tooltip>{{ getPressureAddonCount(quote) }} surface add-on{{ getPressureAddonCount(quote) !== 1 ? 's' : '' }}</q-tooltip>
+                    </q-icon>
                   </div>
                 </div>
 
@@ -317,6 +347,40 @@ function getStatusColor(status: SavedQuote['status']): string {
     case 'declined': return 'red';
     default: return 'grey';
   }
+}
+
+// Quote feature detection helpers
+function hasHighReach(quote: SavedQuote): boolean {
+  return quote.windowLines.some(line => line.highReach);
+}
+
+function hasAddons(quote: SavedQuote): boolean {
+  return quote.windowLines.some(line => {
+    const addons = (line as any).addons;
+    return addons && Array.isArray(addons) && addons.length > 0;
+  });
+}
+
+function getAddonCount(quote: SavedQuote): number {
+  return quote.windowLines.reduce((count, line) => {
+    const addons = (line as any).addons;
+    return count + (addons && Array.isArray(addons) ? addons.length : 0);
+  }, 0);
+}
+
+// Pressure add-on helpers
+function hasPressureAddons(quote: SavedQuote): boolean {
+  return quote.pressureLines.some(line => {
+    const addons = (line as any).addons;
+    return addons && Array.isArray(addons) && addons.length > 0;
+  });
+}
+
+function getPressureAddonCount(quote: SavedQuote): number {
+  return quote.pressureLines.reduce((count, line) => {
+    const addons = (line as any).addons;
+    return count + (addons && Array.isArray(addons) ? addons.length : 0);
+  }, 0);
 }
 
 function toggleSortDirection() {

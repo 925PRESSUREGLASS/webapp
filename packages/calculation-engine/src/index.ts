@@ -13,6 +13,290 @@
 /**
  * Window line item configuration
  */
+/**
+ * Window addon severity level
+ */
+export type WindowAddonSeverity = 'light' | 'medium' | 'heavy';
+
+/**
+ * Window size category for addon pricing
+ */
+export type WindowSize = 'small' | 'standard' | 'large' | 'extraLarge';
+
+/**
+ * Window addon configuration
+ */
+export interface WindowAddon {
+  id: string;
+  label: string;
+  description: string;
+  basePrice: number;
+  insideCount: number;
+  outsideCount: number;
+  severity: WindowAddonSeverity;
+}
+
+/**
+ * Window addon type definition for available add-ons
+ */
+export interface WindowAddonType {
+  id: string;
+  label: string;
+  description: string;
+  basePrice: number;
+  hasInsideOutside: boolean;
+  hasSeverity: boolean;
+}
+
+/**
+ * Predefined window add-on types with base pricing
+ * Prices are per pane and can be multiplied by severity
+ */
+export const WINDOW_ADDON_TYPES: WindowAddonType[] = [
+  {
+    id: 'fly-screen',
+    label: 'Fly Screen Clean',
+    description: 'Clean fly screens/insect screens',
+    basePrice: 5.00,
+    hasInsideOutside: true,
+    hasSeverity: true,
+  },
+  {
+    id: 'fly-screen-deep',
+    label: 'Deep Clean Fly Screens',
+    description: 'Heavy duty cleaning for heavily soiled fly screens',
+    basePrice: 10.00,
+    hasInsideOutside: true,
+    hasSeverity: true,
+  },
+  {
+    id: 'track-deep',
+    label: 'Deep Clean Tracks',
+    description: 'Thorough cleaning of window tracks and channels',
+    basePrice: 8.00,
+    hasInsideOutside: true,
+    hasSeverity: true,
+  },
+  {
+    id: 'bird-poo',
+    label: 'Bird Droppings Removal',
+    description: 'Descaling and removal of bird droppings',
+    basePrice: 12.00,
+    hasInsideOutside: true,
+    hasSeverity: true,
+  },
+  {
+    id: 'bug-residue',
+    label: 'Bug/Insect Residue',
+    description: 'Removal of bug splatter and insect residue',
+    basePrice: 8.00,
+    hasInsideOutside: true,
+    hasSeverity: true,
+  },
+  {
+    id: 'paint-overspray',
+    label: 'Paint Overspray',
+    description: 'Removal of paint overspray and spots',
+    basePrice: 15.00,
+    hasInsideOutside: true,
+    hasSeverity: true,
+  },
+  {
+    id: 'adhesive-staining',
+    label: 'Adhesive/Sticker Removal',
+    description: 'Removal of adhesive residue and sticker marks',
+    basePrice: 10.00,
+    hasInsideOutside: true,
+    hasSeverity: true,
+  },
+  {
+    id: 'hard-water',
+    label: 'Hard Water Stain Removal',
+    description: 'Treatment and removal of mineral/hard water stains',
+    basePrice: 20.00,
+    hasInsideOutside: true,
+    hasSeverity: true,
+  },
+];
+
+// ============================================
+// Pressure Add-on Types
+// ============================================
+
+/**
+ * Pressure addon severity level (matches window for consistency)
+ */
+export type PressureAddonSeverity = 'light' | 'medium' | 'heavy';
+
+/**
+ * Pressure addon configuration
+ */
+export interface PressureAddon {
+  id: string;
+  label: string;
+  description: string;
+  basePrice: number;       // Base price per sqm or flat fee
+  isPerSqm: boolean;       // If true, multiply by area; if false, flat fee
+  areaSqm?: number;        // Area covered by this addon (if per sqm)
+  severity: PressureAddonSeverity;
+}
+
+/**
+ * Pressure addon type definition
+ */
+export interface PressureAddonType {
+  id: string;
+  label: string;
+  description: string;
+  basePrice: number;
+  isPerSqm: boolean;       // Per sqm pricing vs flat fee
+  hasSeverity: boolean;
+}
+
+/**
+ * Predefined pressure cleaning add-on types with base pricing
+ */
+export const PRESSURE_ADDON_TYPES: PressureAddonType[] = [
+  {
+    id: 'oil-stain',
+    label: 'Oil Stain Treatment',
+    description: 'Pre-treatment and removal of oil/grease stains',
+    basePrice: 15.00,
+    isPerSqm: false,  // Flat fee per stain area
+    hasSeverity: true,
+  },
+  {
+    id: 'mold-treatment',
+    label: 'Mold/Mildew Treatment',
+    description: 'Anti-fungal treatment for mold and mildew',
+    basePrice: 2.50,
+    isPerSqm: true,
+    hasSeverity: true,
+  },
+  {
+    id: 'rust-stain',
+    label: 'Rust Stain Removal',
+    description: 'Chemical treatment for rust stains',
+    basePrice: 12.00,
+    isPerSqm: false,  // Flat fee per stain
+    hasSeverity: true,
+  },
+  {
+    id: 'sealer-application',
+    label: 'Sealer Application',
+    description: 'Apply protective sealer after cleaning',
+    basePrice: 8.00,
+    isPerSqm: true,
+    hasSeverity: false,
+  },
+  {
+    id: 'gum-removal',
+    label: 'Chewing Gum Removal',
+    description: 'Removal of chewing gum and sticky residue',
+    basePrice: 5.00,
+    isPerSqm: false,  // Per piece/spot
+    hasSeverity: false,
+  },
+  {
+    id: 'graffiti-removal',
+    label: 'Graffiti Removal',
+    description: 'Chemical treatment and removal of graffiti',
+    basePrice: 25.00,
+    isPerSqm: true,
+    hasSeverity: true,
+  },
+  {
+    id: 'tire-marks',
+    label: 'Tire Mark Removal',
+    description: 'Removal of tire marks and rubber stains',
+    basePrice: 10.00,
+    isPerSqm: false,
+    hasSeverity: true,
+  },
+  {
+    id: 'efflorescence',
+    label: 'Efflorescence Treatment',
+    description: 'Removal of white mineral deposits on concrete/brick',
+    basePrice: 3.50,
+    isPerSqm: true,
+    hasSeverity: true,
+  },
+];
+
+/**
+ * Create a PressureAddon from an addon type
+ */
+export function createPressureAddon(
+  addonType: PressureAddonType,
+  areaSqm: number = 0,
+  severity: PressureAddonSeverity = 'light'
+): PressureAddon {
+  return {
+    id: addonType.id,
+    label: addonType.label,
+    description: addonType.description,
+    basePrice: addonType.basePrice,
+    isPerSqm: addonType.isPerSqm,
+    areaSqm,
+    severity,
+  };
+}
+
+/**
+ * Calculate pressure addon cost with severity multiplier
+ * light = 1.0x, medium = 1.5x, heavy = 2.0x
+ */
+export function calculatePressureAddonCost(addon: PressureAddon): number {
+  const severityMultipliers: Record<PressureAddonSeverity, number> = {
+    light: 1.0,
+    medium: 1.5,
+    heavy: 2.0,
+  };
+  const multiplier = severityMultipliers[addon.severity] || 1.0;
+  
+  if (addon.isPerSqm) {
+    return roundMoney(addon.basePrice * (addon.areaSqm || 0) * multiplier);
+  } else {
+    // Flat fee with severity multiplier
+    return roundMoney(addon.basePrice * multiplier);
+  }
+}
+
+/**
+ * Create a WindowAddon from an addon type with counts and severity
+ */
+export function createWindowAddon(
+  addonType: WindowAddonType,
+  insideCount: number = 0,
+  outsideCount: number = 0,
+  severity: WindowAddonSeverity = 'light'
+): WindowAddon {
+  return {
+    id: addonType.id,
+    label: addonType.label,
+    description: addonType.description,
+    basePrice: addonType.basePrice,
+    insideCount,
+    outsideCount,
+    severity,
+  };
+}
+
+/**
+ * Calculate addon cost with severity multiplier
+ * light = 1.0x, medium = 1.5x, heavy = 2.0x
+ */
+export function calculateAddonCost(addon: WindowAddon): number {
+  const severityMultipliers: Record<WindowAddonSeverity, number> = {
+    light: 1.0,
+    medium: 1.5,
+    heavy: 2.0,
+  };
+  const totalPanes = (addon.insideCount || 0) + (addon.outsideCount || 0);
+  const multiplier = severityMultipliers[addon.severity] || 1.0;
+  return roundMoney(addon.basePrice * totalPanes * multiplier);
+}
+
 export interface WindowLine {
   id: string;
   windowTypeId: string;
@@ -23,8 +307,8 @@ export interface WindowLine {
   inside: boolean;
   outside: boolean;
   highReach: boolean;
-  insideHighReach?: boolean;
-  outsideHighReach?: boolean;
+  insideHighReachCount?: number;  // Number of inside panes with high reach
+  outsideHighReachCount?: number; // Number of outside panes with high reach
   highReachLevel?: number;
   conditionId?: string;
   soilLevel?: 'light' | 'medium' | 'heavy';
@@ -36,6 +320,7 @@ export interface WindowLine {
   location?: string;
   notes?: string;
   modifiers?: string[];
+  addons?: WindowAddon[];
 }
 
 /**
@@ -52,6 +337,7 @@ export interface PressureLine {
   includeSealing?: boolean;
   notes?: string;
   modifiers?: string[];
+  addons?: PressureAddon[];
 }
 
 /**
@@ -384,27 +670,37 @@ export function calculateWindowTime(
 
   const baseInside = typeData.baseMinutesInside || 0;
   const baseOutside = typeData.baseMinutesOutside || 0;
+  const panes = line.panes || 0;
 
   // High reach multiplier (1.7 = 70% increase)
   const HIGH_REACH_MULTIPLIER = 1.7;
 
-  // Determine base time per pane with individual high reach
-  let minutesPerPane = 0;
-  if (line.inside) {
-    let insideTime = baseInside * insideMultiplier;
-    // Apply individual high reach if enabled
-    if (line.highReach && line.insideHighReach) {
-      insideTime *= HIGH_REACH_MULTIPLIER;
+  // Calculate inside time with proportional high reach
+  let totalInsideMinutes = 0;
+  if (line.inside && panes > 0) {
+    const baseInsideTime = baseInside * insideMultiplier;
+    if (line.highReach && line.insideHighReachCount && line.insideHighReachCount > 0) {
+      // Proportional: some panes are high reach, some are normal
+      const hrCount = Math.min(line.insideHighReachCount, panes);
+      const normalCount = panes - hrCount;
+      totalInsideMinutes = (hrCount * baseInsideTime * HIGH_REACH_MULTIPLIER) + (normalCount * baseInsideTime);
+    } else {
+      totalInsideMinutes = panes * baseInsideTime;
     }
-    minutesPerPane += insideTime;
   }
-  if (line.outside) {
-    let outsideTime = baseOutside * outsideMultiplier;
-    // Apply individual high reach if enabled
-    if (line.highReach && line.outsideHighReach) {
-      outsideTime *= HIGH_REACH_MULTIPLIER;
+
+  // Calculate outside time with proportional high reach
+  let totalOutsideMinutes = 0;
+  if (line.outside && panes > 0) {
+    const baseOutsideTime = baseOutside * outsideMultiplier;
+    if (line.highReach && line.outsideHighReachCount && line.outsideHighReachCount > 0) {
+      // Proportional: some panes are high reach, some are normal
+      const hrCount = Math.min(line.outsideHighReachCount, panes);
+      const normalCount = panes - hrCount;
+      totalOutsideMinutes = (hrCount * baseOutsideTime * HIGH_REACH_MULTIPLIER) + (normalCount * baseOutsideTime);
+    } else {
+      totalOutsideMinutes = panes * baseOutsideTime;
     }
-    minutesPerPane += outsideTime;
   }
 
   // Condition, access, and tint modifiers
@@ -441,9 +737,9 @@ export function calculateWindowTime(
     }
   }
 
-  // Total minutes
-  const panes = line.panes || 0;
-  return minutesPerPane * panes * combinedFactor * modFactor;
+  // Total minutes (already calculated per-pane above)
+  const totalMinutes = (totalInsideMinutes + totalOutsideMinutes) * combinedFactor * modFactor;
+  return totalMinutes;
 }
 
 // ============================================
@@ -512,27 +808,39 @@ export function calculateWindowCost(
 
   const insideMultiplier = config.insideMultiplier || 1;
   const outsideMultiplier = config.outsideMultiplier || 1;
+  const panes = line.panes || 0;
 
   // High reach multiplier (1.7 = 70% increase)
   const HIGH_REACH_MULTIPLIER = 1.7;
 
-  // Determine base time per pane with individual high reach
-  let minutesPerPane = 0;
+  // Calculate inside time with proportional high reach
+  let totalInsideMinutes = 0;
   if (line.inside) {
-    let insideTime = baseInside * insideMultiplier;
-    // Apply individual high reach if enabled
-    if (line.highReach && line.insideHighReach) {
-      insideTime *= HIGH_REACH_MULTIPLIER;
+    const baseInsideTime = baseInside * insideMultiplier;
+    // Proportional high reach: only the specified count of panes get high reach pricing
+    if (line.highReach && line.insideHighReachCount && line.insideHighReachCount > 0) {
+      const hrCount = Math.min(line.insideHighReachCount, panes);
+      const normalCount = panes - hrCount;
+      totalInsideMinutes = (hrCount * baseInsideTime * HIGH_REACH_MULTIPLIER) + (normalCount * baseInsideTime);
+    } else {
+      // No high reach or zero count - all panes at normal rate
+      totalInsideMinutes = panes * baseInsideTime;
     }
-    minutesPerPane += insideTime;
   }
+
+  // Calculate outside time with proportional high reach
+  let totalOutsideMinutes = 0;
   if (line.outside) {
-    let outsideTime = baseOutside * outsideMultiplier;
-    // Apply individual high reach if enabled
-    if (line.highReach && line.outsideHighReach) {
-      outsideTime *= HIGH_REACH_MULTIPLIER;
+    const baseOutsideTime = baseOutside * outsideMultiplier;
+    // Proportional high reach: only the specified count of panes get high reach pricing
+    if (line.highReach && line.outsideHighReachCount && line.outsideHighReachCount > 0) {
+      const hrCount = Math.min(line.outsideHighReachCount, panes);
+      const normalCount = panes - hrCount;
+      totalOutsideMinutes = (hrCount * baseOutsideTime * HIGH_REACH_MULTIPLIER) + (normalCount * baseOutsideTime);
+    } else {
+      // No high reach or zero count - all panes at normal rate
+      totalOutsideMinutes = panes * baseOutsideTime;
     }
-    minutesPerPane += outsideTime;
   }
 
   // Condition, access, and tint modifiers
@@ -569,14 +877,26 @@ export function calculateWindowCost(
     }
   }
 
-  // Total minutes
-  const panes = line.panes || 0;
-  const totalMinutes = minutesPerPane * panes * combinedFactor * modFactor;
+  // Total minutes (already calculated per-pane with proportional high reach above)
+  const totalMinutes = (totalInsideMinutes + totalOutsideMinutes) * combinedFactor * modFactor;
+
+  // Calculate addon costs
+  let addonCost = 0;
+  if (line.addons?.length) {
+    for (const addon of line.addons) {
+      const totalAddonPanes = (addon.insideCount || 0) + (addon.outsideCount || 0);
+      // Apply severity multiplier: light=1.0, medium=1.5, heavy=2.0
+      let severityMultiplier = 1.0;
+      if (addon.severity === 'medium') severityMultiplier = 1.5;
+      else if (addon.severity === 'heavy') severityMultiplier = 2.0;
+      addonCost += (addon.basePrice || 0) * totalAddonPanes * severityMultiplier;
+    }
+  }
 
   // Convert to cost
   const hourlyRate = config.hourlyRate || 0;
   const hours = minutesToHours(totalMinutes);
-  return roundMoney(hours * hourlyRate);
+  return roundMoney((hours * hourlyRate) + addonCost);
 }
 
 // ============================================

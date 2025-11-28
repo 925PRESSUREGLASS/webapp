@@ -263,9 +263,10 @@ function addWindowLine() {
     inside: true,
     outside: true,
     highReach: false,
-    insideHighReach: false,
-    outsideHighReach: false,
+    insideHighReachCount: 0,  // Number of inside panes with high reach
+    outsideHighReachCount: 0, // Number of outside panes with high reach
     modifiers: [],
+    addons: [],
   });
 }
 

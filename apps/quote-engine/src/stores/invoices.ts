@@ -479,9 +479,29 @@ export const useInvoiceStore = defineStore('invoices', () => {
         parts.push(`- ${sides.join(' & ')}`);
       }
       
-      // High reach
+      // High reach with pane counts
       if (windowLine.highReach) {
-        parts.push('- high reach');
+        const insideHR = (windowLine as any).insideHighReachCount || 0;
+        const outsideHR = (windowLine as any).outsideHighReachCount || 0;
+        if (insideHR > 0 || outsideHR > 0) {
+          const hrParts: string[] = [];
+          if (insideHR > 0) hrParts.push(`${insideHR} inside`);
+          if (outsideHR > 0) hrParts.push(`${outsideHR} outside`);
+          parts.push(`- high reach (${hrParts.join(', ')} panes)`);
+        } else {
+          parts.push('- high reach');
+        }
+      }
+      
+      // Add-ons
+      const addons = (windowLine as any).addons;
+      if (addons && Array.isArray(addons) && addons.length > 0) {
+        const addonLabels = addons.map((a: any) => {
+          const count = (a.insideCount || 0) + (a.outsideCount || 0);
+          const severity = a.severity !== 'light' ? ` (${a.severity})` : '';
+          return `${a.label}${severity} x${count}`;
+        });
+        parts.push(`+ ${addonLabels.join(', ')}`);
       }
       
       // Location
@@ -505,6 +525,22 @@ export const useInvoiceStore = defineStore('invoices', () => {
       // Access
       if (pressureLine.access && pressureLine.access !== 'easy') {
         parts.push(`- ${pressureLine.access} access`);
+      }
+      
+      // Sealing
+      if (pressureLine.includeSealing) {
+        parts.push('+ sealing');
+      }
+      
+      // Pressure Add-ons
+      const pAddons = (pressureLine as any).addons;
+      if (pAddons && Array.isArray(pAddons) && pAddons.length > 0) {
+        const addonLabels = pAddons.map((a: any) => {
+          const severity = a.severity && a.severity !== 'light' ? ` (${a.severity})` : '';
+          const area = a.areaSqm ? ` ${a.areaSqm}m²` : '';
+          return `${a.label}${severity}${area}`;
+        });
+        parts.push(`+ ${addonLabels.join(', ')}`);
       }
       
       // Notes

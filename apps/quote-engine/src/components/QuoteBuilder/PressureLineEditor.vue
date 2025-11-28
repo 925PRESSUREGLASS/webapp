@@ -127,6 +127,119 @@
         @update:model-value="emitUpdate"
       />
 
+      <!-- Pressure Add-ons Section -->
+      <q-expansion-item
+        class="q-mt-md"
+        icon="add_circle"
+        label="Surface Add-ons"
+        :caption="activeAddons.length > 0 ? `${activeAddons.length} add-on${activeAddons.length !== 1 ? 's' : ''} • ${formatCurrency(totalAddonCost)}` : 'Oil stains, mold treatment, sealer...'"
+        header-class="text-secondary"
+      >
+        <q-card flat>
+          <q-card-section class="q-pt-none">
+            <!-- Add-on Selector -->
+            <q-select
+              v-model="selectedAddonType"
+              :options="availableAddonOptions"
+              label="Add a service"
+              outlined
+              dense
+              emit-value
+              map-options
+              clearable
+              class="q-mb-sm"
+              @update:model-value="addAddon"
+            >
+              <template #option="scope">
+                <q-item v-bind="scope.itemProps">
+                  <q-item-section>
+                    <q-item-label>{{ scope.opt.label }}</q-item-label>
+                    <q-item-label caption>
+                      {{ scope.opt.description }} •
+                      {{ scope.opt.isPerSqm ? `$${scope.opt.basePrice}/m²` : `$${scope.opt.basePrice} flat` }}
+                    </q-item-label>
+                  </q-item-section>
+                </q-item>
+              </template>
+            </q-select>
+
+            <!-- Active Add-ons List -->
+            <div v-if="activeAddons.length > 0" class="q-gutter-sm">
+              <div
+                v-for="(addon, index) in activeAddons"
+                :key="addon.id"
+                class="addon-item row items-center q-pa-sm"
+              >
+                <div class="col">
+                  <div class="text-weight-medium">{{ addon.label }}</div>
+                  <div class="text-caption text-grey">
+                    {{ getAddonTypeById(addon.id)?.isPerSqm ? 'Per m²' : 'Flat fee' }}
+                  </div>
+                </div>
+
+                <!-- Area input for per-sqm add-ons -->
+                <div v-if="getAddonTypeById(addon.id)?.isPerSqm" class="col-auto q-mx-sm">
+                  <q-input
+                    v-model.number="addon.areaSqm"
+                    type="number"
+                    label="Area (m²)"
+                    outlined
+                    dense
+                    style="width: 100px"
+                    min="1"
+                    @update:model-value="emitUpdate"
+                  />
+                  <q-btn
+                    flat
+                    dense
+                    size="xs"
+                    label="Use Full"
+                    color="secondary"
+                    class="q-mt-xs"
+                    @click="addon.areaSqm = localLine.areaSqm; emitUpdate()"
+                  />
+                </div>
+
+                <!-- Severity selector for add-ons with severity -->
+                <div v-if="getAddonTypeById(addon.id)?.hasSeverity" class="col-auto q-mx-sm">
+                  <q-btn-toggle
+                    v-model="addon.severity"
+                    toggle-color="secondary"
+                    size="sm"
+                    :options="[
+                      { label: 'Light', value: 'light' },
+                      { label: 'Med', value: 'medium' },
+                      { label: 'Heavy', value: 'heavy' },
+                    ]"
+                    @update:model-value="emitUpdate"
+                  />
+                </div>
+
+                <!-- Addon cost preview -->
+                <div class="col-auto text-right q-mx-sm">
+                  <div class="text-weight-medium text-secondary">
+                    {{ formatCurrency(calculateSingleAddonCost(addon)) }}
+                  </div>
+                </div>
+
+                <!-- Remove button -->
+                <div class="col-auto">
+                  <q-btn
+                    flat
+                    round
+                    dense
+                    icon="close"
+                    color="negative"
+                    size="sm"
+                    @click="removeAddon(index)"
+                  />
+                </div>
+              </div>
+            </div>
+          </q-card-section>
+        </q-card>
+      </q-expansion-item>
+
       <!-- Price Preview -->
       <div class="row items-center justify-between q-mt-md">
         <div class="text-caption text-grey">
@@ -142,10 +255,13 @@
 
 <script setup lang="ts">
 import { ref, computed, watch, onMounted } from 'vue';
-import type { PressureLine } from '@tictacstick/calculation-engine';
+import type { PressureLine, PressureAddon } from '@tictacstick/calculation-engine';
 import {
   CORE_PRESSURE_SURFACES,
   EXTENDED_PRESSURE_SURFACES,
+  PRESSURE_ADDON_TYPES,
+  createPressureAddon,
+  calculatePressureAddonCost,
   formatCurrency,
 } from '@tictacstick/calculation-engine';
 import { useQuoteStore } from '../../stores/quote';
@@ -164,6 +280,68 @@ const quoteStore = useQuoteStore();
 
 // Local copy for editing
 const localLine = ref<PressureLine>({ ...props.line });
+
+// Add-on state
+const selectedAddonType = ref<string | null>(null);
+
+// Computed: active add-ons
+const activeAddons = computed(() => localLine.value.addons || []);
+
+// Computed: available add-on options (filter out already-added ones)
+const availableAddonOptions = computed(() => {
+  const addedIds = new Set(activeAddons.value.map(a => a.id));
+  return PRESSURE_ADDON_TYPES.filter(t => !addedIds.has(t.id)).map(t => ({
+    label: t.label,
+    value: t.id,
+    description: t.description,
+    basePrice: t.basePrice,
+    isPerSqm: t.isPerSqm,
+  }));
+});
+
+// Get addon type by id
+function getAddonTypeById(id: string) {
+  return PRESSURE_ADDON_TYPES.find(t => t.id === id);
+}
+
+// Add an add-on
+function addAddon(addonId: string | null) {
+  if (!addonId) return;
+
+  const addonType = getAddonTypeById(addonId);
+  if (!addonType) return;
+
+  const newAddon = createPressureAddon(
+    addonType,
+    addonType.isPerSqm ? localLine.value.areaSqm || 10 : undefined,
+    addonType.hasSeverity ? 'medium' : undefined
+  );
+
+  if (!localLine.value.addons) {
+    localLine.value.addons = [];
+  }
+  localLine.value.addons.push(newAddon);
+  selectedAddonType.value = null;
+  emitUpdate();
+}
+
+// Remove an add-on
+function removeAddon(index: number) {
+  if (localLine.value.addons) {
+    localLine.value.addons.splice(index, 1);
+    emitUpdate();
+  }
+}
+
+// Calculate cost for a single add-on
+function calculateSingleAddonCost(addon: PressureAddon): number {
+  return calculatePressureAddonCost(addon);
+}
+
+// Total add-on cost
+const totalAddonCost = computed(() => {
+  return activeAddons.value.reduce((sum, addon) => sum + calculateSingleAddonCost(addon), 0);
+});
 
 // Watch for external changes
 watch(() => props.line, (newLine) => {
@@ -304,5 +482,16 @@ onMounted(() => {
 
 .body--dark .pressure-line-editor {
   background: rgba(255, 255, 255, 0.02);
+}
+
+.addon-item {
+  background: rgba(var(--q-secondary-rgb), 0.05);
+  border-radius: 8px;
+  border: 1px solid rgba(var(--q-secondary-rgb), 0.15);
+}
+
+.body--dark .addon-item {
+  background: rgba(255, 255, 255, 0.05);
+  border-color: rgba(255, 255, 255, 0.1);
 }
 </style>

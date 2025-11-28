@@ -83,33 +83,71 @@
               color="warning"
               @update:model-value="onHighReachToggle"
             />
-            <!-- Individual high reach options - only show when highReach is enabled -->
-            <template v-if="localLine.highReach">
-              <q-chip
-                v-if="localLine.inside"
-                v-model:selected="localLine.insideHighReach"
-                clickable
-                color="orange"
-                text-color="white"
-                icon="elevator"
-                size="sm"
-                @update:selected="emitUpdate"
+          </div>
+          <!-- Individual high reach pane count options - only show when highReach is enabled -->
+          <div v-if="localLine.highReach" class="row q-gutter-sm q-mt-sm">
+            <!-- Inside High Reach Pane Count -->
+            <div v-if="localLine.inside" class="col-12 col-sm-6">
+              <q-input
+                v-model.number="localLine.insideHighReachCount"
+                type="number"
+                label="Inside HR Panes"
+                :max="localLine.panes"
+                min="0"
+                dense
+                outlined
+                class="high-reach-input"
+                @update:model-value="emitUpdate"
               >
-                Inside +70%
-              </q-chip>
-              <q-chip
-                v-if="localLine.outside"
-                v-model:selected="localLine.outsideHighReach"
-                clickable
-                color="orange"
-                text-color="white"
-                icon="elevator"
-                size="sm"
-                @update:selected="emitUpdate"
+                <template #prepend>
+                  <q-icon name="elevator" color="orange" size="xs" />
+                </template>
+                <template #append>
+                  <q-btn
+                    flat
+                    dense
+                    size="sm"
+                    color="orange"
+                    label="All"
+                    @click="setAllInsideHighReach"
+                  />
+                </template>
+              </q-input>
+              <div class="text-caption text-orange q-mt-xs">
+                {{ localLine.insideHighReachCount || 0 }} of {{ localLine.panes }} panes (+70%)
+              </div>
+            </div>
+            <!-- Outside High Reach Pane Count -->
+            <div v-if="localLine.outside" class="col-12 col-sm-6">
+              <q-input
+                v-model.number="localLine.outsideHighReachCount"
+                type="number"
+                label="Outside HR Panes"
+                :max="localLine.panes"
+                min="0"
+                dense
+                outlined
+                class="high-reach-input"
+                @update:model-value="emitUpdate"
               >
-                Outside +70%
-              </q-chip>
-            </template>
+                <template #prepend>
+                  <q-icon name="elevator" color="orange" size="xs" />
+                </template>
+                <template #append>
+                  <q-btn
+                    flat
+                    dense
+                    size="sm"
+                    color="orange"
+                    label="All"
+                    @click="setAllOutsideHighReach"
+                  />
+                </template>
+              </q-input>
+              <div class="text-caption text-orange q-mt-xs">
+                {{ localLine.outsideHighReachCount || 0 }} of {{ localLine.panes }} panes (+70%)
+              </div>
+            </div>
           </div>
         </div>
 
@@ -198,17 +236,161 @@
           />
         </div>
       </div>
+
+      <!-- Window Add-ons Section -->
+      <q-expansion-item
+        v-model="showAddons"
+        icon="add_circle"
+        label="Window Add-ons"
+        caption="Fly screens, deep clean, bird poo removal, etc."
+        class="q-mt-md"
+        header-class="text-primary"
+      >
+        <q-card>
+          <q-card-section class="q-pt-none">
+            <!-- Add-on selector -->
+            <div class="row q-gutter-sm q-mb-md">
+              <q-select
+                v-model="selectedAddonType"
+                :options="addonTypeOptions"
+                label="Add service"
+                emit-value
+                map-options
+                dense
+                outlined
+                class="col-12 col-sm-6"
+                @update:model-value="onAddonTypeSelected"
+              >
+                <template #option="{ itemProps, opt }">
+                  <q-item v-bind="itemProps">
+                    <q-item-section>
+                      <q-item-label>{{ opt.label }}</q-item-label>
+                      <q-item-label caption>
+                        {{ formatCurrency(opt.basePrice) }}/pane base
+                      </q-item-label>
+                    </q-item-section>
+                  </q-item>
+                </template>
+              </q-select>
+            </div>
+
+            <!-- Active add-ons list -->
+            <div v-if="localLine.addons && localLine.addons.length > 0">
+              <div
+                v-for="(addon, index) in localLine.addons"
+                :key="addon.id"
+                class="addon-item q-pa-sm q-mb-sm rounded-borders"
+              >
+                <div class="row items-center q-gutter-sm">
+                  <div class="col">
+                    <div class="text-subtitle2">{{ addon.label }}</div>
+                    <div class="text-caption text-grey">{{ addon.description }}</div>
+                  </div>
+                  <q-btn
+                    flat
+                    round
+                    dense
+                    size="sm"
+                    color="negative"
+                    icon="close"
+                    @click="removeAddon(index)"
+                  />
+                </div>
+
+                <div class="row q-gutter-sm q-mt-sm">
+                  <!-- Inside count -->
+                  <div v-if="localLine.inside" class="col-12 col-sm-4">
+                    <q-input
+                      v-model.number="addon.insideCount"
+                      type="number"
+                      label="Inside"
+                      :max="localLine.panes"
+                      min="0"
+                      dense
+                      outlined
+                      @update:model-value="emitUpdate"
+                    >
+                      <template #append>
+                        <q-btn
+                          flat
+                          dense
+                          size="sm"
+                          label="All"
+                          @click="setAddonAllInside(index)"
+                        />
+                      </template>
+                    </q-input>
+                  </div>
+
+                  <!-- Outside count -->
+                  <div v-if="localLine.outside" class="col-12 col-sm-4">
+                    <q-input
+                      v-model.number="addon.outsideCount"
+                      type="number"
+                      label="Outside"
+                      :max="localLine.panes"
+                      min="0"
+                      dense
+                      outlined
+                      @update:model-value="emitUpdate"
+                    >
+                      <template #append>
+                        <q-btn
+                          flat
+                          dense
+                          size="sm"
+                          label="All"
+                          @click="setAddonAllOutside(index)"
+                        />
+                      </template>
+                    </q-input>
+                  </div>
+
+                  <!-- Severity -->
+                  <div class="col-12 col-sm-4">
+                    <q-select
+                      v-model="addon.severity"
+                      :options="severityOptions"
+                      label="Severity"
+                      emit-value
+                      map-options
+                      dense
+                      outlined
+                      @update:model-value="emitUpdate"
+                    />
+                  </div>
+                </div>
+
+                <!-- Addon cost preview -->
+                <div class="text-right q-mt-xs">
+                  <span class="text-caption text-grey">Add-on cost: </span>
+                  <span class="text-subtitle2 text-positive">
+                    {{ formatCurrency(calculateSingleAddonCost(addon)) }}
+                  </span>
+                </div>
+              </div>
+            </div>
+
+            <div v-else class="text-grey text-center q-pa-md">
+              No add-ons selected. Choose a service above to add.
+            </div>
+          </q-card-section>
+        </q-card>
+      </q-expansion-item>
     </q-card-section>
   </q-card>
 </template>
 
 <script setup lang="ts">
 import { ref, computed, watch } from 'vue';
-import type { WindowLine } from '@tictacstick/calculation-engine';
+import type { WindowLine, WindowAddon, WindowAddonSeverity } from '@tictacstick/calculation-engine';
 import {
   CORE_WINDOW_TYPES,
   EXTENDED_WINDOW_TYPES,
   formatCurrency,
+  WINDOW_ADDON_TYPES,
+  createWindowAddon,
+  calculateAddonCost,
 } from '@tictacstick/calculation-engine';
 import { useQuoteStore } from '../../stores/quote';
 import {
@@ -291,10 +473,20 @@ function emitUpdate() {
 
 function onHighReachToggle(enabled: boolean) {
   if (!enabled) {
-    // Reset individual high reach options when main toggle is turned off
-    localLine.value.insideHighReach = false;
-    localLine.value.outsideHighReach = false;
+    // Reset high reach pane counts when main toggle is turned off
+    localLine.value.insideHighReachCount = 0;
+    localLine.value.outsideHighReachCount = 0;
   }
+  emitUpdate();
+}
+
+function setAllInsideHighReach() {
+  localLine.value.insideHighReachCount = localLine.value.panes || 0;
+  emitUpdate();
+}
+
+function setAllOutsideHighReach() {
+  localLine.value.outsideHighReachCount = localLine.value.panes || 0;
   emitUpdate();
 }
 
@@ -332,6 +524,72 @@ function getWindowIcon(typeId: string): string {
   };
   return iconMap[typeId] || 'window';
 }
+
+// ========== ADD-ONS ==========
+const showAddons = ref(false);
+const selectedAddonType = ref<string | null>(null);
+
+// Addon type options (filter out already added)
+const addonTypeOptions = computed(() =>
+  WINDOW_ADDON_TYPES.filter(type =>
+    !localLine.value.addons?.some(a => a.id === type.id)
+  ).map(type => ({
+    value: type.id,
+    label: `${type.label} (+${formatCurrency(type.basePrice)})`,
+    type,
+  }))
+);
+
+const severityOptions = [
+  { value: 'light' as WindowAddonSeverity, label: 'Light (1.0x)' },
+  { value: 'medium' as WindowAddonSeverity, label: 'Medium (1.5x)' },
+  { value: 'heavy' as WindowAddonSeverity, label: 'Heavy (2.0x)' },
+];
+
+function onAddonTypeSelected(typeId: string | null) {
+  if (!typeId) return;
+
+  const addonType = WINDOW_ADDON_TYPES.find(t => t.id === typeId);
+  if (!addonType) return;
+
+  // Initialize addons array if needed
+  if (!localLine.value.addons) {
+    localLine.value.addons = [];
+  }
+
+  // Create and add the addon
+  const newAddon = createWindowAddon(addonType);
+  localLine.value.addons.push(newAddon);
+
+  // Reset selection and emit update
+  selectedAddonType.value = null;
+  emitUpdate();
+}
+
+function removeAddon(index: number) {
+  if (localLine.value.addons) {
+    localLine.value.addons.splice(index, 1);
+    emitUpdate();
+  }
+}
+
+function setAddonAllInside(index: number) {
+  if (localLine.value.addons?.[index]) {
+    localLine.value.addons[index].insideCount = localLine.value.panes || 0;
+    emitUpdate();
+  }
+}
+
+function setAddonAllOutside(index: number) {
+  if (localLine.value.addons?.[index]) {
+    localLine.value.addons[index].outsideCount = localLine.value.panes || 0;
+    emitUpdate();
+  }
+}
+
+function calculateSingleAddonCost(addon: WindowAddon): number {
+  return calculateAddonCost(addon);
+}
 </script>
 
 <style scoped>
@@ -341,5 +599,19 @@ function getWindowIcon(typeId: string): string {
 
 .body--dark .line-editor {
   background: rgba(255, 255, 255, 0.02);
+}
+
+.addon-item {
+  background: rgba(0, 128, 0, 0.05);
+  border: 1px solid rgba(0, 128, 0, 0.2);
+}
+
+.body--dark .addon-item {
+  background: rgba(0, 200, 0, 0.08);
+  border: 1px solid rgba(0, 200, 0, 0.2);
+}
+
+.high-reach-input {
+  max-width: 180px;
 }
 </style>

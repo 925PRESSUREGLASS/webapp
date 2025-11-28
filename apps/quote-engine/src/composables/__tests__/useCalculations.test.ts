@@ -369,8 +369,6 @@ describe('useCalculations Composable', () => {
   });
 
   describe('Individual High Reach', () => {
-    const HIGH_REACH_MULTIPLIER = 1.7; // 70% increase
-
     it('should apply 70% increase for inside high reach only', () => {
       const baseLine: WindowLine = {
         id: 'test-hr-1',
@@ -385,8 +383,8 @@ describe('useCalculations Composable', () => {
         ...baseLine,
         id: 'test-hr-2',
         highReach: true,
-        insideHighReach: true,
-        outsideHighReach: false,
+        insideHighReachCount: 4,  // All 4 panes are high reach inside
+        outsideHighReachCount: 0, // No outside high reach
       };
 
       const baseCost = calculateWindowLineCost(baseLine, testPricingConfig);
@@ -410,8 +408,8 @@ describe('useCalculations Composable', () => {
         ...baseLine,
         id: 'test-hr-4',
         highReach: true,
-        insideHighReach: false,
-        outsideHighReach: true,
+        insideHighReachCount: 0,  // No inside high reach
+        outsideHighReachCount: 4, // All 4 panes are high reach outside
       };
 
       const baseCost = calculateWindowLineCost(baseLine, testPricingConfig);
@@ -435,16 +433,16 @@ describe('useCalculations Composable', () => {
         ...baseLine,
         id: 'test-hr-6',
         highReach: true,
-        insideHighReach: true,
-        outsideHighReach: true,
+        insideHighReachCount: 4,  // All 4 panes high reach inside
+        outsideHighReachCount: 4, // All 4 panes high reach outside
       };
 
       const insideOnlyLine: WindowLine = {
         ...baseLine,
         id: 'test-hr-7',
         highReach: true,
-        insideHighReach: true,
-        outsideHighReach: false,
+        insideHighReachCount: 4,  // All 4 panes high reach inside
+        outsideHighReachCount: 0, // No outside high reach
       };
 
       const baseCost = calculateWindowLineCost(baseLine, testPricingConfig);
@@ -464,8 +462,8 @@ describe('useCalculations Composable', () => {
         inside: true,
         outside: true,
         highReach: false,
-        insideHighReach: true, // These should be ignored
-        outsideHighReach: true,
+        insideHighReachCount: 4,  // These should be ignored since highReach is false
+        outsideHighReachCount: 4,
       };
 
       const lineWithHighReach: WindowLine = {
@@ -477,8 +475,43 @@ describe('useCalculations Composable', () => {
       const costWithoutHR = calculateWindowLineCost(lineWithoutHighReach, testPricingConfig);
       const costWithHR = calculateWindowLineCost(lineWithHighReach, testPricingConfig);
 
-      // When highReach is false, individual toggles should be ignored
+      // When highReach is false, individual counts should be ignored
       expect(costWithHR).toBeGreaterThan(costWithoutHR);
+    });
+
+    it('should apply proportional high reach when only some panes are high reach', () => {
+      const baseLine: WindowLine = {
+        id: 'test-hr-10',
+        windowTypeId: 'std1',
+        panes: 10,
+        inside: true,
+        outside: true,
+        highReach: false,
+      };
+
+      const partialHighReachLine: WindowLine = {
+        ...baseLine,
+        id: 'test-hr-11',
+        highReach: true,
+        insideHighReachCount: 5,   // Only 5 of 10 panes are high reach inside
+        outsideHighReachCount: 3,  // Only 3 of 10 panes are high reach outside
+      };
+
+      const allHighReachLine: WindowLine = {
+        ...baseLine,
+        id: 'test-hr-12',
+        highReach: true,
+        insideHighReachCount: 10,  // All 10 panes high reach inside
+        outsideHighReachCount: 10, // All 10 panes high reach outside
+      };
+
+      const baseCost = calculateWindowLineCost(baseLine, testPricingConfig);
+      const partialCost = calculateWindowLineCost(partialHighReachLine, testPricingConfig);
+      const allCost = calculateWindowLineCost(allHighReachLine, testPricingConfig);
+
+      // Partial high reach should be between base and all high reach
+      expect(partialCost).toBeGreaterThan(baseCost);
+      expect(allCost).toBeGreaterThan(partialCost);
     });
   });
 });
