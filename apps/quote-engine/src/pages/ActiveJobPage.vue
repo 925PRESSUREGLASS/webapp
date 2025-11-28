@@ -351,6 +351,17 @@
         </q-card-actions>
       </q-card>
     </q-dialog>
+
+    <!-- Price Adjust Modal -->
+    <PriceAdjustModal
+      v-if="selectedItemForPriceAdjust"
+      v-model="showPriceAdjustModal"
+      :item-id="selectedItemForPriceAdjust.id"
+      :item-description="selectedItemForPriceAdjust.description"
+      :original-price="selectedItemForPriceAdjust.estimatedPrice"
+      :current-price="selectedItemForPriceAdjust.actualPrice"
+      @adjust="handlePriceAdjust"
+    />
   </q-page>
 </template>
 
@@ -361,6 +372,7 @@ import { useQuasar } from 'quasar';
 import { useJobStore, JOB_STATUSES } from '../stores/jobs';
 import type { Job, JobItem, JobPhoto, JobIssueSeverity } from '@tictacstick/calculation-engine';
 import JobTimer from '../components/Jobs/JobTimer.vue';
+import PriceAdjustModal from '../components/Jobs/PriceAdjustModal.vue';
 
 const props = defineProps<{
   id: string;
@@ -374,6 +386,8 @@ const jobStore = useJobStore();
 const job = ref<Job | null>(null);
 const showNoteDialog = ref(false);
 const showPhotoDialog = ref(false);
+const showPriceAdjustModal = ref(false);
+const selectedItemForPriceAdjust = ref<JobItem | null>(null);
 const newNoteText = ref('');
 
 // Computed
@@ -513,32 +527,24 @@ function showItemMenu(item: JobItem) {
         job.value = jobStore.getJob(job.value.id);
       });
     } else if (action === 'price') {
-      $q.dialog({
-        title: 'Adjust Price',
-        message: `Current: $${item.actualPrice.toFixed(2)}`,
-        prompt: {
-          model: item.actualPrice.toString(),
-          type: 'number',
-        },
-        cancel: true,
-      }).onOk((newPrice: string) => {
-        $q.dialog({
-          title: 'Reason for adjustment',
-          prompt: {
-            model: '',
-            type: 'text',
-          },
-          cancel: true,
-        }).onOk((reason: string) => {
-          if (!job.value) return;
-          jobStore.adjustItemPrice(job.value.id, item.id, parseFloat(newPrice), reason);
-          job.value = jobStore.getJob(job.value.id);
-        });
-      });
+      // Use the new PriceAdjustModal
+      selectedItemForPriceAdjust.value = item;
+      showPriceAdjustModal.value = true;
     } else if (action === 'skip') {
       jobStore.updateItemStatus(job.value.id, item.id, 'skipped');
       job.value = jobStore.getJob(job.value.id);
     }
+  });
+}
+
+function handlePriceAdjust(payload: { itemId: string; newPrice: number; reason: string }) {
+  if (!job.value) return;
+  jobStore.adjustItemPrice(job.value.id, payload.itemId, payload.newPrice, payload.reason);
+  job.value = jobStore.getJob(job.value.id);
+  selectedItemForPriceAdjust.value = null;
+  $q.notify({
+    type: 'positive',
+    message: 'Price adjusted',
   });
 }
 
