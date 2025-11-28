@@ -333,22 +333,22 @@
       </q-card>
     </q-dialog>
 
-    <!-- Photo Dialog (placeholder) -->
-    <q-dialog v-model="showPhotoDialog">
-      <q-card style="min-width: 400px">
+    <!-- Photo Dialog with PhotoCapture -->
+    <q-dialog v-model="showPhotoDialog" full-width>
+      <q-card style="max-width: 500px">
+        <q-card-section class="row items-center q-pb-none">
+          <div class="text-h6">Job Photos</div>
+          <q-space />
+          <q-btn icon="close" flat round dense v-close-popup />
+        </q-card-section>
         <q-card-section>
-          <div class="text-h6">Add Photo</div>
+          <PhotoCapture
+            :model-value="jobPhotosForCapture"
+            @update:model-value="handlePhotosUpdate"
+            @photo-added="handlePhotoAdded"
+            @photo-removed="handlePhotoRemoved"
+          />
         </q-card-section>
-        <q-card-section class="text-center">
-          <q-icon name="camera_alt" size="64px" color="grey-5" />
-          <p class="text-grey-7 q-mt-md">Camera integration coming soon</p>
-          <p class="text-grey-6">
-            This feature will allow you to take photos directly from the app.
-          </p>
-        </q-card-section>
-        <q-card-actions align="right">
-          <q-btn flat label="Close" v-close-popup />
-        </q-card-actions>
       </q-card>
     </q-dialog>
 
@@ -362,6 +362,14 @@
       :current-price="selectedItemForPriceAdjust.actualPrice"
       @adjust="handlePriceAdjust"
     />
+
+    <!-- Job Completion Wizard -->
+    <JobCompletionWizard
+      v-model="showCompletionWizard"
+      :job="jobForCompletionWizard"
+      @complete="handleJobCompletion"
+      @cancel="showCompletionWizard = false"
+    />
   </q-page>
 </template>
 
@@ -373,6 +381,8 @@ import { useJobStore, JOB_STATUSES } from '../stores/jobs';
 import type { Job, JobItem, JobPhoto, JobIssueSeverity } from '@tictacstick/calculation-engine';
 import JobTimer from '../components/Jobs/JobTimer.vue';
 import PriceAdjustModal from '../components/Jobs/PriceAdjustModal.vue';
+import PhotoCapture from '../components/Jobs/PhotoCapture.vue';
+import JobCompletionWizard from '../components/Jobs/JobCompletionWizard.vue';
 
 const props = defineProps<{
   id: string;
@@ -387,6 +397,7 @@ const job = ref<Job | null>(null);
 const showNoteDialog = ref(false);
 const showPhotoDialog = ref(false);
 const showPriceAdjustModal = ref(false);
+const showCompletionWizard = ref(false);
 const selectedItemForPriceAdjust = ref<JobItem | null>(null);
 const newNoteText = ref('');
 
@@ -399,6 +410,17 @@ const progress = computed(() => {
 const priceDifference = computed(() => {
   if (!job.value) return 0;
   return job.value.pricing.actualTotal - job.value.pricing.estimatedTotal;
+});
+
+// Convert job photos to PhotoCapture format
+const jobPhotosForCapture = computed((): JobPhoto[] => {
+  if (!job.value?.photos) return [];
+  return job.value.photos;
+});
+
+// Convert job for completion wizard (uses Job type directly now)
+const jobForCompletionWizard = computed((): Job | null => {
+  return job.value;
 });
 
 // Load job
@@ -463,30 +485,53 @@ function handleResumeJob() {
 
 function handleCompleteJob() {
   if (!job.value) return;
-  $q.dialog({
-    title: 'Complete Job',
-    message: 'Are you sure you want to mark this job as complete?',
-    cancel: true,
-    ok: {
-      label: 'Complete',
-      color: 'primary',
-    },
-  }).onOk(() => {
-    if (!job.value) return;
-    const success = jobStore.completeJob(job.value.id);
-    if (success) {
-      job.value = jobStore.getJob(job.value.id);
-      $q.notify({
-        type: 'positive',
-        message: 'Job completed!',
-      });
-    } else {
-      $q.notify({
-        type: 'negative',
-        message: 'Could not complete job. Check requirements.',
-      });
+  // Open the completion wizard instead of simple dialog
+  showCompletionWizard.value = true;
+}
+
+interface JobCompletionData {
+  signature: string;
+  customerName: string;
+  completionNotes: string;
+  notifyCustomer: boolean;
+  completedAt: string;
+}
+
+function handleJobCompletion(data: JobCompletionData) {
+  if (!job.value) return;
+  
+  // Add signature as a photo (use 'after' type since there's no 'signature' type)
+  if (data.signature) {
+    jobStore.addPhoto(job.value.id, data.signature, 'after', {
+      caption: `Customer Signature: ${data.customerName}`,
+    });
+  }
+  
+  // Add completion notes
+  if (data.completionNotes) {
+    jobStore.addNote(job.value.id, `Completion: ${data.completionNotes}`);
+  }
+  
+  // Complete the job
+  const success = jobStore.completeJob(job.value.id);
+  if (success) {
+    job.value = jobStore.getJob(job.value.id);
+    $q.notify({
+      type: 'positive',
+      message: 'Job completed successfully!',
+      icon: 'check_circle',
+    });
+    
+    if (data.notifyCustomer) {
+      // TODO: Send notification to customer
+      console.log('Would notify customer:', job.value?.client.email);
     }
-  });
+  } else {
+    $q.notify({
+      type: 'negative',
+      message: 'Could not complete job. Check requirements.',
+    });
+  }
 }
 
 function toggleItem(item: JobItem) {
@@ -580,6 +625,25 @@ function viewPhoto(photo: JobPhoto) {
     html: true,
     ok: 'Close',
   });
+}
+
+function handlePhotosUpdate(_photos: JobPhoto[]) {
+  // Photos are updated individually via add/remove handlers
+}
+
+function handlePhotoAdded(photo: JobPhoto) {
+  if (!job.value) return;
+  // Photo is already added by PhotoCapture, just add to store
+  jobStore.addPhoto(job.value.id, photo.uri, photo.type, {
+    caption: photo.caption,
+  });
+  job.value = jobStore.getJob(job.value.id);
+}
+
+function handlePhotoRemoved(photo: JobPhoto) {
+  if (!job.value) return;
+  jobStore.removePhoto(job.value.id, photo.id);
+  job.value = jobStore.getJob(job.value.id);
 }
 
 function getSeverityColor(severity: JobIssueSeverity): string {
