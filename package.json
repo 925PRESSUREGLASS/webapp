@@ -51,6 +51,8 @@
     "test:headed": "playwright test --headed --config=v1/playwright.config.js",
     "test:ui": "playwright test --ui --config=v1/playwright.config.js",
     "test:debug": "playwright test --debug --config=v1/playwright.config.js",
+    "test:engine": "npm test --prefix packages/calculation-engine",
+    "test:all": "npm run test:engine && npm run test",
     "dev:v1": "npx http-server v1 -p 8080 -c-1",
     "dev:quote-engine": "npm run dev --prefix apps/quote-engine",
     "dev:api": "npm run dev --prefix apps/meta-api",

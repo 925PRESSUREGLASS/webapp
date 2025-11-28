@@ -281,7 +281,7 @@
 </template>
 
 <script setup lang="ts">
-import { ref, computed, onMounted, watch } from 'vue';
+import { ref, onMounted, watch } from 'vue';
 import { useRouter } from 'vue-router';
 import { useQuasar } from 'quasar';
 import { useSavedQuotesStore } from '../stores/savedQuotes';
@@ -424,7 +424,7 @@ async function duplicateQuote(id: string) {
   }
 }
 
-function convertToInvoice(id: string) {
+function convertToInvoice(_id: string) {
   $q.notify({
     type: 'info',
     message: 'Invoice creation coming soon',
@@ -458,6 +458,7 @@ function scheduleJob(quote: SavedQuote) {
       clientEmail: quote.clientEmail,
       windowLines: quote.windowLines,
       pressureLines: quote.pressureLines,
+      total: quote.total,
       scheduledDate,
       notes: quote.title ? `From quote: ${quote.title}` : undefined,
     });

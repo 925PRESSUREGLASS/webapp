@@ -453,6 +453,419 @@ export interface QuoteResult {
 }
 
 // ============================================
+// Job Tracking Types
+// ============================================
+
+/**
+ * Job status progression
+ */
+export type JobStatus = 'scheduled' | 'in-progress' | 'paused' | 'completed' | 'invoiced' | 'cancelled';
+
+/**
+ * Job item status
+ */
+export type JobItemStatus = 'pending' | 'in-progress' | 'completed' | 'skipped';
+
+/**
+ * Photo type for categorization
+ */
+export type JobPhotoType = 'before' | 'during' | 'after' | 'issue';
+
+/**
+ * Issue severity level
+ */
+export type JobIssueSeverity = 'low' | 'medium' | 'high';
+
+/**
+ * Client info denormalized for offline access
+ */
+export interface JobClient {
+  id: string;
+  name: string;
+  phone: string;
+  email: string;
+  address: string;
+}
+
+/**
+ * Job schedule information
+ */
+export interface JobSchedule {
+  scheduledDate: string; // ISO date string
+  scheduledTime?: string; // HH:mm format
+  estimatedDuration: number; // minutes
+  actualStartTime?: string; // ISO datetime
+  actualEndTime?: string; // ISO datetime
+  actualDuration?: number; // minutes
+}
+
+/**
+ * Job pricing with estimate vs actual
+ */
+export interface JobPricing {
+  estimatedSubtotal: number;
+  estimatedGst: number;
+  estimatedTotal: number;
+  actualSubtotal: number;
+  actualGst: number;
+  actualTotal: number;
+  adjustmentReason?: string;
+}
+
+/**
+ * Window-specific details for job items
+ */
+export interface JobWindowDetails {
+  windowType: string;
+  windowTypeLabel: string;
+  panes: number;
+  inside: boolean;
+  outside: boolean;
+  insideComplete: boolean;
+  outsideComplete: boolean;
+  highReach: boolean;
+}
+
+/**
+ * Pressure-specific details for job items
+ */
+export interface JobPressureDetails {
+  surfaceType: string;
+  surfaceTypeLabel: string;
+  areaSqm: number;
+  percentComplete: number;
+}
+
+/**
+ * Work item within a job
+ */
+export interface JobItem {
+  id: string;
+  type: 'window' | 'pressure';
+  description: string;
+  
+  // Original from quote
+  estimatedPrice: number;
+  estimatedTime: number; // minutes
+  
+  // Actual (editable on-site)
+  actualPrice: number;
+  actualTime?: number;
+  priceAdjustmentReason?: string;
+  
+  // Checklist status
+  status: JobItemStatus;
+  completedAt?: string;
+  
+  // Notes per item
+  notes?: string;
+  
+  // Type-specific details
+  windowDetails?: JobWindowDetails;
+  pressureDetails?: JobPressureDetails;
+}
+
+/**
+ * Photo attached to a job
+ */
+export interface JobPhoto {
+  id: string;
+  type: JobPhotoType;
+  itemId?: string; // Optional link to specific work item
+  uri: string; // base64 data URL or file URI
+  thumbnail?: string; // Smaller version for lists
+  caption?: string;
+  takenAt: string; // ISO datetime
+  location?: {
+    latitude: number;
+    longitude: number;
+  };
+}
+
+/**
+ * Note attached to a job
+ */
+export interface JobNote {
+  id: string;
+  text: string;
+  createdAt: string; // ISO datetime
+  itemId?: string; // Optional link to work item
+}
+
+/**
+ * Issue reported during job
+ */
+export interface JobIssue {
+  id: string;
+  description: string;
+  severity: JobIssueSeverity;
+  photoIds: string[];
+  resolved: boolean;
+  resolution?: string;
+  createdAt: string; // ISO datetime
+  resolvedAt?: string;
+}
+
+/**
+ * Job completion data
+ */
+export interface JobCompletion {
+  completedAt: string; // ISO datetime
+  clientSignature?: string; // base64 data URL
+  clientName?: string;
+  rating?: 1 | 2 | 3 | 4 | 5;
+  feedback?: string;
+}
+
+/**
+ * Complete job record
+ */
+export interface Job {
+  id: string;
+  jobNumber: string;
+  
+  // Source references
+  quoteId: string;
+  invoiceId?: string;
+  
+  // Client info (denormalized for offline)
+  client: JobClient;
+  
+  // Status
+  status: JobStatus;
+  cancelReason?: string;
+  
+  // Schedule
+  schedule: JobSchedule;
+  
+  // Work items
+  items: JobItem[];
+  
+  // Pricing
+  pricing: JobPricing;
+  
+  // Photos
+  photos: JobPhoto[];
+  
+  // Notes & Issues
+  notes: JobNote[];
+  issues: JobIssue[];
+  
+  // Completion
+  completion?: JobCompletion;
+  
+  // Metadata
+  createdAt: string;
+  updatedAt: string;
+}
+
+/**
+ * Job filters for listing
+ */
+export interface JobFilters {
+  status?: JobStatus | JobStatus[];
+  clientId?: string;
+  fromDate?: string;
+  toDate?: string;
+  search?: string;
+}
+
+/**
+ * Job metrics for analytics
+ */
+export interface JobMetrics {
+  totalJobs: number;
+  completedJobs: number;
+  scheduledJobs: number;
+  inProgressJobs: number;
+  cancelledJobs: number;
+  totalRevenue: number;
+  averageJobValue: number;
+  averageCompletionTime: number; // minutes
+  averageRating: number;
+}
+
+// ============================================
+// Job Factory Functions
+// ============================================
+
+/**
+ * Generate a unique job number
+ */
+let jobNumberCounter = 0;
+export function generateJobNumber(): string {
+  const now = new Date();
+  const year = now.getFullYear().toString().slice(-2);
+  const month = (now.getMonth() + 1).toString().padStart(2, '0');
+  const day = now.getDate().toString().padStart(2, '0');
+  jobNumberCounter++;
+  const seq = jobNumberCounter.toString().padStart(3, '0');
+  return `J${year}${month}${day}-${seq}`;
+}
+
+/**
+ * Reset job number counter (for testing)
+ */
+export function resetJobNumberCounter(value = 0): void {
+  jobNumberCounter = value;
+}
+
+/**
+ * Create a job item from a window line
+ */
+export function createJobItemFromWindowLine(
+  line: WindowLine,
+  price: number,
+  time: number,
+  windowTypeLabel: string
+): JobItem {
+  return {
+    id: line.id,
+    type: 'window',
+    description: `${windowTypeLabel} - ${line.panes} pane${line.panes !== 1 ? 's' : ''}`,
+    estimatedPrice: price,
+    estimatedTime: time,
+    actualPrice: price,
+    status: 'pending',
+    windowDetails: {
+      windowType: line.windowTypeId,
+      windowTypeLabel,
+      panes: line.panes,
+      inside: line.inside,
+      outside: line.outside,
+      insideComplete: false,
+      outsideComplete: false,
+      highReach: line.highReach || false,
+    },
+  };
+}
+
+/**
+ * Create a job item from a pressure line
+ */
+export function createJobItemFromPressureLine(
+  line: PressureLine,
+  price: number,
+  time: number,
+  surfaceTypeLabel: string
+): JobItem {
+  return {
+    id: line.id,
+    type: 'pressure',
+    description: `${surfaceTypeLabel} - ${line.areaSqm}m²`,
+    estimatedPrice: price,
+    estimatedTime: time,
+    actualPrice: price,
+    status: 'pending',
+    pressureDetails: {
+      surfaceType: line.surfaceId,
+      surfaceTypeLabel,
+      areaSqm: line.areaSqm,
+      percentComplete: 0,
+    },
+  };
+}
+
+/**
+ * Create a new job photo
+ */
+export function createJobPhoto(
+  type: JobPhotoType,
+  uri: string,
+  options?: {
+    itemId?: string;
+    caption?: string;
+    thumbnail?: string;
+    location?: { latitude: number; longitude: number };
+  }
+): JobPhoto {
+  return {
+    id: `photo-${Date.now()}-${Math.random().toString(36).slice(2, 9)}`,
+    type,
+    uri,
+    thumbnail: options?.thumbnail,
+    caption: options?.caption,
+    itemId: options?.itemId,
+    takenAt: new Date().toISOString(),
+    location: options?.location,
+  };
+}
+
+/**
+ * Create a new job note
+ */
+export function createJobNote(text: string, itemId?: string): JobNote {
+  return {
+    id: `note-${Date.now()}-${Math.random().toString(36).slice(2, 9)}`,
+    text,
+    createdAt: new Date().toISOString(),
+    itemId,
+  };
+}
+
+/**
+ * Create a new job issue
+ */
+export function createJobIssue(
+  description: string,
+  severity: JobIssueSeverity,
+  photoIds: string[] = []
+): JobIssue {
+  return {
+    id: `issue-${Date.now()}-${Math.random().toString(36).slice(2, 9)}`,
+    description,
+    severity,
+    photoIds,
+    resolved: false,
+    createdAt: new Date().toISOString(),
+  };
+}
+
+/**
+ * Calculate job pricing from items
+ */
+export function calculateJobPricing(items: JobItem[], gstRate = 0.1): JobPricing {
+  const estimatedSubtotal = items.reduce((sum, item) => sum + item.estimatedPrice, 0);
+  const actualSubtotal = items.reduce((sum, item) => sum + item.actualPrice, 0);
+  
+  return {
+    estimatedSubtotal: roundMoney(estimatedSubtotal),
+    estimatedGst: roundMoney(estimatedSubtotal * gstRate),
+    estimatedTotal: roundMoney(estimatedSubtotal * (1 + gstRate)),
+    actualSubtotal: roundMoney(actualSubtotal),
+    actualGst: roundMoney(actualSubtotal * gstRate),
+    actualTotal: roundMoney(actualSubtotal * (1 + gstRate)),
+  };
+}
+
+/**
+ * Calculate job completion percentage
+ */
+export function calculateJobProgress(items: JobItem[]): number {
+  if (items.length === 0) return 0;
+  
+  const completedCount = items.filter(
+    item => item.status === 'completed' || item.status === 'skipped'
+  ).length;
+  
+  return Math.round((completedCount / items.length) * 100);
+}
+
+/**
+ * Get job duration in minutes
+ */
+export function getJobDuration(job: Job): number {
+  if (!job.schedule.actualStartTime) return 0;
+  
+  const start = new Date(job.schedule.actualStartTime);
+  const end = job.schedule.actualEndTime 
+    ? new Date(job.schedule.actualEndTime) 
+    : new Date();
+  
+  return Math.round((end.getTime() - start.getTime()) / 60000);
+}
+
+// ============================================
 // Constants
 // ============================================
 

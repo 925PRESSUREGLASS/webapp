@@ -20,6 +20,15 @@
           <div class="text-h5">{{ job.jobNumber }}</div>
           <div class="text-grey-7">{{ job.client.name }}</div>
         </div>
+        <div class="col-auto q-mr-md" v-if="job.status !== 'scheduled'">
+          <JobTimer
+            :start-time="job.schedule.actualStartTime"
+            :end-time="job.schedule.actualEndTime"
+            :estimated-minutes="job.schedule.estimatedDuration"
+            :status="job.status"
+            :show-estimate="true"
+          />
+        </div>
         <q-badge
           :color="JOB_STATUSES[job.status].color"
           class="q-pa-sm text-body2"
@@ -351,6 +360,7 @@ import { useRouter } from 'vue-router';
 import { useQuasar } from 'quasar';
 import { useJobStore, JOB_STATUSES } from '../stores/jobs';
 import type { Job, JobItem, JobPhoto, JobIssueSeverity } from '@tictacstick/calculation-engine';
+import JobTimer from '../components/Jobs/JobTimer.vue';
 
 const props = defineProps<{
   id: string;
