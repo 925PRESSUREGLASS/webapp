@@ -1,34 +1,19 @@
 import { defineStore } from 'pinia';
 import { ref, computed, watch, toRaw } from 'vue';
-import type { WindowLine, PressureLine, PricingConfig, WindowTypeConfig, PressureSurfaceConfig } from '@tictacstick/calculation-engine';
+import type { WindowLine, PressureLine, PricingConfig } from '@tictacstick/calculation-engine';
 import {
   calculateGST,
   roundMoney,
-  calculateWindowCost,
   calculateWindowTime,
-  calculatePressureCost,
   calculatePressureTime,
-  createWindowTypeMap,
-  createPressureSurfaceMap,
-  WINDOW_CONDITIONS,
-  ACCESS_MODIFIERS,
 } from '@tictacstick/calculation-engine';
 import { useQuoteStorage, type SavedQuote } from '../composables/useStorage';
-
-// Create lookup maps for window types and pressure surfaces
-const windowTypeMap: Map<string, WindowTypeConfig> = createWindowTypeMap();
-const pressureSurfaceMap: Map<string, PressureSurfaceConfig> = createPressureSurfaceMap();
-
-// Create condition and access multiplier lookup functions
-function getConditionMultiplier(id: string): number {
-  const condition = WINDOW_CONDITIONS.find(c => c.id === id);
-  return condition?.priceMultiplier ?? 1.0;
-}
-
-function getAccessMultiplier(id: string): number {
-  const access = ACCESS_MODIFIERS.find(a => a.id === id);
-  return access?.priceMultiplier ?? 1.0;
-}
+import {
+  windowTypeMap,
+  pressureSurfaceMap,
+  calculateWindowLineCost,
+  calculatePressureLineCost,
+} from '../composables/useCalculations';
 
 // History state for undo/redo
 interface QuoteSnapshot {
@@ -93,17 +78,14 @@ export const useQuoteStore = defineStore('quote', () => {
     let pressure = 0;
     let highReach = 0;
 
-    // Calculate window costs
+    // Calculate window costs using shared composable
     windowLines.value.forEach(line => {
-      const cost = calculateWindowCost(line, pricingConfig.value, windowTypeMap, getConditionMultiplier, getAccessMultiplier);
+      const cost = calculateWindowLineCost(line, pricingConfig.value);
       // Separate high reach costs
       if (line.highReach) {
-        const baseCost = calculateWindowCost(
+        const baseCost = calculateWindowLineCost(
           { ...line, highReach: false },
-          pricingConfig.value,
-          windowTypeMap,
-          getConditionMultiplier,
-          getAccessMultiplier
+          pricingConfig.value
         );
         windows += baseCost;
         highReach += cost - baseCost;
@@ -112,9 +94,9 @@ export const useQuoteStore = defineStore('quote', () => {
       }
     });
 
-    // Calculate pressure costs
+    // Calculate pressure costs using shared composable
     pressureLines.value.forEach(line => {
-      pressure += calculatePressureCost(line, pricingConfig.value, pressureSurfaceMap);
+      pressure += calculatePressureLineCost(line, pricingConfig.value);
     });
 
     return {

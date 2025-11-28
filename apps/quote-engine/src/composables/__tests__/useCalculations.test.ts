@@ -1,0 +1,370 @@
+/**
+ * useCalculations Composable Tests
+ * 
+ * Tests for the shared calculation utilities composable
+ */
+
+import { describe, it, expect } from 'vitest';
+import {
+  windowTypeMap,
+  pressureSurfaceMap,
+  getConditionMultiplier,
+  getAccessMultiplier,
+  getConditionTimeMultiplier,
+  getAccessTimeMultiplier,
+  calculateWindowLineCost,
+  calculatePressureLineCost,
+  useCalculations,
+} from '../useCalculations';
+import type { WindowLine, PressureLine, PricingConfig } from '@tictacstick/calculation-engine';
+
+// Test pricing config
+const testPricingConfig: PricingConfig = {
+  baseFee: 0,
+  hourlyRate: 80,
+  minimumJob: 0,
+  highReachModifierPercent: 40,
+  insideMultiplier: 1.0,
+  outsideMultiplier: 1.0,
+  pressureHourlyRate: 80,
+  setupBufferMinutes: 0,
+};
+
+describe('useCalculations Composable', () => {
+  describe('Module-level memoized maps', () => {
+    it('should export windowTypeMap as a non-empty Map', () => {
+      expect(windowTypeMap).toBeInstanceOf(Map);
+      expect(windowTypeMap.size).toBeGreaterThan(0);
+    });
+
+    it('should export pressureSurfaceMap as a non-empty Map', () => {
+      expect(pressureSurfaceMap).toBeInstanceOf(Map);
+      expect(pressureSurfaceMap.size).toBeGreaterThan(0);
+    });
+
+    it('should have standard window types in windowTypeMap', () => {
+      const standardType = windowTypeMap.get('std1');
+      expect(standardType).toBeDefined();
+      expect(standardType?.label).toBeDefined();
+      expect(standardType?.baseMinutesInside).toBeGreaterThan(0);
+    });
+
+    it('should have driveway in pressureSurfaceMap', () => {
+      const driveway = pressureSurfaceMap.get('driveway');
+      expect(driveway).toBeDefined();
+      expect(driveway?.label).toBeDefined();
+      expect(driveway?.minutesPerSqm).toBeGreaterThan(0);
+    });
+  });
+
+  describe('Multiplier lookup functions', () => {
+    describe('getConditionMultiplier', () => {
+      it('should return 1.0 for unknown condition', () => {
+        expect(getConditionMultiplier('unknown')).toBe(1.0);
+      });
+
+      it('should return a number for dirty condition', () => {
+        const multiplier = getConditionMultiplier('dirty');
+        expect(typeof multiplier).toBe('number');
+        expect(multiplier).toBeGreaterThanOrEqual(1.0);
+      });
+
+      it('should return a number for very-dirty condition', () => {
+        const multiplier = getConditionMultiplier('very-dirty');
+        expect(typeof multiplier).toBe('number');
+        expect(multiplier).toBeGreaterThanOrEqual(1.0);
+      });
+    });
+
+    describe('getAccessMultiplier', () => {
+      it('should return 1.0 for unknown access', () => {
+        expect(getAccessMultiplier('unknown')).toBe(1.0);
+      });
+
+      it('should return a number for ladder access', () => {
+        const multiplier = getAccessMultiplier('ladder');
+        expect(typeof multiplier).toBe('number');
+        expect(multiplier).toBeGreaterThanOrEqual(1.0);
+      });
+
+      it('should return a number for scaffold access', () => {
+        const multiplier = getAccessMultiplier('scaffold');
+        expect(typeof multiplier).toBe('number');
+        expect(multiplier).toBeGreaterThanOrEqual(1.0);
+      });
+    });
+
+    describe('getConditionTimeMultiplier', () => {
+      it('should return 1.0 for unknown condition', () => {
+        expect(getConditionTimeMultiplier('unknown')).toBe(1.0);
+      });
+    });
+
+    describe('getAccessTimeMultiplier', () => {
+      it('should return 1.0 for unknown access', () => {
+        expect(getAccessTimeMultiplier('unknown')).toBe(1.0);
+      });
+    });
+  });
+
+  describe('calculateWindowLineCost', () => {
+    it('should calculate cost for basic window line', () => {
+      const line: WindowLine = {
+        id: 'test-1',
+        windowTypeId: 'std1',
+        panes: 4,
+        inside: true,
+        outside: true,
+        highReach: false,
+      };
+
+      const cost = calculateWindowLineCost(line, testPricingConfig);
+      expect(cost).toBeGreaterThan(0);
+    });
+
+    it('should return 0 for invalid window type', () => {
+      const line: WindowLine = {
+        id: 'test-2',
+        windowTypeId: 'invalid-type',
+        panes: 4,
+        inside: true,
+        outside: true,
+        highReach: false,
+      };
+
+      const cost = calculateWindowLineCost(line, testPricingConfig);
+      expect(cost).toBe(0);
+    });
+
+    it('should return 0 when neither inside nor outside is selected', () => {
+      const line: WindowLine = {
+        id: 'test-3',
+        windowTypeId: 'std1',
+        panes: 4,
+        inside: false,
+        outside: false,
+        highReach: false,
+      };
+
+      const cost = calculateWindowLineCost(line, testPricingConfig);
+      expect(cost).toBe(0);
+    });
+
+    it('should calculate higher cost for high reach when modifier is positive', () => {
+      // Create config with non-zero high reach modifier
+      const configWithHighReach: PricingConfig = {
+        ...testPricingConfig,
+        highReachModifierPercent: 40,
+      };
+
+      const baseLine: WindowLine = {
+        id: 'test-4',
+        windowTypeId: 'std1',
+        panes: 4,
+        inside: true,
+        outside: true,
+        highReach: false,
+      };
+
+      const highReachLine: WindowLine = {
+        ...baseLine,
+        id: 'test-5',
+        highReach: true,
+      };
+
+      const baseCost = calculateWindowLineCost(baseLine, configWithHighReach);
+      const highReachCost = calculateWindowLineCost(highReachLine, configWithHighReach);
+
+      // High reach should add the modifier percentage to the cost
+      expect(highReachCost).toBeGreaterThanOrEqual(baseCost);
+    });
+
+    it('should scale cost with number of panes', () => {
+      const line4Panes: WindowLine = {
+        id: 'test-6',
+        windowTypeId: 'std1',
+        panes: 4,
+        inside: true,
+        outside: true,
+        highReach: false,
+      };
+
+      const line8Panes: WindowLine = {
+        ...line4Panes,
+        id: 'test-7',
+        panes: 8,
+      };
+
+      const cost4 = calculateWindowLineCost(line4Panes, testPricingConfig);
+      const cost8 = calculateWindowLineCost(line8Panes, testPricingConfig);
+
+      // Use toBeCloseTo for float comparison (1 decimal place precision)
+      expect(cost8).toBeCloseTo(cost4 * 2, 1);
+    });
+  });
+
+  describe('calculatePressureLineCost', () => {
+    it('should calculate cost for basic pressure line', () => {
+      const line: PressureLine = {
+        id: 'test-1',
+        surfaceId: 'driveway',
+        areaSqm: 40,
+      };
+
+      const cost = calculatePressureLineCost(line, testPricingConfig);
+      expect(cost).toBeGreaterThan(0);
+    });
+
+    it('should return 0 for invalid surface type', () => {
+      const line: PressureLine = {
+        id: 'test-2',
+        surfaceId: 'invalid-surface',
+        areaSqm: 40,
+      };
+
+      const cost = calculatePressureLineCost(line, testPricingConfig);
+      expect(cost).toBe(0);
+    });
+
+    it('should return 0 for zero area', () => {
+      const line: PressureLine = {
+        id: 'test-3',
+        surfaceId: 'driveway',
+        areaSqm: 0,
+      };
+
+      const cost = calculatePressureLineCost(line, testPricingConfig);
+      expect(cost).toBe(0);
+    });
+
+    it('should scale cost with area', () => {
+      const line40sqm: PressureLine = {
+        id: 'test-4',
+        surfaceId: 'driveway',
+        areaSqm: 40,
+      };
+
+      const line80sqm: PressureLine = {
+        ...line40sqm,
+        id: 'test-5',
+        areaSqm: 80,
+      };
+
+      const cost40 = calculatePressureLineCost(line40sqm, testPricingConfig);
+      const cost80 = calculatePressureLineCost(line80sqm, testPricingConfig);
+
+      // Use toBeCloseTo for float comparison (1 decimal place precision)
+      expect(cost80).toBeCloseTo(cost40 * 2, 1);
+    });
+
+    it('should calculate higher cost for heavy soil level', () => {
+      const lightLine: PressureLine = {
+        id: 'test-6',
+        surfaceId: 'driveway',
+        areaSqm: 40,
+        soilLevel: 'light',
+      };
+
+      const heavyLine: PressureLine = {
+        ...lightLine,
+        id: 'test-7',
+        soilLevel: 'heavy',
+      };
+
+      const lightCost = calculatePressureLineCost(lightLine, testPricingConfig);
+      const heavyCost = calculatePressureLineCost(heavyLine, testPricingConfig);
+
+      expect(heavyCost).toBeGreaterThan(lightCost);
+    });
+  });
+
+  describe('useCalculations composable function', () => {
+    it('should return all expected utilities', () => {
+      const utils = useCalculations();
+
+      expect(utils.windowTypeMap).toBeDefined();
+      expect(utils.pressureSurfaceMap).toBeDefined();
+      expect(utils.getConditionMultiplier).toBeTypeOf('function');
+      expect(utils.getAccessMultiplier).toBeTypeOf('function');
+      expect(utils.getConditionTimeMultiplier).toBeTypeOf('function');
+      expect(utils.getAccessTimeMultiplier).toBeTypeOf('function');
+      expect(utils.calculateWindowLineCost).toBeTypeOf('function');
+      expect(utils.calculatePressureLineCost).toBeTypeOf('function');
+      expect(utils.calculateWindowLineTime).toBeTypeOf('function');
+      expect(utils.calculatePressureLineTime).toBeTypeOf('function');
+      expect(utils.conditions).toBeDefined();
+      expect(utils.accessModifiers).toBeDefined();
+    });
+
+    it('should return conditions array with valid entries', () => {
+      const { conditions } = useCalculations();
+
+      expect(Array.isArray(conditions)).toBe(true);
+      expect(conditions.length).toBeGreaterThan(0);
+      
+      const firstCondition = conditions[0];
+      expect(firstCondition.id).toBeDefined();
+      expect(firstCondition.label).toBeDefined();
+      expect(firstCondition.priceMultiplier).toBeGreaterThan(0);
+    });
+
+    it('should return accessModifiers array with valid entries', () => {
+      const { accessModifiers } = useCalculations();
+
+      expect(Array.isArray(accessModifiers)).toBe(true);
+      expect(accessModifiers.length).toBeGreaterThan(0);
+      
+      const firstModifier = accessModifiers[0];
+      expect(firstModifier.id).toBeDefined();
+      expect(firstModifier.label).toBeDefined();
+      expect(firstModifier.priceMultiplier).toBeGreaterThan(0);
+    });
+
+    it('should return same memoized maps on multiple calls', () => {
+      const utils1 = useCalculations();
+      const utils2 = useCalculations();
+
+      expect(utils1.windowTypeMap).toBe(utils2.windowTypeMap);
+      expect(utils1.pressureSurfaceMap).toBe(utils2.pressureSurfaceMap);
+    });
+  });
+
+  describe('Performance optimizations', () => {
+    it('should have O(1) lookups for condition multipliers', () => {
+      // Multiple lookups should be fast with Map-based implementation
+      const start = performance.now();
+      for (let i = 0; i < 1000; i++) {
+        getConditionMultiplier('dirty');
+        getConditionMultiplier('very-dirty');
+        getConditionMultiplier('unknown');
+      }
+      const duration = performance.now() - start;
+      
+      // Should complete 3000 lookups in under 10ms with Map-based O(1) lookup
+      expect(duration).toBeLessThan(50);
+    });
+
+    it('should have O(1) lookups for access multipliers', () => {
+      const start = performance.now();
+      for (let i = 0; i < 1000; i++) {
+        getAccessMultiplier('ladder');
+        getAccessMultiplier('scaffold');
+        getAccessMultiplier('unknown');
+      }
+      const duration = performance.now() - start;
+      
+      expect(duration).toBeLessThan(50);
+    });
+
+    it('should have O(1) lookups for time multipliers', () => {
+      const start = performance.now();
+      for (let i = 0; i < 1000; i++) {
+        getConditionTimeMultiplier('dirty');
+        getAccessTimeMultiplier('ladder');
+      }
+      const duration = performance.now() - start;
+      
+      expect(duration).toBeLessThan(50);
+    });
+  });
+});

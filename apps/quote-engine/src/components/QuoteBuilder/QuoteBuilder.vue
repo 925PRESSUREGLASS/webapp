@@ -23,7 +23,14 @@
         <q-tooltip>Redo (Ctrl+Shift+Z)</q-tooltip>
       </q-btn>
       <q-space />
-      <q-badge v-if="quoteStore.isDirty" color="orange" label="Unsaved changes" />
+      <!-- Status badges with autosave indicator -->
+      <q-badge v-if="quoteStore.isDirty && lastAutosaveTime" color="blue-grey" class="q-mr-xs">
+        <q-icon name="cloud_done" size="xs" class="q-mr-xs" />
+        Autosaved
+      </q-badge>
+      <q-badge v-if="quoteStore.isDirty" color="orange" label="Unsaved changes">
+        <q-tooltip>Press Ctrl+S to save</q-tooltip>
+      </q-badge>
       <q-badge v-else-if="quoteStore.currentQuoteId" color="green" label="Saved" />
     </div>
 
@@ -170,7 +177,7 @@
 </template>
 
 <script setup lang="ts">
-import { ref, onMounted, onUnmounted } from 'vue';
+import { ref, onMounted, onUnmounted, watch } from 'vue';
 import { useQuasar } from 'quasar';
 import { useRouter } from 'vue-router';
 import { useQuoteStore } from '../../stores/quote';
@@ -184,6 +191,39 @@ const router = useRouter();
 const quoteStore = useQuoteStore();
 
 const isSaving = ref(false);
+const lastAutosaveTime = ref<Date | null>(null);
+
+// Debounced autosave
+let autosaveTimeout: ReturnType<typeof setTimeout> | null = null;
+const AUTOSAVE_DELAY_MS = 2000; // 2 seconds after last change
+
+function debouncedAutosave() {
+  if (autosaveTimeout) {
+    clearTimeout(autosaveTimeout);
+  }
+  autosaveTimeout = setTimeout(() => {
+    if (quoteStore.isDirty) {
+      quoteStore.autosave();
+      lastAutosaveTime.value = new Date();
+    }
+  }, AUTOSAVE_DELAY_MS);
+}
+
+// Watch for changes and trigger autosave
+watch(
+  [
+    () => quoteStore.windowLines,
+    () => quoteStore.pressureLines,
+    () => quoteStore.clientName,
+    () => quoteStore.clientLocation,
+  ],
+  () => {
+    if (quoteStore.isDirty) {
+      debouncedAutosave();
+    }
+  },
+  { deep: true }
+);
 
 // Keyboard shortcuts
 function handleKeydown(event: KeyboardEvent) {
@@ -209,6 +249,10 @@ onMounted(() => {
 
 onUnmounted(() => {
   document.removeEventListener('keydown', handleKeydown);
+  // Clean up autosave timeout
+  if (autosaveTimeout) {
+    clearTimeout(autosaveTimeout);
+  }
 });
 
 function addWindowLine() {

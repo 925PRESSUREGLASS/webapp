@@ -32,6 +32,7 @@ export interface WindowLine {
   trackClean?: boolean;
   screenClean?: boolean;
   location?: string;
+  notes?: string;
   modifiers?: string[];
 }
 

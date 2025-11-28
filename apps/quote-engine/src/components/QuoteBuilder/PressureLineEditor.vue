@@ -148,6 +148,8 @@ import {
   EXTENDED_PRESSURE_SURFACES,
   formatCurrency,
 } from '@tictacstick/calculation-engine';
+import { useQuoteStore } from '../../stores/quote';
+import { calculatePressureLineCost } from '../../composables/useCalculations';
 
 const props = defineProps<{
   line: PressureLine;
@@ -157,6 +159,8 @@ const emit = defineEmits<{
   update: [line: PressureLine];
   remove: [id: string];
 }>();
+
+const quoteStore = useQuoteStore();
 
 // Local copy for editing
 const localLine = ref<PressureLine>({ ...props.line });
@@ -257,35 +261,9 @@ const estimatedMinutes = computed(() => {
   return baseMinutes * multiplier;
 });
 
-// Estimated price calculation - matches the store's calculation logic
+// Estimated price calculation - using shared composable function
 const estimatedPrice = computed(() => {
-  const allSurfaces = [...CORE_PRESSURE_SURFACES, ...EXTENDED_PRESSURE_SURFACES];
-  const surface = allSurfaces.find(s => s.id === localLine.value.surfaceId);
-  if (!surface) return 0;
-  
-  // Use the same calculation as the store: time-based pricing
-  const mps = surface.minutesPerSqm || 0;
-  const area = localLine.value.areaSqm || 0;
-  const pressureHourlyRate = 80; // Default rate from quote store
-  
-  // Soil factor (same as calculatePressureCost)
-  let soilFactor = 1.0;
-  if (localLine.value.soilLevel === 'medium') soilFactor = 1.25;
-  else if (localLine.value.soilLevel === 'heavy') soilFactor = 1.5;
-  
-  // Access factor (same as calculatePressureCost)
-  let accessFactor = 1.0;
-  if (localLine.value.access === 'ladder') accessFactor = 1.2;
-  else if (localLine.value.access === 'highReach') accessFactor = 1.35;
-  
-  const minutes = mps * area * soilFactor * accessFactor;
-  const hours = minutes / 60;
-  let cost = hours * pressureHourlyRate;
-  
-  // Sealing is an add-on multiplier (kept from original)
-  if (localLine.value.includeSealing) cost *= 1.8;
-  
-  return Math.round(cost * 100) / 100; // Round to 2 decimal places
+  return calculatePressureLineCost(localLine.value, quoteStore.pricingConfig);
 });
 
 // Format time helper

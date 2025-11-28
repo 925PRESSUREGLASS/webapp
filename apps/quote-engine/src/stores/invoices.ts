@@ -86,6 +86,7 @@ export interface Invoice {
   payments: Payment[];
   
   // Notes
+  notes?: string;
   internalNotes?: string;
   clientNotes?: string;
 }

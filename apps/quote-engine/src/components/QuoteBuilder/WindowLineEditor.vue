@@ -179,13 +179,13 @@ import type { WindowLine } from '@tictacstick/calculation-engine';
 import {
   CORE_WINDOW_TYPES,
   EXTENDED_WINDOW_TYPES,
-  WINDOW_CONDITIONS,
-  ACCESS_MODIFIERS,
-  calculateWindowCost,
   formatCurrency,
-  createWindowTypeMap,
 } from '@tictacstick/calculation-engine';
 import { useQuoteStore } from '../../stores/quote';
+import {
+  calculateWindowLineCost,
+  useCalculations,
+} from '../../composables/useCalculations';
 
 const props = defineProps<{
   line: WindowLine;
@@ -197,9 +197,7 @@ const emit = defineEmits<{
 }>();
 
 const quoteStore = useQuoteStore();
-
-// Create window type map for calculations
-const windowTypeMap = createWindowTypeMap();
+const { conditions, accessModifiers } = useCalculations();
 
 // Local copy of line for editing
 const localLine = ref<WindowLine>({ ...props.line });
@@ -222,9 +220,9 @@ const windowTypeOptions = computed(() =>
   }))
 );
 
-// Condition options
+// Condition options - using composable data
 const conditionOptions = computed(() =>
-  WINDOW_CONDITIONS.map(cond => ({
+  conditions.map(cond => ({
     value: cond.id,
     label: cond.label,
     timeMultiplier: cond.timeMultiplier,
@@ -232,9 +230,9 @@ const conditionOptions = computed(() =>
   }))
 );
 
-// Access options
+// Access options - using composable data
 const accessOptions = computed(() =>
-  ACCESS_MODIFIERS.map(acc => ({
+  accessModifiers.map(acc => ({
     value: acc.id,
     label: acc.label,
     timeMultiplier: acc.timeMultiplier,
@@ -253,20 +251,9 @@ const selectedAccess = computed({
   set: (value: string | null) => updateAccess(value),
 });
 
-// Multiplier lookup functions for condition and access
-function getConditionMultiplier(id: string): number {
-  const condition = WINDOW_CONDITIONS.find(c => c.id === id);
-  return condition?.priceMultiplier ?? 1.0;
-}
-
-function getAccessMultiplier(id: string): number {
-  const access = ACCESS_MODIFIERS.find(a => a.id === id);
-  return access?.priceMultiplier ?? 1.0;
-}
-
-// Calculate line cost
+// Calculate line cost using composable helper
 const lineCost = computed(() => {
-  return calculateWindowCost(localLine.value, quoteStore.pricingConfig, windowTypeMap, getConditionMultiplier, getAccessMultiplier);
+  return calculateWindowLineCost(localLine.value, quoteStore.pricingConfig);
 });
 
 function emitUpdate() {

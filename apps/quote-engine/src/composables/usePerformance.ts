@@ -10,7 +10,7 @@
  * - Virtual scrolling helpers
  */
 
-import { ref, computed, onUnmounted, shallowRef } from 'vue';
+import { ref, computed, onUnmounted } from 'vue';
 
 // ============================================
 // Types

@@ -129,15 +129,9 @@ import PriceDisplay from '../components/QuoteBuilder/PriceDisplay.vue';
 import ClientAutocomplete from '../components/QuoteBuilder/ClientAutocomplete.vue';
 import type { Client } from '../stores/clients';
 import {
-  calculateWindowCost,
-  calculatePressureCost,
-  createWindowTypeMap,
-  createPressureSurfaceMap,
-  WINDOW_CONDITIONS,
-  ACCESS_MODIFIERS,
-  type WindowLine,
-  type PressureLine,
-} from '@tictacstick/calculation-engine';
+  calculateWindowLineCost,
+  calculatePressureLineCost,
+} from '../composables/useCalculations';
 
 const $q = useQuasar();
 const route = useRoute();
@@ -146,21 +140,6 @@ const quoteStore = useQuoteStore();
 const invoiceStore = useInvoiceStore();
 
 const isLoading = ref(false);
-
-// Create type maps for cost calculation
-const windowTypeMap = createWindowTypeMap();
-const pressureSurfaceMap = createPressureSurfaceMap();
-
-// Multiplier functions for condition and access
-function getConditionMultiplier(id: string): number {
-  const condition = WINDOW_CONDITIONS.find(c => c.id === id);
-  return condition?.priceMultiplier ?? 1.0;
-}
-
-function getAccessMultiplier(id: string): number {
-  const access = ACCESS_MODIFIERS.find(a => a.id === id);
-  return access?.priceMultiplier ?? 1.0;
-}
 
 const jobTypeOptions = [
   { label: 'Residential', value: 'residential' },
@@ -240,28 +219,18 @@ function createInvoice() {
   // Initialize invoice store if not already
   invoiceStore.initialize();
 
-  // Calculate costs for each window line before passing to invoice
+  // Calculate costs for each window line using shared composable
   const windowLinesWithCost = quoteStore.windowLines.map(line => {
-    const cost = calculateWindowCost(
-      line as WindowLine,
-      quoteStore.pricingConfig,
-      windowTypeMap,
-      getConditionMultiplier,
-      getAccessMultiplier
-    );
+    const cost = calculateWindowLineCost(line, quoteStore.pricingConfig);
     return {
       ...line,
       calculatedCost: cost,
     };
   });
 
-  // Calculate costs for each pressure line before passing to invoice
+  // Calculate costs for each pressure line using shared composable
   const pressureLinesWithCost = quoteStore.pressureLines.map(line => {
-    const cost = calculatePressureCost(
-      line as PressureLine,
-      quoteStore.pricingConfig,
-      pressureSurfaceMap
-    );
+    const cost = calculatePressureLineCost(line, quoteStore.pricingConfig);
     return {
       ...line,
       calculatedCost: cost,
