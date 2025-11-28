@@ -32,6 +32,9 @@
               <q-item clickable v-close-popup to="/invoices">
                 <q-item-section>Invoices</q-item-section>
               </q-item>
+              <q-item clickable v-close-popup to="/jobs">
+                <q-item-section>Jobs</q-item-section>
+              </q-item>
               <q-item clickable v-close-popup to="/analytics">
                 <q-item-section>Analytics</q-item-section>
               </q-item>
@@ -79,6 +82,13 @@
             <q-icon name="receipt" />
           </q-item-section>
           <q-item-section>Invoices</q-item-section>
+        </q-item>
+
+        <q-item clickable v-ripple to="/jobs">
+          <q-item-section avatar>
+            <q-icon name="construction" />
+          </q-item-section>
+          <q-item-section>Jobs</q-item-section>
         </q-item>
 
         <q-separator />
