@@ -128,9 +128,13 @@
 import { ref } from 'vue';
 import { useQuasar } from 'quasar';
 import OfflineIndicator from '../components/QuoteBuilder/OfflineIndicator.vue';
+import { useKeyboardShortcuts } from '../composables/useKeyboardShortcuts';
 
 const $q = useQuasar();
 const leftDrawerOpen = ref(false);
+
+// Initialize keyboard shortcuts - this sets up all the global shortcuts
+useKeyboardShortcuts();
 
 function toggleLeftDrawer() {
   leftDrawerOpen.value = !leftDrawerOpen.value;
