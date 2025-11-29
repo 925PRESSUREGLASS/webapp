@@ -95,6 +95,14 @@
             @click="handleCreateInvoice"
           />
         </div>
+        <div class="col-auto" v-if="job.status === 'completed' || job.status === 'invoiced'">
+          <q-btn
+            color="teal"
+            icon="picture_as_pdf"
+            label="Export PDF"
+            @click="showPdfDialog = true"
+          />
+        </div>
       </div>
 
       <!-- Progress Bar -->
@@ -378,6 +386,48 @@
       @complete="handleJobCompletion"
       @cancel="showCompletionWizard = false"
     />
+
+    <!-- PDF Export Dialog -->
+    <q-dialog v-model="showPdfDialog" maximized>
+      <q-card v-if="job">
+        <q-toolbar class="bg-teal text-white">
+          <q-btn flat round icon="arrow_back" @click="showPdfDialog = false" />
+          <q-toolbar-title>Job Receipt - {{ job.jobNumber }}</q-toolbar-title>
+          <q-btn-dropdown flat icon="download" label="Export">
+            <q-list>
+              <q-item clickable v-close-popup @click="handleDownloadPdf(false)">
+                <q-item-section>
+                  <q-item-label>Download PDF</q-item-label>
+                  <q-item-label caption>Without photos</q-item-label>
+                </q-item-section>
+              </q-item>
+              <q-item clickable v-close-popup @click="handleDownloadPdf(true)">
+                <q-item-section>
+                  <q-item-label>Download PDF (with photos)</q-item-label>
+                  <q-item-label caption>Includes all job photos</q-item-label>
+                </q-item-section>
+              </q-item>
+              <q-separator />
+              <q-item clickable v-close-popup @click="handleSharePdf">
+                <q-item-section>
+                  <q-item-label>Share PDF</q-item-label>
+                  <q-item-label caption>Send via email or messages</q-item-label>
+                </q-item-section>
+              </q-item>
+            </q-list>
+          </q-btn-dropdown>
+          <q-btn flat icon="print" label="Print" @click="handlePrint" />
+        </q-toolbar>
+        <q-card-section class="pdf-preview-container">
+          <JobReceiptPrint
+            ref="receiptPrintRef"
+            :job="job"
+            :settings="invoiceSettings"
+            :include-photos="pdfIncludePhotos"
+          />
+        </q-card-section>
+      </q-card>
+    </q-dialog>
   </q-page>
 </template>
 
@@ -392,6 +442,12 @@ import JobTimer from '../components/Jobs/JobTimer.vue';
 import PriceAdjustModal from '../components/Jobs/PriceAdjustModal.vue';
 import PhotoCapture from '../components/Jobs/PhotoCapture.vue';
 import JobCompletionWizard from '../components/Jobs/JobCompletionWizard.vue';
+import JobReceiptPrint from '../components/Jobs/JobReceiptPrint.vue';
+import {
+  downloadPdfFromElement,
+  sharePdf,
+  generateJobReceiptFilename,
+} from '../utils/pdf-generator';
 
 const props = defineProps<{
   id: string;
@@ -410,6 +466,17 @@ const showPriceAdjustModal = ref(false);
 const showCompletionWizard = ref(false);
 const selectedItemForPriceAdjust = ref<JobItem | null>(null);
 const newNoteText = ref('');
+
+// PDF Export State
+const showPdfDialog = ref(false);
+const pdfIncludePhotos = ref(true);
+const receiptPrintRef = ref<InstanceType<typeof JobReceiptPrint> | null>(null);
+
+// Get invoice settings for PDF
+const invoiceSettings = computed(() => {
+  invoiceStore.initialize();
+  return invoiceStore.getSettings();
+});
 
 // Computed
 const progress = computed(() => {
@@ -719,10 +786,107 @@ function formatDateTime(dateString: string): string {
     minute: '2-digit',
   });
 }
+
+// PDF Export Handlers
+async function handleDownloadPdf(includePhotos: boolean) {
+  if (!job.value || !receiptPrintRef.value?.receiptRef) {
+    $q.notify({
+      type: 'negative',
+      message: 'Unable to generate PDF',
+    });
+    return;
+  }
+
+  pdfIncludePhotos.value = includePhotos;
+  
+  // Wait for the DOM to update with the new photo setting
+  await new Promise(resolve => setTimeout(resolve, 100));
+
+  try {
+    $q.loading.show({ message: 'Generating PDF...' });
+    
+    const filename = generateJobReceiptFilename(job.value);
+    await downloadPdfFromElement(receiptPrintRef.value.receiptRef, {
+      filename,
+      includePhotos,
+    });
+
+    $q.notify({
+      type: 'positive',
+      message: 'PDF downloaded successfully',
+      icon: 'picture_as_pdf',
+    });
+  } catch (error) {
+    console.error('[PDF] Download failed:', error);
+    $q.notify({
+      type: 'negative',
+      message: 'Failed to generate PDF',
+    });
+  } finally {
+    $q.loading.hide();
+  }
+}
+
+async function handleSharePdf() {
+  if (!job.value || !receiptPrintRef.value?.receiptRef) {
+    $q.notify({
+      type: 'negative',
+      message: 'Unable to generate PDF',
+    });
+    return;
+  }
+
+  try {
+    $q.loading.show({ message: 'Preparing PDF...' });
+    
+    const filename = generateJobReceiptFilename(job.value);
+    const shared = await sharePdf(receiptPrintRef.value.receiptRef, {
+      filename,
+      includePhotos: true,
+    });
+
+    if (shared) {
+      $q.notify({
+        type: 'positive',
+        message: 'PDF shared successfully',
+        icon: 'share',
+      });
+    }
+  } catch (error) {
+    console.error('[PDF] Share failed:', error);
+    $q.notify({
+      type: 'negative',
+      message: 'Failed to share PDF',
+    });
+  } finally {
+    $q.loading.hide();
+  }
+}
+
+function handlePrint() {
+  window.print();
+}
 </script>
 
 <style scoped>
 .q-card {
   border-radius: 12px;
+}
+
+.pdf-preview-container {
+  max-width: 850px;
+  margin: 0 auto;
+  padding: 20px;
+  background: #f5f5f5;
+  overflow-y: auto;
+  max-height: calc(100vh - 50px);
+}
+
+@media print {
+  .pdf-preview-container {
+    background: white;
+    max-height: none;
+    padding: 0;
+  }
 }
 </style>
