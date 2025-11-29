@@ -4,20 +4,21 @@
 **Project:** TicTacStick Quote Engine for 925 Pressure Glass  
 **Repository:** https://github.com/925PRESSUREGLASS/webapp  
 **Branch:** main  
-**Last Commit:** `e8fcb3f` - docs: update TODO_ALIGNMENT with Phase 2B completion status
+**Last Commit:** `34ea58d` - build: build calc engine before vercel deploy
 
 ---
 
 ## 🎯 IMMEDIATE CONTEXT
 
-You are picking up a monorepo project that just completed **Task 10: Data Sync Infrastructure**. The project has a working authentication system (Tasks 8-9) and data sync infrastructure between a Vue/Quasar PWA and a Fastify backend.
+You are picking up a monorepo project that just completed **Task 11: Wire Sync Store into Pages**. The project has a working authentication system, data sync infrastructure, and sync wiring across all pages.
 
 ### Current State Summary
-- **Tasks 1-10:** ✅ Complete
+- **Tasks 1-11:** ✅ Complete
 - **Phase 2A (Infrastructure):** ✅ Complete  
 - **Phase 2B (Cloud Sync):** ✅ Complete
 - **Phase 2C (GHL Integration):** ⬜ Next
 - **Phase 2D (Push Notifications):** ⬜ Pending
+- **Open Issue:** Blank page on login (needs debugging)
 
 ### Live Endpoints
 - **Meta-API:** `https://meta-api-78ow.onrender.com`
@@ -91,7 +92,7 @@ webapp/
 
 ---
 
-## 🔧 RECENT WORK (Tasks 8-10)
+## 🔧 RECENT WORK (Tasks 8-11)
 
 ### Task 8: JWT Authentication Backend ✅
 **Commit:** `b119f51`
@@ -124,75 +125,40 @@ Created:
 
 **Backend Created:**
 - `apps/meta-api/src/services/sync.service.ts` (560 lines)
-  - CRUD for Quote, Job, Client, Invoice
-  - Upsert by `localId` for conflict resolution
-  - Delta sync with `since` parameter
-  - Bulk sync for multiple entities
-
 - `apps/meta-api/src/routes/sync.ts` (240 lines)
-
-Sync Endpoints:
-| Endpoint | Method | Description |
-|----------|--------|-------------|
-| /sync/all | GET | Fetch all cloud data |
-| /sync/bulk | POST | Bulk push entities |
-| /sync/quotes | GET/POST/DELETE | Quote operations |
-| /sync/jobs | GET/POST/DELETE | Job operations |
-| /sync/clients | GET/POST/DELETE | Client operations |
-| /sync/invoices | GET/POST/DELETE | Invoice operations |
 
 **Frontend Created:**
 - `apps/quote-engine/src/stores/sync.ts` (330 lines)
-  - Offline-first sync queue
-  - Auto-sync on reconnect
-  - 5-minute periodic sync
-  - localStorage caching
+
+### Task 11: Wire Sync Store into Pages ✅
+**Commit:** `e0d887c`
+
+**Pages Updated:**
+- `QuotePage.vue` - Queues quote sync on save, invoice sync on convert
+- `SavedQuotesPage.vue` - Pulls cloud quotes when authenticated; queues duplicates, deletes, jobs
+- `JobsPage.vue` - Initializes sync, processes queue when online/authenticated
+- `ActiveJobPage.vue` - Queues job sync on status/notes/photos/price changes
+- `InvoicesPage.vue` - Queues invoice sync on create/update/status/payments/delete
+
+**New Helper Created:**
+- `apps/quote-engine/src/utils/sync-payloads.ts` - Payload builders + cloud quote mapper
 
 ---
 
-## 🎯 NEXT TASK: Task 11 - Wire Sync Store
+## 🎯 NEXT PRIORITIES
 
-### What Needs to Be Done
+### Priority 1: Fix Blank Page on Login
+See diagnostic section below.
 
-The sync infrastructure exists but is **not yet connected** to the actual page operations. The sync store needs to be integrated into:
+### Priority 2: Phase 2C - GHL Integration
+- Activate existing GHL sync modules in `ghl-sync.js`
+- Webhook handlers for GHL in meta-api
+- Two-way contact sync
 
-1. **QuotePage.vue** - When saving quotes, call `syncStore.queueChange('quote', quoteData)`
-2. **SavedQuotesPage.vue** - Pull quotes from cloud on mount if authenticated
-3. **JobsPage.vue** - Sync jobs when created/updated
-4. **InvoicesPage.vue** - Sync invoices
-
-### Suggested Implementation
-
-```typescript
-// In any page that saves data:
-import { useSyncStore } from 'src/stores/sync';
-import { useAuthStore } from 'src/stores/auth';
-
-const syncStore = useSyncStore();
-const authStore = useAuthStore();
-
-// After saving locally:
-async function saveQuote(quote: Quote) {
-  // Save to local store first
-  quotesStore.saveQuote(quote);
-  
-  // If authenticated, queue for cloud sync
-  if (authStore.isAuthenticated) {
-    await syncStore.queueChange('quote', {
-      action: 'upsert',
-      data: quote
-    });
-  }
-}
-```
-
-### Files to Modify
-
-1. `apps/quote-engine/src/pages/QuotePage.vue`
-2. `apps/quote-engine/src/pages/SavedQuotesPage.vue`
-3. `apps/quote-engine/src/pages/JobsPage.vue`
-4. `apps/quote-engine/src/pages/ActiveJobPage.vue`
-5. `apps/quote-engine/src/pages/InvoicesPage.vue`
+### Priority 3: Phase 2D - Push Notifications
+- Push notification token backend
+- Notification service in meta-api
+- Subscription management UI
 
 ---
 
@@ -351,6 +317,49 @@ git push origin main
   2. Convert quote to job → Track work → Complete with signature
   3. Generate invoice → Email to customer
   4. Cloud sync for multi-device access
+
+---
+
+---
+
+## 🐛 KNOWN ISSUE: Blank Page on Login
+
+**Reported:** User sees blank page after login attempt.
+
+### Likely Causes (in order of probability)
+
+1. **Render Cold Start** - Free tier API spins down after inactivity. First request can timeout (~30s).
+2. **CORS Issue** - API might not be returning proper CORS headers.
+3. **API Unreachable** - Network error during login fetch.
+4. **Auth State Loop** - Redirect loop between `/login` and `/` if auth state is corrupted.
+
+### Diagnostic Steps
+
+```bash
+# 1. Check if API is responsive
+curl -X POST https://meta-api-78ow.onrender.com/auth/login \
+  -H "Content-Type: application/json" \
+  -d '{"email":"test@test.com","password":"test123"}'
+
+# 2. Check health endpoint
+curl https://meta-api-78ow.onrender.com/health
+
+# 3. In browser console, after blank page:
+# - Check for errors: Look for CORS, network, or JS errors
+# - Check network tab: Find the /auth/login request status
+```
+
+### Quick Fixes to Try
+
+1. **Add error boundary to LoginPage** - Show error to user instead of blank
+2. **Add API connection check** - Ping health endpoint before login attempt
+3. **Add loading state for cold start** - Show "Waking up server..." message
+
+### Code Locations
+
+- Login logic: `apps/quote-engine/src/pages/LoginPage.vue`
+- Auth store: `apps/quote-engine/src/stores/auth.ts` (lines 167-193)
+- Router guards: `apps/quote-engine/src/router/index.ts`
 
 ---
 
