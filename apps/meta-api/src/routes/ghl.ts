@@ -1,6 +1,7 @@
 import { FastifyInstance, FastifyReply, FastifyRequest } from 'fastify';
 import { z } from 'zod';
 import { testConnection, createContact, createOpportunity, getGhlStatus } from '../services/ghl.service.js';
+import { env } from '../config/env.js';
 
 interface JwtPayload {
   userId: string;
@@ -87,5 +88,26 @@ export async function registerGhlRoutes(app: FastifyInstance) {
     } catch (err: any) {
       reply.status(400).send({ success: false, error: err.message || 'Failed to create opportunity' });
     }
+  });
+
+  // Webhook receiver (signature is a shared secret check for now)
+  app.post('/ghl/webhook', async (request, reply) => {
+    var configuredSecret = env.GHL_WEBHOOK_SECRET;
+    if (configuredSecret) {
+      var provided = (request.headers['x-ghl-signature'] as string) || '';
+      if (provided !== configuredSecret) {
+        reply.status(401).send({ success: false, error: 'Invalid webhook signature' });
+        return;
+      }
+    }
+
+    // Basic log and ack; downstream processing can be added here
+    try {
+      console.log('[GHL-WEBHOOK] Event received:', request.body);
+    } catch (err) {
+      // Ignore logging errors
+    }
+
+    reply.send({ success: true });
   });
 }
