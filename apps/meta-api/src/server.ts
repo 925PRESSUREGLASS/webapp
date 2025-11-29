@@ -19,6 +19,7 @@ import { aiBridge } from './ai/bridge';
 import { emailService } from './services/email.service';
 import { registerEmailRoutes } from './routes/email';
 import { registerAuthRoutes } from './routes/auth';
+import syncRoutes from './routes/sync.js';
 
 var projectStatusEnum = ['draft', 'in-progress', 'complete'] as const;
 var assetStatusEnum = ['draft', 'active', 'deprecated'] as const;
@@ -308,6 +309,10 @@ function buildServer(): FastifyInstance {
   
   // Register auth routes
   registerAuthRoutes(app, allowedOrigin);
+  
+  // Register sync routes (authenticated data sync for PWA)
+  app.register(syncRoutes);
+  console.log('[SYNC] Data sync routes registered');
 
   // Simple mutable copies for in-memory CRUD (placeholder until DB)
   var projectsStore = sampleProjects.slice();
