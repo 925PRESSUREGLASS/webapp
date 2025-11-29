@@ -1,3 +1,4 @@
+// Build: 2025-11-30T21:00 - force Render redeploy
 import fastify, { FastifyInstance } from 'fastify';
 import fastifyJwt from '@fastify/jwt';
 import { AppService, AssetLibraryItem, FeatureRecord, Project } from '../../domain/types';
