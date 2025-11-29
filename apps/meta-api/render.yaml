@@ -1,0 +1,30 @@
+# Render Blueprint - TicTacStick Meta API
+# https://render.com/docs/blueprint-spec
+
+services:
+  - type: web
+    name: meta-api
+    runtime: node
+    region: oregon
+    plan: free
+    rootDir: apps/meta-api
+    buildCommand: npm install && npx prisma generate --schema ../../prisma/schema.prisma && npm run build
+    startCommand: npm start
+    healthCheckPath: /health
+    envVars:
+      - key: NODE_ENV
+        value: production
+      - key: PORT
+        value: 3001
+      - key: HOST
+        value: 0.0.0.0
+      - key: DATABASE_URL
+        sync: false
+      - key: SUPABASE_URL
+        sync: false
+      - key: SUPABASE_KEY
+        sync: false
+      - key: JWT_SECRET
+        generateValue: true
+      - key: ALLOWED_ORIGIN
+        value: https://tictacstick.vercel.app

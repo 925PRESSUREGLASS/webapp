@@ -1,5 +1,5 @@
-import { PrismaClient as PrismaClientDefault } from '@prisma/client';
-import { PrismaClient as PrismaClientEdge } from '@prisma/client/edge';
+import { PrismaClient as PrismaClientDefault } from '../../node_modules/.prisma/client';
+import { PrismaClient as PrismaClientEdge } from '../../node_modules/.prisma/client/edge';
 import withAccelerate from '@prisma/extension-accelerate';
 import { env } from '../config/env';
 
