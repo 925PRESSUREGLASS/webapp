@@ -1,8 +1,8 @@
 # Atomic Improvement Plan
 
 **Created:** November 29, 2025  
-**Status:** Tasks 1-8 Completed ✅  
-**Last Updated:** Current Session
+**Status:** Tasks 1-9 Completed ✅  
+**Last Updated:** November 30, 2025
 
 ---
 
@@ -489,6 +489,69 @@ JWT_SECRET=<secure-random-string-64-chars>
 - `User` - stores credentials and profile
 - `Organization` - optional business grouping
 - `AuditLog` - tracks auth actions for security
+
+---
+
+## Task 9: Frontend Auth UI ✅
+
+**Goal:** Connect quote-engine frontend to auth backend with login/register pages
+
+### Step 9.1: Create Auth Store
+- **File:** `apps/quote-engine/src/stores/auth.ts`
+- **Change:** Create Pinia store with JWT token management
+- **Features:**
+  - Token persistence in LocalStorage
+  - Auto-refresh before expiry
+  - Login, register, logout actions
+  - Profile management methods
+- **Test:** TypeScript compilation
+
+### Step 9.2: Extend API Client
+- **File:** `apps/quote-engine/src/composables/useApi.ts`
+- **Change:** Add authenticated request methods (get, post, put, del)
+- **Features:**
+  - Automatic JWT header injection
+  - Error handling with auth context
+- **Test:** TypeScript compilation
+
+### Step 9.3: Create Login Page
+- **File:** `apps/quote-engine/src/pages/LoginPage.vue`
+- **Features:**
+  - Email/password form with validation
+  - Error display from auth store
+  - "Continue without account" guest mode
+  - Redirect after login
+- **Test:** Build succeeds
+
+### Step 9.4: Create Register Page
+- **File:** `apps/quote-engine/src/pages/RegisterPage.vue`
+- **Features:**
+  - Name, email, phone, password fields
+  - Password confirmation validation
+  - Optional organization creation
+  - Terms/privacy links
+- **Test:** Build succeeds
+
+### Step 9.5: Add Routes and Guards
+- **Files:** 
+  - `apps/quote-engine/src/router/routes.ts`
+  - `apps/quote-engine/src/router/index.ts`
+- **Change:** Add /login and /register routes with navigation guards
+- **Features:**
+  - `guestOnly` meta for auth pages
+  - `requiresAuth` meta support for protected routes
+  - Redirect to login with return URL
+- **Test:** Build succeeds
+
+### Step 9.6: Add User Menu to Layout
+- **File:** `apps/quote-engine/src/layouts/MainLayout.vue`
+- **Change:** Add user menu with login/logout
+- **Features:**
+  - Show "Sign In" button when not authenticated
+  - Show user avatar menu when authenticated
+  - Display user name and email
+  - Logout with notification
+- **Commit:** `d2f4891` - feat(quote-engine): add frontend auth UI and JWT integration
 
 ---
 
