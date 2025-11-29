@@ -1,5 +1,5 @@
 {
-  "buildCommand": "npm install && npm run build --prefix apps/quote-engine",
+  "buildCommand": "npm install && npm run build:packages && npm run build --prefix apps/quote-engine",
   "outputDirectory": "apps/quote-engine/dist/spa",
   "installCommand": "npm install",
   "framework": null,
