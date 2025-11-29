@@ -444,7 +444,7 @@ function buildServer(): FastifyInstance {
   // Get all service types with pricing for quote calculations
   app.get('/api/public/pricing', async function (request) {
     var query = request.query as { businessId?: string };
-    var businessId = query.businessId || 'biz-925-pressure-glass';
+    var businessId = query.businessId || 'biz-925';
 
     if (prisma) {
       var serviceTypesDb = await prisma.serviceType.findMany({
@@ -499,7 +499,7 @@ function buildServer(): FastifyInstance {
   // Get service lines for category grouping
   app.get('/api/public/service-lines', async function (request) {
     var query = request.query as { businessId?: string };
-    var businessId = query.businessId || 'biz-925-pressure-glass';
+    var businessId = query.businessId || 'biz-925';
 
     if (prisma) {
       var linesDb = await prisma.serviceLine.findMany({
@@ -522,7 +522,7 @@ function buildServer(): FastifyInstance {
   // Get packages/bundles for upselling
   app.get('/api/public/packages', async function (request) {
     var query = request.query as { businessId?: string };
-    var businessId = query.businessId || 'biz-925-pressure-glass';
+    var businessId = query.businessId || 'biz-925';
 
     if (prisma) {
       var packagesDb = await prisma.package.findMany({
