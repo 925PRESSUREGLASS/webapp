@@ -1,7 +1,8 @@
 # Atomic Improvement Plan
 
 **Created:** November 29, 2025  
-**Status:** Ready for Implementation
+**Status:** Tasks 1-4 Completed  
+**Last Updated:** Current Session
 
 ---
 
@@ -11,7 +12,9 @@ This document breaks down all planned improvements into atomic, independently-co
 
 ---
 
-## 🔧 TASK 1: Fix Line Item Total Not Carrying Over from Quote to Job
+## 🔧 TASK 1: Fix Line Item Total Not Carrying Over from Quote to Job ✅ COMPLETED
+
+**Commit:** `792e520` - fix(jobs): preserve quote totals when converting to job
 
 ### Problem Analysis
 When converting a quote to a job, the `convertQuoteToJob` function passes `quote.total` but:
@@ -59,7 +62,9 @@ When converting a quote to a job, the `convertQuoteToJob` function passes `quote
 
 ---
 
-## 🧪 TASK 2: Add E2E Tests for Job Tracker
+## 🧪 TASK 2: Add E2E Tests for Job Tracker ✅ COMPLETED
+
+**Commit:** `3393cc6` - test(e2e): add job tracker E2E tests
 
 ### Atomic Steps
 
@@ -101,7 +106,9 @@ When converting a quote to a job, the `convertQuoteToJob` function passes `quote
 
 ---
 
-## 📅 TASK 3: Phase B Calendar Integration
+## 📅 TASK 3: Phase B Calendar Integration ✅ Week 1 COMPLETED
+
+**Commit:** `4155d89` - feat(calendar): Add Phase B calendar integration - Week 1
 
 ### Week 1: Core Calendar
 
@@ -203,7 +210,9 @@ When converting a quote to a job, the `convertQuoteToJob` function passes `quote
 
 ---
 
-## 📄 TASK 4: PDF Export for Jobs
+## 📄 TASK 4: PDF Export for Jobs ✅ COMPLETED
+
+**Commit:** `912b4ee` - feat(jobs): Add PDF export for completed jobs
 
 ### Atomic Steps
 
