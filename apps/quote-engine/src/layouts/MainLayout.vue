@@ -35,6 +35,9 @@
               <q-item clickable v-close-popup to="/jobs">
                 <q-item-section>Jobs</q-item-section>
               </q-item>
+              <q-item clickable v-close-popup to="/calendar">
+                <q-item-section>Calendar</q-item-section>
+              </q-item>
               <q-item clickable v-close-popup to="/analytics">
                 <q-item-section>Analytics</q-item-section>
               </q-item>
@@ -89,6 +92,13 @@
             <q-icon name="construction" />
           </q-item-section>
           <q-item-section>Jobs</q-item-section>
+        </q-item>
+
+        <q-item clickable v-ripple to="/calendar">
+          <q-item-section avatar>
+            <q-icon name="calendar_month" />
+          </q-item-section>
+          <q-item-section>Calendar</q-item-section>
         </q-item>
 
         <q-separator />

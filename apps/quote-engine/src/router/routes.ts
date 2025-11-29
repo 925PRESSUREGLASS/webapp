@@ -50,6 +50,11 @@ const routes: RouteRecordRaw[] = [
         component: () => import('../pages/AnalyticsPage.vue'),
       },
       {
+        path: 'calendar',
+        name: 'calendar',
+        component: () => import('../pages/CalendarPage.vue'),
+      },
+      {
         path: 'settings',
         name: 'settings',
         component: () => import('../pages/SettingsPage.vue'),
