@@ -81,7 +81,8 @@ export function registerAuthRoutes(app: FastifyInstance, allowedOrigin: string):
       return reply.code(400).send({ error: result.error });
     }
 
-    // Generate JWT token
+    // Generate JWT token (7 days = 604800 seconds)
+    const expiresIn = 7 * 24 * 60 * 60; // 7 days in seconds
     const token = app.jwt.sign(
       {
         id: result.user!.id,
@@ -107,7 +108,8 @@ export function registerAuthRoutes(app: FastifyInstance, allowedOrigin: string):
       success: true,
       user: result.user,
       organization: result.organization,
-      token
+      token,
+      expiresIn
     });
   });
 
@@ -132,7 +134,8 @@ export function registerAuthRoutes(app: FastifyInstance, allowedOrigin: string):
       return reply.code(401).send({ error: result.error });
     }
 
-    // Generate JWT token
+    // Generate JWT token (7 days = 604800 seconds)
+    const expiresIn = 7 * 24 * 60 * 60; // 7 days in seconds
     const token = app.jwt.sign(
       {
         id: result.user!.id,
@@ -158,7 +161,8 @@ export function registerAuthRoutes(app: FastifyInstance, allowedOrigin: string):
       success: true,
       user: result.user,
       organization: result.organization,
-      token
+      token,
+      expiresIn
     });
   });
 
@@ -288,7 +292,8 @@ export function registerAuthRoutes(app: FastifyInstance, allowedOrigin: string):
       return reply.code(401).send({ error: 'Token invalid' });
     }
 
-    // Generate new token
+    // Generate new token (7 days = 604800 seconds)
+    const expiresIn = 7 * 24 * 60 * 60; // 7 days in seconds
     const token = app.jwt.sign(
       {
         id: user.id,
@@ -301,7 +306,9 @@ export function registerAuthRoutes(app: FastifyInstance, allowedOrigin: string):
 
     return reply.send({
       success: true,
-      token
+      token,
+      expiresIn,
+      user
     });
   });
 
