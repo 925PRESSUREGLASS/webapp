@@ -1,7 +1,7 @@
 # Atomic Improvement Plan
 
 **Created:** November 29, 2025  
-**Status:** Tasks 1-5 Completed ✅  
+**Status:** Tasks 1-8 Completed ✅  
 **Last Updated:** Current Session
 
 ---
@@ -405,6 +405,90 @@ When completing a job with "Notify Customer" enabled, automatically send an emai
   - Thank you footer
 - Automatic email sending when "Notify Customer" is enabled
 - Graceful error handling with user notifications
+
+---
+
+## 🔐 TASK 8: User Authentication System (Phase 2B) ✅ COMPLETED
+
+**Status:** ✅ COMPLETED
+**Commit:** `b119f51` - feat(auth): add JWT authentication system for Phase 2B cloud sync
+
+### Overview
+
+Implement JWT-based user authentication for meta-api to enable Phase 2B cloud sync and multi-device features.
+
+### Atomic Steps
+
+#### Step 8.1: Install authentication dependencies ✅
+- **Packages:** `@fastify/jwt`, `bcryptjs`, `@types/bcryptjs`
+- **Test:** npm install succeeded
+- **Commit:** (combined with 8.2)
+
+#### Step 8.2: Create auth service ✅
+- **File:** `apps/meta-api/src/services/auth.service.ts` (new)
+- **Functions:**
+  - `register(input)` - Create user with optional organization, returns JWT
+  - `login(input)` - Verify credentials, return user without passwordHash
+  - `getUserById(userId)` - Fetch user with organization
+  - `updateProfile(userId, data)` - Update name/phone
+  - `changePassword(userId, currentPassword, newPassword)` - Verify and update
+  - `logAction(...)` - Create AuditLog entries for security tracking
+- **Test:** TypeScript compilation
+- **Commit:** (combined with 8.3)
+
+#### Step 8.3: Create auth routes ✅
+- **File:** `apps/meta-api/src/routes/auth.ts` (new)
+- **Endpoints:**
+  - `POST /auth/register` (public) - Creates user + optional organization
+  - `POST /auth/login` (public) - Returns JWT token
+  - `GET /auth/me` (protected) - Current user profile
+  - `PUT /auth/profile` (protected) - Update name/phone
+  - `POST /auth/change-password` (protected) - Verify and update password
+  - `POST /auth/refresh` (protected) - Refresh JWT token
+- **Test:** TypeScript compilation
+- **Commit:** (combined with 8.4)
+
+#### Step 8.4: Configure JWT plugin ✅
+- **File:** `apps/meta-api/src/server.ts`
+- **Changes:**
+  - Register `@fastify/jwt` with secret from env
+  - Add `/auth` routes to API key bypass list
+- **Test:** Build succeeded
+- **Commit:** (combined with 8.5)
+
+#### Step 8.5: Add JWT_SECRET env config ✅
+- **File:** `apps/meta-api/src/config/env.ts`
+- **Change:** Add `JWT_SECRET` to environment schema
+- **Test:** TypeScript compilation
+- **Commit:** `b119f51` - feat(auth): add JWT authentication system for Phase 2B cloud sync
+
+### Configuration
+
+**JWT Settings:**
+- Token expiry: 7 days
+- bcrypt salt rounds: 12
+
+**Production Setup:**
+Add to Render environment variables:
+```
+JWT_SECRET=<secure-random-string-64-chars>
+```
+
+### Auth Endpoints Summary
+
+| Endpoint | Method | Auth | Description |
+|----------|--------|------|-------------|
+| /auth/register | POST | Public | Create account + optional org |
+| /auth/login | POST | Public | Get JWT token |
+| /auth/me | GET | JWT | Get profile |
+| /auth/profile | PUT | JWT | Update profile |
+| /auth/change-password | POST | JWT | Change password |
+| /auth/refresh | POST | JWT | Refresh token |
+
+### Database Models Used
+- `User` - stores credentials and profile
+- `Organization` - optional business grouping
+- `AuditLog` - tracks auth actions for security
 
 ---
 
