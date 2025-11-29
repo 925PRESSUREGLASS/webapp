@@ -136,6 +136,8 @@ import { useRoute, useRouter } from 'vue-router';
 import { useQuasar } from 'quasar';
 import { useQuoteStore } from '../stores/quote';
 import { useInvoiceStore } from '../stores/invoices';
+import { useAuthStore } from '../stores/auth';
+import { useSyncStore } from '../stores/sync';
 import QuoteBuilder from '../components/QuoteBuilder/QuoteBuilder.vue';
 import PriceDisplay from '../components/QuoteBuilder/PriceDisplay.vue';
 import ClientAutocomplete from '../components/QuoteBuilder/ClientAutocomplete.vue';
@@ -146,12 +148,15 @@ import {
   calculatePressureLineCost,
 } from '../composables/useCalculations';
 import { generateQuotePdfBase64, type QuoteData } from '../utils/pdf-generator';
+import { buildQuoteSyncPayload, buildInvoiceSyncPayload } from '../utils/sync-payloads';
 
 const $q = useQuasar();
 const route = useRoute();
 const router = useRouter();
 const quoteStore = useQuoteStore();
 const invoiceStore = useInvoiceStore();
+const authStore = useAuthStore();
+const syncStore = useSyncStore();
 
 const isLoading = ref(false);
 const showEmailDialog = ref(false);
@@ -177,6 +182,8 @@ function handleClientSelected(client: Client) {
 
 // Load quote from URL parameter if present
 onMounted(async () => {
+  syncStore.init();
+
   const quoteId = route.query.id as string;
   if (quoteId && quoteId !== quoteStore.currentQuoteId) {
     isLoading.value = true;
@@ -212,8 +219,28 @@ watch(() => route.query.id, async (newId) => {
 });
 
 async function handleSave() {
-  const { success } = await quoteStore.saveQuote();
+  const isNew = !quoteStore.currentQuoteId;
+  const { success, id } = await quoteStore.saveQuote();
+
   if (success) {
+    if (id && authStore.isAuthenticated) {
+      var payload = buildQuoteSyncPayload({
+        id,
+        title: quoteStore.quoteTitle,
+        clientName: quoteStore.clientName || 'Unknown Client',
+        clientLocation: quoteStore.clientLocation,
+        clientEmail: quoteStore.clientEmail,
+        clientPhone: quoteStore.clientPhone,
+        jobType: quoteStore.jobType,
+        windowLines: quoteStore.windowLines,
+        pressureLines: quoteStore.pressureLines,
+        subtotal: quoteStore.subtotal,
+        gst: quoteStore.gst,
+        total: quoteStore.total,
+      });
+      syncStore.queueChange('quotes', id, isNew ? 'create' : 'update', payload);
+    }
+
     $q.notify({
       type: 'positive',
       message: 'Quote saved successfully!',
@@ -284,6 +311,11 @@ function createInvoice() {
       { label: 'View', color: 'white', handler: () => router.push('/invoices') }
     ]
   });
+
+  if (authStore.isAuthenticated) {
+    var invoicePayload = buildInvoiceSyncPayload(invoice);
+    syncStore.queueChange('invoices', invoice.id, 'create', invoicePayload);
+  }
 }
 
 // Email dialog handlers

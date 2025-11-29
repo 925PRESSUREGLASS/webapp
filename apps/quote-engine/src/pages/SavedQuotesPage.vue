@@ -287,13 +287,18 @@ import { useQuasar } from 'quasar';
 import { useSavedQuotesStore } from '../stores/savedQuotes';
 import { useQuoteStore } from '../stores/quote';
 import { useJobStore } from '../stores/jobs';
+import { useAuthStore } from '../stores/auth';
+import { useSyncStore } from '../stores/sync';
 import type { SavedQuote } from '../composables/useStorage';
+import { mapCloudQuoteToSavedQuote, buildJobSyncPayload, buildQuoteSyncPayload } from '../utils/sync-payloads';
 
 const $q = useQuasar();
 const router = useRouter();
 const savedQuotesStore = useSavedQuotesStore();
 const quoteStore = useQuoteStore();
 const jobStore = useJobStore();
+const authStore = useAuthStore();
+const syncStore = useSyncStore();
 
 // Local state synced with store
 const searchQuery = ref('');
@@ -320,9 +325,36 @@ const sortOptions = [
   { label: 'Total', value: 'total' },
 ];
 
-onMounted(() => {
-  savedQuotesStore.loadQuotes();
+onMounted(async () => {
+  syncStore.init();
+  await savedQuotesStore.loadQuotes();
+
+  if (authStore.isAuthenticated) {
+    await syncQuotesFromCloud();
+  }
 });
+
+async function syncQuotesFromCloud() {
+  try {
+    await syncStore.pullFromCloud();
+    const cloudQuotes = syncStore.getCloudData('quotes');
+    const pricingConfig = JSON.parse(JSON.stringify(quoteStore.pricingConfig || {}));
+
+    for (const cloudQuote of cloudQuotes) {
+      const mapped = mapCloudQuoteToSavedQuote(cloudQuote, pricingConfig);
+      if (mapped) {
+        await savedQuotesStore.saveQuote(mapped);
+      }
+    }
+  } catch (error) {
+    console.error('[SavedQuotesPage] Cloud sync failed:', error);
+    $q.notify({
+      type: 'warning',
+      message: 'Could not pull latest quotes from cloud',
+      position: 'top',
+    });
+  }
+}
 
 function formatCurrency(value: number): string {
   return new Intl.NumberFormat('en-AU', {
@@ -416,6 +448,27 @@ function openQuote(id: string) {
 async function duplicateQuote(id: string) {
   const duplicate = await savedQuotesStore.duplicateQuote(id);
   if (duplicate) {
+    if (authStore.isAuthenticated) {
+      var payload = buildQuoteSyncPayload({
+        id: duplicate.id,
+        title: duplicate.title,
+        clientName: duplicate.clientName,
+        clientLocation: duplicate.clientLocation,
+        clientEmail: duplicate.clientEmail,
+        clientPhone: duplicate.clientPhone,
+        jobType: duplicate.jobType,
+        windowLines: duplicate.windowLines,
+        pressureLines: duplicate.pressureLines,
+        subtotal: duplicate.subtotal,
+        gst: duplicate.gst,
+        total: duplicate.total,
+        status: duplicate.status,
+        createdAt: duplicate.createdAt,
+        updatedAt: duplicate.updatedAt,
+      });
+      syncStore.queueChange('quotes', duplicate.id, 'create', payload);
+    }
+
     $q.notify({
       type: 'positive',
       message: 'Quote duplicated',
@@ -470,6 +523,10 @@ function scheduleJob(quote: SavedQuote) {
     });
 
     if (job) {
+      if (authStore.isAuthenticated) {
+        syncStore.queueChange('jobs', job.id, 'create', buildJobSyncPayload(job));
+      }
+
       $q.notify({
         type: 'positive',
         message: `Job ${job.jobNumber} scheduled for ${new Date(scheduledDate).toLocaleDateString('en-AU')}`,
@@ -501,6 +558,10 @@ function confirmDelete(quote: SavedQuote) {
   }).onOk(async () => {
     const success = await savedQuotesStore.deleteQuote(quote.id);
     if (success) {
+      if (authStore.isAuthenticated) {
+        syncStore.queueChange('quotes', quote.id, 'delete', { localId: quote.id });
+      }
+
       $q.notify({
         type: 'positive',
         message: 'Quote deleted',

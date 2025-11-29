@@ -177,14 +177,23 @@
 import { ref, computed, onMounted } from 'vue';
 import { useRouter } from 'vue-router';
 import { useJobStore, JOB_STATUSES } from '../stores/jobs';
+import { useAuthStore } from '../stores/auth';
+import { useSyncStore } from '../stores/sync';
 import type { JobStatus } from '@tictacstick/calculation-engine';
 
 const router = useRouter();
 const jobStore = useJobStore();
+const authStore = useAuthStore();
+const syncStore = useSyncStore();
 
 // Initialize store
-onMounted(() => {
+onMounted(async () => {
+  syncStore.init();
   jobStore.initialize();
+
+  if (authStore.isAuthenticated && navigator.onLine) {
+    await syncStore.processQueue();
+  }
 });
 
 // Filters

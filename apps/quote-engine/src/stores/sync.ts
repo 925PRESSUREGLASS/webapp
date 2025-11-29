@@ -39,6 +39,7 @@ export const useSyncStore = defineStore('sync', () => {
   const error = ref<string | null>(null);
   const syncQueue = ref<SyncQueueItem[]>([]);
   const isSyncing = ref(false);
+  let hasInitialized = false;
 
   // Entity-specific sync states
   const entityStates = ref<Record<EntityType, SyncState>>({
@@ -342,6 +343,9 @@ export const useSyncStore = defineStore('sync', () => {
 
   // Initialize: load queue and listen for online/offline events
   function init() {
+    if (hasInitialized) return;
+    hasInitialized = true;
+
     loadSyncQueue();
 
     // Auto-sync when coming back online

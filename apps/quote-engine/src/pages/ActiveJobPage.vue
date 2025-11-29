@@ -437,8 +437,11 @@ import { useRouter } from 'vue-router';
 import { useQuasar } from 'quasar';
 import { useJobStore, JOB_STATUSES } from '../stores/jobs';
 import { useInvoiceStore } from '../stores/invoices';
+import { useAuthStore } from '../stores/auth';
+import { useSyncStore } from '../stores/sync';
 import { useEmail } from '../composables/useEmail';
 import type { Job, JobItem, JobPhoto, JobIssueSeverity } from '@tictacstick/calculation-engine';
+import type { Invoice } from '../stores/invoices';
 import JobTimer from '../components/Jobs/JobTimer.vue';
 import PriceAdjustModal from '../components/Jobs/PriceAdjustModal.vue';
 import PhotoCapture from '../components/Jobs/PhotoCapture.vue';
@@ -450,6 +453,7 @@ import {
   generateJobReceiptFilename,
   generateJobReceiptPdfBase64,
 } from '../utils/pdf-generator';
+import { buildJobSyncPayload, buildInvoiceSyncPayload } from '../utils/sync-payloads';
 
 const props = defineProps<{
   id: string;
@@ -459,6 +463,8 @@ const router = useRouter();
 const $q = useQuasar();
 const jobStore = useJobStore();
 const invoiceStore = useInvoiceStore();
+const authStore = useAuthStore();
+const syncStore = useSyncStore();
 const { sendJobSummary, isSending: isSendingEmail } = useEmail();
 
 // State
@@ -517,11 +523,26 @@ function loadJob() {
   }
 }
 
-onMounted(loadJob);
+onMounted(() => {
+  syncStore.init();
+  loadJob();
+});
 
 watch(() => props.id, loadJob);
 
 // Methods
+function queueJobSync(action: 'create' | 'update' | 'delete' = 'update') {
+  if (!authStore.isAuthenticated || !job.value) return;
+  var payload = buildJobSyncPayload(job.value);
+  syncStore.queueChange('jobs', job.value.id, action, payload);
+}
+
+function queueInvoiceSync(invoice: Invoice, action: 'create' | 'update' | 'delete') {
+  if (!authStore.isAuthenticated) return;
+  var payload = buildInvoiceSyncPayload(invoice);
+  syncStore.queueChange('invoices', invoice.id, action, payload);
+}
+
 function handleStartJob() {
   if (!job.value) return;
   jobStore.startJob(job.value.id);
@@ -530,6 +551,7 @@ function handleStartJob() {
     type: 'positive',
     message: 'Job started',
   });
+  queueJobSync();
 }
 
 function handlePauseJob() {
@@ -550,6 +572,7 @@ function handlePauseJob() {
       type: 'warning',
       message: 'Job paused',
     });
+    queueJobSync();
   });
 }
 
@@ -561,6 +584,7 @@ function handleResumeJob() {
     type: 'positive',
     message: 'Job resumed',
   });
+  queueJobSync();
 }
 
 function handleCompleteJob() {
@@ -606,6 +630,7 @@ function handleJobCompletion(data: JobCompletionData) {
       // Send completion notification email to customer
       sendCustomerNotification(job.value);
     }
+    queueJobSync();
   } else {
     $q.notify({
       type: 'negative',
@@ -684,6 +709,11 @@ function handleCreateInvoice() {
     // Mark job as invoiced
     jobStore.markJobInvoiced(job.value.id, invoice.id);
     job.value = jobStore.getJob(job.value.id);
+
+    if (authStore.isAuthenticated) {
+      queueInvoiceSync(invoice, 'create');
+      queueJobSync();
+    }
     
     $q.notify({
       type: 'positive',
@@ -701,6 +731,7 @@ function toggleItem(item: JobItem) {
   const newStatus = item.status === 'completed' ? 'pending' : 'completed';
   jobStore.updateItemStatus(job.value.id, item.id, newStatus);
   job.value = jobStore.getJob(job.value.id);
+  queueJobSync();
 }
 
 function showItemMenu(item: JobItem) {
@@ -748,6 +779,7 @@ function handlePriceAdjust(payload: { itemId: string; newPrice: number; reason: 
   if (!job.value) return;
   jobStore.adjustItemPrice(job.value.id, payload.itemId, payload.newPrice, payload.reason);
   job.value = jobStore.getJob(job.value.id);
+  queueJobSync();
   selectedItemForPriceAdjust.value = null;
   $q.notify({
     type: 'positive',
@@ -759,6 +791,7 @@ function addNote() {
   if (!job.value || !newNoteText.value.trim()) return;
   jobStore.addNote(job.value.id, newNoteText.value.trim());
   job.value = jobStore.getJob(job.value.id);
+  queueJobSync();
   newNoteText.value = '';
   showNoteDialog.value = false;
 }
@@ -777,6 +810,7 @@ function removeNote(noteId: string) {
     if (!job.value) return;
     jobStore.removeNote(job.value.id, noteId);
     job.value = jobStore.getJob(job.value.id);
+    queueJobSync();
   });
 }
 
@@ -800,12 +834,14 @@ function handlePhotoAdded(photo: JobPhoto) {
     caption: photo.caption,
   });
   job.value = jobStore.getJob(job.value.id);
+  queueJobSync();
 }
 
 function handlePhotoRemoved(photo: JobPhoto) {
   if (!job.value) return;
   jobStore.removePhoto(job.value.id, photo.id);
   job.value = jobStore.getJob(job.value.id);
+  queueJobSync();
 }
 
 function getSeverityColor(severity: JobIssueSeverity): string {

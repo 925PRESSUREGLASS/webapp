@@ -752,19 +752,29 @@ import {
   type InvoiceSettings,
   type Payment,
 } from '../stores/invoices';
+import { useAuthStore } from '../stores/auth';
+import { useSyncStore } from '../stores/sync';
 import InvoicePrint from '../components/Invoice/InvoicePrint.vue';
 import InvoiceEditor from '../components/Invoice/InvoiceEditor.vue';
 import EmailDialog from '../components/Email/EmailDialog.vue';
 import type { InvoiceStatus, PaymentMethod } from '@tictacstick/calculation-engine';
 import { generateInvoicePdfBase64 } from '../utils/pdf-generator';
+import { buildInvoiceSyncPayload } from '../utils/sync-payloads';
 
 const $q = useQuasar();
 const invoiceStore = useInvoiceStore();
+const authStore = useAuthStore();
+const syncStore = useSyncStore();
 
 // Initialize store
-onMounted(() => {
+onMounted(async () => {
+  syncStore.init();
   invoiceStore.initialize();
   invoiceStore.checkOverdueInvoices();
+
+  if (authStore.isAuthenticated && navigator.onLine) {
+    await syncStore.processQueue();
+  }
 });
 
 // View state
@@ -906,6 +916,12 @@ const paginatedInvoices = computed(() => {
 const agingReport = computed(() => invoiceStore.getAgingReport());
 
 // Methods
+function queueInvoice(invoice: Invoice, action: 'create' | 'update' | 'delete') {
+  if (!authStore.isAuthenticated) return;
+  var payload = buildInvoiceSyncPayload(invoice);
+  syncStore.queueChange('invoices', invoice.id, action, payload);
+}
+
 function formatMoney(value: number): string {
   return value.toFixed(2);
 }
@@ -940,10 +956,14 @@ function editInvoice(invoice: Invoice) {
 function handleEditSave(data: Partial<Invoice>) {
   if (!editInvoiceData.value) return;
   
-  invoiceStore.updateInvoice(editInvoiceData.value.id, data);
+  const updated = invoiceStore.updateInvoice(editInvoiceData.value.id, data);
   
   $q.notify({ message: 'Invoice updated', type: 'positive' });
   showEditDialog.value = false;
+  
+  if (updated && authStore.isAuthenticated) {
+    queueInvoice(updated, 'update');
+  }
   
   // Refresh selected invoice if it was the one edited
   if (selectedInvoice.value?.id === editInvoiceData.value.id) {
@@ -975,9 +995,14 @@ function savePayment() {
   $q.notify({ message: 'Payment recorded', type: 'positive' });
   showPayment.value = false;
 
+  const updatedInvoice = invoiceStore.getInvoice(paymentInvoice.value.id);
+  if (updatedInvoice && authStore.isAuthenticated) {
+    queueInvoice(updatedInvoice, 'update');
+  }
+
   // Refresh selected invoice if viewing
-  if (selectedInvoice.value?.id === paymentInvoice.value.id) {
-    selectedInvoice.value = invoiceStore.getInvoice(paymentInvoice.value.id);
+  if (selectedInvoice.value?.id === paymentInvoice.value.id && updatedInvoice) {
+    selectedInvoice.value = updatedInvoice;
   }
 }
 
@@ -990,7 +1015,13 @@ function confirmRemovePayment(payment: Payment) {
     cancel: true,
   }).onOk(() => {
     invoiceStore.removePayment(selectedInvoice.value!.id, payment.id);
-    selectedInvoice.value = invoiceStore.getInvoice(selectedInvoice.value!.id);
+    const updatedInvoice = invoiceStore.getInvoice(selectedInvoice.value!.id);
+    if (updatedInvoice) {
+      selectedInvoice.value = updatedInvoice;
+      if (authStore.isAuthenticated) {
+        queueInvoice(updatedInvoice, 'update');
+      }
+    }
     $q.notify({ message: 'Payment removed', type: 'warning' });
   });
 }
@@ -999,7 +1030,13 @@ function changeStatus(status: InvoiceStatus) {
   if (!selectedInvoice.value) return;
 
   invoiceStore.updateStatus(selectedInvoice.value.id, status);
-  selectedInvoice.value = invoiceStore.getInvoice(selectedInvoice.value.id);
+  const updatedInvoice = invoiceStore.getInvoice(selectedInvoice.value.id);
+  if (updatedInvoice) {
+    selectedInvoice.value = updatedInvoice;
+    if (authStore.isAuthenticated) {
+      queueInvoice(updatedInvoice, 'update');
+    }
+  }
   $q.notify({ message: `Status changed to ${INVOICE_STATUSES[status].label}`, type: 'positive' });
 }
 
@@ -1041,6 +1078,15 @@ function handleEmailSent(result: { success: boolean; messageId?: string }) {
     // Mark as sent if currently draft
     if (emailInvoiceData.value && emailInvoiceData.value.status === 'draft') {
       invoiceStore.updateStatus(emailInvoiceData.value.id, 'sent');
+      const updatedInvoice = invoiceStore.getInvoice(emailInvoiceData.value.id);
+      if (updatedInvoice) {
+        if (selectedInvoice.value?.id === updatedInvoice.id) {
+          selectedInvoice.value = updatedInvoice;
+        }
+        if (authStore.isAuthenticated) {
+          queueInvoice(updatedInvoice, 'update');
+        }
+      }
     }
   }
 }
@@ -1052,7 +1098,10 @@ function confirmDelete(invoice: Invoice) {
     cancel: true,
     color: 'negative',
   }).onOk(() => {
-    invoiceStore.deleteInvoice(invoice.id);
+    const removed = invoiceStore.deleteInvoice(invoice.id);
+    if (removed && authStore.isAuthenticated) {
+      syncStore.queueChange('invoices', invoice.id, 'delete', { localId: invoice.id });
+    }
     $q.notify({ message: 'Invoice deleted', type: 'warning' });
   });
 }
@@ -1062,7 +1111,7 @@ function createNewInvoice() {
   const gst = subtotal * 0.1;
   const total = subtotal + gst;
 
-  invoiceStore.createInvoice({
+  const invoice = invoiceStore.createInvoice({
     clientName: newInvoiceForm.clientName || 'Unknown Client',
     clientLocation: newInvoiceForm.clientLocation,
     clientEmail: newInvoiceForm.clientEmail,
@@ -1079,6 +1128,10 @@ function createNewInvoice() {
     }],
   });
 
+  if (authStore.isAuthenticated) {
+    queueInvoice(invoice, 'create');
+  }
+
   $q.notify({ message: 'Invoice created', type: 'positive' });
   showNewInvoiceDialog.value = false;
 
@@ -1094,6 +1147,14 @@ function checkOverdue() {
   const count = invoiceStore.checkOverdueInvoices();
   if (count > 0) {
     $q.notify({ message: `${count} invoice(s) marked overdue`, type: 'warning' });
+    if (authStore.isAuthenticated) {
+      const invoices = invoiceStore.getAll();
+      for (const inv of invoices) {
+        if (inv.status === 'overdue') {
+          queueInvoice(inv, 'update');
+        }
+      }
+    }
   } else {
     $q.notify({ message: 'No overdue invoices found', type: 'positive' });
   }
