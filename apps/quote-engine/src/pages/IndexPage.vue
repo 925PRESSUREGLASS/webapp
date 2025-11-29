@@ -2,6 +2,7 @@
   <q-page class="q-pa-md">
     <div class="row justify-center">
       <div class="col-12 col-md-10 col-lg-8">
+        <!-- Build: 2025-11-30T18:00 -->
         <h4 class="q-my-md">Welcome to TicTacStick v2.0</h4>
         
         <q-card class="q-mb-md">
