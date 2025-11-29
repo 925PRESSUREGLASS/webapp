@@ -145,6 +145,7 @@ import {
   calculateWindowLineCost,
   calculatePressureLineCost,
 } from '../composables/useCalculations';
+import { generateQuotePdfBase64, type QuoteData } from '../utils/pdf-generator';
 
 const $q = useQuasar();
 const route = useRoute();
@@ -287,43 +288,46 @@ function createInvoice() {
 
 // Email dialog handlers
 async function openEmailDialog() {
-  // For now, we'll use a placeholder PDF - in production, generate real PDF
-  // TODO: Integrate with actual PDF generation when available
   isLoading.value = true;
   
   try {
-    // Generate a simple text representation as base64 for now
-    // Real implementation would use jsPDF or similar
-    var quoteData = {
+    // Calculate costs for window lines
+    var windowLinesWithCost = quoteStore.windowLines.map(function(line) {
+      var cost = calculateWindowLineCost(line, quoteStore.pricingConfig);
+      return { ...line, calculatedCost: cost };
+    });
+    
+    // Calculate costs for pressure lines
+    var pressureLinesWithCost = quoteStore.pressureLines.map(function(line) {
+      var cost = calculatePressureLineCost(line, quoteStore.pricingConfig);
+      return { ...line, calculatedCost: cost };
+    });
+    
+    // Build quote data for PDF generation
+    var quoteData: QuoteData = {
       id: quoteStore.currentQuoteId || 'DRAFT',
       title: quoteStore.quoteTitle,
-      client: quoteStore.clientName,
-      location: quoteStore.clientLocation,
+      clientName: quoteStore.clientName,
+      clientLocation: quoteStore.clientLocation,
+      clientEmail: quoteStore.clientEmail,
+      clientPhone: quoteStore.clientPhone,
+      jobType: quoteStore.jobType,
+      windowLines: windowLinesWithCost,
+      pressureLines: pressureLinesWithCost,
+      breakdown: quoteStore.breakdown,
       subtotal: quoteStore.subtotal,
       gst: quoteStore.gst,
       total: quoteStore.total,
-      windowLines: quoteStore.windowLines.length,
-      pressureLines: quoteStore.pressureLines.length,
     };
     
-    // Create a simple text content as placeholder
-    var textContent = 'Quote: ' + quoteData.id + '\n' +
-      'Title: ' + quoteData.title + '\n' +
-      'Client: ' + quoteData.client + '\n' +
-      'Location: ' + quoteData.location + '\n' +
-      'Window Lines: ' + quoteData.windowLines + '\n' +
-      'Pressure Lines: ' + quoteData.pressureLines + '\n' +
-      'Subtotal: $' + quoteData.subtotal.toFixed(2) + '\n' +
-      'GST: $' + quoteData.gst.toFixed(2) + '\n' +
-      'Total: $' + quoteData.total.toFixed(2);
-    
-    // Convert to base64
-    quotePdfBase64.value = btoa(textContent);
+    // Generate real PDF as base64
+    quotePdfBase64.value = await generateQuotePdfBase64(quoteData);
     showEmailDialog.value = true;
   } catch (err) {
+    console.error('[QuotePage] PDF generation failed:', err);
     $q.notify({
       type: 'negative',
-      message: 'Failed to prepare quote for email',
+      message: 'Failed to generate quote PDF',
       position: 'top',
     });
   } finally {

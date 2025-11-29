@@ -756,6 +756,7 @@ import InvoicePrint from '../components/Invoice/InvoicePrint.vue';
 import InvoiceEditor from '../components/Invoice/InvoiceEditor.vue';
 import EmailDialog from '../components/Email/EmailDialog.vue';
 import type { InvoiceStatus, PaymentMethod } from '@tictacstick/calculation-engine';
+import { generateInvoicePdfBase64 } from '../utils/pdf-generator';
 
 const $q = useQuasar();
 const invoiceStore = useInvoiceStore();
@@ -1015,19 +1016,18 @@ async function emailInvoice(invoice: Invoice) {
   // Set invoice data for email dialog
   emailInvoiceData.value = invoice;
   
-  // Generate placeholder PDF content (TODO: integrate real PDF generation)
-  var settings = invoiceStore.getSettings();
-  var invoiceContent = 'Invoice: ' + invoice.invoiceNumber + '\n';
-  invoiceContent += 'Client: ' + invoice.clientName + '\n';
-  invoiceContent += 'Total: $' + invoice.total.toFixed(2) + '\n';
-  invoiceContent += 'Due: ' + invoice.dueDate + '\n';
-  invoiceContent += '\nLine Items:\n';
-  invoice.lineItems.forEach(function(item) {
-    invoiceContent += '  - ' + item.description + ': $' + item.amount.toFixed(2) + '\n';
-  });
-  
-  invoicePdfBase64.value = btoa(invoiceContent);
-  showEmailDialog.value = true;
+  try {
+    // Generate real PDF as base64
+    invoicePdfBase64.value = await generateInvoicePdfBase64(invoice);
+    showEmailDialog.value = true;
+  } catch (err) {
+    console.error('[InvoicesPage] PDF generation failed:', err);
+    $q.notify({
+      type: 'negative',
+      message: 'Failed to generate invoice PDF',
+      position: 'top',
+    });
+  }
 }
 
 function handleEmailSent(result: { success: boolean; messageId?: string }) {
