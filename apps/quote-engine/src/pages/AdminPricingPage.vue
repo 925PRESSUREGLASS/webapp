@@ -8,7 +8,16 @@
       </div>
       <div class="col-auto q-gutter-sm">
         <q-chip 
-          :color="pricingStore.loading ? 'grey' : (pricingStore.error ? 'negative' : 'positive')"
+          v-if="!hasApiKey"
+          color="warning"
+          text-color="white"
+          dense
+          icon="warning"
+        >
+          No API Key
+        </q-chip>
+        <q-chip 
+          :color="isLoading ? 'grey' : (loadError ? 'negative' : 'positive')"
           text-color="white"
           dense
         >
@@ -19,17 +28,29 @@
           icon="refresh" 
           label="Refresh" 
           @click="refreshData"
-          :loading="pricingStore.loading"
+          :loading="isLoading"
         />
       </div>
     </div>
 
+    <!-- API Key Warning -->
+    <q-banner v-if="!hasApiKey" class="bg-warning text-white q-mb-md" rounded>
+      <template v-slot:avatar>
+        <q-icon name="warning" />
+      </template>
+      <strong>API Key not configured.</strong> 
+      Set VITE_API_KEY environment variable to enable CRUD operations.
+      <template v-slot:action>
+        <q-btn flat color="white" label="Read-Only Mode" disabled />
+      </template>
+    </q-banner>
+
     <!-- Error Banner -->
-    <q-banner v-if="pricingStore.error" class="bg-negative text-white q-mb-md" rounded>
+    <q-banner v-if="loadError" class="bg-negative text-white q-mb-md" rounded>
       <template v-slot:avatar>
         <q-icon name="error" />
       </template>
-      {{ pricingStore.error }}
+      {{ loadError }}
       <template v-slot:action>
         <q-btn flat color="white" label="Retry" @click="refreshData" />
       </template>
@@ -49,47 +70,61 @@
           <q-card-section class="row items-center">
             <div class="text-h6">Service Types</div>
             <q-space />
-            <q-btn color="primary" icon="add" label="Add Service Type" @click="showAddService = true" />
+            <q-btn 
+              color="primary" 
+              icon="add" 
+              label="Add Service Type" 
+              @click="openAddService"
+              :disable="!hasApiKey"
+            />
           </q-card-section>
 
           <q-separator />
 
-          <q-card-section v-if="pricingStore.loading" class="text-center q-pa-lg">
+          <q-card-section v-if="isLoading" class="text-center q-pa-lg">
             <q-spinner size="3em" color="primary" />
             <div class="q-mt-md">Loading service types...</div>
           </q-card-section>
 
           <q-list v-else separator>
-            <q-item v-for="service in pricingStore.serviceTypes" :key="service.id">
+            <q-item v-for="service in serviceTypes" :key="service.id">
               <q-item-section avatar>
                 <q-icon 
-                  :name="getCategoryIcon(service.category)" 
-                  :color="getCategoryColor(service.category)"
+                  :name="getServiceLineIcon(service.serviceLine?.code)" 
+                  :color="getServiceLineColor(service.serviceLine?.code)"
                 />
               </q-item-section>
               <q-item-section>
-                <q-item-label>{{ service.label }}</q-item-label>
+                <q-item-label>{{ service.name }}</q-item-label>
                 <q-item-label caption>
-                  {{ service.code }} · {{ service.category }}
+                  {{ service.code }} · {{ service.serviceLine?.name || 'N/A' }}
                 </q-item-label>
               </q-item-section>
               <q-item-section side>
                 <div class="text-right">
                   <div class="text-body2">${{ service.basePrice?.toFixed(2) || '0.00' }}</div>
                   <div class="text-caption text-grey-6">
-                    {{ service.minutesPerUnit }} min/unit
+                    {{ service.baseTimeMinutes }} min base
                   </div>
                 </div>
               </q-item-section>
               <q-item-section side>
                 <div class="q-gutter-xs">
-                  <q-btn flat round dense icon="edit" @click="editService(service)" />
-                  <q-btn flat round dense icon="delete" color="negative" @click="confirmDeleteService(service)" />
+                  <q-btn 
+                    flat round dense icon="edit" 
+                    @click="editService(service)" 
+                    :disable="!hasApiKey"
+                  />
+                  <q-btn 
+                    flat round dense icon="delete" color="negative" 
+                    @click="confirmDeleteService(service)" 
+                    :disable="!hasApiKey"
+                  />
                 </div>
               </q-item-section>
             </q-item>
 
-            <q-item v-if="pricingStore.serviceTypes.length === 0">
+            <q-item v-if="serviceTypes.length === 0">
               <q-item-section class="text-center text-grey-6 q-py-lg">
                 No service types found. Add one to get started.
               </q-item-section>
@@ -104,25 +139,31 @@
           <q-card-section class="row items-center">
             <div class="text-h6">Price Modifiers</div>
             <q-space />
-            <q-btn color="primary" icon="add" label="Add Modifier" @click="showAddModifier = true" />
+            <q-btn 
+              color="primary" 
+              icon="add" 
+              label="Add Modifier" 
+              @click="openAddModifier"
+              :disable="!hasApiKey"
+            />
           </q-card-section>
 
           <q-separator />
 
-          <q-card-section v-if="pricingStore.loading" class="text-center q-pa-lg">
+          <q-card-section v-if="isLoading" class="text-center q-pa-lg">
             <q-spinner size="3em" color="primary" />
             <div class="q-mt-md">Loading modifiers...</div>
           </q-card-section>
 
           <q-list v-else separator>
-            <q-item v-for="modifier in pricingStore.modifiers" :key="modifier.id">
+            <q-item v-for="modifier in modifiers" :key="modifier.id">
               <q-item-section avatar>
                 <q-icon name="tune" color="orange" />
               </q-item-section>
               <q-item-section>
-                <q-item-label>{{ modifier.label }}</q-item-label>
+                <q-item-label>{{ modifier.name }}</q-item-label>
                 <q-item-label caption>
-                  {{ modifier.code }} · {{ modifier.type }}
+                  {{ modifier.code }} · {{ modifier.modifierType }}
                 </q-item-label>
               </q-item-section>
               <q-item-section side>
@@ -131,19 +172,27 @@
                     {{ formatModifierValue(modifier) }}
                   </div>
                   <div class="text-caption text-grey-6">
-                    {{ modifier.appliesTo }}
+                    {{ modifier.isActive ? 'Active' : 'Inactive' }}
                   </div>
                 </div>
               </q-item-section>
               <q-item-section side>
                 <div class="q-gutter-xs">
-                  <q-btn flat round dense icon="edit" @click="editModifier(modifier)" />
-                  <q-btn flat round dense icon="delete" color="negative" @click="confirmDeleteModifier(modifier)" />
+                  <q-btn 
+                    flat round dense icon="edit" 
+                    @click="editModifier(modifier)" 
+                    :disable="!hasApiKey"
+                  />
+                  <q-btn 
+                    flat round dense icon="delete" color="negative" 
+                    @click="confirmDeleteModifier(modifier)" 
+                    :disable="!hasApiKey"
+                  />
                 </div>
               </q-item-section>
             </q-item>
 
-            <q-item v-if="pricingStore.modifiers.length === 0">
+            <q-item v-if="modifiers.length === 0">
               <q-item-section class="text-center text-grey-6 q-py-lg">
                 No modifiers found. Add one to get started.
               </q-item-section>
@@ -158,31 +207,37 @@
           <q-card-section class="row items-center">
             <div class="text-h6">Market Areas</div>
             <q-space />
-            <q-btn color="primary" icon="add" label="Add Market Area" @click="showAddMarket = true" />
+            <q-btn 
+              color="primary" 
+              icon="add" 
+              label="Add Market Area" 
+              @click="openAddMarket"
+              :disable="!hasApiKey"
+            />
           </q-card-section>
 
           <q-separator />
 
-          <q-card-section v-if="pricingStore.loading" class="text-center q-pa-lg">
+          <q-card-section v-if="isLoading" class="text-center q-pa-lg">
             <q-spinner size="3em" color="primary" />
             <div class="q-mt-md">Loading market areas...</div>
           </q-card-section>
 
           <q-list v-else separator>
-            <q-item v-for="market in pricingStore.marketAreas" :key="market.id">
+            <q-item v-for="market in marketAreas" :key="market.id">
               <q-item-section avatar>
                 <q-icon name="location_on" color="green" />
               </q-item-section>
               <q-item-section>
-                <q-item-label>{{ market.label }}</q-item-label>
+                <q-item-label>{{ market.name }}</q-item-label>
                 <q-item-label caption>
-                  {{ market.code }}
+                  {{ market.description || 'No description' }}
                 </q-item-label>
               </q-item-section>
               <q-item-section side>
                 <div class="text-right">
                   <div class="text-body2">
-                    {{ (market.multiplier * 100).toFixed(0) }}%
+                    {{ (market.priceMultiplier * 100).toFixed(0) }}%
                   </div>
                   <div class="text-caption text-grey-6">
                     price multiplier
@@ -191,13 +246,21 @@
               </q-item-section>
               <q-item-section side>
                 <div class="q-gutter-xs">
-                  <q-btn flat round dense icon="edit" @click="editMarket(market)" />
-                  <q-btn flat round dense icon="delete" color="negative" @click="confirmDeleteMarket(market)" />
+                  <q-btn 
+                    flat round dense icon="edit" 
+                    @click="editMarket(market)" 
+                    :disable="!hasApiKey"
+                  />
+                  <q-btn 
+                    flat round dense icon="delete" color="negative" 
+                    @click="confirmDeleteMarket(market)" 
+                    :disable="!hasApiKey"
+                  />
                 </div>
               </q-item-section>
             </q-item>
 
-            <q-item v-if="pricingStore.marketAreas.length === 0">
+            <q-item v-if="marketAreas.length === 0">
               <q-item-section class="text-center text-grey-6 q-py-lg">
                 No market areas found. Add one to get started.
               </q-item-section>
@@ -208,7 +271,7 @@
     </q-tab-panels>
 
     <!-- Add/Edit Service Dialog -->
-    <q-dialog v-model="showAddService" persistent>
+    <q-dialog v-model="showServiceDialog" persistent>
       <q-card style="min-width: 400px">
         <q-card-section class="row items-center">
           <div class="text-h6">{{ editingService ? 'Edit' : 'Add' }} Service Type</div>
@@ -220,11 +283,12 @@
 
         <q-card-section class="q-gutter-md">
           <q-input v-model="serviceForm.code" label="Code" outlined hint="e.g., WINDOW_STANDARD" />
-          <q-input v-model="serviceForm.label" label="Label" outlined hint="e.g., Standard Window" />
+          <q-input v-model="serviceForm.name" label="Name" outlined hint="e.g., Standard Window" />
+          <q-input v-model="serviceForm.description" label="Description" outlined type="textarea" rows="2" />
           <q-select 
-            v-model="serviceForm.category" 
-            :options="categoryOptions" 
-            label="Category" 
+            v-model="serviceForm.serviceLineId" 
+            :options="serviceLineOptions" 
+            label="Service Line" 
             outlined 
             emit-value 
             map-options
@@ -237,12 +301,27 @@
             outlined 
           />
           <q-input 
-            v-model.number="serviceForm.minutesPerUnit" 
-            label="Minutes Per Unit" 
+            v-model.number="serviceForm.baseTimeMinutes" 
+            label="Base Time (minutes)" 
             type="number" 
             suffix="min" 
             outlined 
           />
+          <q-input 
+            v-model.number="serviceForm.sqftPrice" 
+            label="Sqft Price (optional)" 
+            type="number" 
+            prefix="$" 
+            outlined 
+          />
+          <q-input 
+            v-model.number="serviceForm.sqftTimeMinutes" 
+            label="Sqft Time (optional)" 
+            type="number" 
+            suffix="min" 
+            outlined 
+          />
+          <q-toggle v-model="serviceForm.isActive" label="Active" />
         </q-card-section>
 
         <q-separator />
@@ -260,7 +339,7 @@
     </q-dialog>
 
     <!-- Add/Edit Modifier Dialog -->
-    <q-dialog v-model="showAddModifier" persistent>
+    <q-dialog v-model="showModifierDialog" persistent>
       <q-card style="min-width: 400px">
         <q-card-section class="row items-center">
           <div class="text-h6">{{ editingModifier ? 'Edit' : 'Add' }} Modifier</div>
@@ -272,9 +351,10 @@
 
         <q-card-section class="q-gutter-md">
           <q-input v-model="modifierForm.code" label="Code" outlined hint="e.g., HIGH_REACH" />
-          <q-input v-model="modifierForm.label" label="Label" outlined hint="e.g., High Reach" />
+          <q-input v-model="modifierForm.name" label="Name" outlined hint="e.g., High Reach Access" />
+          <q-input v-model="modifierForm.description" label="Description" outlined type="textarea" rows="2" />
           <q-select 
-            v-model="modifierForm.type" 
+            v-model="modifierForm.modifierType" 
             :options="modifierTypeOptions" 
             label="Type" 
             outlined 
@@ -285,17 +365,10 @@
             v-model.number="modifierForm.value" 
             label="Value" 
             type="number" 
-            :hint="modifierForm.type === 'PERCENTAGE' ? 'e.g., 40 for +40%' : 'Fixed amount'"
+            :hint="getModifierValueHint()"
             outlined 
           />
-          <q-select 
-            v-model="modifierForm.appliesTo" 
-            :options="appliesToOptions" 
-            label="Applies To" 
-            outlined 
-            emit-value 
-            map-options
-          />
+          <q-toggle v-model="modifierForm.isActive" label="Active" />
         </q-card-section>
 
         <q-separator />
@@ -313,7 +386,7 @@
     </q-dialog>
 
     <!-- Add/Edit Market Dialog -->
-    <q-dialog v-model="showAddMarket" persistent>
+    <q-dialog v-model="showMarketDialog" persistent>
       <q-card style="min-width: 400px">
         <q-card-section class="row items-center">
           <div class="text-h6">{{ editingMarket ? 'Edit' : 'Add' }} Market Area</div>
@@ -324,16 +397,17 @@
         <q-separator />
 
         <q-card-section class="q-gutter-md">
-          <q-input v-model="marketForm.code" label="Code" outlined hint="e.g., BRISBANE" />
-          <q-input v-model="marketForm.label" label="Label" outlined hint="e.g., Brisbane Metro" />
+          <q-input v-model="marketForm.name" label="Name" outlined hint="e.g., Brisbane Metro" />
+          <q-input v-model="marketForm.description" label="Description" outlined type="textarea" rows="2" />
           <q-input 
-            v-model.number="marketForm.multiplier" 
-            label="Multiplier" 
+            v-model.number="marketForm.priceMultiplier" 
+            label="Price Multiplier" 
             type="number" 
             step="0.01"
             hint="e.g., 1.0 for 100%, 1.2 for 120%"
             outlined 
           />
+          <q-toggle v-model="marketForm.isActive" label="Active" />
         </q-card-section>
 
         <q-separator />
@@ -355,141 +429,235 @@
 <script setup lang="ts">
 import { ref, computed, onMounted } from 'vue';
 import { useQuasar } from 'quasar';
-import { usePricingStore, type ServiceType, type Modifier, type MarketArea } from '../stores/pricing';
+import { 
+  useAdminApi, 
+  type ServiceType, 
+  type Modifier, 
+  type MarketArea,
+  type ServiceLine,
+} from '../composables/useAdminApi';
 
-const $q = useQuasar();
-const pricingStore = usePricingStore();
+var $q = useQuasar();
+var adminApi = useAdminApi();
 
-const activeTab = ref('services');
-const saving = ref(false);
+var activeTab = ref('services');
+var saving = ref(false);
+var isLoading = ref(false);
+var loadError = ref<string | null>(null);
+
+// Data
+var serviceTypes = ref<ServiceType[]>([]);
+var modifiers = ref<Modifier[]>([]);
+var marketAreas = ref<MarketArea[]>([]);
+var serviceLines = ref<ServiceLine[]>([]);
 
 // Dialog visibility
-const showAddService = ref(false);
-const showAddModifier = ref(false);
-const showAddMarket = ref(false);
+var showServiceDialog = ref(false);
+var showModifierDialog = ref(false);
+var showMarketDialog = ref(false);
 
 // Editing states
-const editingService = ref<ServiceType | null>(null);
-const editingModifier = ref<Modifier | null>(null);
-const editingMarket = ref<MarketArea | null>(null);
+var editingService = ref<ServiceType | null>(null);
+var editingModifier = ref<Modifier | null>(null);
+var editingMarket = ref<MarketArea | null>(null);
 
 // Form data
-const serviceForm = ref({
+var serviceForm = ref({
   code: '',
-  label: '',
-  category: 'WINDOW',
+  name: '',
+  description: '',
+  serviceLineId: '',
   basePrice: 0,
-  minutesPerUnit: 5,
+  baseTimeMinutes: 5,
+  sqftPrice: null as number | null,
+  sqftTimeMinutes: null as number | null,
+  unit: 'EACH',
+  isActive: true,
 });
 
-const modifierForm = ref({
+var modifierForm = ref({
   code: '',
-  label: '',
-  type: 'PERCENTAGE',
+  name: '',
+  description: '',
+  modifierType: 'PERCENTAGE',
   value: 0,
-  appliesTo: 'ALL',
+  isActive: true,
 });
 
-const marketForm = ref({
-  code: '',
-  label: '',
-  multiplier: 1.0,
+var marketForm = ref({
+  name: '',
+  description: '',
+  priceMultiplier: 1.0,
+  isActive: true,
 });
 
 // Options
-const categoryOptions = [
-  { label: 'Window Cleaning', value: 'WINDOW' },
-  { label: 'Pressure Cleaning', value: 'PRESSURE' },
-];
-
-const modifierTypeOptions = [
+var modifierTypeOptions = [
   { label: 'Percentage', value: 'PERCENTAGE' },
   { label: 'Fixed Amount', value: 'FIXED' },
   { label: 'Multiplier', value: 'MULTIPLIER' },
 ];
 
-const appliesToOptions = [
-  { label: 'All Services', value: 'ALL' },
-  { label: 'Window Only', value: 'WINDOW' },
-  { label: 'Pressure Only', value: 'PRESSURE' },
-];
-
 // Computed
-const statusLabel = computed(() => {
-  if (pricingStore.loading) return 'Loading...';
-  if (pricingStore.error) return 'Error';
-  return `${pricingStore.serviceTypes.length} services`;
+var hasApiKey = computed(function() {
+  return adminApi.hasApiKey();
+});
+
+var serviceLineOptions = computed(function() {
+  return serviceLines.value.map(function(sl) {
+    return { label: sl.name, value: sl.id };
+  });
+});
+
+var statusLabel = computed(function() {
+  if (isLoading.value) return 'Loading...';
+  if (loadError.value) return 'Error';
+  return serviceTypes.value.length + ' services';
 });
 
 // Helpers
-function getCategoryIcon(category: string) {
-  return category === 'WINDOW' ? 'window' : 'water_drop';
+function getServiceLineIcon(code: string | undefined) {
+  if (!code) return 'category';
+  if (code.includes('WINDOW')) return 'window';
+  if (code.includes('PRESSURE')) return 'water_drop';
+  return 'category';
 }
 
-function getCategoryColor(category: string) {
-  return category === 'WINDOW' ? 'blue' : 'cyan';
+function getServiceLineColor(code: string | undefined) {
+  if (!code) return 'grey';
+  if (code.includes('WINDOW')) return 'blue';
+  if (code.includes('PRESSURE')) return 'cyan';
+  return 'grey';
 }
 
 function formatModifierValue(modifier: Modifier) {
-  if (modifier.type === 'PERCENTAGE') {
-    return `+${modifier.value}%`;
-  } else if (modifier.type === 'MULTIPLIER') {
-    return `×${modifier.value}`;
+  if (modifier.modifierType === 'PERCENTAGE') {
+    return '+' + modifier.value + '%';
+  } else if (modifier.modifierType === 'MULTIPLIER') {
+    return '×' + modifier.value;
   }
-  return `$${modifier.value?.toFixed(2) || '0.00'}`;
+  return '$' + (modifier.value?.toFixed(2) || '0.00');
+}
+
+function getModifierValueHint() {
+  if (modifierForm.value.modifierType === 'PERCENTAGE') {
+    return 'e.g., 40 for +40%';
+  } else if (modifierForm.value.modifierType === 'MULTIPLIER') {
+    return 'e.g., 1.5 for 150%';
+  }
+  return 'Fixed amount in dollars';
 }
 
 // Load data on mount
-onMounted(async () => {
+onMounted(async function() {
   await refreshData();
 });
 
 async function refreshData() {
-  await pricingStore.fetchPricing(true);
+  isLoading.value = true;
+  loadError.value = null;
+
+  try {
+    // Fetch all data in parallel
+    var results = await Promise.all([
+      adminApi.getServiceTypes(),
+      adminApi.getModifiers(),
+      adminApi.getMarketAreas(),
+      adminApi.getServiceLines(),
+    ]);
+
+    var stResult = results[0];
+    var modResult = results[1];
+    var maResult = results[2];
+    var slResult = results[3];
+
+    if (stResult.error) throw new Error('Service types: ' + stResult.error);
+    if (modResult.error) throw new Error('Modifiers: ' + modResult.error);
+    if (maResult.error) throw new Error('Market areas: ' + maResult.error);
+
+    serviceTypes.value = stResult.data || [];
+    modifiers.value = modResult.data || [];
+    marketAreas.value = maResult.data || [];
+    serviceLines.value = slResult.data || [];
+
+    console.log('[AdminPricing] Loaded:', {
+      serviceTypes: serviceTypes.value.length,
+      modifiers: modifiers.value.length,
+      marketAreas: marketAreas.value.length,
+      serviceLines: serviceLines.value.length,
+    });
+  } catch (err) {
+    loadError.value = err instanceof Error ? err.message : 'Unknown error';
+    console.error('[AdminPricing] Load error:', err);
+  } finally {
+    isLoading.value = false;
+  }
 }
 
-// Service CRUD
+// ============ Service Type CRUD ============
+function openAddService() {
+  editingService.value = null;
+  resetServiceForm();
+  showServiceDialog.value = true;
+}
+
 function editService(service: ServiceType) {
   editingService.value = service;
   serviceForm.value = {
     code: service.code,
-    label: service.label,
-    category: service.category,
+    name: service.name,
+    description: service.description || '',
+    serviceLineId: service.serviceLine?.id || (serviceLines.value[0]?.id || ''),
     basePrice: service.basePrice || 0,
-    minutesPerUnit: service.minutesPerUnit || 5,
+    baseTimeMinutes: service.baseTimeMinutes || 5,
+    sqftPrice: service.sqftPrice,
+    sqftTimeMinutes: service.sqftTimeMinutes,
+    unit: service.unit || 'EACH',
+    isActive: service.isActive !== false,
   };
-  showAddService.value = true;
+  showServiceDialog.value = true;
 }
 
 async function saveService() {
   saving.value = true;
   try {
-    const payload = {
-      ...serviceForm.value,
-      businessId: 'biz-925',
+    var payload = {
+      code: serviceForm.value.code,
+      name: serviceForm.value.name,
+      description: serviceForm.value.description,
+      serviceLineId: serviceForm.value.serviceLineId,
+      basePrice: serviceForm.value.basePrice,
+      baseTimeMinutes: serviceForm.value.baseTimeMinutes,
+      sqftPrice: serviceForm.value.sqftPrice,
+      sqftTimeMinutes: serviceForm.value.sqftTimeMinutes,
+      unit: serviceForm.value.unit,
+      isActive: serviceForm.value.isActive,
     };
 
+    var result;
     if (editingService.value) {
-      // TODO: Implement update API
-      $q.notify({
-        type: 'info',
-        message: 'Update API not yet implemented - requires backend endpoint',
-      });
+      result = await adminApi.updateServiceType(editingService.value.id, payload);
     } else {
-      // TODO: Implement create API
-      $q.notify({
-        type: 'info',
-        message: 'Create API not yet implemented - requires backend endpoint',
-      });
+      result = await adminApi.createServiceType(payload);
     }
 
-    showAddService.value = false;
+    if (result.error) {
+      throw new Error(result.error);
+    }
+
+    $q.notify({
+      type: 'positive',
+      message: editingService.value ? 'Service type updated' : 'Service type created',
+    });
+
+    showServiceDialog.value = false;
     editingService.value = null;
     resetServiceForm();
-  } catch (error) {
+    await refreshData();
+  } catch (err) {
     $q.notify({
       type: 'negative',
-      message: 'Failed to save service type',
+      message: 'Failed to save: ' + (err instanceof Error ? err.message : 'Unknown error'),
     });
   } finally {
     saving.value = false;
@@ -499,64 +667,101 @@ async function saveService() {
 function confirmDeleteService(service: ServiceType) {
   $q.dialog({
     title: 'Delete Service Type',
-    message: `Are you sure you want to delete "${service.label}"?`,
+    message: 'Are you sure you want to delete "' + service.name + '"?',
     cancel: true,
     persistent: true,
     color: 'negative',
-  }).onOk(() => {
-    // TODO: Implement delete API
-    $q.notify({
-      type: 'info',
-      message: 'Delete API not yet implemented - requires backend endpoint',
-    });
+  }).onOk(async function() {
+    try {
+      var result = await adminApi.deleteServiceType(service.id);
+      if (result.error) {
+        throw new Error(result.error);
+      }
+      $q.notify({
+        type: 'positive',
+        message: 'Service type deleted',
+      });
+      await refreshData();
+    } catch (err) {
+      $q.notify({
+        type: 'negative',
+        message: 'Failed to delete: ' + (err instanceof Error ? err.message : 'Unknown error'),
+      });
+    }
   });
 }
 
 function resetServiceForm() {
   serviceForm.value = {
     code: '',
-    label: '',
-    category: 'WINDOW',
+    name: '',
+    description: '',
+    serviceLineId: serviceLines.value[0]?.id || '',
     basePrice: 0,
-    minutesPerUnit: 5,
+    baseTimeMinutes: 5,
+    sqftPrice: null,
+    sqftTimeMinutes: null,
+    unit: 'EACH',
+    isActive: true,
   };
 }
 
-// Modifier CRUD
+// ============ Modifier CRUD ============
+function openAddModifier() {
+  editingModifier.value = null;
+  resetModifierForm();
+  showModifierDialog.value = true;
+}
+
 function editModifier(modifier: Modifier) {
   editingModifier.value = modifier;
   modifierForm.value = {
     code: modifier.code,
-    label: modifier.label,
-    type: modifier.type,
+    name: modifier.name,
+    description: modifier.description || '',
+    modifierType: modifier.modifierType,
     value: modifier.value || 0,
-    appliesTo: modifier.appliesTo || 'ALL',
+    isActive: modifier.isActive !== false,
   };
-  showAddModifier.value = true;
+  showModifierDialog.value = true;
 }
 
 async function saveModifier() {
   saving.value = true;
   try {
+    var payload = {
+      code: modifierForm.value.code,
+      name: modifierForm.value.name,
+      description: modifierForm.value.description,
+      modifierType: modifierForm.value.modifierType,
+      value: modifierForm.value.value,
+      isActive: modifierForm.value.isActive,
+    };
+
+    var result;
     if (editingModifier.value) {
-      $q.notify({
-        type: 'info',
-        message: 'Update API not yet implemented - requires backend endpoint',
-      });
+      result = await adminApi.updateModifier(editingModifier.value.id, payload);
     } else {
-      $q.notify({
-        type: 'info',
-        message: 'Create API not yet implemented - requires backend endpoint',
-      });
+      result = await adminApi.createModifier(payload);
     }
 
-    showAddModifier.value = false;
+    if (result.error) {
+      throw new Error(result.error);
+    }
+
+    $q.notify({
+      type: 'positive',
+      message: editingModifier.value ? 'Modifier updated' : 'Modifier created',
+    });
+
+    showModifierDialog.value = false;
     editingModifier.value = null;
     resetModifierForm();
-  } catch (error) {
+    await refreshData();
+  } catch (err) {
     $q.notify({
       type: 'negative',
-      message: 'Failed to save modifier',
+      message: 'Failed to save: ' + (err instanceof Error ? err.message : 'Unknown error'),
     });
   } finally {
     saving.value = false;
@@ -566,61 +771,93 @@ async function saveModifier() {
 function confirmDeleteModifier(modifier: Modifier) {
   $q.dialog({
     title: 'Delete Modifier',
-    message: `Are you sure you want to delete "${modifier.label}"?`,
+    message: 'Are you sure you want to delete "' + modifier.name + '"?',
     cancel: true,
     persistent: true,
     color: 'negative',
-  }).onOk(() => {
-    $q.notify({
-      type: 'info',
-      message: 'Delete API not yet implemented - requires backend endpoint',
-    });
+  }).onOk(async function() {
+    try {
+      var result = await adminApi.deleteModifier(modifier.id);
+      if (result.error) {
+        throw new Error(result.error);
+      }
+      $q.notify({
+        type: 'positive',
+        message: 'Modifier deleted',
+      });
+      await refreshData();
+    } catch (err) {
+      $q.notify({
+        type: 'negative',
+        message: 'Failed to delete: ' + (err instanceof Error ? err.message : 'Unknown error'),
+      });
+    }
   });
 }
 
 function resetModifierForm() {
   modifierForm.value = {
     code: '',
-    label: '',
-    type: 'PERCENTAGE',
+    name: '',
+    description: '',
+    modifierType: 'PERCENTAGE',
     value: 0,
-    appliesTo: 'ALL',
+    isActive: true,
   };
 }
 
-// Market Area CRUD
+// ============ Market Area CRUD ============
+function openAddMarket() {
+  editingMarket.value = null;
+  resetMarketForm();
+  showMarketDialog.value = true;
+}
+
 function editMarket(market: MarketArea) {
   editingMarket.value = market;
   marketForm.value = {
-    code: market.code,
-    label: market.label,
-    multiplier: market.multiplier,
+    name: market.name,
+    description: market.description || '',
+    priceMultiplier: market.priceMultiplier,
+    isActive: market.isActive !== false,
   };
-  showAddMarket.value = true;
+  showMarketDialog.value = true;
 }
 
 async function saveMarket() {
   saving.value = true;
   try {
+    var payload = {
+      name: marketForm.value.name,
+      description: marketForm.value.description,
+      priceMultiplier: marketForm.value.priceMultiplier,
+      isActive: marketForm.value.isActive,
+    };
+
+    var result;
     if (editingMarket.value) {
-      $q.notify({
-        type: 'info',
-        message: 'Update API not yet implemented - requires backend endpoint',
-      });
+      result = await adminApi.updateMarketArea(editingMarket.value.id, payload);
     } else {
-      $q.notify({
-        type: 'info',
-        message: 'Create API not yet implemented - requires backend endpoint',
-      });
+      result = await adminApi.createMarketArea(payload);
     }
 
-    showAddMarket.value = false;
+    if (result.error) {
+      throw new Error(result.error);
+    }
+
+    $q.notify({
+      type: 'positive',
+      message: editingMarket.value ? 'Market area updated' : 'Market area created',
+    });
+
+    showMarketDialog.value = false;
     editingMarket.value = null;
     resetMarketForm();
-  } catch (error) {
+    await refreshData();
+  } catch (err) {
     $q.notify({
       type: 'negative',
-      message: 'Failed to save market area',
+      message: 'Failed to save: ' + (err instanceof Error ? err.message : 'Unknown error'),
     });
   } finally {
     saving.value = false;
@@ -630,23 +867,36 @@ async function saveMarket() {
 function confirmDeleteMarket(market: MarketArea) {
   $q.dialog({
     title: 'Delete Market Area',
-    message: `Are you sure you want to delete "${market.label}"?`,
+    message: 'Are you sure you want to delete "' + market.name + '"?',
     cancel: true,
     persistent: true,
     color: 'negative',
-  }).onOk(() => {
-    $q.notify({
-      type: 'info',
-      message: 'Delete API not yet implemented - requires backend endpoint',
-    });
+  }).onOk(async function() {
+    try {
+      var result = await adminApi.deleteMarketArea(market.id);
+      if (result.error) {
+        throw new Error(result.error);
+      }
+      $q.notify({
+        type: 'positive',
+        message: 'Market area deleted',
+      });
+      await refreshData();
+    } catch (err) {
+      $q.notify({
+        type: 'negative',
+        message: 'Failed to delete: ' + (err instanceof Error ? err.message : 'Unknown error'),
+      });
+    }
   });
 }
 
 function resetMarketForm() {
   marketForm.value = {
-    code: '',
-    label: '',
-    multiplier: 1.0,
+    name: '',
+    description: '',
+    priceMultiplier: 1.0,
+    isActive: true,
   };
 }
 </script>
