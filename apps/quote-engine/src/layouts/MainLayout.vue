@@ -15,6 +15,7 @@
           TicTacStick
         </q-toolbar-title>
 
+        <PricingSourceIndicator />
         <OfflineIndicator />
 
         <q-btn flat round dense icon="more_vert">
@@ -148,6 +149,7 @@
 import { ref, onMounted } from 'vue';
 import { useQuasar } from 'quasar';
 import OfflineIndicator from '../components/QuoteBuilder/OfflineIndicator.vue';
+import PricingSourceIndicator from '../components/QuoteBuilder/PricingSourceIndicator.vue';
 import { useKeyboardShortcuts } from '../composables/useKeyboardShortcuts';
 import { usePricingStore } from '../stores/pricing';
 
