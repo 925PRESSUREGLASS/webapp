@@ -22,7 +22,14 @@ var envSchema = z.object({
   SMTP_PASS: z.string().optional(),
   SMTP_FROM: z.string().optional(),
   // JWT authentication
-  JWT_SECRET: z.string().optional()
+  JWT_SECRET: z.string().optional(),
+  // GoHighLevel integration
+  GHL_API_KEY: z.string().optional(),
+  GHL_LOCATION_ID: z.string().optional(),
+  GHL_PIPELINE_ID: z.string().optional(),
+  GHL_STAGE_ID: z.string().optional(),
+  GHL_BASE_URL: z.string().url().optional(),
+  GHL_WEBHOOK_SECRET: z.string().optional()
 });
 
 var parsed = envSchema.safeParse(process.env);
