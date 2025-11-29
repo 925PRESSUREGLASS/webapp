@@ -1,7 +1,7 @@
 # CLAUDE.md - AI Assistant Guide for TicTacStick Quote Engine
 
-**Last Updated:** 2025-11-27
-**Version:** 1.13.4
+**Last Updated:** 2025-11-29
+**Version:** 1.13.5
 **Project:** TicTacStick Quote Engine for 925 Pressure Glass
 
 ---
@@ -65,6 +65,50 @@ SMTP_SECURE=false
 SMTP_USER=your-email@gmail.com
 SMTP_PASS=your-app-password
 SMTP_FROM=TicTacStick <noreply@yourdomain.com>
+```
+
+### Job Tracker System (November 2025)
+
+Complete field job tracking system in the Vue/Quasar quote-engine app:
+
+**Store (apps/quote-engine/src/stores/jobs.ts):**
+- Full job lifecycle management: scheduled → in-progress → paused → completed → invoiced
+- Job creation from quotes with `convertQuoteToJob()`
+- Work item status tracking (pending, in-progress, completed, skipped)
+- Photo capture with types: before, during, after, issue
+- Notes and issue tracking with severity levels
+- Time tracking with start/pause/resume/complete
+- Price adjustments with audit trail
+- Job search and filtering
+- Statistics and revenue tracking
+
+**Pages:**
+- `JobsPage.vue` - Job list with stats, search, and filters
+- `ActiveJobPage.vue` - Active job management with:
+  - Work item checklist
+  - Photo capture integration
+  - Job timer with elapsed time
+  - Price adjustment modal
+  - Job completion wizard
+
+**Components (apps/quote-engine/src/components/Jobs/):**
+- `JobTimer.vue` - Live elapsed time with estimated duration
+- `PriceAdjustModal.vue` - Field price adjustments with reasons
+- `SignatureCanvas.vue` - Touch/mouse signature capture
+- `PhotoCapture.vue` - Camera integration via Capacitor
+- `JobCompletionWizard.vue` - 5-step job completion:
+  1. Review checklist & pricing summary
+  2. Photo gallery review
+  3. Customer signature capture
+  4. Completion notes with quick notes
+  5. Final summary
+
+**Types (from @tictacstick/calculation-engine):**
+```typescript
+JobStatus: 'scheduled' | 'in-progress' | 'paused' | 'completed' | 'invoiced' | 'cancelled'
+JobItemStatus: 'pending' | 'in-progress' | 'completed' | 'skipped'
+JobPhotoType: 'before' | 'during' | 'after' | 'issue'
+JobIssueSeverity: 'low' | 'medium' | 'high'
 ```
 
 ---
