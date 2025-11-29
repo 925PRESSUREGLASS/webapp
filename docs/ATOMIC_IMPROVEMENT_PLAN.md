@@ -1,7 +1,7 @@
 # Atomic Improvement Plan
 
 **Created:** November 29, 2025  
-**Status:** Tasks 1-9 Completed ✅  
+**Status:** Tasks 1-10 Completed ✅  
 **Last Updated:** November 30, 2025
 
 ---
@@ -552,6 +552,87 @@ JWT_SECRET=<secure-random-string-64-chars>
   - Display user name and email
   - Logout with notification
 - **Commit:** `d2f4891` - feat(quote-engine): add frontend auth UI and JWT integration
+
+---
+
+## 🔄 TASK 10: Data Sync Infrastructure (Phase 2B) ✅ COMPLETED
+
+**Status:** ✅ COMPLETED
+**Commit:** `0be206b` - feat: add data sync infrastructure (Task 10)
+
+### Overview
+
+Implement full data synchronization between the quote-engine PWA and meta-api cloud backend. Enables offline-first workflow where changes queue locally and sync when online.
+
+### Atomic Steps
+
+#### Step 10.1: Create Sync Service ✅
+- **File:** `apps/meta-api/src/services/sync.service.ts` (new, 560 lines)
+- **Functions:**
+  - `syncQuote/Job/Client/Invoice(userId, orgId, payload)` - Upsert by localId
+  - `getQuotes/Jobs/Clients/Invoices(userId, orgId, since?)` - Fetch with optional delta
+  - `deleteQuote/Job/Client/Invoice(userId, id)` - Delete operations
+  - `bulkSync(userId, orgId, payload)` - Batch sync all entity types
+  - `fetchAll(userId, orgId)` - Initial full sync
+- **Test:** TypeScript compilation
+- **Commit:** (combined with 10.3)
+
+#### Step 10.2: Create Sync Routes ✅
+- **File:** `apps/meta-api/src/routes/sync.ts` (new, 240 lines)
+- **Endpoints (all JWT-authenticated):**
+  - `GET /sync/all` - Fetch all cloud data for initial sync
+  - `POST /sync/bulk` - Bulk push entities (quotes, jobs, clients, invoices)
+  - `GET /sync/quotes?since=` - Get quotes (optional delta)
+  - `POST /sync/quotes` - Upsert quote
+  - `DELETE /sync/quotes/:id` - Delete quote
+  - `GET/POST/DELETE /sync/jobs` - Job CRUD
+  - `GET/POST/DELETE /sync/clients` - Client CRUD
+  - `GET/POST/DELETE /sync/invoices` - Invoice CRUD
+- **Test:** TypeScript compilation
+- **Commit:** (combined with 10.3)
+
+#### Step 10.3: Register Sync Routes ✅
+- **File:** `apps/meta-api/src/server.ts`
+- **Change:** Add `import syncRoutes` and `app.register(syncRoutes)`
+- **Test:** Build succeeded
+- **Commit:** (combined with 10.4)
+
+#### Step 10.4: Create Frontend Sync Store ✅
+- **File:** `apps/quote-engine/src/stores/sync.ts` (new, 330 lines)
+- **Features:**
+  - `syncQueue` - Queue for offline changes with retry logic
+  - `queueChange()` - Add entity changes to sync queue
+  - `processQueue()` - Push pending changes to cloud
+  - `pullFromCloud()` - Fetch latest from cloud API
+  - `pushToCloud()` - Bulk sync local data to cloud
+  - `fullSync()` - Complete sync (push pending + pull latest)
+  - Auto-sync on reconnect (online event listener)
+  - Periodic sync check every 5 minutes
+  - localStorage caching for offline access
+- **Test:** Build succeeded
+- **Commit:** `0be206b` - feat: add data sync infrastructure (Task 10)
+
+### Sync API Endpoints Summary
+
+| Endpoint | Method | Auth | Description |
+|----------|--------|------|-------------|
+| /sync/all | GET | JWT | Fetch all cloud data for initial sync |
+| /sync/bulk | POST | JWT | Bulk push entities |
+| /sync/quotes | GET | JWT | Get quotes (optional ?since= delta) |
+| /sync/quotes | POST | JWT | Upsert quote by localId |
+| /sync/quotes/:id | DELETE | JWT | Delete quote |
+| /sync/jobs | GET/POST/DELETE | JWT | Job operations |
+| /sync/clients | GET/POST/DELETE | JWT | Client operations |
+| /sync/invoices | GET/POST/DELETE | JWT | Invoice operations |
+
+### Sync Store Features
+
+- **Offline-First:** Changes queue locally, sync when online
+- **Auto-Reconnect:** Processes queue when `online` event fires
+- **Periodic Check:** Syncs every 5 minutes if authenticated
+- **Delta Sync:** Uses `since` timestamp for incremental fetches
+- **Conflict Resolution:** Cloud data with `localId` matching enables upsert
+- **Error Handling:** Failed syncs remain in queue for retry
 
 ---
 
