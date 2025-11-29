@@ -6,8 +6,9 @@ import type {
   PaymentMethod,
   WindowLineItem,
   PressureLineItem,
+  Job,
 } from '@tictacstick/calculation-engine';
-import { roundMoney, calculateGST } from '@tictacstick/calculation-engine';
+import { roundMoney } from '@tictacstick/calculation-engine';
 
 // ============================================
 // Invoice Types
@@ -593,6 +594,45 @@ export const useInvoiceStore = defineStore('invoices', () => {
     });
   }
 
+  /**
+   * Convert a completed Job to an Invoice
+   * Uses actual pricing (may differ from original quote)
+   */
+  function convertJobToInvoice(job: Job): Invoice {
+    // Convert job items to invoice line items
+    const lineItems: InvoiceLineItem[] = (job.items || []).map(item => ({
+      id: item.id,
+      description: item.description,
+      quantity: 1,
+      unitPrice: item.actualPrice,
+      amount: item.actualPrice,
+    }));
+
+    // Determine job type (default to residential)
+    const jobType: 'residential' | 'commercial' = 'residential';
+
+    // Create invoice from job data
+    const invoice = createInvoice({
+      clientId: job.client.id,
+      clientName: job.client.name,
+      clientLocation: job.client.address,
+      clientEmail: job.client.email,
+      clientPhone: job.client.phone,
+      jobType,
+      lineItems,
+      subtotal: job.pricing.actualSubtotal,
+      gst: job.pricing.actualGst,
+      total: job.pricing.actualTotal,
+      internalNotes: job.notes.map(n => n.text).join('\n'),
+    });
+
+    // Add job reference to invoice notes
+    invoice.quoteTitle = `Job #${job.jobNumber}`;
+    invoice.quoteId = job.quoteId;
+
+    return invoice;
+  }
+
   // ============================================
   // Filtering and Search
   // ============================================
@@ -779,8 +819,9 @@ export const useInvoiceStore = defineStore('invoices', () => {
     recordPayment,
     removePayment,
 
-    // Quote Conversion
+    // Quote/Job Conversion
     convertQuoteToInvoice,
+    convertJobToInvoice,
 
     // Filtering
     getAll,

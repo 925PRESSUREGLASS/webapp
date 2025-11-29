@@ -87,6 +87,14 @@
             @click="showNoteDialog = true"
           />
         </div>
+        <div class="col-auto" v-if="job.status === 'completed'">
+          <q-btn
+            color="purple"
+            icon="receipt"
+            label="Create Invoice"
+            @click="handleCreateInvoice"
+          />
+        </div>
       </div>
 
       <!-- Progress Bar -->
@@ -378,6 +386,7 @@ import { ref, computed, onMounted, watch } from 'vue';
 import { useRouter } from 'vue-router';
 import { useQuasar } from 'quasar';
 import { useJobStore, JOB_STATUSES } from '../stores/jobs';
+import { useInvoiceStore } from '../stores/invoices';
 import type { Job, JobItem, JobPhoto, JobIssueSeverity } from '@tictacstick/calculation-engine';
 import JobTimer from '../components/Jobs/JobTimer.vue';
 import PriceAdjustModal from '../components/Jobs/PriceAdjustModal.vue';
@@ -391,6 +400,7 @@ const props = defineProps<{
 const router = useRouter();
 const $q = useQuasar();
 const jobStore = useJobStore();
+const invoiceStore = useInvoiceStore();
 
 // State
 const job = ref<Job | null>(null);
@@ -532,6 +542,41 @@ function handleJobCompletion(data: JobCompletionData) {
       message: 'Could not complete job. Check requirements.',
     });
   }
+}
+
+function handleCreateInvoice() {
+  if (!job.value || job.value.status !== 'completed') return;
+  
+  $q.dialog({
+    title: 'Create Invoice',
+    message: `Create an invoice for ${job.value.client.name} - $${job.value.pricing.actualTotal.toFixed(2)}?`,
+    cancel: true,
+    ok: {
+      label: 'Create Invoice',
+      color: 'purple',
+    },
+  }).onOk(() => {
+    if (!job.value) return;
+    
+    // Initialize invoice store if needed
+    invoiceStore.initialize();
+    
+    // Create invoice from completed job
+    const invoice = invoiceStore.convertJobToInvoice(job.value);
+    
+    // Mark job as invoiced
+    jobStore.markJobInvoiced(job.value.id, invoice.id);
+    job.value = jobStore.getJob(job.value.id);
+    
+    $q.notify({
+      type: 'positive',
+      message: `Invoice ${invoice.invoiceNumber} created`,
+      icon: 'receipt',
+    });
+    
+    // Navigate to invoice
+    router.push(`/invoices/${invoice.id}`);
+  });
 }
 
 function toggleItem(item: JobItem) {
