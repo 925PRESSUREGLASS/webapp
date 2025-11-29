@@ -4,16 +4,9 @@ import type { WindowLine, PressureLine, PricingConfig } from '@tictacstick/calcu
 import {
   calculateGST,
   roundMoney,
-  calculateWindowTime,
-  calculatePressureTime,
 } from '@tictacstick/calculation-engine';
 import { useQuoteStorage, type SavedQuote } from '../composables/useStorage';
-import {
-  windowTypeMap,
-  pressureSurfaceMap,
-  calculateWindowLineCost,
-  calculatePressureLineCost,
-} from '../composables/useCalculations';
+import { useCalculations } from '../composables/useCalculations';
 
 // History state for undo/redo
 interface QuoteSnapshot {
@@ -32,9 +25,13 @@ const MAX_HISTORY = 50;
 /**
  * Quote store
  * Manages the current quote state with real calculation engine
+ * Uses dynamic pricing from API when available
  */
 export const useQuoteStore = defineStore('quote', () => {
   const storage = useQuoteStorage();
+  
+  // Get calculations composable with dynamic pricing support
+  const calculations = useCalculations();
 
   // Current quote ID (null for new quotes)
   const currentQuoteId = ref<string | null>(null);
@@ -72,18 +69,18 @@ export const useQuoteStore = defineStore('quote', () => {
   const historyIndex = ref(-1);
   const isUndoRedo = ref(false);
 
-  // Cost breakdown computed
+  // Cost breakdown computed (uses dynamic pricing from API when available)
   const breakdown = computed(() => {
     let windows = 0;
     let pressure = 0;
     let highReach = 0;
 
-    // Calculate window costs using shared composable
+    // Calculate window costs using dynamic pricing
     windowLines.value.forEach(line => {
-      const cost = calculateWindowLineCost(line, pricingConfig.value);
+      const cost = calculations.calculateWindowLineCostDynamic(line, pricingConfig.value);
       // Separate high reach costs
       if (line.highReach) {
-        const baseCost = calculateWindowLineCost(
+        const baseCost = calculations.calculateWindowLineCostDynamic(
           { ...line, highReach: false },
           pricingConfig.value
         );
@@ -94,9 +91,9 @@ export const useQuoteStore = defineStore('quote', () => {
       }
     });
 
-    // Calculate pressure costs using shared composable
+    // Calculate pressure costs using dynamic pricing
     pressureLines.value.forEach(line => {
-      pressure += calculatePressureLineCost(line, pricingConfig.value);
+      pressure += calculations.calculatePressureLineCostDynamic(line, pricingConfig.value);
     });
 
     return {
@@ -109,23 +106,22 @@ export const useQuoteStore = defineStore('quote', () => {
     };
   });
 
-  // Time estimate computed
+  // Time estimate computed (uses dynamic pricing from API when available)
   const estimatedMinutes = computed(() => {
     let totalMinutes = pricingConfig.value.setupBufferMinutes;
 
-    // Window time
+    // Window time using dynamic pricing
     windowLines.value.forEach(line => {
-      totalMinutes += calculateWindowTime(
+      totalMinutes += calculations.calculateWindowLineTimeDynamic(
         line,
-        windowTypeMap,
         pricingConfig.value.insideMultiplier,
         pricingConfig.value.outsideMultiplier
       );
     });
 
-    // Pressure time
+    // Pressure time using dynamic pricing
     pressureLines.value.forEach(line => {
-      totalMinutes += calculatePressureTime(line, pressureSurfaceMap);
+      totalMinutes += calculations.calculatePressureLineTimeDynamic(line);
     });
 
     return Math.round(totalMinutes);
@@ -384,13 +380,13 @@ export const useQuoteStore = defineStore('quote', () => {
     return true;
   }
 
-  // Expose the maps for components
+  // Expose the maps for components (uses dynamic pricing when available)
   function getWindowTypeMap() {
-    return windowTypeMap;
+    return calculations.activeWindowTypeMap.value;
   }
 
   function getPressureSurfaceMap() {
-    return pressureSurfaceMap;
+    return calculations.activePressureSurfaceMap.value;
   }
 
   // Quote validation
@@ -441,6 +437,10 @@ export const useQuoteStore = defineStore('quote', () => {
     canUndo,
     canRedo,
     validation,
+    
+    // Dynamic pricing info
+    pricingSource: calculations.pricingSource,
+    isUsingDynamicPricing: calculations.isUsingDynamicPricing,
     
     // Actions
     addWindowLine,
