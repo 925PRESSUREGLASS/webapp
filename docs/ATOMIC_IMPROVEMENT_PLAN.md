@@ -372,6 +372,42 @@ Replace placeholder text-based email attachments with professional PDF documents
 
 ---
 
+## 📧 TASK 7: Customer Notification on Job Completion ✅ COMPLETED
+
+**Status:** ✅ COMPLETED
+**Commit:** `0de1a9c` - feat(jobs): add customer notification on job completion
+
+### Overview
+
+When completing a job with "Notify Customer" enabled, automatically send an email with a professional PDF receipt attached.
+
+### Atomic Steps
+
+#### Step 7.1: Add job receipt PDF generator ✅
+- **File:** `apps/quote-engine/src/utils/pdf-generator.ts`
+- **Change:** Add `generateJobReceiptPdfBase64()` function with professional template
+- **Test:** TypeScript compilation
+- **Commit:** (combined with 7.2)
+
+#### Step 7.2: Implement sendCustomerNotification function ✅
+- **File:** `apps/quote-engine/src/pages/ActiveJobPage.vue`
+- **Change:** Add async function to generate PDF and send via email API
+- **Test:** Build succeeded
+- **Commit:** `0de1a9c` - feat(jobs): add customer notification on job completion
+
+### Features
+- Professional job completion PDF with:
+  - Header with job number and completion badge
+  - Client details and job information
+  - Work items checklist with status
+  - Pricing breakdown (subtotal, GST, total)
+  - Job notes section
+  - Thank you footer
+- Automatic email sending when "Notify Customer" is enabled
+- Graceful error handling with user notifications
+
+---
+
 ## Verification Checklist
 
 After each commit:
