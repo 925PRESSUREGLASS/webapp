@@ -728,6 +728,17 @@
         </q-card-section>
       </q-card>
     </q-dialog>
+
+    <!-- Email Invoice Dialog -->
+    <EmailDialog
+      v-model="showEmailDialog"
+      type="invoice"
+      :recipient-email="emailInvoiceData?.clientEmail || ''"
+      :document-number="emailInvoiceData?.invoiceNumber || ''"
+      :attachment-base64="invoicePdfBase64"
+      :attachment-name="invoicePdfFilename"
+      @sent="handleEmailSent"
+    />
   </q-page>
 </template>
 
@@ -743,6 +754,7 @@ import {
 } from '../stores/invoices';
 import InvoicePrint from '../components/Invoice/InvoicePrint.vue';
 import InvoiceEditor from '../components/Invoice/InvoiceEditor.vue';
+import EmailDialog from '../components/Email/EmailDialog.vue';
 import type { InvoiceStatus, PaymentMethod } from '@tictacstick/calculation-engine';
 
 const $q = useQuasar();
@@ -773,6 +785,16 @@ const showPrintDialog = ref(false);
 const showEditDialog = ref(false);
 const printInvoiceData = ref<Invoice | null>(null);
 const editInvoiceData = ref<Invoice | null>(null);
+
+// Email dialog state
+const showEmailDialog = ref(false);
+const emailInvoiceData = ref<Invoice | null>(null);
+const invoicePdfBase64 = ref('');
+
+const invoicePdfFilename = computed(function() {
+  var invoiceNum = emailInvoiceData.value?.invoiceNumber || 'DRAFT';
+  return 'Invoice-' + invoiceNum + '.pdf';
+});
 
 // Selected items
 const selectedInvoice = ref<Invoice | null>(null);
@@ -989,57 +1011,37 @@ function doPrint() {
   window.print();
 }
 
-function emailInvoice(invoice: Invoice) {
-  if (!invoice.clientEmail) {
-    $q.notify({ message: 'No email address on file', type: 'warning' });
-    return;
-  }
-
-  const settings = invoiceStore.getSettings();
-  const businessName = settings.businessName || 'Our Company';
+async function emailInvoice(invoice: Invoice) {
+  // Set invoice data for email dialog
+  emailInvoiceData.value = invoice;
   
-  // Build email body
-  const lineItemsText = invoice.lineItems
-    .map(item => `• ${item.description}: $${item.amount.toFixed(2)}`)
-    .join('%0D%0A');
+  // Generate placeholder PDF content (TODO: integrate real PDF generation)
+  var settings = invoiceStore.getSettings();
+  var invoiceContent = 'Invoice: ' + invoice.invoiceNumber + '\n';
+  invoiceContent += 'Client: ' + invoice.clientName + '\n';
+  invoiceContent += 'Total: $' + invoice.total.toFixed(2) + '\n';
+  invoiceContent += 'Due: ' + invoice.dueDate + '\n';
+  invoiceContent += '\nLine Items:\n';
+  invoice.lineItems.forEach(function(item) {
+    invoiceContent += '  - ' + item.description + ': $' + item.amount.toFixed(2) + '\n';
+  });
   
-  const subject = encodeURIComponent(`Invoice ${invoice.invoiceNumber} from ${businessName}`);
-  const body = encodeURIComponent(
-`Dear ${invoice.clientName},
+  invoicePdfBase64.value = btoa(invoiceContent);
+  showEmailDialog.value = true;
+}
 
-Please find details of invoice ${invoice.invoiceNumber} below:
-
-Invoice Date: ${new Date(invoice.invoiceDate).toLocaleDateString('en-AU')}
-Due Date: ${new Date(invoice.dueDate).toLocaleDateString('en-AU')}
-
-Items:
-${invoice.lineItems.map(item => `• ${item.description}: $${item.amount.toFixed(2)}`).join('\n')}
-
-Subtotal: $${invoice.subtotal.toFixed(2)}
-GST (10%): $${invoice.gst.toFixed(2)}
-Total: $${invoice.total.toFixed(2)}
-${invoice.amountPaid > 0 ? `Amount Paid: $${invoice.amountPaid.toFixed(2)}\nBalance Due: $${invoice.balance.toFixed(2)}` : ''}
-
-${settings.bankName ? `Payment Details:
-Bank: ${settings.bankName}
-Account Name: ${settings.accountName}
-BSB: ${settings.bsb}
-Account: ${settings.accountNumber}` : ''}
-
-Thank you for your business.
-
-Best regards,
-${businessName}
-${settings.businessPhone ? `Phone: ${settings.businessPhone}` : ''}
-${settings.businessEmail ? `Email: ${settings.businessEmail}` : ''}
-`);
-
-  window.open(`mailto:${invoice.clientEmail}?subject=${subject}&body=${body}`);
-  
-  // Mark as sent if currently draft
-  if (invoice.status === 'draft') {
-    invoiceStore.updateStatus(invoice.id, 'sent');
-    $q.notify({ message: 'Invoice marked as sent', type: 'positive' });
+function handleEmailSent(result: { success: boolean; messageId?: string }) {
+  if (result.success) {
+    $q.notify({
+      type: 'positive',
+      message: 'Invoice email sent successfully!',
+      caption: result.messageId ? 'Message ID: ' + result.messageId : undefined
+    });
+    
+    // Mark as sent if currently draft
+    if (emailInvoiceData.value && emailInvoiceData.value.status === 'draft') {
+      invoiceStore.updateStatus(emailInvoiceData.value.id, 'sent');
+    }
   }
 }
 
