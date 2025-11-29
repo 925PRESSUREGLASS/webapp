@@ -437,6 +437,7 @@ import { useRouter } from 'vue-router';
 import { useQuasar } from 'quasar';
 import { useJobStore, JOB_STATUSES } from '../stores/jobs';
 import { useInvoiceStore } from '../stores/invoices';
+import { useEmail } from '../composables/useEmail';
 import type { Job, JobItem, JobPhoto, JobIssueSeverity } from '@tictacstick/calculation-engine';
 import JobTimer from '../components/Jobs/JobTimer.vue';
 import PriceAdjustModal from '../components/Jobs/PriceAdjustModal.vue';
@@ -447,6 +448,7 @@ import {
   downloadPdfFromElement,
   sharePdf,
   generateJobReceiptFilename,
+  generateJobReceiptPdfBase64,
 } from '../utils/pdf-generator';
 
 const props = defineProps<{
@@ -457,6 +459,7 @@ const router = useRouter();
 const $q = useQuasar();
 const jobStore = useJobStore();
 const invoiceStore = useInvoiceStore();
+const { sendJobSummary, isSending: isSendingEmail } = useEmail();
 
 // State
 const job = ref<Job | null>(null);
@@ -599,14 +602,61 @@ function handleJobCompletion(data: JobCompletionData) {
       icon: 'check_circle',
     });
     
-    if (data.notifyCustomer) {
-      // TODO: Send notification to customer
-      console.log('Would notify customer:', job.value?.client.email);
+    if (data.notifyCustomer && job.value?.client.email) {
+      // Send completion notification email to customer
+      sendCustomerNotification(job.value);
     }
   } else {
     $q.notify({
       type: 'negative',
       message: 'Could not complete job. Check requirements.',
+    });
+  }
+}
+
+/**
+ * Send job completion notification email to customer
+ */
+async function sendCustomerNotification(completedJob: Job) {
+  if (!completedJob.client.email) {
+    console.log('[Email] No customer email available');
+    return;
+  }
+  
+  try {
+    // Generate PDF of the job receipt
+    const pdfBase64 = await generateJobReceiptPdfBase64(completedJob);
+    
+    // Send the email
+    const result = await sendJobSummary({
+      to: completedJob.client.email,
+      subject: `Job Complete - ${completedJob.jobNumber}`,
+      body: `Dear ${completedJob.client.name},\n\nYour job (${completedJob.jobNumber}) has been completed.\n\nPlease find attached a summary of the work completed.\n\nTotal: $${completedJob.pricing.actualTotal.toFixed(2)}\n\nThank you for choosing our services!\n\nBest regards,\n925 Pressure Glass`,
+      jobNumber: completedJob.jobNumber,
+      pdfBase64: pdfBase64,
+    });
+    
+    if (result.success) {
+      $q.notify({
+        type: 'positive',
+        message: `Notification sent to ${completedJob.client.email}`,
+        icon: 'email',
+      });
+    } else {
+      console.error('[Email] Failed to send notification:', result.error);
+      $q.notify({
+        type: 'warning',
+        message: 'Job completed but notification could not be sent',
+        caption: result.error,
+        icon: 'email',
+      });
+    }
+  } catch (error) {
+    console.error('[Email] Error sending notification:', error);
+    $q.notify({
+      type: 'warning',
+      message: 'Job completed but notification failed',
+      icon: 'email',
     });
   }
 }

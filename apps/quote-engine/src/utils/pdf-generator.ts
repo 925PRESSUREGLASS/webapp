@@ -526,3 +526,145 @@ export async function downloadInvoicePdf(invoice: Invoice): Promise<void> {
     document.body.removeChild(container);
   }
 }
+
+// ============================================
+// Job Receipt PDF Generation (for email)
+// ============================================
+
+/**
+ * Generate HTML content for a job receipt/completion summary
+ */
+function generateJobReceiptHtml(job: Job): string {
+  var completedDate = job.schedule.actualEndTime 
+    ? new Date(job.schedule.actualEndTime).toLocaleDateString('en-AU')
+    : new Date().toLocaleDateString('en-AU');
+  var completedTime = job.schedule.actualEndTime
+    ? new Date(job.schedule.actualEndTime).toLocaleTimeString('en-AU', { hour: '2-digit', minute: '2-digit' })
+    : '';
+  
+  // Calculate duration
+  var duration = '';
+  if (job.schedule.actualStartTime && job.schedule.actualEndTime) {
+    var startMs = new Date(job.schedule.actualStartTime).getTime();
+    var endMs = new Date(job.schedule.actualEndTime).getTime();
+    var durationMs = endMs - startMs;
+    var hours = Math.floor(durationMs / (1000 * 60 * 60));
+    var minutes = Math.floor((durationMs % (1000 * 60 * 60)) / (1000 * 60));
+    duration = hours > 0 ? hours + 'h ' + minutes + 'm' : minutes + ' minutes';
+  }
+  
+  // Build items table
+  var itemsHtml = '';
+  job.items.forEach(function(item, index) {
+    var statusIcon = item.completed ? '✓' : '○';
+    var statusColor = item.completed ? '#2e7d32' : '#757575';
+    itemsHtml += '<tr>' +
+      '<td style="color:' + statusColor + ';font-weight:bold;">' + statusIcon + '</td>' +
+      '<td>' + (index + 1) + '</td>' +
+      '<td>' + (item.description || 'Item') + '</td>' +
+      '<td style="text-align:right;">$' + (item.adjustedPrice || item.originalPrice || 0).toFixed(2) + '</td>' +
+      '</tr>';
+  });
+  
+  // Build notes section
+  var notesHtml = '';
+  if (job.notes && job.notes.length > 0) {
+    notesHtml = '<div style="margin-top:20px;">' +
+      '<h3 style="color:#1565c0;margin-bottom:10px;">Job Notes</h3>' +
+      '<ul style="margin:0;padding-left:20px;">';
+    job.notes.forEach(function(note) {
+      var noteDate = new Date(note.createdAt).toLocaleString('en-AU');
+      notesHtml += '<li style="margin-bottom:8px;"><span style="color:#666;font-size:0.9em;">' + noteDate + '</span><br/>' + note.text + '</li>';
+    });
+    notesHtml += '</ul></div>';
+  }
+  
+  return '<!DOCTYPE html>' +
+    '<html><head><meta charset="utf-8"><style>' +
+    'body { font-family: Arial, sans-serif; padding: 20px; color: #333; }' +
+    '.header { text-align: center; border-bottom: 2px solid #1565c0; padding-bottom: 20px; margin-bottom: 20px; }' +
+    '.header h1 { color: #1565c0; margin: 0 0 10px 0; }' +
+    '.info-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; margin-bottom: 20px; }' +
+    '.info-box { background: #f5f5f5; padding: 15px; border-radius: 8px; }' +
+    '.info-box h3 { margin: 0 0 10px 0; color: #1565c0; }' +
+    '.info-box p { margin: 5px 0; }' +
+    '.completed-badge { background: #2e7d32; color: white; padding: 8px 16px; border-radius: 20px; display: inline-block; font-weight: bold; }' +
+    'table { width: 100%; border-collapse: collapse; margin-top: 20px; }' +
+    'th { background: #1565c0; color: white; padding: 12px; text-align: left; }' +
+    'td { padding: 10px; border-bottom: 1px solid #ddd; }' +
+    '.totals { margin-top: 20px; text-align: right; }' +
+    '.totals .row { display: flex; justify-content: flex-end; gap: 20px; padding: 5px 0; }' +
+    '.totals .total { font-size: 1.2em; font-weight: bold; color: #1565c0; border-top: 2px solid #1565c0; padding-top: 10px; margin-top: 10px; }' +
+    '.footer { margin-top: 30px; text-align: center; color: #666; font-size: 0.9em; border-top: 1px solid #ddd; padding-top: 20px; }' +
+    '</style></head><body>' +
+    '<div class="header">' +
+    '<h1>Job Completion Summary</h1>' +
+    '<p><strong>' + job.jobNumber + '</strong></p>' +
+    '<span class="completed-badge">✓ COMPLETED</span>' +
+    '</div>' +
+    '<div class="info-grid">' +
+    '<div class="info-box">' +
+    '<h3>Client Details</h3>' +
+    '<p><strong>' + job.client.name + '</strong></p>' +
+    '<p>' + (job.client.address || 'No address on file') + '</p>' +
+    (job.client.phone ? '<p>📞 ' + job.client.phone + '</p>' : '') +
+    (job.client.email ? '<p>✉️ ' + job.client.email + '</p>' : '') +
+    '</div>' +
+    '<div class="info-box">' +
+    '<h3>Job Details</h3>' +
+    '<p><strong>Completed:</strong> ' + completedDate + (completedTime ? ' at ' + completedTime : '') + '</p>' +
+    (duration ? '<p><strong>Duration:</strong> ' + duration + '</p>' : '') +
+    '<p><strong>Type:</strong> ' + (job.jobType === 'commercial' ? 'Commercial' : 'Residential') + '</p>' +
+    '</div>' +
+    '</div>' +
+    '<h3 style="color:#1565c0;">Work Completed</h3>' +
+    '<table>' +
+    '<thead><tr><th style="width:30px;"></th><th style="width:30px;">#</th><th>Description</th><th style="width:100px;text-align:right;">Amount</th></tr></thead>' +
+    '<tbody>' + itemsHtml + '</tbody>' +
+    '</table>' +
+    '<div class="totals">' +
+    '<div class="row"><span>Subtotal:</span><span>$' + job.pricing.actualSubtotal.toFixed(2) + '</span></div>' +
+    '<div class="row"><span>GST (10%):</span><span>$' + job.pricing.actualGst.toFixed(2) + '</span></div>' +
+    '<div class="row total"><span>Total:</span><span>$' + job.pricing.actualTotal.toFixed(2) + '</span></div>' +
+    '</div>' +
+    notesHtml +
+    '<div class="footer">' +
+    '<p>Thank you for choosing our services!</p>' +
+    '<p>If you have any questions about this work, please contact us.</p>' +
+    '</div>' +
+    '</body></html>';
+}
+
+/**
+ * Generate job receipt PDF as base64 for email attachment
+ */
+export async function generateJobReceiptPdfBase64(job: Job): Promise<string> {
+  var html = generateJobReceiptHtml(job);
+  
+  var container = document.createElement('div');
+  container.innerHTML = html;
+  container.style.position = 'absolute';
+  container.style.left = '-9999px';
+  container.style.width = '210mm';
+  document.body.appendChild(container);
+  
+  try {
+    var blob = await generatePdfFromElement(container, {
+      format: 'a4',
+      orientation: 'portrait'
+    });
+    
+    return new Promise(function(resolve, reject) {
+      var reader = new FileReader();
+      reader.onloadend = function() {
+        var result = reader.result as string;
+        var base64 = result.split(',')[1];
+        resolve(base64);
+      };
+      reader.onerror = reject;
+      reader.readAsDataURL(blob);
+    });
+  } finally {
+    document.body.removeChild(container);
+  }
+}
