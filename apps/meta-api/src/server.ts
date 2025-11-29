@@ -1,4 +1,5 @@
 import fastify, { FastifyInstance } from 'fastify';
+import fastifyJwt from '@fastify/jwt';
 import { AppService, AssetLibraryItem, FeatureRecord, Project } from '../../domain/types';
 import { sampleProjects, sampleApps, sampleAssets, sampleFeatures } from '../../domain/sampleData';
 import {
@@ -17,6 +18,7 @@ import { registerLogging } from './plugins/logging';
 import { aiBridge } from './ai/bridge';
 import { emailService } from './services/email.service';
 import { registerEmailRoutes } from './routes/email';
+import { registerAuthRoutes } from './routes/auth';
 
 var projectStatusEnum = ['draft', 'in-progress', 'complete'] as const;
 var assetStatusEnum = ['draft', 'active', 'deprecated'] as const;
@@ -261,8 +263,8 @@ function buildServer(): FastifyInstance {
         .send();
       return;
     }
-    // Skip auth for health check and public endpoints
-    if (request.url === '/health' || request.url === '/' || request.url.startsWith('/api/public')) {
+    // Skip auth for health check, public endpoints, and auth routes
+    if (request.url === '/health' || request.url === '/' || request.url.startsWith('/api/public') || request.url.startsWith('/auth')) {
       done();
       return;
     }
@@ -277,6 +279,14 @@ function buildServer(): FastifyInstance {
   });
 
   registerLogging(app, allowedOrigin);
+
+  // Register JWT plugin for authentication
+  var jwtSecret = env.JWT_SECRET || 'dev-secret-change-in-production-12345';
+  app.register(fastifyJwt, {
+    secret: jwtSecret
+  });
+  
+  console.log('[AUTH] JWT authentication configured');
 
   // Configure email service if SMTP settings are provided
   if (env.SMTP_HOST && env.SMTP_USER && env.SMTP_PASS) {
@@ -295,6 +305,9 @@ function buildServer(): FastifyInstance {
 
   // Register email routes
   registerEmailRoutes(app, allowedOrigin);
+  
+  // Register auth routes
+  registerAuthRoutes(app, allowedOrigin);
 
   // Simple mutable copies for in-memory CRUD (placeholder until DB)
   var projectsStore = sampleProjects.slice();

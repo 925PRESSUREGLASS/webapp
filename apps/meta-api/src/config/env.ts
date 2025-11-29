@@ -20,7 +20,9 @@ var envSchema = z.object({
   SMTP_SECURE: z.string().optional(),
   SMTP_USER: z.string().optional(),
   SMTP_PASS: z.string().optional(),
-  SMTP_FROM: z.string().optional()
+  SMTP_FROM: z.string().optional(),
+  // JWT authentication
+  JWT_SECRET: z.string().optional()
 });
 
 var parsed = envSchema.safeParse(process.env);
