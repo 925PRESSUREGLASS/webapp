@@ -180,6 +180,12 @@ export const useJobStore = defineStore('jobs', () => {
     pressureLines?: PressureLineItem[];
     estimatedTotal: number;
     notes?: string;
+    // Optional breakdown for precise pricing from quote
+    breakdown?: {
+      subtotal: number;
+      gst: number;
+      total: number;
+    };
   }
 
   function createJob(data: CreateJobParams): Job {
@@ -207,8 +213,19 @@ export const useJobStore = defineStore('jobs', () => {
       }
     }
 
-    // Calculate initial pricing
-    const pricing = calculateJobPricing(items);
+    // Calculate initial pricing (use breakdown if provided, otherwise calculate from items)
+    let pricing = calculateJobPricing(items);
+    
+    // If breakdown is provided from quote, use those values for estimated totals
+    if (data.breakdown) {
+      pricing.estimatedSubtotal = data.breakdown.subtotal;
+      pricing.estimatedGst = data.breakdown.gst;
+      pricing.estimatedTotal = data.breakdown.total;
+      // Also set actual values initially to match estimated
+      pricing.actualSubtotal = data.breakdown.subtotal;
+      pricing.actualGst = data.breakdown.gst;
+      pricing.actualTotal = data.breakdown.total;
+    }
 
     const job: Job = {
       id: `job_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`,
@@ -740,6 +757,12 @@ export const useJobStore = defineStore('jobs', () => {
     scheduledTime?: string;
     estimatedDuration?: number;
     notes?: string;
+    // Optional breakdown for precise pricing from quote
+    breakdown?: {
+      subtotal: number;
+      gst: number;
+      total: number;
+    };
   }
 
   function convertQuoteToJob(params: QuoteToJobParams): Job {
@@ -757,6 +780,7 @@ export const useJobStore = defineStore('jobs', () => {
       pressureLines: params.pressureLines,
       estimatedTotal: params.total,
       notes: params.notes,
+      breakdown: params.breakdown,
     });
   }
 

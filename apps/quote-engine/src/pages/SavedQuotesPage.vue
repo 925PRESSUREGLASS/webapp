@@ -461,6 +461,12 @@ function scheduleJob(quote: SavedQuote) {
       total: quote.total,
       scheduledDate,
       notes: quote.title ? `From quote: ${quote.title}` : undefined,
+      // Pass precise pricing breakdown from quote to avoid $0 job pricing
+      breakdown: {
+        subtotal: quote.subtotal ?? quote.total,
+        gst: quote.gst ?? 0,
+        total: quote.total,
+      },
     });
 
     if (job) {
