@@ -18,6 +18,34 @@
         <PricingSourceIndicator />
         <OfflineIndicator />
 
+        <!-- User Menu -->
+        <q-btn v-if="authStore.isAuthenticated" flat round dense icon="account_circle">
+          <q-menu>
+            <q-list style="min-width: 200px">
+              <q-item>
+                <q-item-section>
+                  <q-item-label>{{ authStore.userName }}</q-item-label>
+                  <q-item-label caption>{{ authStore.userEmail }}</q-item-label>
+                </q-item-section>
+              </q-item>
+              <q-separator />
+              <q-item clickable v-close-popup to="/settings">
+                <q-item-section avatar>
+                  <q-icon name="settings" />
+                </q-item-section>
+                <q-item-section>Settings</q-item-section>
+              </q-item>
+              <q-item clickable v-close-popup @click="handleLogout">
+                <q-item-section avatar>
+                  <q-icon name="logout" color="negative" />
+                </q-item-section>
+                <q-item-section>Sign Out</q-item-section>
+              </q-item>
+            </q-list>
+          </q-menu>
+        </q-btn>
+        <q-btn v-else flat dense label="Sign In" to="/login" />
+
         <q-btn flat round dense icon="more_vert">
           <q-menu>
             <q-list>
@@ -155,14 +183,18 @@
 <script setup lang="ts">
 import { ref, onMounted } from 'vue';
 import { useQuasar } from 'quasar';
+import { useRouter } from 'vue-router';
 import OfflineIndicator from '../components/QuoteBuilder/OfflineIndicator.vue';
 import PricingSourceIndicator from '../components/QuoteBuilder/PricingSourceIndicator.vue';
 import { useKeyboardShortcuts } from '../composables/useKeyboardShortcuts';
 import { usePricingStore } from '../stores/pricing';
+import { useAuthStore } from '../stores/auth';
 
 const $q = useQuasar();
+const router = useRouter();
 const leftDrawerOpen = ref(false);
 const pricingStore = usePricingStore();
+const authStore = useAuthStore();
 
 // Initialize keyboard shortcuts - this sets up all the global shortcuts
 useKeyboardShortcuts();
@@ -183,5 +215,15 @@ function toggleLeftDrawer() {
 
 function toggleDarkMode() {
   $q.dark.toggle();
+}
+
+function handleLogout() {
+  authStore.logout();
+  $q.notify({
+    type: 'info',
+    message: 'You have been logged out',
+    icon: 'logout',
+  });
+  router.push('/');
 }
 </script>

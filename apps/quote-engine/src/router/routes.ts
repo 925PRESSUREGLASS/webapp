@@ -2,8 +2,27 @@ import type { RouteRecordRaw } from 'vue-router';
 
 /**
  * Application routes
+ * 
+ * Route meta options:
+ * - requiresAuth: boolean - Route requires authenticated user
+ * - guestOnly: boolean - Route only accessible to non-authenticated users
  */
 const routes: RouteRecordRaw[] = [
+  // Auth routes (outside main layout)
+  {
+    path: '/login',
+    name: 'login',
+    component: () => import('../pages/LoginPage.vue'),
+    meta: { guestOnly: true },
+  },
+  {
+    path: '/register',
+    name: 'register',
+    component: () => import('../pages/RegisterPage.vue'),
+    meta: { guestOnly: true },
+  },
+
+  // Main app routes
   {
     path: '/',
     component: () => import('../layouts/MainLayout.vue'),
