@@ -44,53 +44,59 @@ async function validateBody<T>(request: FastifyRequest, reply: FastifyReply, sch
 }
 
 export async function registerGhlRoutes(app: FastifyInstance) {
-  // All routes require JWT
-  app.addHook('preHandler', async (request, reply) => {
-    try {
-      await request.jwtVerify();
-    } catch (err) {
-      reply.status(401).send({ error: 'Unauthorized' });
-    }
-  });
+  // Scope all GHL routes under /ghl prefix with JWT requirement
+  app.register(async function ghlPlugin(ghl) {
+    // All routes in this plugin require JWT
+    ghl.addHook('preHandler', async (request, reply) => {
+      try {
+        await request.jwtVerify();
+      } catch (err) {
+        reply.status(401).send({ error: 'Unauthorized' });
+      }
+    });
 
-  app.get('/ghl/status', async (_request, _reply) => {
-    return getGhlStatus();
-  });
+    ghl.get('/status', async (_request, _reply) => {
+      return getGhlStatus();
+    });
 
-  app.get('/ghl/test', async (_request, reply) => {
-    try {
-      var result = await testConnection();
-      reply.send({ success: true, result });
-    } catch (err: any) {
-      reply.status(400).send({ success: false, error: err.message || 'GHL test failed' });
-    }
-  });
+    ghl.get('/test', async (_request, reply) => {
+      try {
+        var result = await testConnection();
+        reply.send({ success: true, result });
+      } catch (err: any) {
+        reply.status(400).send({ success: false, error: err.message || 'GHL test failed' });
+      }
+    });
 
-  app.post('/ghl/contacts', async (request, reply) => {
-    var body = await validateBody(request, reply, contactSchema);
-    if (!body) return;
+    ghl.post('/contacts', async (request, reply) => {
+      var body = await validateBody(request, reply, contactSchema);
+      if (!body) return;
 
-    try {
-      var result = await createContact(body);
-      reply.send({ success: true, contact: result });
-    } catch (err: any) {
-      reply.status(400).send({ success: false, error: err.message || 'Failed to create contact' });
-    }
-  });
+      try {
+        var result = await createContact(body);
+        reply.send({ success: true, contact: result });
+      } catch (err: any) {
+        reply.status(400).send({ success: false, error: err.message || 'Failed to create contact' });
+      }
+    });
 
-  app.post('/ghl/opportunities', async (request, reply) => {
-    var body = await validateBody(request, reply, opportunitySchema);
-    if (!body) return;
+    ghl.post('/opportunities', async (request, reply) => {
+      var body = await validateBody(request, reply, opportunitySchema);
+      if (!body) return;
 
-    try {
-      var result = await createOpportunity(body);
-      reply.send({ success: true, opportunity: result });
-    } catch (err: any) {
-      reply.status(400).send({ success: false, error: err.message || 'Failed to create opportunity' });
-    }
-  });
+      try {
+        var result = await createOpportunity(body);
+        reply.send({ success: true, opportunity: result });
+      } catch (err: any) {
+        reply.status(400).send({ success: false, error: err.message || 'Failed to create opportunity' });
+      }
+    });
 
-  // Webhook receiver (signature is a shared secret check for now)
+    // Webhook receiver (signature is a shared secret check for now)
+    // Note: webhooks use their own auth (signature), not JWT
+  }, { prefix: '/ghl' });
+
+  // Webhook is outside the JWT-protected scope (uses signature auth)
   app.post('/ghl/webhook', async (request, reply) => {
     var configuredSecret = env.GHL_WEBHOOK_SECRET;
     if (configuredSecret) {
@@ -101,7 +107,6 @@ export async function registerGhlRoutes(app: FastifyInstance) {
       }
     }
 
-    // Basic log and ack; downstream processing can be added here
     try {
       console.log('[GHL-WEBHOOK] Event received:', request.body);
     } catch (err) {
