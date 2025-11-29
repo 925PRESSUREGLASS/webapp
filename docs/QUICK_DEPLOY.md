@@ -100,7 +100,8 @@ Once you have your Vercel URL, go back to Render and update:
 
 ## Your Live URLs
 
-After deployment, update these:
+**Deployment Complete! ✅**
 
-- **API**: https://_____________________.onrender.com
-- **App**: https://_____________________.vercel.app
+- **API**: https://meta-api-78ow.onrender.com
+- **App**: https://webap5p.vercel.app
+- **Health Check**: https://meta-api-78ow.onrender.com/health
