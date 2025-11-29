@@ -145,16 +145,28 @@
 </template>
 
 <script setup lang="ts">
-import { ref } from 'vue';
+import { ref, onMounted } from 'vue';
 import { useQuasar } from 'quasar';
 import OfflineIndicator from '../components/QuoteBuilder/OfflineIndicator.vue';
 import { useKeyboardShortcuts } from '../composables/useKeyboardShortcuts';
+import { usePricingStore } from '../stores/pricing';
 
 const $q = useQuasar();
 const leftDrawerOpen = ref(false);
+const pricingStore = usePricingStore();
 
 // Initialize keyboard shortcuts - this sets up all the global shortcuts
 useKeyboardShortcuts();
+
+// Fetch pricing data on app load
+onMounted(async () => {
+  try {
+    await pricingStore.fetchPricing();
+    console.log('[App] Pricing data loaded:', pricingStore.serviceTypes.length, 'service types');
+  } catch (err) {
+    console.error('[App] Failed to load pricing:', err);
+  }
+});
 
 function toggleLeftDrawer() {
   leftDrawerOpen.value = !leftDrawerOpen.value;
