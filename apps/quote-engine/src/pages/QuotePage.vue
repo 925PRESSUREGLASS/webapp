@@ -105,11 +105,23 @@
           </q-card-section>
           <q-card-actions align="right">
             <q-btn flat color="primary" label="Save Quote" @click="handleSave" />
+            <q-btn flat color="secondary" icon="email" label="Email Quote" @click="openEmailDialog" />
             <q-btn color="primary" label="Create Invoice" @click="createInvoice" />
           </q-card-actions>
         </q-card>
       </div>
     </div>
+
+    <!-- Email Dialog -->
+    <EmailDialog
+      v-model="showEmailDialog"
+      type="quote"
+      :recipient-email="quoteStore.clientEmail"
+      :document-number="quoteStore.currentQuoteId || 'DRAFT'"
+      :attachment-base64="quotePdfBase64"
+      :attachment-name="quotePdfFilename"
+      @sent="handleEmailSent"
+    />
 
     <!-- Loading overlay -->
     <q-inner-loading :showing="isLoading">
@@ -119,7 +131,7 @@
 </template>
 
 <script setup lang="ts">
-import { ref, onMounted, watch } from 'vue';
+import { ref, computed, onMounted, watch } from 'vue';
 import { useRoute, useRouter } from 'vue-router';
 import { useQuasar } from 'quasar';
 import { useQuoteStore } from '../stores/quote';
@@ -127,6 +139,7 @@ import { useInvoiceStore } from '../stores/invoices';
 import QuoteBuilder from '../components/QuoteBuilder/QuoteBuilder.vue';
 import PriceDisplay from '../components/QuoteBuilder/PriceDisplay.vue';
 import ClientAutocomplete from '../components/QuoteBuilder/ClientAutocomplete.vue';
+import EmailDialog from '../components/Email/EmailDialog.vue';
 import type { Client } from '../stores/clients';
 import {
   calculateWindowLineCost,
@@ -140,6 +153,14 @@ const quoteStore = useQuoteStore();
 const invoiceStore = useInvoiceStore();
 
 const isLoading = ref(false);
+const showEmailDialog = ref(false);
+const quotePdfBase64 = ref('');
+
+// Computed filename for the PDF attachment
+const quotePdfFilename = computed(function() {
+  var quoteId = quoteStore.currentQuoteId || 'DRAFT';
+  return 'Quote-' + quoteId + '.pdf';
+});
 
 const jobTypeOptions = [
   { label: 'Residential', value: 'residential' },
@@ -262,5 +283,61 @@ function createInvoice() {
       { label: 'View', color: 'white', handler: () => router.push('/invoices') }
     ]
   });
+}
+
+// Email dialog handlers
+async function openEmailDialog() {
+  // For now, we'll use a placeholder PDF - in production, generate real PDF
+  // TODO: Integrate with actual PDF generation when available
+  isLoading.value = true;
+  
+  try {
+    // Generate a simple text representation as base64 for now
+    // Real implementation would use jsPDF or similar
+    var quoteData = {
+      id: quoteStore.currentQuoteId || 'DRAFT',
+      title: quoteStore.quoteTitle,
+      client: quoteStore.clientName,
+      location: quoteStore.clientLocation,
+      subtotal: quoteStore.subtotal,
+      gst: quoteStore.gst,
+      total: quoteStore.total,
+      windowLines: quoteStore.windowLines.length,
+      pressureLines: quoteStore.pressureLines.length,
+    };
+    
+    // Create a simple text content as placeholder
+    var textContent = 'Quote: ' + quoteData.id + '\n' +
+      'Title: ' + quoteData.title + '\n' +
+      'Client: ' + quoteData.client + '\n' +
+      'Location: ' + quoteData.location + '\n' +
+      'Window Lines: ' + quoteData.windowLines + '\n' +
+      'Pressure Lines: ' + quoteData.pressureLines + '\n' +
+      'Subtotal: $' + quoteData.subtotal.toFixed(2) + '\n' +
+      'GST: $' + quoteData.gst.toFixed(2) + '\n' +
+      'Total: $' + quoteData.total.toFixed(2);
+    
+    // Convert to base64
+    quotePdfBase64.value = btoa(textContent);
+    showEmailDialog.value = true;
+  } catch (err) {
+    $q.notify({
+      type: 'negative',
+      message: 'Failed to prepare quote for email',
+      position: 'top',
+    });
+  } finally {
+    isLoading.value = false;
+  }
+}
+
+function handleEmailSent(result: { success: boolean; messageId?: string }) {
+  if (result.success) {
+    $q.notify({
+      type: 'positive',
+      message: 'Quote email sent successfully!',
+      position: 'top',
+    });
+  }
 }
 </script>
