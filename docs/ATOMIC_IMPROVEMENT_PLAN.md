@@ -327,6 +327,51 @@ Integrate email functionality to send quotes, invoices, and job summaries via th
 
 ---
 
+## 📄 TASK 6: Real PDF Generation for Email Attachments ✅ COMPLETED
+
+**Status:** ✅ COMPLETED
+**Commit:** `ab9d8e2` - feat(pdf): add real PDF generation for quotes and invoices
+
+### Overview
+
+Replace placeholder text-based email attachments with professional PDF documents using html2pdf.js.
+
+### Atomic Steps
+
+#### Step 6.1: Add quote PDF types and generator ✅
+- **File:** `apps/quote-engine/src/utils/pdf-generator.ts`
+- **Change:** Add `QuoteData` interface and `generateQuotePdfBase64()` function
+- **Test:** TypeScript compilation
+- **Commit:** (combined with 6.2)
+
+#### Step 6.2: Add invoice PDF generator ✅
+- **File:** `apps/quote-engine/src/utils/pdf-generator.ts`
+- **Change:** Add `generateInvoicePdfBase64()` function with professional template
+- **Test:** TypeScript compilation
+- **Commit:** (combined with 6.1)
+
+#### Step 6.3: Update QuotePage to use real PDF ✅
+- **File:** `apps/quote-engine/src/pages/QuotePage.vue`
+- **Change:** Replace placeholder text with `generateQuotePdfBase64()`
+- **Test:** Build succeeded, visual verification
+- **Commit:** (combined with 6.4)
+
+#### Step 6.4: Update InvoicesPage to use real PDF ✅
+- **File:** `apps/quote-engine/src/pages/InvoicesPage.vue`
+- **Change:** Replace placeholder text with `generateInvoicePdfBase64()`
+- **Test:** Build succeeded
+- **Commit:** `ab9d8e2` - feat(pdf): add real PDF generation for quotes and invoices
+
+### PDF Templates Include
+- Professional header with business branding
+- Client information section
+- Line items with descriptions and amounts
+- Subtotal, GST, and total breakdown
+- Payment details (invoices)
+- Footer with validity notice (quotes) or thank you message (invoices)
+
+---
+
 ## Verification Checklist
 
 After each commit:
