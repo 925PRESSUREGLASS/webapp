@@ -274,6 +274,54 @@ When converting a quote to a job, the `convertQuoteToJob` function passes `quote
 
 ---
 
+## 📧 TASK 5: Email Integration (Phase D)
+
+**Status:** In Progress
+
+### Overview
+
+Integrate email functionality to send quotes, invoices, and job summaries via the existing meta-api email endpoints.
+
+### Atomic Steps
+
+#### Step 5.1: Create email composable
+- **File:** `apps/quote-engine/src/composables/useEmail.ts` (new)
+- **Change:** Create composable with sendQuote(), sendInvoice(), sendJobSummary() functions
+- **Test:** TypeScript compilation
+- **Commit:** `feat(email): add useEmail composable`
+
+#### Step 5.2: Create email config store
+- **File:** `apps/quote-engine/src/stores/email.ts` (new)
+- **Change:** Store for email settings (API endpoint, default templates, sender info)
+- **Test:** TypeScript compilation
+- **Commit:** `feat(email): add email config store`
+
+#### Step 5.3: Add "Send Quote" button to QuotePage
+- **File:** `apps/quote-engine/src/pages/QuotePage.vue`
+- **Change:** Add email button that opens send dialog
+- **Test:** Visual verification
+- **Commit:** `feat(email): add send quote button`
+
+#### Step 5.4: Create EmailDialog component
+- **File:** `apps/quote-engine/src/components/Email/EmailDialog.vue` (new)
+- **Change:** Modal with recipient, subject, body fields, PDF preview
+- **Test:** Visual verification
+- **Commit:** `feat(email): add EmailDialog component`
+
+#### Step 5.5: Add "Send Invoice" to InvoicesPage
+- **File:** `apps/quote-engine/src/pages/InvoicesPage.vue`
+- **Change:** Add email button for sending invoices
+- **Test:** Visual verification
+- **Commit:** `feat(email): add send invoice functionality`
+
+#### Step 5.6: Add email settings page
+- **File:** `apps/quote-engine/src/pages/SettingsPage.vue`
+- **Change:** Add email configuration section (API URL, default from, templates)
+- **Test:** Visual verification
+- **Commit:** `feat(email): add email settings configuration`
+
+---
+
 ## Verification Checklist
 
 After each commit:
