@@ -4,8 +4,9 @@ generator client {
 }
 
 datasource db {
-  provider = "postgresql"
-  url      = env("DATABASE_URL")
+  provider  = "postgresql"
+  url       = env("DATABASE_URL")
+  directUrl = env("DIRECT_URL")
 }
 
 model Project {
@@ -224,4 +225,308 @@ enum BusinessStatus {
   active
   paused
   archived
+}
+
+// ========================================
+// TicTacStick Quote Engine Models
+// ========================================
+
+model User {
+  id            String    @id @default(uuid())
+  email         String    @unique
+  passwordHash  String
+  name          String
+  phone         String?
+  role          UserRole  @default(user)
+  isActive      Boolean   @default(true)
+  
+  // Relations
+  organization  Organization? @relation(fields: [organizationId], references: [id])
+  organizationId String?
+  quotes        Quote[]
+  jobs          Job[]
+  invoices      Invoice[]
+  auditLogs     AuditLog[]
+  
+  createdAt     DateTime  @default(now())
+  updatedAt     DateTime  @updatedAt
+}
+
+model Organization {
+  id            String    @id @default(uuid())
+  name          String
+  slug          String    @unique
+  email         String?
+  phone         String?
+  address       String?
+  logo          String?
+  
+  // Settings
+  gstRate       Float     @default(0.10)
+  currency      String    @default("AUD")
+  timezone      String    @default("Australia/Sydney")
+  
+  // Relations
+  users         User[]
+  clients       Client[]
+  quotes        Quote[]
+  jobs          Job[]
+  invoices      Invoice[]
+  
+  createdAt     DateTime  @default(now())
+  updatedAt     DateTime  @updatedAt
+}
+
+model Client {
+  id            String    @id @default(uuid())
+  name          String
+  email         String?
+  phone         String?
+  address       String?
+  suburb        String?
+  postcode      String?
+  state         String?
+  notes         String?
+  tags          String[]
+  
+  // Relations
+  organization  Organization? @relation(fields: [organizationId], references: [id])
+  organizationId String?
+  quotes        Quote[]
+  jobs          Job[]
+  invoices      Invoice[]
+  
+  createdAt     DateTime  @default(now())
+  updatedAt     DateTime  @updatedAt
+}
+
+model Quote {
+  id            String    @id @default(uuid())
+  quoteNumber   String
+  status        QuoteStatus @default(draft)
+  
+  // Client Info (denormalized for offline)
+  clientName    String
+  clientEmail   String?
+  clientPhone   String?
+  clientAddress String?
+  
+  // Line Items (stored as JSON for flexibility)
+  lineItems     Json      @default("[]")
+  
+  // Pricing
+  subtotal      Float     @default(0)
+  gstAmount     Float     @default(0)
+  total         Float     @default(0)
+  discount      Float?
+  discountType  String?   // "percentage" or "fixed"
+  
+  // Conditions
+  frequency     String?   // "once", "weekly", "monthly", etc.
+  notes         String?
+  validUntil    DateTime?
+  
+  // Relations
+  client        Client?   @relation(fields: [clientId], references: [id])
+  clientId      String?
+  organization  Organization? @relation(fields: [organizationId], references: [id])
+  organizationId String?
+  user          User?     @relation(fields: [userId], references: [id])
+  userId        String?
+  job           Job?
+  invoice       Invoice?
+  
+  // Sync
+  localId       String?   // ID from local storage for sync
+  syncedAt      DateTime?
+  
+  createdAt     DateTime  @default(now())
+  updatedAt     DateTime  @updatedAt
+}
+
+model Job {
+  id            String    @id @default(uuid())
+  jobNumber     String
+  status        JobStatus @default(scheduled)
+  
+  // Client Info (denormalized)
+  clientName    String
+  clientEmail   String?
+  clientPhone   String?
+  clientAddress String?
+  
+  // Schedule
+  scheduledDate DateTime
+  scheduledTime String?
+  estimatedDuration Int?  // minutes
+  actualStartTime DateTime?
+  actualEndTime   DateTime?
+  actualDuration  Int?    // minutes
+  
+  // Work Items (stored as JSON)
+  items         Json      @default("[]")
+  
+  // Pricing
+  estimatedSubtotal Float @default(0)
+  estimatedGst      Float @default(0)
+  estimatedTotal    Float @default(0)
+  actualSubtotal    Float?
+  actualGst         Float?
+  actualTotal       Float?
+  adjustmentReason  String?
+  
+  // Photos (stored as JSON array of URLs/base64)
+  photos        Json      @default("[]")
+  
+  // Notes
+  notes         Json      @default("[]")
+  issues        Json      @default("[]")
+  
+  // Completion
+  completedAt   DateTime?
+  signature     String?   // base64 data URL
+  signedByName  String?
+  rating        Int?      // 1-5
+  feedback      String?
+  
+  // Relations
+  quote         Quote?    @relation(fields: [quoteId], references: [id])
+  quoteId       String?   @unique
+  client        Client?   @relation(fields: [clientId], references: [id])
+  clientId      String?
+  organization  Organization? @relation(fields: [organizationId], references: [id])
+  organizationId String?
+  user          User?     @relation(fields: [userId], references: [id])
+  userId        String?
+  invoice       Invoice?
+  
+  // Sync
+  localId       String?
+  syncedAt      DateTime?
+  
+  createdAt     DateTime  @default(now())
+  updatedAt     DateTime  @updatedAt
+}
+
+model Invoice {
+  id            String    @id @default(uuid())
+  invoiceNumber String
+  status        InvoiceStatus @default(draft)
+  
+  // Client Info (denormalized)
+  clientName    String
+  clientEmail   String?
+  clientPhone   String?
+  clientAddress String?
+  
+  // Line Items (stored as JSON)
+  lineItems     Json      @default("[]")
+  
+  // Pricing
+  subtotal      Float     @default(0)
+  gstAmount     Float     @default(0)
+  total         Float     @default(0)
+  
+  // Payment
+  dueDate       DateTime?
+  paidAt        DateTime?
+  paidAmount    Float?
+  paymentMethod String?
+  paymentRef    String?
+  
+  // Notes
+  notes         String?
+  terms         String?
+  
+  // Relations
+  quote         Quote?    @relation(fields: [quoteId], references: [id])
+  quoteId       String?   @unique
+  job           Job?      @relation(fields: [jobId], references: [id])
+  jobId         String?   @unique
+  client        Client?   @relation(fields: [clientId], references: [id])
+  clientId      String?
+  organization  Organization? @relation(fields: [organizationId], references: [id])
+  organizationId String?
+  user          User?     @relation(fields: [userId], references: [id])
+  userId        String?
+  
+  // Sync
+  localId       String?
+  syncedAt      DateTime?
+  
+  createdAt     DateTime  @default(now())
+  updatedAt     DateTime  @updatedAt
+}
+
+model AuditLog {
+  id            String    @id @default(uuid())
+  action        String    // "create", "update", "delete", "sync"
+  entityType    String    // "quote", "job", "invoice", "client"
+  entityId      String
+  changes       Json?     // JSON diff of changes
+  
+  // Who
+  user          User?     @relation(fields: [userId], references: [id])
+  userId        String?
+  ipAddress     String?
+  userAgent     String?
+  
+  createdAt     DateTime  @default(now())
+}
+
+model SyncQueue {
+  id            String    @id @default(uuid())
+  entityType    String    // "quote", "job", "invoice", "client"
+  entityId      String
+  localId       String
+  action        String    // "create", "update", "delete"
+  payload       Json
+  status        SyncStatus @default(pending)
+  attempts      Int       @default(0)
+  lastError     String?
+  processedAt   DateTime?
+  
+  createdAt     DateTime  @default(now())
+  updatedAt     DateTime  @updatedAt
+}
+
+// Enums for TicTacStick
+enum UserRole {
+  admin
+  user
+  viewer
+}
+
+enum QuoteStatus {
+  draft
+  sent
+  accepted
+  declined
+  expired
+  converted
+}
+
+enum JobStatus {
+  scheduled
+  in_progress
+  paused
+  completed
+  invoiced
+  cancelled
+}
+
+enum InvoiceStatus {
+  draft
+  sent
+  paid
+  overdue
+  cancelled
+  refunded
+}
+
+enum SyncStatus {
+  pending
+  processing
+  completed
+  failed
 }
