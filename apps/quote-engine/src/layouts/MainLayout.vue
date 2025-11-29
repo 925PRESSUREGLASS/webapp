@@ -130,6 +130,13 @@
           </q-item-section>
           <q-item-section>Settings</q-item-section>
         </q-item>
+
+        <q-item clickable v-ripple to="/admin/pricing">
+          <q-item-section avatar>
+            <q-icon name="admin_panel_settings" />
+          </q-item-section>
+          <q-item-section>Admin Pricing</q-item-section>
+        </q-item>
       </q-list>
     </q-drawer>
 
