@@ -37,6 +37,16 @@
           ]"
         />
       </div>
+      <div class="col-auto q-ml-sm">
+        <q-btn
+          flat
+          round
+          icon="settings"
+          @click="showSettingsDialog = true"
+        >
+          <q-tooltip>Calendar Settings</q-tooltip>
+        </q-btn>
+      </div>
     </div>
 
     <!-- Month View -->
@@ -246,6 +256,13 @@
 
         <q-card-actions align="right">
           <q-btn
+            v-if="selectedEvent?.jobId && selectedEvent?.status === 'scheduled'"
+            flat
+            color="secondary"
+            label="Reschedule"
+            @click="handleRescheduleJob(selectedEvent.jobId)"
+          />
+          <q-btn
             v-if="selectedEvent?.jobId"
             flat
             color="primary"
@@ -256,23 +273,47 @@
         </q-card-actions>
       </q-card>
     </q-dialog>
+
+    <!-- Schedule Job Modal -->
+    <ScheduleJobModal
+      v-model="showScheduleModal"
+      :job-id="selectedJobId"
+      :initial-date="scheduleInitialDate"
+      :initial-time="scheduleInitialTime"
+      @rescheduled="handleJobRescheduled"
+    />
+
+    <!-- Calendar Settings Dialog -->
+    <CalendarSettingsDialog
+      v-model="showSettingsDialog"
+      @saved="handleSettingsSaved"
+    />
   </q-page>
 </template>
 
 <script setup lang="ts">
 import { ref, computed, onMounted } from 'vue';
 import { useRouter } from 'vue-router';
+import { useQuasar } from 'quasar';
 import { useCalendarStore } from '../stores/calendar';
 import { useJobStore } from '../stores/jobs';
+import ScheduleJobModal from '../components/Jobs/ScheduleJobModal.vue';
+import CalendarSettingsDialog from '../components/Calendar/CalendarSettingsDialog.vue';
 import type { CalendarEvent, CalendarDay, CalendarView } from '../types/calendar';
 
 const router = useRouter();
+const $q = useQuasar();
 const calendarStore = useCalendarStore();
 const jobStore = useJobStore();
 
 // State
 const showEventDialog = ref(false);
 const selectedEvent = ref<CalendarEvent | null>(null);
+const showScheduleModal = ref(false);
+const showSettingsDialog = ref(false);
+const selectedJobId = ref<string | undefined>(undefined);
+const scheduleInitialDate = ref<string | undefined>(undefined);
+const scheduleInitialTime = ref<string | undefined>(undefined);
 
 // Computed
 const viewMode = computed({
@@ -379,6 +420,31 @@ function getEventStyle(event: CalendarEvent, _hour: number): Record<string, stri
     height: `${heightPercent}%`,
     minHeight: '24px',
   };
+}
+
+// Rescheduling handlers
+function handleRescheduleJob(jobId: string) {
+  selectedJobId.value = jobId;
+  scheduleInitialDate.value = selectedEvent.value?.date;
+  scheduleInitialTime.value = selectedEvent.value?.startTime;
+  showEventDialog.value = false;
+  showScheduleModal.value = true;
+}
+
+function handleJobRescheduled() {
+  $q.notify({
+    type: 'positive',
+    message: 'Job rescheduled successfully',
+  });
+  // Refresh calendar data
+  calendarStore.initialize();
+}
+
+function handleSettingsSaved() {
+  $q.notify({
+    type: 'positive',
+    message: 'Calendar settings saved',
+  });
 }
 </script>
 

@@ -412,6 +412,43 @@ export const useJobStore = defineStore('jobs', () => {
     return true;
   }
 
+  /**
+   * Reschedule a job to a new date and/or time
+   */
+  function rescheduleJob(
+    id: string, 
+    newDate: string, 
+    newTime?: string, 
+    newDuration?: number,
+  ): boolean {
+    const job = getJob(id);
+    if (!job) return false;
+    
+    // Can only reschedule scheduled jobs
+    if (job.status !== 'scheduled') return false;
+    
+    const oldDate = job.schedule.scheduledDate;
+    const oldTime = job.schedule.scheduledTime;
+    
+    job.schedule.scheduledDate = newDate;
+    if (newTime !== undefined) {
+      job.schedule.scheduledTime = newTime;
+    }
+    if (newDuration !== undefined) {
+      job.schedule.estimatedDuration = newDuration;
+    }
+    
+    job.updatedAt = new Date().toISOString();
+    
+    // Add a note about the reschedule
+    job.notes.push(createJobNote(
+      `Rescheduled from ${oldDate}${oldTime ? ` at ${oldTime}` : ''} to ${newDate}${newTime ? ` at ${newTime}` : ''}`,
+    ));
+    
+    saveJobs();
+    return true;
+  }
+
   // ============================================
   // Item Management
   // ============================================
@@ -871,6 +908,7 @@ export const useJobStore = defineStore('jobs', () => {
     completeJob,
     cancelJob,
     markJobInvoiced,
+    rescheduleJob,
 
     // Item Management
     updateItemStatus,

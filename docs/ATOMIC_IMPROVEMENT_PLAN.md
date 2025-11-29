@@ -1,7 +1,7 @@
 # Atomic Improvement Plan
 
 **Created:** November 29, 2025  
-**Status:** Tasks 1-4 Completed  
+**Status:** Tasks 1-4 Completed (including Calendar Weeks 2-4)  
 **Last Updated:** Current Session
 
 ---
@@ -106,104 +106,106 @@ When converting a quote to a job, the `convertQuoteToJob` function passes `quote
 
 ---
 
-## 📅 TASK 3: Phase B Calendar Integration ✅ Week 1 COMPLETED
+## 📅 TASK 3: Phase B Calendar Integration ✅ COMPLETED
 
 **Commit:** `4155d89` - feat(calendar): Add Phase B calendar integration - Week 1
+**Commit:** (pending) - feat(calendar): Add Week 2-4 calendar enhancements
 
-### Week 1: Core Calendar
+### Week 1: Core Calendar ✅
 
-#### Step 3.1: Create calendar types
+#### Step 3.1: Create calendar types ✅
 - **File:** `apps/quote-engine/src/types/calendar.ts` (new)
 - **Change:** Define `CalendarEvent`, `CalendarView`, `TimeSlot` interfaces
 - **Test:** TypeScript compilation
 - **Commit:** `feat(calendar): add calendar type definitions`
 
-#### Step 3.2: Create calendar store
+#### Step 3.2: Create calendar store ✅
 - **File:** `apps/quote-engine/src/stores/calendar.ts` (new)
 - **Change:** Pinia store with events, view state, CRUD operations
 - **Test:** TypeScript compilation
 - **Commit:** `feat(calendar): add calendar store`
 
-#### Step 3.3: Create CalendarPage component structure
+#### Step 3.3: Create CalendarPage component structure ✅
 - **File:** `apps/quote-engine/src/pages/CalendarPage.vue` (new)
 - **Change:** Basic page with header, view toggles, empty calendar grid
 - **Test:** Dev server visual check
 - **Commit:** `feat(calendar): add CalendarPage component`
 
-#### Step 3.4: Add calendar route
+#### Step 3.4: Add calendar route ✅
 - **File:** `apps/quote-engine/src/router/routes.ts`
 - **Change:** Add `/calendar` route pointing to CalendarPage
 - **Test:** Navigate to /calendar
 - **Commit:** `feat(calendar): add calendar route`
 
-#### Step 3.5: Add calendar to navigation
+#### Step 3.5: Add calendar to navigation ✅
 - **File:** `apps/quote-engine/src/layouts/MainLayout.vue`
 - **Change:** Add "Calendar" link to drawer menu
 - **Test:** Click nav link, verify navigation
 - **Commit:** `feat(calendar): add calendar to navigation drawer`
 
-#### Step 3.6: Implement month view grid
+#### Step 3.6: Implement month view grid ✅
 - **File:** `apps/quote-engine/src/pages/CalendarPage.vue`
 - **Change:** Render month calendar grid with day cells
 - **Test:** Visual verification
 - **Commit:** `feat(calendar): implement month view grid`
 
-#### Step 3.7: Display jobs on calendar
+#### Step 3.7: Display jobs on calendar ✅
 - **File:** `apps/quote-engine/src/pages/CalendarPage.vue`
 - **Change:** Fetch jobs from job store, render on appropriate dates
 - **Test:** Create job, verify appears on calendar
 - **Commit:** `feat(calendar): display scheduled jobs on calendar`
 
-### Week 2: Week View & Interactions
+### Week 2: Week View & Interactions ✅
 
-#### Step 3.8: Implement week view
+#### Step 3.8: Implement week view ✅
 - **File:** `apps/quote-engine/src/pages/CalendarPage.vue`
 - **Change:** Add week view with time slots (7am-7pm)
 - **Test:** Toggle to week view, verify display
 - **Commit:** `feat(calendar): implement week view with time slots`
 
-#### Step 3.9: Implement day view
+#### Step 3.9: Implement day view ✅
 - **File:** `apps/quote-engine/src/pages/CalendarPage.vue`
 - **Change:** Add detailed day view with hourly breakdown
 - **Test:** Toggle to day view, verify display
 - **Commit:** `feat(calendar): implement day view`
 
-#### Step 3.10: Add click-to-view-job
+#### Step 3.10: Add click-to-view-job ✅
 - **File:** `apps/quote-engine/src/pages/CalendarPage.vue`
 - **Change:** Click job event → navigate to job details
 - **Test:** Click job on calendar, verify navigation
 - **Commit:** `feat(calendar): add job click navigation`
 
-### Week 3: Job Scheduling
+### Week 3: Job Scheduling ✅
 
-#### Step 3.11: Create ScheduleJobModal component
+#### Step 3.11: Create ScheduleJobModal component ✅
 - **File:** `apps/quote-engine/src/components/Jobs/ScheduleJobModal.vue` (new)
 - **Change:** Modal with date picker, time picker, duration
 - **Test:** Visual verification
 - **Commit:** `feat(calendar): add ScheduleJobModal component`
 
-#### Step 3.12: Add reschedule functionality
+#### Step 3.12: Add reschedule functionality ✅
 - **File:** `apps/quote-engine/src/stores/jobs.ts`
 - **Change:** Add `rescheduleJob(jobId, newDate, newTime)` function
 - **Test:** Unit test
 - **Commit:** `feat(jobs): add reschedule job function`
 
-#### Step 3.13: Implement drag-and-drop (optional)
+#### Step 3.13: Implement drag-and-drop (optional - SKIPPED)
 - **File:** `apps/quote-engine/src/pages/CalendarPage.vue`
 - **Change:** Drag job to new date/time slot
 - **Test:** Drag job, verify reschedule
 - **Commit:** `feat(calendar): add drag-and-drop job rescheduling`
+- **Note:** Optional feature, skipped for MVP
 
-### Week 4: Polish
+### Week 4: Polish ✅
 
-#### Step 3.14: Add conflict detection
+#### Step 3.14: Add conflict detection ✅
 - **File:** `apps/quote-engine/src/stores/calendar.ts`
 - **Change:** Detect overlapping job schedules
 - **Test:** Schedule overlapping jobs, verify warning
 - **Commit:** `feat(calendar): add schedule conflict detection`
 
-#### Step 3.15: Add calendar settings
-- **File:** `apps/quote-engine/src/stores/calendar.ts`
+#### Step 3.15: Add calendar settings ✅
+- **File:** `apps/quote-engine/src/components/Calendar/CalendarSettingsDialog.vue` (new)
 - **Change:** Working hours, default view, first day of week
 - **Test:** Change settings, verify calendar updates
 - **Commit:** `feat(calendar): add calendar settings`
