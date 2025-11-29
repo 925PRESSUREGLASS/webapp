@@ -4,21 +4,21 @@
 **Project:** TicTacStick Quote Engine for 925 Pressure Glass  
 **Repository:** https://github.com/925PRESSUREGLASS/webapp  
 **Branch:** main  
-**Last Commit:** `34ea58d` - build: build calc engine before vercel deploy
+**Last Commit:** `c0efd79` - fix(auth): add expiresIn to JWT response
 
 ---
 
 ## 🎯 IMMEDIATE CONTEXT
 
-You are picking up a monorepo project that just completed **Task 11: Wire Sync Store into Pages**. The project has a working authentication system, data sync infrastructure, and sync wiring across all pages.
+You are picking up a monorepo project that just completed **Task 11: Wire Sync Store into Pages** and **fixed the blank page on login bug**. The project has a working authentication system, data sync infrastructure, and sync wiring across all pages.
 
 ### Current State Summary
 - **Tasks 1-11:** ✅ Complete
 - **Phase 2A (Infrastructure):** ✅ Complete  
 - **Phase 2B (Cloud Sync):** ✅ Complete
+- **Blank Page Bug:** ✅ Fixed (`c0efd79`)
 - **Phase 2C (GHL Integration):** ⬜ Next
 - **Phase 2D (Push Notifications):** ⬜ Pending
-- **Open Issue:** Blank page on login (needs debugging)
 
 ### Live Endpoints
 - **Meta-API:** `https://meta-api-78ow.onrender.com`
@@ -147,15 +147,12 @@ Created:
 
 ## 🎯 NEXT PRIORITIES
 
-### Priority 1: Fix Blank Page on Login
-See diagnostic section below.
-
-### Priority 2: Phase 2C - GHL Integration
+### Priority 1: Phase 2C - GHL Integration
 - Activate existing GHL sync modules in `ghl-sync.js`
 - Webhook handlers for GHL in meta-api
 - Two-way contact sync
 
-### Priority 3: Phase 2D - Push Notifications
+### Priority 2: Phase 2D - Push Notifications
 - Push notification token backend
 - Notification service in meta-api
 - Subscription management UI
@@ -320,47 +317,16 @@ git push origin main
 
 ---
 
----
+## ✅ RECENTLY FIXED: Blank Page on Login
 
-## 🐛 KNOWN ISSUE: Blank Page on Login
+**Issue:** User sees blank page after login attempt.
 
-**Reported:** User sees blank page after login attempt.
+**Root Cause:** Backend auth endpoints (`/auth/login`, `/auth/register`, `/auth/refresh`) were not returning `expiresIn` in the response, but the frontend auth store was expecting it to calculate token expiration time.
 
-### Likely Causes (in order of probability)
+**Fix:** Added `expiresIn: 604800` (7 days in seconds) to all JWT-returning auth endpoints.
 
-1. **Render Cold Start** - Free tier API spins down after inactivity. First request can timeout (~30s).
-2. **CORS Issue** - API might not be returning proper CORS headers.
-3. **API Unreachable** - Network error during login fetch.
-4. **Auth State Loop** - Redirect loop between `/login` and `/` if auth state is corrupted.
-
-### Diagnostic Steps
-
-```bash
-# 1. Check if API is responsive
-curl -X POST https://meta-api-78ow.onrender.com/auth/login \
-  -H "Content-Type: application/json" \
-  -d '{"email":"test@test.com","password":"test123"}'
-
-# 2. Check health endpoint
-curl https://meta-api-78ow.onrender.com/health
-
-# 3. In browser console, after blank page:
-# - Check for errors: Look for CORS, network, or JS errors
-# - Check network tab: Find the /auth/login request status
-```
-
-### Quick Fixes to Try
-
-1. **Add error boundary to LoginPage** - Show error to user instead of blank
-2. **Add API connection check** - Ping health endpoint before login attempt
-3. **Add loading state for cold start** - Show "Waking up server..." message
-
-### Code Locations
-
-- Login logic: `apps/quote-engine/src/pages/LoginPage.vue`
-- Auth store: `apps/quote-engine/src/stores/auth.ts` (lines 167-193)
-- Router guards: `apps/quote-engine/src/router/index.ts`
+**Commit:** `c0efd79` - fix(auth): add expiresIn to JWT response for frontend token handling
 
 ---
 
-**Good luck! The project is well-documented and the codebase is clean. Start by reading the sync store and picking one page to integrate.**
+**Good luck! The project is well-documented and the codebase is clean. Start with Phase 2C (GHL Integration).**
