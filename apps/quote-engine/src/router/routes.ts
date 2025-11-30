@@ -10,17 +10,23 @@ import type { RouteRecordRaw } from 'vue-router';
 const routes: RouteRecordRaw[] = [
   // Auth routes (in AuthLayout - provides QLayout wrapper)
   {
-    path: '/',
+    path: '/login',
     component: () => import('../layouts/AuthLayout.vue'),
     children: [
       {
-        path: 'login',
+        path: '',
         name: 'login',
         component: () => import('../pages/LoginPage.vue'),
         meta: { guestOnly: true },
       },
+    ],
+  },
+  {
+    path: '/register',
+    component: () => import('../layouts/AuthLayout.vue'),
+    children: [
       {
-        path: 'register',
+        path: '',
         name: 'register',
         component: () => import('../pages/RegisterPage.vue'),
         meta: { guestOnly: true },
