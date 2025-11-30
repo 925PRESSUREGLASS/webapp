@@ -106,8 +106,13 @@ interface IdParams {
 
 export default async function syncRoutes(fastify: FastifyInstance) {
   // All sync routes require authentication
-  fastify.addHook('preHandler', async (request) => {
-    await request.jwtVerify();
+  fastify.addHook('preHandler', async (request, reply) => {
+    try {
+      await request.jwtVerify();
+    } catch (err) {
+      console.error('[SYNC] JWT verify failed:', err);
+      reply.code(401).send({ error: 'Unauthorized' });
+    }
   });
 
   // ========================================

@@ -1,5 +1,5 @@
-// Build: 2025-11-30T23:15 - Sync routes JWT payload fix
-var BUILD_VERSION = '2025-11-30T23:15-sync-fix';
+// Build: 2025-11-30T23:25 - Sync JWT debug logging
+var BUILD_VERSION = '2025-11-30T23:25-sync-debug';
 import fastify, { FastifyInstance } from 'fastify';
 import fastifyJwt from '@fastify/jwt';
 import { AppService, AssetLibraryItem, FeatureRecord, Project } from '../../domain/types';
