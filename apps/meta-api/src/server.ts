@@ -1,5 +1,5 @@
-// Build: 2025-11-30T23:00 - CORS fix for Authorization header
-var BUILD_VERSION = '2025-11-30T23:00-cors-fix';
+// Build: 2025-11-30T23:15 - Sync routes JWT payload fix
+var BUILD_VERSION = '2025-11-30T23:15-sync-fix';
 import fastify, { FastifyInstance } from 'fastify';
 import fastifyJwt from '@fastify/jwt';
 import { AppService, AssetLibraryItem, FeatureRecord, Project } from '../../domain/types';

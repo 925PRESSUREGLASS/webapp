@@ -7,7 +7,7 @@ import * as syncService from '../services/sync.service.js';
  */
 
 interface JwtPayload {
-  userId: string;
+  id: string;  // User ID from JWT
   email: string;
   organizationId: string | null;
 }
@@ -116,7 +116,7 @@ export default async function syncRoutes(fastify: FastifyInstance) {
   
   fastify.get('/sync/all', async (request: FastifyRequest) => {
     const user = request.user as JwtPayload;
-    const data = await syncService.fetchAll(user.userId, user.organizationId);
+    const data = await syncService.fetchAll(user.id, user.organizationId);
     return data;
   });
 
@@ -129,7 +129,7 @@ export default async function syncRoutes(fastify: FastifyInstance) {
     async (request) => {
       const user = request.user as JwtPayload;
       const result = await syncService.bulkSync(
-        user.userId,
+        user.id,
         user.organizationId,
         request.body
       );
@@ -146,7 +146,7 @@ export default async function syncRoutes(fastify: FastifyInstance) {
     async (request) => {
       const user = request.user as JwtPayload;
       const since = request.query.since ? new Date(request.query.since) : undefined;
-      const quotes = await syncService.getQuotes(user.userId, user.organizationId, since);
+      const quotes = await syncService.getQuotes(user.id, user.organizationId, since);
       return { quotes };
     }
   );
@@ -156,7 +156,7 @@ export default async function syncRoutes(fastify: FastifyInstance) {
     async (request) => {
       const user = request.user as JwtPayload;
       const quote = await syncService.syncQuote(
-        user.userId,
+        user.id,
         user.organizationId,
         request.body
       );
@@ -169,7 +169,7 @@ export default async function syncRoutes(fastify: FastifyInstance) {
     async (request, reply) => {
       const user = request.user as JwtPayload;
       try {
-        await syncService.deleteQuote(user.userId, request.params.id);
+        await syncService.deleteQuote(user.id, request.params.id);
         return { success: true };
       } catch (err) {
         reply.status(404);
@@ -187,7 +187,7 @@ export default async function syncRoutes(fastify: FastifyInstance) {
     async (request) => {
       const user = request.user as JwtPayload;
       const since = request.query.since ? new Date(request.query.since) : undefined;
-      const jobs = await syncService.getJobs(user.userId, user.organizationId, since);
+      const jobs = await syncService.getJobs(user.id, user.organizationId, since);
       return { jobs };
     }
   );
@@ -197,7 +197,7 @@ export default async function syncRoutes(fastify: FastifyInstance) {
     async (request) => {
       const user = request.user as JwtPayload;
       const job = await syncService.syncJob(
-        user.userId,
+        user.id,
         user.organizationId,
         request.body
       );
@@ -210,7 +210,7 @@ export default async function syncRoutes(fastify: FastifyInstance) {
     async (request, reply) => {
       const user = request.user as JwtPayload;
       try {
-        await syncService.deleteJob(user.userId, request.params.id);
+        await syncService.deleteJob(user.id, request.params.id);
         return { success: true };
       } catch (err) {
         reply.status(404);
@@ -228,7 +228,7 @@ export default async function syncRoutes(fastify: FastifyInstance) {
     async (request) => {
       const user = request.user as JwtPayload;
       const since = request.query.since ? new Date(request.query.since) : undefined;
-      const clients = await syncService.getClients(user.userId, user.organizationId, since);
+      const clients = await syncService.getClients(user.id, user.organizationId, since);
       return { clients };
     }
   );
@@ -238,7 +238,7 @@ export default async function syncRoutes(fastify: FastifyInstance) {
     async (request) => {
       const user = request.user as JwtPayload;
       const client = await syncService.syncClient(
-        user.userId,
+        user.id,
         user.organizationId,
         request.body
       );
@@ -269,7 +269,7 @@ export default async function syncRoutes(fastify: FastifyInstance) {
     async (request) => {
       const user = request.user as JwtPayload;
       const since = request.query.since ? new Date(request.query.since) : undefined;
-      const invoices = await syncService.getInvoices(user.userId, user.organizationId, since);
+      const invoices = await syncService.getInvoices(user.id, user.organizationId, since);
       return { invoices };
     }
   );
@@ -279,7 +279,7 @@ export default async function syncRoutes(fastify: FastifyInstance) {
     async (request) => {
       const user = request.user as JwtPayload;
       const invoice = await syncService.syncInvoice(
-        user.userId,
+        user.id,
         user.organizationId,
         request.body
       );
@@ -292,7 +292,7 @@ export default async function syncRoutes(fastify: FastifyInstance) {
     async (request, reply) => {
       const user = request.user as JwtPayload;
       try {
-        await syncService.deleteInvoice(user.userId, request.params.id);
+        await syncService.deleteInvoice(user.id, request.params.id);
         return { success: true };
       } catch (err) {
         reply.status(404);
