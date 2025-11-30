@@ -12,10 +12,11 @@ All notable changes to the meta-api will be documented in this file.
 - **Dependencies:** Downgraded `@fastify/jwt` from 10.0.0 to 8.0.1 for Fastify 4.x compatibility
 - **CORS:** Added `Authorization` header to Access-Control-Allow-Headers in all CORS configurations
 - **Sync:** Fixed JWT payload mapping - changed from `userId` to `id` to match actual token payload
+- **Sync:** Skip API key auth for sync routes (sync uses JWT authentication instead)
 
 ### Changed
 - JWT tokens now expire in 7 days (604800 seconds) with explicit `expiresIn` in response
-- Build version tracking updated to `2025-11-30T23:15-sync-fix`
+- Build version tracking updated to `2025-11-30T23:30-sync-auth-fix`
 
 ---
 
