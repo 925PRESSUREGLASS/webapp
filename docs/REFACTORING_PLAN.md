@@ -11,6 +11,12 @@
 - Removed `console.error('[SYNC] JWT verify failed:', err)` from `sync.ts`
 - Verified no other temporary debug logging in routes
 
+### Route Module Extraction - Phase 1 (Done)
+- Created `routes/shared.ts` - Common Zod schemas and `validateOrReply` helper
+- Created `routes/health.ts` - `/health` endpoint with Prisma/memory fallback
+- Created `routes/public.ts` - `/api/public/*` pricing endpoints (no auth)
+- **Next step:** Integrate into `server.ts` and remove duplicated code
+
 ---
 
 ## In Progress 🚧
@@ -20,18 +26,19 @@
 
 The main API file contains ~50 inline route handlers. Should be split into modular route files.
 
-#### Recommended Split
+#### Route Modules Status
 
-| New File | Routes | Est. Lines |
-|----------|--------|------------|
-| `routes/health.ts` | `/health` | 30 |
-| `routes/public.ts` | `/api/public/*` | 100 |
-| `routes/ai.ts` | `/ai/*` | 40 |
-| `routes/projects.ts` | `/projects/*`, `/features/*` | 400 |
-| `routes/businesses.ts` | `/businesses/*` | 60 |
-| `routes/pricebook.ts` | Service lines, types, modifiers, packages, market areas | 600 |
-| `routes/assets.ts` | `/assets/*` | 200 |
-| `routes/apps.ts` | `/apps/*` | 60 |
+| File | Routes | Status |
+|------|--------|--------|
+| `routes/shared.ts` | Schemas, helpers | ✅ Created |
+| `routes/health.ts` | `/health` | ✅ Created |
+| `routes/public.ts` | `/api/public/*` | ✅ Created |
+| `routes/ai.ts` | `/ai/*` | 📋 Pending |
+| `routes/projects.ts` | `/projects/*`, `/features/*` | 📋 Pending |
+| `routes/businesses.ts` | `/businesses/*` | 📋 Pending |
+| `routes/pricebook.ts` | Service lines, types, modifiers, packages, market areas | 📋 Pending |
+| `routes/assets.ts` | `/assets/*` | 📋 Pending |
+| `routes/apps.ts` | `/apps/*` | 📋 Pending |
 
 #### Complexity Notes
 - Uses local `*Store` variables for in-memory fallback when Prisma unavailable
@@ -76,8 +83,9 @@ The main API file contains ~50 inline route handlers. Should be split into modul
 |------|-------|--------|
 | 1 | ~~Documentation consolidation~~ ✅ | Done |
 | 1 | ~~Debug code cleanup~~ ✅ | Done |
-| 2 | Extract `routes/shared.ts` and `routes/health.ts` | 2h |
-| 2 | Extract `routes/pricebook.ts` | 4h |
+| 2 | ~~Extract `routes/shared.ts`, `routes/health.ts`, `routes/public.ts`~~ ✅ | Done |
+| 2 | Integrate new routes into `server.ts` | 1h |
+| 2-3 | Extract `routes/pricebook.ts` | 4h |
 | 3 | Extract remaining route files | 6h |
 | 4 | Type consistency audit | 2h |
 | 4 | Bundle optimization | 3h |
