@@ -1,5 +1,5 @@
-// Build: 2025-11-30T21:30 - GHL route sync fix
-var BUILD_VERSION = '2025-11-30T21:30-ghl-sync-fix';
+// Build: 2025-11-30T21:45 - Fixed @fastify/jwt version compatibility
+var BUILD_VERSION = '2025-11-30T21:45-jwt-fix';
 import fastify, { FastifyInstance } from 'fastify';
 import fastifyJwt from '@fastify/jwt';
 import { AppService, AssetLibraryItem, FeatureRecord, Project } from '../../domain/types';
@@ -2204,6 +2204,7 @@ function start() {
   var port = env.PORT ? parseInt(env.PORT, 10) : 4000;
   app.listen({ port: port, host: '0.0.0.0' }, function (err, address) {
     if (err) {
+      console.error('[SERVER] Listen error:', err);
       app.log.error(err);
       process.exit(1);
     }
