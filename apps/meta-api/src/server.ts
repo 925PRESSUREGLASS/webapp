@@ -27,6 +27,7 @@ import { registerHealthRoutes } from './routes/health';
 import { registerPublicRoutes } from './routes/public';
 import { registerPricebookRoutes } from './routes/pricebook';
 import { registerProjectsRoutes } from './routes/projects';
+import { registerAssetsRoutes } from './routes/assets';
 
 var projectStatusEnum = ['draft', 'in-progress', 'complete'] as const;
 var assetStatusEnum = ['draft', 'active', 'deprecated'] as const;
@@ -469,6 +470,13 @@ function buildServer(): FastifyInstance {
   };
   registerProjectsRoutes(app, projectsContext);
 
+  // Assets routes context
+  var assetsContext = {
+    prisma: prisma,
+    assetsStore: assetsStore
+  };
+  registerAssetsRoutes(app, assetsContext);
+
   app.post('/ai/ask', async function (request, reply) {
     if (!aiBridge.isConfigured()) {
       reply.code(503);
@@ -557,187 +565,6 @@ function buildServer(): FastifyInstance {
     };
   });
 
-  app.get('/assets', async function () {
-    if (prisma) {
-      var assetsDb = await prisma.asset.findMany();
-      return {
-        data: assetsDb.map(mapAssetRow),
-        updatedAt: new Date().toISOString()
-      };
-    }
-    return {
-      data: assetsStore,
-      updatedAt: new Date('2025-11-22T00:00:00Z').toISOString()
-    };
-  });
-
-  app.get('/assets/summary', async function () {
-    if (prisma) {
-      var assetsDb = await prisma.asset.findMany();
-      var mapped = assetsDb.map(mapAssetRow);
-      var summaryDb = buildAssetSummary(mapped);
-      return {
-        data: summaryDb,
-        updatedAt: new Date().toISOString()
-      };
-    }
-    var summary = buildAssetSummary(assetsStore);
-    return {
-      data: summary,
-      updatedAt: new Date('2025-11-22T00:00:00Z').toISOString()
-    };
-  });
-
-  app.post('/assets', async function (request, reply) {
-    var parsed = validateOrReply(assetBodySchema, request.body, reply);
-    if (!parsed.success) {
-      return;
-    }
-    var body = parsed.data;
-
-    if (prisma) {
-      try {
-        var created = await prisma.asset.create({
-          data: {
-            id: body.id,
-            title: body.title,
-            description: body.description || '',
-            type: body.type,
-            status: body.status,
-            link: body.link || '',
-            tags: body.tags || []
-          }
-        });
-        return mapAssetRow(created);
-      } catch (e) {
-        reply.code(409);
-        return { error: 'Asset with this id already exists' };
-      }
-    } else {
-      var exists = assetsStore.find(function (item) {
-        return item.id === body.id;
-      });
-
-      if (exists) {
-        reply.code(409);
-        return { error: 'Asset with this id already exists' };
-      }
-
-      var asset: AssetLibraryItem = {
-        id: body.id,
-        title: body.title,
-        description: body.description || '',
-        type: body.type,
-        status: body.status,
-        tags: body.tags || [],
-        versions: [],
-        link: body.link
-      };
-
-      assetsStore.push(asset);
-      return asset;
-    }
-  });
-
-  app.put('/assets/:id', async function (request, reply) {
-    var params = request.params as { id?: string };
-    var assetId = params.id;
-    var body = request.body as any;
-    if (!assetId) {
-      reply.code(400);
-      return { error: 'id is required' };
-    }
-    var parsed = assetBodySchema.partial().safeParse(Object.assign({}, body, { id: assetId }));
-    if (!parsed.success) {
-      reply.status(400).send({ error: 'Invalid request body', details: parsed.error.format() });
-      return;
-    }
-    var clean = parsed.data;
-
-    if (prisma) {
-      try {
-        var updatedDb = await prisma.asset.update({
-          where: { id: assetId },
-          data: {
-            title: clean.title,
-            description: clean.description,
-            type: clean.type,
-            status: clean.status,
-            tags: clean.tags,
-            link: clean.link
-          }
-        });
-        return mapAssetRow(updatedDb);
-      } catch (e) {
-        reply.code(404);
-        return { error: 'Asset not found' };
-      }
-    } else {
-      var index = -1;
-      for (var i = 0; i < assetsStore.length; i++) {
-        if (assetsStore[i].id === assetId) {
-          index = i;
-          break;
-        }
-      }
-
-      if (index === -1) {
-        reply.code(404);
-        return { error: 'Asset not found' };
-      }
-
-      var current = assetsStore[index];
-      var updated: AssetLibraryItem = {
-        id: current.id,
-        title: clean.title || current.title,
-        description: clean.description || current.description,
-        type: clean.type || current.type,
-        status: clean.status || current.status,
-        tags: clean.tags || current.tags,
-        versions: current.versions,
-        link: clean.link || current.link,
-        projectIds: current.projectIds,
-        featureIds: current.featureIds
-      };
-
-      assetsStore[index] = updated;
-      return updated;
-    }
-  });
-
-  app.delete('/assets/:id', async function (request, reply) {
-    var params = request.params as { id?: string };
-    var assetId = params.id;
-    if (prisma) {
-      try {
-        await prisma.asset.delete({ where: { id: assetId } });
-        return { status: 'ok' };
-      } catch (e) {
-        reply.code(404);
-        return { error: 'Asset not found' };
-      }
-    } else {
-      var nextAssets: AssetLibraryItem[] = [];
-      var found = false;
-
-      for (var i = 0; i < assetsStore.length; i++) {
-        if (assetsStore[i].id === assetId) {
-          found = true;
-        } else {
-          nextAssets.push(assetsStore[i]);
-        }
-      }
-
-      if (!found) {
-        reply.code(404);
-        return { error: 'Asset not found' };
-      }
-
-      assetsStore = nextAssets;
-      return { status: 'ok' };
-    }
-  });
-
   app.get('/apps/:id', function (request, reply) {
     var params = request.params as { id?: string };
     var appId = params.id;
@@ -751,21 +578,6 @@ function buildServer(): FastifyInstance {
     }
 
     return appEntry;
-  });
-
-  app.get('/assets/:id', function (request, reply) {
-    var params = request.params as { id?: string };
-    var assetId = params.id;
-    var assetEntry = assetsStore.find(function (item) {
-      return item.id === assetId;
-    });
-
-    if (!assetEntry) {
-      reply.code(404);
-      return { error: 'Asset not found' };
-    }
-
-    return assetEntry;
   });
 
   return app;
