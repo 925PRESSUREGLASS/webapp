@@ -1484,6 +1484,30 @@
     var money = result.money;
     var time = result.time;
 
+    // Update line items with calculated subtotals and minutes
+    // This ensures pricing persists to jobs and invoices
+    if (result.lineResults) {
+      var lr, idx;
+      if (result.lineResults.windowLines) {
+        for (idx = 0; idx < result.lineResults.windowLines.length; idx++) {
+          lr = result.lineResults.windowLines[idx];
+          if (state.windowLines[lr.index]) {
+            state.windowLines[lr.index].subtotal = lr.subtotal;
+            state.windowLines[lr.index].totalMinutes = lr.totalMinutes;
+          }
+        }
+      }
+      if (result.lineResults.pressureLines) {
+        for (idx = 0; idx < result.lineResults.pressureLines.length; idx++) {
+          lr = result.lineResults.pressureLines[idx];
+          if (state.pressureLines[lr.index]) {
+            state.pressureLines[lr.index].subtotal = lr.subtotal;
+            state.pressureLines[lr.index].totalMinutes = lr.totalMinutes;
+          }
+        }
+      }
+    }
+
     // Update summary
     $("baseFeeDisplay").textContent = formatMoney(money.baseFee);
     $("windowsCostDisplay").textContent = formatMoney(money.windows);

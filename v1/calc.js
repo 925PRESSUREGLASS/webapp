@@ -355,6 +355,10 @@ var windowsMinutes = 0;
 var pressureMinutes = 0;
 var highReachMinutes = 0;
 
+// Per-line calculation results
+var windowLineResults = [];
+var pressureLineResults = [];
+
 // Windows
 var i;
 if (state.windowLines && state.windowLines.length) {
@@ -365,6 +369,13 @@ var hrExtra = WindowCalc.calculateHighReachMinutes(wLine, config);
 
 windowsMinutes += m;
 highReachMinutes += hrExtra || 0;
+
+// Store per-line results
+windowLineResults.push({
+  index: i,
+  minutes: m,
+  highReachMinutes: hrExtra || 0
+});
 }
 }
 
@@ -374,6 +385,12 @@ for (i = 0; i < state.pressureLines.length; i++) {
 var pLine = state.pressureLines[i];
 var pm = PressureCalc.calculateLineMinutes(pLine);
 pressureMinutes += pm;
+
+// Store per-line results
+pressureLineResults.push({
+  index: i,
+  minutes: pm
+});
 }
 }
 
@@ -402,6 +419,29 @@ var travelCostCents = Money.sumCents(
   Math.round(travelHours * travelRateHourCents),
   Math.round((config.travelKm || 0) * travelRateKmCents)
 );
+
+// Calculate per-line costs for window lines
+var j;
+for (j = 0; j < windowLineResults.length; j++) {
+  var wResult = windowLineResults[j];
+  var wLineHours = Time.minutesToHours(wResult.minutes);
+  var wLineHrHours = Time.minutesToHours(wResult.highReachMinutes);
+  var wLineCostCents = Math.round(wLineHours * labourRateCents);
+  var wLineHrCostCents = Math.round(wLineHrHours * labourRateCents);
+  wResult.subtotalCents = wLineCostCents + wLineHrCostCents;
+  wResult.subtotal = Money.fromCents(wResult.subtotalCents);
+  wResult.totalMinutes = wResult.minutes + wResult.highReachMinutes;
+}
+
+// Calculate per-line costs for pressure lines
+for (j = 0; j < pressureLineResults.length; j++) {
+  var pResult = pressureLineResults[j];
+  var pLineHours = Time.minutesToHours(pResult.minutes);
+  var pLineCostCents = Math.round(pLineHours * pressureRateCents);
+  pResult.subtotalCents = pLineCostCents;
+  pResult.subtotal = Money.fromCents(pResult.subtotalCents);
+  pResult.totalMinutes = pResult.minutes;
+}
 
 // High reach modifier – charge the additional high reach hours at the labour rate
 // The highReachModifierPercent is actually used as a multiplier on the additional time (e.g., 60% means charge 1.6x for high reach work)
@@ -454,6 +494,11 @@ totalMinutes: Time.sum(windowsMinutes, pressureMinutes, highReachMinutes, setupM
 totalHours: Time.minutesToHours(
 Time.sum(windowsMinutes, pressureMinutes, highReachMinutes, setupMinutes, travelMinutes)
 )
+},
+// Per-line calculation results for updating state
+lineResults: {
+  windowLines: windowLineResults,
+  pressureLines: pressureLineResults
 }
 };
 
