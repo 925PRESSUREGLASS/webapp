@@ -65,11 +65,11 @@ The main API file contains ~50 inline route handlers. Should be split into modul
 - `test-results/` (90MB) and `v1/test-results/` (218MB) are local artifacts
 - Already in `.gitignore` - consider periodic cleanup script
 
-### Type Consistency Audit
-- Verify JWT payload types match across:
-  - `apps/meta-api/src/types/index.ts`
-  - `apps/quote-engine/src/stores/`
-  - `packages/domain/`
+### Type Consistency Audit ✅
+- Created `apps/meta-api/src/types/jwt.ts` with canonical `JwtPayload` interface
+- Fixed `ghl.ts`: `userId` → `id` bug (was using wrong field name)
+- Updated `auth.ts`, `sync.ts`, `ghl.ts` to import shared type
+- All route files now use consistent JWT payload definition
 
 ### Bundle Analysis
 - Run Vite bundle analyzer on `apps/quote-engine`
@@ -84,10 +84,10 @@ The main API file contains ~50 inline route handlers. Should be split into modul
 | 1 | ~~Documentation consolidation~~ ✅ | Done |
 | 1 | ~~Debug code cleanup~~ ✅ | Done |
 | 2 | ~~Extract `routes/shared.ts`, `routes/health.ts`, `routes/public.ts`~~ ✅ | Done |
+| 2 | ~~Type consistency audit~~ ✅ | Done |
 | 2 | Integrate new routes into `server.ts` | 1h |
 | 2-3 | Extract `routes/pricebook.ts` | 4h |
 | 3 | Extract remaining route files | 6h |
-| 4 | Type consistency audit | 2h |
 | 4 | Bundle optimization | 3h |
 
 ---
