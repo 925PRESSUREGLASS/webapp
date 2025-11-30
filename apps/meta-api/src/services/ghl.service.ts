@@ -1,4 +1,4 @@
-import { env } from '../config/env.js';
+import { env } from '../config/env';
 import { fetch } from 'undici';
 
 interface GHLConfig {

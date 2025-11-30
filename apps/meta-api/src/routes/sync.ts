@@ -1,6 +1,6 @@
 import { FastifyInstance, FastifyRequest } from 'fastify';
-import * as syncService from '../services/sync.service.js';
-import type { JwtPayload } from '../types/jwt.js';
+import * as syncService from '../services/sync.service';
+import type { JwtPayload } from '../types/jwt';
 
 /**
  * Sync Routes

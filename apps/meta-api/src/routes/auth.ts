@@ -6,7 +6,7 @@
 import { FastifyInstance, FastifyRequest, FastifyReply } from 'fastify';
 import { z } from 'zod';
 import { authService } from '../services/auth.service';
-import type { JwtPayload } from '../types/jwt.js';
+import type { JwtPayload } from '../types/jwt';
 
 // JWT verification helper for protected routes
 async function verifyJwt(request: FastifyRequest, reply: FastifyReply): Promise<void> {

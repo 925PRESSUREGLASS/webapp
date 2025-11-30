@@ -1,8 +1,8 @@
 import { FastifyInstance, FastifyReply, FastifyRequest } from 'fastify';
 import { z } from 'zod';
-import { testConnection, createContact, createOpportunity, getGhlStatus } from '../services/ghl.service.js';
-import { env } from '../config/env.js';
-import type { JwtPayload } from '../types/jwt.js';
+import { testConnection, createContact, createOpportunity, getGhlStatus } from '../services/ghl.service';
+import { env } from '../config/env';
+import type { JwtPayload } from '../types/jwt';
 
 // JwtPayload imported from ../types/jwt.js for consistency
 
