@@ -28,6 +28,9 @@ import { registerPublicRoutes } from './routes/public';
 import { registerPricebookRoutes } from './routes/pricebook';
 import { registerProjectsRoutes } from './routes/projects';
 import { registerAssetsRoutes } from './routes/assets';
+import { registerAppsRoutes } from './routes/apps';
+import { registerBusinessesRoutes } from './routes/businesses';
+import { registerAiRoutes } from './routes/ai';
 
 var projectStatusEnum = ['draft', 'in-progress', 'complete'] as const;
 var assetStatusEnum = ['draft', 'active', 'deprecated'] as const;
@@ -477,108 +480,18 @@ function buildServer(): FastifyInstance {
   };
   registerAssetsRoutes(app, assetsContext);
 
-  app.post('/ai/ask', async function (request, reply) {
-    if (!aiBridge.isConfigured()) {
-      reply.code(503);
-      return { error: 'AI embeddings service not configured' };
-    }
-    var body = request.body as { question?: string; k?: number; sources?: string[] };
-    if (!body || !body.question) {
-      reply.code(400);
-      return { error: 'question is required' };
-    }
-    var k = body.k && body.k > 0 ? body.k : 5;
-    var sources = body.sources && Array.isArray(body.sources) ? body.sources : undefined;
+  // Apps routes (static sample data)
+  registerAppsRoutes(app, {});
 
-    try {
-      var result = await aiBridge.ask(body.question, k, sources);
-      return result;
-    } catch (err: any) {
-      var message = err && err.message ? err.message : 'AI service unavailable';
-      reply.code(502);
-      return { error: 'AI service unavailable', detail: message };
-    }
-  });
+  // Businesses routes context
+  var businessesContext = {
+    prisma: prisma,
+    businessStore: businessStore
+  };
+  registerBusinessesRoutes(app, businessesContext);
 
-  app.get('/apps', function () {
-    var updatedAt = new Date('2025-11-22T00:00:00Z').toISOString();
-    return {
-      data: sampleApps,
-      updatedAt: updatedAt
-    };
-  });
-
-  app.get('/businesses', async function () {
-    var updatedAt = new Date().toISOString();
-    if (prisma) {
-      var businessesDb = await prisma.business.findMany();
-      return { data: businessesDb, updatedAt: updatedAt };
-    }
-    return { data: businessStore, updatedAt: updatedAt };
-  });
-
-  app.post('/businesses', async function (request, reply) {
-    var body = request.body as { id?: string; name?: string; slug?: string; status?: string; region?: string };
-    if (!body || !body.id || !body.name || !body.slug) {
-      reply.code(400);
-      return { error: 'id, name, and slug are required' };
-    }
-
-    if (prisma) {
-      try {
-        var createdBiz = await prisma.business.create({
-          data: {
-            id: body.id,
-            name: body.name,
-            slug: body.slug,
-            status: body.status || 'active',
-            region: body.region || '',
-            contactEmail: '',
-            contactPhone: '',
-            website: '',
-            currency: 'AUD',
-            defaultMarkup: 0
-          }
-        });
-        return createdBiz;
-      } catch (e) {
-        reply.code(500);
-        return { error: 'Failed to create business' };
-      }
-    }
-
-    businessStore.push({
-      id: body.id,
-      name: body.name,
-      slug: body.slug,
-      status: (body.status as any) || 'active',
-      region: body.region || ''
-    });
-    return body;
-  });
-
-  app.get('/apps/summary', function () {
-    var summary = buildAppSummary(sampleApps);
-    return {
-      data: summary,
-      updatedAt: new Date('2025-11-22T00:00:00Z').toISOString()
-    };
-  });
-
-  app.get('/apps/:id', function (request, reply) {
-    var params = request.params as { id?: string };
-    var appId = params.id;
-    var appEntry = sampleApps.find(function (item) {
-      return item.id === appId;
-    });
-
-    if (!appEntry) {
-      reply.code(404);
-      return { error: 'App not found' };
-    }
-
-    return appEntry;
-  });
+  // AI routes
+  registerAiRoutes(app, {});
 
   return app;
 }
