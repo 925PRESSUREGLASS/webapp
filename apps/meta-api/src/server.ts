@@ -1,5 +1,5 @@
-// Build: 2025-11-30T23:25 - Sync JWT debug logging
-var BUILD_VERSION = '2025-11-30T23:25-sync-debug';
+// Build: 2025-11-30T23:30 - Skip API key auth for sync routes
+var BUILD_VERSION = '2025-11-30T23:30-sync-auth-fix';
 import fastify, { FastifyInstance } from 'fastify';
 import fastifyJwt from '@fastify/jwt';
 import { AppService, AssetLibraryItem, FeatureRecord, Project } from '../../domain/types';
@@ -267,8 +267,8 @@ function buildServer(): FastifyInstance {
         .send();
       return;
     }
-    // Skip auth for health check, public endpoints, and auth routes
-    if (request.url === '/health' || request.url === '/' || request.url.startsWith('/api/public') || request.url.startsWith('/auth')) {
+    // Skip API key auth for health check, public endpoints, auth routes, and sync routes (which use JWT auth)
+    if (request.url === '/health' || request.url === '/' || request.url.startsWith('/api/public') || request.url.startsWith('/auth') || request.url.startsWith('/sync')) {
       done();
       return;
     }
