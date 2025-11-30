@@ -1,4 +1,5 @@
-// Build: 2025-11-30T21:00 - force Render redeploy
+// Build: 2025-11-30T21:15 - GHL route scoping fix v2
+var BUILD_VERSION = '2025-11-30T21:15-ghl-fix';
 import fastify, { FastifyInstance } from 'fastify';
 import fastifyJwt from '@fastify/jwt';
 import { AppService, AssetLibraryItem, FeatureRecord, Project } from '../../domain/types';
@@ -430,6 +431,7 @@ function buildServer(): FastifyInstance {
     if (!prisma) {
       return {
         status: 'ok',
+        build: BUILD_VERSION,
         projectsTracked: projectsStore.length,
         appsTracked: sampleApps.length,
         assetsTracked: assetsStore.length,
@@ -444,6 +446,7 @@ function buildServer(): FastifyInstance {
       var assetCount = await prisma.asset.count();
       return {
         status: 'ok',
+        build: BUILD_VERSION,
         projectsTracked: projectCount,
         appsTracked: sampleApps.length,
         assetsTracked: assetCount,
@@ -453,6 +456,7 @@ function buildServer(): FastifyInstance {
     } catch (e) {
       return {
         status: 'error',
+        build: BUILD_VERSION,
         projectsTracked: projectsStore.length,
         appsTracked: sampleApps.length,
         assetsTracked: assetsStore.length,
