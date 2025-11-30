@@ -1,5 +1,5 @@
-// Build: 2025-11-30T21:45 - Fixed @fastify/jwt version compatibility
-var BUILD_VERSION = '2025-11-30T21:45-jwt-fix';
+// Build: 2025-11-30T23:00 - CORS fix for Authorization header
+var BUILD_VERSION = '2025-11-30T23:00-cors-fix';
 import fastify, { FastifyInstance } from 'fastify';
 import fastifyJwt from '@fastify/jwt';
 import { AppService, AssetLibraryItem, FeatureRecord, Project } from '../../domain/types';
@@ -261,7 +261,7 @@ function buildServer(): FastifyInstance {
     if (request.method === 'OPTIONS') {
       reply
         .header('Access-Control-Allow-Origin', allowedOrigin)
-        .header('Access-Control-Allow-Headers', 'Content-Type, x-api-key')
+        .header('Access-Control-Allow-Headers', 'Content-Type, x-api-key, Authorization')
         .header('Access-Control-Allow-Methods', 'GET,POST,PUT,DELETE,OPTIONS')
         .code(204)
         .send();
@@ -416,14 +416,14 @@ function buildServer(): FastifyInstance {
   app.addHook('onSend', function (request, reply, payload, done) {
     reply.header('Access-Control-Allow-Origin', '*');
     reply.header('Access-Control-Allow-Methods', 'GET,POST,PUT,DELETE,OPTIONS');
-    reply.header('Access-Control-Allow-Headers', 'Content-Type');
+    reply.header('Access-Control-Allow-Headers', 'Content-Type, Authorization');
     done(null, payload);
   });
 
   app.options('/*', function (_request, reply) {
     reply.header('Access-Control-Allow-Origin', '*');
     reply.header('Access-Control-Allow-Methods', 'GET,POST,PUT,DELETE,OPTIONS');
-    reply.header('Access-Control-Allow-Headers', 'Content-Type');
+    reply.header('Access-Control-Allow-Headers', 'Content-Type, Authorization');
     reply.send();
   });
 
