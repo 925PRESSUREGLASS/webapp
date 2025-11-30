@@ -2,7 +2,6 @@
 var BUILD_VERSION = '2025-11-30T23:30-sync-auth-fix';
 import fastify, { FastifyInstance } from 'fastify';
 import fastifyJwt from '@fastify/jwt';
-import { AppService, AssetLibraryItem, FeatureRecord, Project } from '../../domain/types';
 import { sampleProjects, sampleApps, sampleAssets, sampleFeatures } from '../../domain/sampleData';
 import {
   serviceBusinesses,
@@ -10,14 +9,11 @@ import {
   serviceTypes,
   modifiers as sampleModifiers,
   marketAreas as sampleMarketAreas,
-  priceBooks as samplePriceBooks,
   packages as samplePackages
 } from '../../domain/serviceData';
 import { getPrismaClient } from './db/client';
-import { z } from 'zod';
 import { env } from './config/env';
 import { registerLogging } from './plugins/logging';
-import { aiBridge } from './ai/bridge';
 import { emailService } from './services/email.service';
 import { registerEmailRoutes } from './routes/email';
 import { registerAuthRoutes } from './routes/auth';
@@ -31,217 +27,6 @@ import { registerAssetsRoutes } from './routes/assets';
 import { registerAppsRoutes } from './routes/apps';
 import { registerBusinessesRoutes } from './routes/businesses';
 import { registerAiRoutes } from './routes/ai';
-
-var projectStatusEnum = ['draft', 'in-progress', 'complete'] as const;
-var assetStatusEnum = ['draft', 'active', 'deprecated'] as const;
-var assetTypeEnum = ['snippet', 'component', 'template', 'static', 'doc', 'prompt'] as const;
-var businessStatusEnum = ['active', 'paused', 'archived'] as const;
-var riskEnum = ['low', 'medium', 'high'] as const;
-var methodEnum = ['pressure', 'softwash'] as const;
-
-var projectBodySchema = z.object({
-  id: z.string().min(1),
-  name: z.string().min(1),
-  description: z.string().min(1),
-  status: z.enum(projectStatusEnum)
-});
-
-var projectUpdateSchema = projectBodySchema.partial().extend({
-  id: z.string().min(1)
-});
-
-var featureBodySchema = z.object({
-  id: z.string().min(1),
-  projectId: z.string().min(1),
-  name: z.string().min(1),
-  summary: z.string().min(1),
-  status: z.enum(projectStatusEnum)
-});
-
-var assetBodySchema = z.object({
-  id: z.string().min(1),
-  title: z.string().min(1),
-  description: z.string().optional(),
-  type: z.enum(assetTypeEnum),
-  status: z.enum(assetStatusEnum),
-  link: z.string().url().optional(),
-  tags: z.array(z.string()).optional()
-});
-
-var serviceLineSchema = z.object({
-  id: z.string().min(1),
-  businessId: z.string().min(1),
-  name: z.string().min(1),
-  description: z.string().optional(),
-  category: z.string().optional(),
-  tags: z.array(z.string()).optional()
-});
-
-var serviceTypeSchema = z.object({
-  id: z.string().min(1),
-  serviceLineId: z.string().min(1),
-  code: z.string().min(1),
-  name: z.string().min(1),
-  description: z.string().optional(),
-  unit: z.string().min(1),
-  baseRate: z.number().optional(),
-  baseMinutesPerUnit: z.number().optional(),
-  riskLevel: z.enum(riskEnum).optional(),
-  pressureMethod: z.enum(methodEnum).optional(),
-  tags: z.array(z.string()).optional(),
-  isActive: z.boolean().optional()
-});
-
-var marketAreaSchema = z.object({
-  id: z.string().min(1),
-  businessId: z.string().min(1),
-  name: z.string().min(1),
-  postalCodes: z.array(z.string()).optional(),
-  travelFee: z.number().optional(),
-  minJobValue: z.number().optional(),
-  notes: z.string().optional()
-});
-
-var modifierSchema = z.object({
-  id: z.string().min(1),
-  businessId: z.string().optional(),
-  scope: z.string().min(1),
-  name: z.string().min(1),
-  description: z.string().optional(),
-  multiplier: z.number().optional(),
-  flatAdjust: z.number().optional(),
-  appliesTo: z.string().optional(),
-  tags: z.array(z.string()).optional(),
-  isActive: z.boolean().optional()
-});
-
-var packageSchema = z.object({
-  id: z.string().min(1),
-  businessId: z.string().min(1),
-  name: z.string().min(1),
-  description: z.string().optional(),
-  discountPct: z.number().optional(),
-  tags: z.array(z.string()).optional(),
-  isActive: z.boolean().optional(),
-  items: z
-    .array(
-      z.object({
-        serviceTypeId: z.string().min(1),
-        quantity: z.number().optional(),
-        unitOverride: z.string().optional()
-      })
-    )
-    .optional()
-});
-
-function validateOrReply<T>(schema: z.ZodSchema<T>, body: any, reply: any): { success: true; data: T } | { success: false } {
-  var parsed = schema.safeParse(body);
-  if (!parsed.success) {
-    reply.status(400).send({ error: 'Invalid request body', details: parsed.error.format() });
-    return { success: false };
-  }
-  return { success: true, data: parsed.data };
-}
-
-function buildProjectSummary(projects: Project[]): {
-  projectCount: number;
-  featureCount: number;
-  assetCount: number;
-  statusCounts: { [status: string]: number };
-} {
-  var projectCount = projects.length;
-  var featureCount = 0;
-  var assetCount = 0;
-  var statusCounts: { [status: string]: number } = {};
-
-  for (var i = 0; i < projects.length; i++) {
-    var project = projects[i];
-    statusCounts[project.status] = (statusCounts[project.status] || 0) + 1;
-
-    for (var f = 0; f < project.features.length; f++) {
-      featureCount += 1;
-      var feature = project.features[f];
-      for (var a = 0; a < feature.assets.length; a++) {
-        assetCount += 1;
-      }
-    }
-  }
-
-  return {
-    projectCount: projectCount,
-    featureCount: featureCount,
-    assetCount: assetCount,
-    statusCounts: statusCounts
-  };
-}
-
-function buildAppSummary(apps: AppService[]): {
-  appCount: number;
-  statusCounts: { [status: string]: number };
-  kinds: { [kind: string]: number };
-} {
-  var statusCounts: { [status: string]: number } = {};
-  var kinds: { [kind: string]: number } = {};
-
-  for (var i = 0; i < apps.length; i++) {
-    var app = apps[i];
-    statusCounts[app.status] = (statusCounts[app.status] || 0) + 1;
-    kinds[app.kind] = (kinds[app.kind] || 0) + 1;
-  }
-
-  return {
-    appCount: apps.length,
-    statusCounts: statusCounts,
-    kinds: kinds
-  };
-}
-
-function buildAssetSummary(assets: AssetLibraryItem[]): {
-  assetCount: number;
-  statusCounts: { [status: string]: number };
-  typeCounts: { [type: string]: number };
-} {
-  var statusCounts: { [status: string]: number } = {};
-  var typeCounts: { [type: string]: number } = {};
-
-  for (var i = 0; i < assets.length; i++) {
-    var asset = assets[i];
-    statusCounts[asset.status] = (statusCounts[asset.status] || 0) + 1;
-    typeCounts[asset.type] = (typeCounts[asset.type] || 0) + 1;
-  }
-
-  return {
-    assetCount: assets.length,
-    statusCounts: statusCounts,
-    typeCounts: typeCounts
-  };
-}
-
-function buildFeatureSummary(features: FeatureRecord[]): {
-  featureCount: number;
-  projectCoverage: number;
-  averageAssetsPerFeature: number;
-} {
-  var featureCount = features.length;
-  var projectIds: { [id: string]: boolean } = {};
-  var assetTotal = 0;
-
-  for (var i = 0; i < features.length; i++) {
-    projectIds[features[i].projectId] = true;
-    if (features[i].assets) {
-      assetTotal += features[i].assets.length;
-    }
-  }
-
-  var projectCoverage = Object.keys(projectIds).length;
-  var averageAssetsPerFeature = featureCount === 0 ? 0 : Math.round((assetTotal / featureCount) * 100) / 100;
-
-  return {
-    featureCount: featureCount,
-    projectCoverage: projectCoverage,
-    averageAssetsPerFeature: averageAssetsPerFeature
-  };
-}
 
 function buildServer(): FastifyInstance {
   var app = fastify();
@@ -338,87 +123,8 @@ function buildServer(): FastifyInstance {
   var serviceTypesStore = serviceTypes.slice();
   var modifiersStore = sampleModifiers.slice();
   var marketAreasStore = sampleMarketAreas.slice();
-  var priceBooksStore = samplePriceBooks.slice();
   var packagesStore = samplePackages.slice();
   var prisma = getPrismaClient();
-
-  function mapAssetRow(assetRow: any): AssetLibraryItem {
-    return {
-      id: assetRow.id,
-      title: assetRow.title,
-      description: assetRow.description || '',
-      type: assetRow.type,
-      status: assetRow.status,
-      tags: assetRow.tags || [],
-      link: assetRow.link || '',
-      versions: [],
-      projectIds: assetRow.projectIds || [],
-      featureIds: assetRow.featureIds || []
-    };
-  }
-
-  function mapFeatureRow(featureRow: any): FeatureRecord {
-    var assets = [];
-    if (featureRow.assets && featureRow.assets.length > 0) {
-      for (var i = 0; i < featureRow.assets.length; i++) {
-        var fa = featureRow.assets[i];
-        if (fa.asset) {
-          assets.push({
-            id: fa.asset.id,
-            name: fa.asset.title,
-            type: fa.asset.type
-          });
-        }
-      }
-    }
-
-    return {
-      id: featureRow.id,
-      name: featureRow.name,
-      summary: featureRow.summary,
-      status: featureRow.status,
-      assets: assets,
-      projectId: featureRow.projectId || (featureRow.project ? featureRow.project.id : ''),
-      projectName: featureRow.project ? featureRow.project.name : ''
-    };
-  }
-
-  function mapProjectRow(projectRow: any): Project {
-    var features = [];
-    if (projectRow.features && projectRow.features.length > 0) {
-      for (var i = 0; i < projectRow.features.length; i++) {
-        var feature = projectRow.features[i];
-        var assets = [];
-        if (feature.assets && feature.assets.length > 0) {
-          for (var a = 0; a < feature.assets.length; a++) {
-            var fa = feature.assets[a];
-            if (fa.asset) {
-              assets.push({
-                id: fa.asset.id,
-                name: fa.asset.title,
-                type: fa.asset.type
-              });
-            }
-          }
-        }
-        features.push({
-          id: feature.id,
-          name: feature.name,
-          summary: feature.summary,
-          status: feature.status,
-          assets: assets
-        });
-      }
-    }
-
-    return {
-      id: projectRow.id,
-      name: projectRow.name,
-      description: projectRow.description,
-      status: projectRow.status,
-      features: features
-    };
-  }
 
   // Basic CORS headers to allow dashboard fetches during dev
   app.addHook('onSend', function (request, reply, payload, done) {
