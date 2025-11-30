@@ -110,7 +110,6 @@ export default async function syncRoutes(fastify: FastifyInstance) {
     try {
       await request.jwtVerify();
     } catch (err) {
-      console.error('[SYNC] JWT verify failed:', err);
       reply.code(401).send({ error: 'Unauthorized' });
     }
   });
