@@ -1,5 +1,5 @@
-// Build: 2025-11-30T21:15 - GHL route scoping fix v2
-var BUILD_VERSION = '2025-11-30T21:15-ghl-fix';
+// Build: 2025-11-30T21:30 - GHL route sync fix
+var BUILD_VERSION = '2025-11-30T21:30-ghl-sync-fix';
 import fastify, { FastifyInstance } from 'fastify';
 import fastifyJwt from '@fastify/jwt';
 import { AppService, AssetLibraryItem, FeatureRecord, Project } from '../../domain/types';

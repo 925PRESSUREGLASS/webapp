@@ -43,7 +43,7 @@ async function validateBody<T>(request: FastifyRequest, reply: FastifyReply, sch
   return parsed.data;
 }
 
-export async function registerGhlRoutes(app: FastifyInstance) {
+export function registerGhlRoutes(app: FastifyInstance): void {
   // Scope all GHL routes under /ghl prefix with JWT requirement
   app.register(async function ghlPlugin(ghl) {
     // All routes in this plugin require JWT
