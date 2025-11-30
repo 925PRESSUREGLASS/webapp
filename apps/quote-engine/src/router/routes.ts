@@ -8,18 +8,24 @@ import type { RouteRecordRaw } from 'vue-router';
  * - guestOnly: boolean - Route only accessible to non-authenticated users
  */
 const routes: RouteRecordRaw[] = [
-  // Auth routes (outside main layout)
+  // Auth routes (in AuthLayout - provides QLayout wrapper)
   {
-    path: '/login',
-    name: 'login',
-    component: () => import('../pages/LoginPage.vue'),
-    meta: { guestOnly: true },
-  },
-  {
-    path: '/register',
-    name: 'register',
-    component: () => import('../pages/RegisterPage.vue'),
-    meta: { guestOnly: true },
+    path: '/',
+    component: () => import('../layouts/AuthLayout.vue'),
+    children: [
+      {
+        path: 'login',
+        name: 'login',
+        component: () => import('../pages/LoginPage.vue'),
+        meta: { guestOnly: true },
+      },
+      {
+        path: 'register',
+        name: 'register',
+        component: () => import('../pages/RegisterPage.vue'),
+        meta: { guestOnly: true },
+      },
+    ],
   },
 
   // Main app routes
