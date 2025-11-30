@@ -1,16 +1,13 @@
 import { FastifyInstance, FastifyRequest } from 'fastify';
 import * as syncService from '../services/sync.service.js';
+import type { JwtPayload } from '../types/jwt.js';
 
 /**
  * Sync Routes
  * All routes require JWT authentication
  */
 
-interface JwtPayload {
-  id: string;  // User ID from JWT
-  email: string;
-  organizationId: string | null;
-}
+// JwtPayload imported from ../types/jwt.js for consistency
 
 // Request types
 interface SyncQuoteBody {

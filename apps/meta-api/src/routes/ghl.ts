@@ -2,12 +2,9 @@ import { FastifyInstance, FastifyReply, FastifyRequest } from 'fastify';
 import { z } from 'zod';
 import { testConnection, createContact, createOpportunity, getGhlStatus } from '../services/ghl.service.js';
 import { env } from '../config/env.js';
+import type { JwtPayload } from '../types/jwt.js';
 
-interface JwtPayload {
-  userId: string;
-  email: string;
-  organizationId: string | null;
-}
+// JwtPayload imported from ../types/jwt.js for consistency
 
 var contactSchema = z.object({
   firstName: z.string().min(1),

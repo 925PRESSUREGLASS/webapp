@@ -6,6 +6,7 @@
 import { FastifyInstance, FastifyRequest, FastifyReply } from 'fastify';
 import { z } from 'zod';
 import { authService } from '../services/auth.service';
+import type { JwtPayload } from '../types/jwt.js';
 
 // JWT verification helper for protected routes
 async function verifyJwt(request: FastifyRequest, reply: FastifyReply): Promise<void> {
@@ -39,12 +40,7 @@ const changePasswordSchema = z.object({
   newPassword: z.string().min(8, 'New password must be at least 8 characters')
 });
 
-interface JWTPayload {
-  id: string;
-  email: string;
-  role: string;
-  organizationId?: string;
-}
+// Using shared JwtPayload from ../types/jwt.js
 
 export function registerAuthRoutes(app: FastifyInstance, allowedOrigin: string): void {
   // Helper to set CORS headers
@@ -89,7 +85,7 @@ export function registerAuthRoutes(app: FastifyInstance, allowedOrigin: string):
         email: result.user!.email,
         role: result.user!.role,
         organizationId: result.user!.organizationId
-      } as JWTPayload,
+      } as JwtPayload,
       { expiresIn: '7d' }
     );
 
@@ -142,7 +138,7 @@ export function registerAuthRoutes(app: FastifyInstance, allowedOrigin: string):
         email: result.user!.email,
         role: result.user!.role,
         organizationId: result.user!.organizationId
-      } as JWTPayload,
+      } as JwtPayload,
       { expiresIn: '7d' }
     );
 
@@ -179,7 +175,7 @@ export function registerAuthRoutes(app: FastifyInstance, allowedOrigin: string):
   }, async (request: FastifyRequest, reply: FastifyReply) => {
     setCorsHeaders(reply);
     
-    const payload = request.user as JWTPayload;
+    const payload = request.user as JwtPayload;
     const user = await authService.getUserById(payload.id);
     
     if (!user) {
@@ -209,7 +205,7 @@ export function registerAuthRoutes(app: FastifyInstance, allowedOrigin: string):
       });
     }
 
-    const payload = request.user as JWTPayload;
+    const payload = request.user as JwtPayload;
     const result = await authService.updateProfile(payload.id, parsed.data);
     
     if (!result.success) {
@@ -250,7 +246,7 @@ export function registerAuthRoutes(app: FastifyInstance, allowedOrigin: string):
       });
     }
 
-    const payload = request.user as JWTPayload;
+    const payload = request.user as JwtPayload;
     const result = await authService.changePassword(
       payload.id,
       parsed.data.currentPassword,
@@ -284,7 +280,7 @@ export function registerAuthRoutes(app: FastifyInstance, allowedOrigin: string):
   }, async (request: FastifyRequest, reply: FastifyReply) => {
     setCorsHeaders(reply);
     
-    const payload = request.user as JWTPayload;
+    const payload = request.user as JwtPayload;
     
     // Verify user still exists and is active
     const user = await authService.getUserById(payload.id);
@@ -300,7 +296,7 @@ export function registerAuthRoutes(app: FastifyInstance, allowedOrigin: string):
         email: user.email,
         role: user.role,
         organizationId: user.organizationId
-      } as JWTPayload,
+      } as JwtPayload,
       { expiresIn: '7d' }
     );
 
