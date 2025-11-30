@@ -15,24 +15,25 @@
 - Created `routes/shared.ts` - Common Zod schemas and `validateOrReply` helper
 - Created `routes/health.ts` - `/health` endpoint with Prisma/memory fallback
 - Created `routes/public.ts` - `/api/public/*` pricing endpoints (no auth)
-- **Next step:** Integrate into `server.ts` and remove duplicated code
+- **Integrated into server.ts** - replaced inline code with module calls
+- **server.ts reduced from 2,223 to 2,099 lines** (-124 lines)
 
 ---
 
 ## In Progress 🚧
 
 ### server.ts Refactoring
-**File:** `apps/meta-api/src/server.ts` (2,220 lines)
+**File:** `apps/meta-api/src/server.ts` (2,099 lines, down from 2,223)
 
-The main API file contains ~50 inline route handlers. Should be split into modular route files.
+The main API file still contains ~45 inline route handlers. Should continue splitting into modular route files.
 
 #### Route Modules Status
 
 | File | Routes | Status |
 |------|--------|--------|
 | `routes/shared.ts` | Schemas, helpers | ✅ Created |
-| `routes/health.ts` | `/health` | ✅ Created |
-| `routes/public.ts` | `/api/public/*` | ✅ Created |
+| `routes/health.ts` | `/health` | ✅ Integrated |
+| `routes/public.ts` | `/api/public/*` | ✅ Integrated |
 | `routes/ai.ts` | `/ai/*` | 📋 Pending |
 | `routes/projects.ts` | `/projects/*`, `/features/*` | 📋 Pending |
 | `routes/businesses.ts` | `/businesses/*` | 📋 Pending |
@@ -85,7 +86,7 @@ The main API file contains ~50 inline route handlers. Should be split into modul
 | 1 | ~~Debug code cleanup~~ ✅ | Done |
 | 2 | ~~Extract `routes/shared.ts`, `routes/health.ts`, `routes/public.ts`~~ ✅ | Done |
 | 2 | ~~Type consistency audit~~ ✅ | Done |
-| 2 | Integrate new routes into `server.ts` | 1h |
+| 2 | ~~Integrate health/public routes into server.ts~~ ✅ | Done |
 | 2-3 | Extract `routes/pricebook.ts` | 4h |
 | 3 | Extract remaining route files | 6h |
 | 4 | Bundle optimization | 3h |
@@ -93,4 +94,4 @@ The main API file contains ~50 inline route handlers. Should be split into modul
 ---
 
 *Created: 2024-12-01*
-*Last Updated: 2024-12-01*
+*Last Updated: 2024-12-02*
